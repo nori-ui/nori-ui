@@ -1649,6 +1649,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@unbogify/tokens@workspace:tokens":
+  version: 0.0.0-use.local
+  resolution: "@unbogify/tokens@workspace:tokens"
+  languageName: unknown
+  linkType: soft
+
 "@unbogify/tooling@workspace:tooling":
   version: 0.0.0-use.local
   resolution: "@unbogify/tooling@workspace:tooling"
