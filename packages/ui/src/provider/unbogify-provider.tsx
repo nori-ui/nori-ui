@@ -1,0 +1,36 @@
+'use client';
+
+import type { Theme } from '@unbogify/tokens';
+import type { ReactNode } from 'react';
+import { I18nProvider } from '../i18n/context';
+import type { I18nInput } from '../i18n/types';
+import type { SemanticIcons } from '../icons/default-semantic-icons';
+import { SemanticIconsProvider } from '../icons/semantic-context';
+import { ThemeProvider } from '../theme/context';
+
+export type UnbogifyProviderProps = {
+    theme?: Theme;
+    i18n?: I18nInput;
+    icons?: Partial<SemanticIcons>;
+    children?: ReactNode;
+};
+
+/**
+ * Single root provider composing theme, i18n, and semantic-icons contexts.
+ * Place near the root of your app. Only needed to override defaults — the
+ * library works out of the box without any provider.
+ */
+export function UnbogifyProvider({ theme, i18n, icons, children }: UnbogifyProviderProps) {
+    // Conditionally spread each optional prop — `exactOptionalPropertyTypes: true`
+    // rejects passing `undefined` to a prop typed as `T | missing`.
+    const themeProps = theme === undefined ? {} : { theme };
+    const i18nProps = i18n === undefined ? {} : { i18n };
+    const iconsProps = icons === undefined ? {} : { icons };
+    return (
+        <ThemeProvider {...themeProps}>
+            <I18nProvider {...i18nProps}>
+                <SemanticIconsProvider {...iconsProps}>{children}</SemanticIconsProvider>
+            </I18nProvider>
+        </ThemeProvider>
+    );
+}
