@@ -1,0 +1,54 @@
+name: release
+
+on:
+  push:
+    branches: [main, next]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: semantic-release to npm (OIDC)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: yarn
+
+      - run: yarn install --immutable
+
+      - run: yarn build:tokens
+      - run: yarn build:ui
+
+      - name: Verify build artifacts
+        run: |
+          test -f packages/ui/dist/index.js
+          test -f packages/ui/dist/index.cjs
+          test -f packages/ui/dist/index.d.ts
+
+      # semantic-release handles version bump + publish + changelog + github release.
+      # npm publish is invoked by @semantic-release/npm; we ensure provenance is on
+      # via the publishConfig in packages/ui/package.json and NPM_CONFIG_PROVENANCE
+      # below, and id-token: write above authorizes OIDC trusted-publisher auth.
+      # No NPM_TOKEN secret is used.
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+        run: yarn semantic-release
