@@ -1,0 +1,16 @@
+# Maestro smoke flow for playground-native.
+# Run locally with:
+#   cd apps/playground-native && yarn ios  # or yarn android, start a dev build
+#   maestro test e2e/native/flows/smoke.yaml
+#
+# Requires Maestro CLI installed: https://maestro.mobile.dev
+
+appId: dev.unbogify.playground
+---
+- launchApp
+- assertVisible:
+    id: 'title'
+- assertVisible:
+    id: 'primary-swatch'
+- assertVisible:
+    id: 'primary-hex'
