@@ -45,4 +45,16 @@ module.exports = [
         limit: '4 KB',
         ignore: ['react', 'react-native'],
     },
+    {
+        name: 'TextInput',
+        path: 'src/components/TextInput/index.ts',
+        limit: '3 KB',
+        ignore: ['react', 'react-native'],
+    },
+    {
+        name: 'TextArea',
+        path: 'src/components/TextArea/index.ts',
+        limit: '3 KB',
+        ignore: ['react', 'react-native'],
+    },
 ];
