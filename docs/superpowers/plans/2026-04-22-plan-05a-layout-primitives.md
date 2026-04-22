@@ -1054,3 +1054,16 @@ pkill -f storybook || true
 - [ ] `yarn test` reports 36 + 18 = 54 tests passing.
 
 When all boxes are ticked, Plan 05a is complete and Plan 05b (form controls + Spinner) can begin.
+
+---
+
+## Errata (post-execution notes)
+
+1. **Jest RN mock, not moduleNameMapper.** The plan's `moduleNameMapper: ^react-native$ → react-native-web` breaks className assertions because RN-Web strips `className` and emits CSS-in-JS hashes (`css-text-146c3p1`). The working approach is a `jest.mock('react-native', …)` inside `packages/ui/jest.rn-setup.ts` that renders `View`/`Text`/`ScrollView`/`SafeAreaView`/`Pressable`/`ActivityIndicator`/`TextInput` as plain DOM nodes forwarding `className`, mapping `testID → data-testid`, `accessibilityRole → role`, `accessibilityLabel → aria-label`, `accessibilityState → aria-*`. All component tests from 05b/05c/05d must rely on this mock, not on RN-Web.
+2. **`react-native.d.ts` type augmentation.** `packages/ui/src/react-native.d.ts` augments `react-native` with `className?: string` on `ViewProps`/`TextProps`/`PressableProps`/`ActivityIndicatorProps` (plus `contentContainerClassName` for `ScrollViewProps`, `placeholderClassName` for `TextInputProps`). Later plans use `className` directly; do NOT add `@ts-expect-error` comments.
+3. **`playground-web/tsconfig.json` removes the `paths` alias** for `react-native` → `react-native-web` (RN-Web has no `.d.ts` there); instead adds `nativewind/types` to `types` so className is typed at compile time. The Vite runtime alias in `vite.config.ts` remains untouched.
+4. **Commit-scope kebab-case:** same rule as Plan 04 — `test(e2e):` fails commitlint because digits break kebab-case. Use `test(playground-web):` / `test(playground-native):` / `test(ui):` as appropriate.
+5. **Story registry file is `.tsx`** — it contains JSX in the render functions. Import path `unbogify-ui/stories` stays the same; the `exports` map in `packages/ui/package.json` points at `.tsx`.
+6. **`smoke.spec.ts` needs updating after registry-renderer swap.** Once `apps/playground-web/src/App.tsx` is rewritten to render the story registry, the Plan 04 smoke spec asserting `primary-swatch`/`primary-hex` testIDs will fail. Replace with assertions on `title` + first section visibility. Future plans that modify `App.tsx` must remember to sync smoke tests.
+7. **ESLint `react-native/no-inline-styles` warnings** (23 of them) from inline-style story wrappers are expected and accepted — test code intentionally uses inline styles.
+8. **NativeWind CSS compilation is at consumer build time.** In the Jest environment, `className` values reach the DOM but are not compiled to CSS. Tests assert on className *strings*, not computed styles. Playwright picks up the real CSS because Vite runs NativeWind's transform.
