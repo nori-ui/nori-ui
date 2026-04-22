@@ -57,4 +57,16 @@ module.exports = [
         limit: '3 KB',
         ignore: ['react', 'react-native'],
     },
+    {
+        name: 'Checkbox',
+        path: 'src/components/Checkbox/index.ts',
+        limit: '3 KB',
+        ignore: ['react', 'react-native'],
+    },
+    {
+        name: 'Switch',
+        path: 'src/components/Switch/index.ts',
+        limit: '3 KB',
+        ignore: ['react', 'react-native'],
+    },
 ];
