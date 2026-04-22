@@ -12,6 +12,8 @@ import { Button } from '../components/Button';
 import { HStack } from '../components/HStack';
 import { Spinner } from '../components/Spinner';
 import { Text } from '../components/Text';
+import { TextArea } from '../components/TextArea';
+import { TextInput } from '../components/TextInput';
 import { VStack } from '../components/VStack';
 
 export type StoryEntry = {
@@ -107,5 +109,20 @@ export const stories: StoryEntry[] = [
                 Saving
             </Button>
         ),
+    },
+    {
+        id: 'text-input.default',
+        title: 'TextInput · default',
+        render: () => <TextInput testID="story-text-input-default" label="Email" placeholder="you@example.com" />,
+    },
+    {
+        id: 'text-input.error',
+        title: 'TextInput · error',
+        render: () => <TextInput testID="story-text-input-error" label="Email" error="Required" />,
+    },
+    {
+        id: 'text-area.default',
+        title: 'TextArea · default',
+        render: () => <TextArea testID="story-text-area-default" label="Bio" numberOfLines={3} />,
     },
 ];

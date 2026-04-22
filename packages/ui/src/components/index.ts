@@ -3,4 +3,6 @@ export * from './Button';
 export * from './HStack';
 export * from './Spinner';
 export * from './Text';
+export * from './TextArea';
+export * from './TextInput';
 export * from './VStack';
