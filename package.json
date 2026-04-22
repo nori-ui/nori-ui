@@ -6,7 +6,6 @@
   "workspaces": [
     "packages/*",
     "apps/*",
-    "tokens",
     "tooling"
   ],
   "engines": {

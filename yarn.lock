@@ -2221,9 +2221,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unbogify/tokens@workspace:*, @unbogify/tokens@workspace:tokens":
+"@unbogify/tokens@workspace:*, @unbogify/tokens@workspace:packages/tokens":
   version: 0.0.0-use.local
-  resolution: "@unbogify/tokens@workspace:tokens"
+  resolution: "@unbogify/tokens@workspace:packages/tokens"
   dependencies:
     "@types/jest": "npm:^30.0.0"
     jest: "npm:^30.3.0"

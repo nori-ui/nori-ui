@@ -235,7 +235,7 @@ ui-kit/
 │   ├── docs/                     # Fumadocs site + /mcp endpoint, deployed to Vercel
 │   ├── playground-web/           # Vite + RN-Web; Playwright target; Storybook build target
 │   └── playground-native/        # Expo app; Maestro target
-├── tokens/                       # Tokens Studio JSON + style-dictionary config
+├── packages/tokens/              # @unbogify/tokens — Tokens Studio JSON + style-dictionary config (internal workspace package)
 ├── tooling/                      # shared configs (biome, tsconfig bases, etc.)
 ├── .github/workflows/
 │   ├── ci.yml

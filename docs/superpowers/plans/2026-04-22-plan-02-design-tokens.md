@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Path correction (post-execution):** this plan was authored when the tokens workspace lived at repo-root `tokens/`. It was moved to `packages/tokens/` immediately after initial execution to keep all workspace packages under `packages/*`. All file paths below that start with `tokens/` should be read as `packages/tokens/`; the commit history reflects the corrected layout. The `@unbogify/tokens` package name is unchanged.
+
 **Goal:** Build a deterministic pipeline that takes Tokens Studio–format JSON (Figma-exported) and produces (a) a Tailwind/NativeWind preset consumed by `packages/ui`, and (b) a strongly-typed TS `Theme` interface + token constants. `yarn build:tokens` regenerates everything from source; outputs are committed so reviewers can see diffs.
 
 **Architecture:** `tokens/` is a private workspace package `@unbogify/tokens`. It owns seed JSON (structured by Tokens Studio conventions: one file per token category), a Style Dictionary v4 config with custom formats for Tailwind and TS types, and the generated outputs under `tokens/build/`. `packages/ui` depends on `@unbogify/tokens` as a workspace peer and re-exports the `Theme` type at its public surface.

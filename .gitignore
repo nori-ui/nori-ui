@@ -19,7 +19,7 @@ coverage/
 *.tsbuildinfo
 
 # design tokens: build outputs ARE committed
-!tokens/build/
+!packages/tokens/build/
 
 # caches
 .cache/
