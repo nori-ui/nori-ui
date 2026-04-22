@@ -25,6 +25,9 @@
     "dev:native": "yarn workspace playground-native start",
     "dev:storybook": "yarn workspace playground-web storybook",
     "build:storybook": "yarn workspace playground-web build:storybook",
+    "dev:docs": "yarn workspace @unbogify/docs dev",
+    "build:docs": "yarn workspace @unbogify/docs build",
+    "test:mcp-eval": "yarn workspace @unbogify/e2e-web test tests/mcp-eval.spec.ts",
     "test:e2e:web": "yarn workspace @unbogify/e2e-web test",
     "e2e:browsers": "yarn workspace @unbogify/e2e-web install:browsers"
   },

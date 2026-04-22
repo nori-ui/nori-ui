@@ -93,3 +93,47 @@ jobs:
           name: playwright-report
           path: e2e/web/playwright-report/
           retention-days: 7
+
+  docs-build:
+    name: docs build + mcp eval
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build design tokens
+        run: yarn build:tokens
+
+      - name: Build docs
+        run: yarn build:docs
+
+      - name: Start docs server and run MCP eval
+        run: |
+          yarn dev:docs &
+          DOCS_PID=$!
+          # Wait for the docs server to respond
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/llms.txt > /dev/null; then
+              echo "docs up after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+          MCP_BASE_URL=http://localhost:3000 yarn tsx apps/docs/eval/run-eval.ts
+          EVAL_EXIT=$?
+          kill $DOCS_PID || true
+          exit $EVAL_EXIT
