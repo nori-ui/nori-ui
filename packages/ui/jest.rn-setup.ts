@@ -35,6 +35,20 @@ jest.mock('react-native', () => {
         return role;
     };
 
+    const flattenStyle = (style: unknown): React.CSSProperties | undefined => {
+        if (style === undefined || style === null || style === false) return undefined;
+        if (Array.isArray(style)) {
+            const out: Record<string, unknown> = {};
+            for (const entry of style) {
+                const sub = flattenStyle(entry);
+                if (sub) Object.assign(out, sub);
+            }
+            return out as React.CSSProperties;
+        }
+        if (typeof style === 'object') return style as React.CSSProperties;
+        return undefined;
+    };
+
     const buildDomProps = (props: Props, tag: 'div' | 'span') => {
         const {
             children,
@@ -56,7 +70,9 @@ jest.mock('react-native', () => {
         if (accessibilityState?.disabled !== undefined) domProps['aria-disabled'] = accessibilityState.disabled;
         if (accessibilityState?.selected !== undefined) domProps['aria-selected'] = accessibilityState.selected;
         if (accessibilityState?.checked !== undefined) domProps['aria-checked'] = accessibilityState.checked;
-        if (style !== undefined) domProps.style = style;
+        if (accessibilityState?.busy !== undefined) domProps['aria-busy'] = accessibilityState.busy;
+        const flatStyle = flattenStyle(style);
+        if (flatStyle !== undefined) domProps.style = flatStyle;
         return React.createElement(tag, domProps, children);
     };
 
@@ -66,6 +82,19 @@ jest.mock('react-native', () => {
     const SafeAreaView = (props: Props) => buildDomProps(props, 'div');
     const StatusBar = () => null;
     const Pressable = (props: Props) => buildDomProps(props, 'div');
+    const ActivityIndicator = (props: Props) => {
+        const { size, color, ...rest } = props as Props & { size?: number | string; color?: string };
+        const px = typeof size === 'number' ? size : size === 'large' ? 36 : size === 'small' ? 16 : undefined;
+        const sizeStyle: React.CSSProperties | undefined = px !== undefined ? { width: px, height: px } : undefined;
+        const colorStyle: React.CSSProperties | undefined = color !== undefined ? { color } : undefined;
+        const mergedStyle = flattenStyle([sizeStyle, colorStyle, (rest as { style?: unknown }).style]);
+        const nextProps: Props = {
+            ...rest,
+            accessibilityRole: rest.accessibilityRole ?? 'progressbar',
+            style: mergedStyle,
+        };
+        return buildDomProps(nextProps, 'div');
+    };
 
     return {
         __esModule: true,
@@ -75,6 +104,7 @@ jest.mock('react-native', () => {
         SafeAreaView,
         StatusBar,
         Pressable,
+        ActivityIndicator,
         StyleSheet: {
             create: <T extends Record<string, unknown>>(styles: T) => styles,
             flatten: (style: unknown) => style,
