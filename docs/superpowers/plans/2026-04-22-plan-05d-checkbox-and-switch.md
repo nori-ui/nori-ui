@@ -593,3 +593,14 @@ git commit -m "chore(ui): add Checkbox + Switch size-limit entries"
 - [ ] Combined first-import `yarn size` under the 40 KB spec budget.
 
 When all boxes are ticked, Plan 05 is complete. Plan 06 (Docs + MCP) can begin.
+
+---
+
+## Errata (post-execution notes)
+
+1. **Jest RN mock — `aria-checked="mixed"` support.** `accessibilityState.checked` now accepts `'mixed'` as well as booleans. Explicit `aria-*` props passed via rest must take precedence over `accessibilityState.*` mappings — order matters in the mock. Required so Checkbox's indeterminate test passes.
+2. **RSC-safety allowlist.** `components/Checkbox/Checkbox.tsx` and `components/Switch/Switch.tsx` must be added to `CLIENT_ALLOWED` in `packages/ui/__tests__/rsc-safety.test.ts` — they declare `'use client'` because they use `useState`/`useCallback`.
+3. **asChild test stubs need `tabIndex={0}`** to satisfy a11y lint and focusability, plus a `biome-ignore lint/a11y/useSemanticElements` comment — `role="checkbox"` on a `<div>` is flagged (fair: production usage should target native elements, but the test stub is intentional).
+4. **NativeWind doesn't compile for playground-web (Vite target)** — component className layout classes (`w-5 h-5`, `bg-neutral-300`, `rounded-full`) don't produce real CSS there. Fix: add inline `style={{ …fallback dimensions and colors }}` alongside the `className` so the visual renders on the playground-web build. This is a playground-rendering issue, not a library issue; production consumers with NativeWind's Babel plugin active get the className-only path.
+
+**v0.1 component milestone reached** with this plan's execution: Text, Box, HStack, VStack, Icon, Spinner, Button, TextInput, TextArea, Checkbox, Switch — all 11 shipped.
