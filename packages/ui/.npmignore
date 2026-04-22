@@ -1,0 +1,20 @@
+# development
+src/
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.stories.tsx
+tsup.config.ts
+tsconfig.json
+tsconfig.build.json
+tsconfig.tsbuildinfo
+jest.config.cjs
+jest.setup.ts
+jest.rn-setup.ts
+.size-limit.cjs
+
+# keep in tarball
+!dist/
+!README.md
+!package.json
+!LICENSE
