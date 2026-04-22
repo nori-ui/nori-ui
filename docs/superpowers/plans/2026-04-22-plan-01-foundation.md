@@ -1113,3 +1113,20 @@ git commit -m "chore: finalize foundation scaffold"
 - [] `README.md` renders the quick reference table.
 
 When all boxes are ticked, Plan 01 is complete and Plan 02 can begin.
+
+---
+
+## Errata (post-execution notes)
+
+Recording deviations discovered while executing the plan so that future plans avoid the same traps and anyone re-running this plan succeeds.
+
+1. **Yarn version:** `yarn set version stable` today installs **4.14.1**, not the `4.5.0` used as a placeholder throughout this plan. `packageManager` field and `yarnPath` in `.yarnrc.yml` match whatever `yarn set version stable` actually writes — do not hard-code.
+2. **`.yarn/releases/` population:** Depending on corepack state, `yarn set version stable` may not drop the binary into `.yarn/releases/`. If `.yarnrc.yml`'s `yarnPath` points nowhere, download the release manually (`curl -L -o .yarn/releases/yarn-4.14.1.cjs https://repo.yarnpkg.com/4.14.1/packages/yarnpkg-cli/bin/yarn.js`) and retry.
+3. **Biome 2.x key names:** the config in Task 5 used Biome 1.x names. In Biome 2.x: top-level `files.include`/`files.ignore` becomes `files.includes` (with glob patterns), and top-level `organizeImports` moves to `assist.actions.source.organizeImports`. Pin to a specific 2.x minor (current: `~2.4.12`) to avoid future re-churn.
+4. **ESLint 9 + RN plugin:** `eslint-plugin-react-native@^4` peer-requires ESLint ≤ 8. Use `eslint-plugin-react-native@^5` with ESLint 9.
+5. **ESLint needs a TS parser** even when most rules are tokenized via Biome. Add `@typescript-eslint/parser` and reference it in the flat config so `.ts`/`.tsx` files don't error on `:` tokens during parse.
+6. **Yarn 4 does not hoist root devDependencies onto workspace scripts' PATH.** Tools invoked via `yarn workspace <name> <script>` (typescript, jest, size-limit) must be devDependencies of that workspace. Move the following to `packages/ui/package.json` devDependencies: `typescript`, `jest`, `ts-jest`, `@types/jest`, `size-limit`, `@size-limit/preset-small-lib`.
+7. **The `-W` / `--ignore-workspace-root-check` flag is Yarn 1 syntax** and does not exist in Yarn 4. Install workspace-root devDeps with plain `yarn add -D <pkg>` when at the repo root; install workspace-specific ones with `yarn workspace <name> add -D <pkg>`.
+8. **Biome formatting pass applies to Markdown:** executing Task 5's `yarn biome format --write .` reformats `docs/**/*.md` (including this plan and the spec). That is expected and harmless — the 2-space override for Markdown in `biome.json` governs the result. Checkbox syntax stays `- [ ]` semantically even if a reviewer's rendering shows it collapsed.
+
+These errata are authoritative when there's a conflict with the main plan text above.
