@@ -1,25 +1,22 @@
 'use client';
 
-import { UnbogifyProvider, useTheme } from 'unbogify-ui/client';
+import { UnbogifyProvider } from 'unbogify-ui/client';
+import { stories } from 'unbogify-ui/stories';
 
-function SmokeContent() {
-    const theme = useTheme();
+function StoriesPage() {
     return (
-        <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
+        <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif', display: 'grid', gap: 24 }}>
             <h1 data-testid="title">unbogify-ui playground (web)</h1>
-            <p>
-                Primary token value resolved from <code>@unbogify/tokens</code>:
-            </p>
-            <div
-                data-testid="primary-swatch"
-                style={{
-                    width: 96,
-                    height: 32,
-                    backgroundColor: theme.color.primary['500'],
-                    borderRadius: 4,
-                }}
-            />
-            <p data-testid="primary-hex">{theme.color.primary['500']}</p>
+            {stories.map(({ id, title, render: Render }) => (
+                <section
+                    key={id}
+                    data-testid={`section-${id}`}
+                    style={{ borderTop: '1px solid #e4e4e7', paddingTop: 12 }}
+                >
+                    <h2 style={{ fontSize: 14, fontWeight: 500, margin: '0 0 8px' }}>{title}</h2>
+                    <Render />
+                </section>
+            ))}
         </main>
     );
 }
@@ -27,7 +24,7 @@ function SmokeContent() {
 export function App() {
     return (
         <UnbogifyProvider>
-            <SmokeContent />
+            <StoriesPage />
         </UnbogifyProvider>
     );
 }
