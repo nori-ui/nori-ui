@@ -1,0 +1,84 @@
+// RSC safety boundary check.
+//
+// Rule: files in the RSC-safe tree must not contain 'use client' and must not
+// import React hooks / refs / context. Only `client.ts` and files under paths
+// explicitly marked as client-only (provider/, *context*.tsx, use-*.ts,
+// *.test.*) are allowed to be stateful.
+
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+const SRC = join(__dirname, '../src');
+
+// Files / directories allowed to be client-only. Everything else must be RSC-safe.
+const CLIENT_ALLOWED = [
+    'client.ts',
+    'provider/',
+    'theme/context.tsx',
+    'theme/use-theme.ts',
+    'i18n/context.tsx',
+    'i18n/use-translation.ts',
+    'icons/semantic-context.tsx',
+    'icons/use-semantic-icon.ts',
+];
+
+function isClientAllowed(relPath: string): boolean {
+    return CLIENT_ALLOWED.some((p) => relPath === p || relPath.startsWith(p));
+}
+
+function isTestFile(relPath: string): boolean {
+    return relPath.includes('/__tests__/') || relPath.endsWith('.test.ts') || relPath.endsWith('.test.tsx');
+}
+
+function* walk(dir: string, base: string): Generator<{ abs: string; rel: string }> {
+    for (const entry of readdirSync(dir)) {
+        const abs = join(dir, entry);
+        const rel = abs.slice(base.length + 1);
+        const stat = statSync(abs);
+        if (stat.isDirectory()) {
+            yield* walk(abs, base);
+        } else if (/\.(ts|tsx)$/.test(entry)) {
+            yield { abs, rel };
+        }
+    }
+}
+
+describe('RSC safety boundary', () => {
+    const DISALLOWED_IMPORTS =
+        /\b(useState|useEffect|useContext|useReducer|useMemo|useCallback|useRef|useLayoutEffect|useInsertionEffect|useId|createContext)\b/;
+
+    it('no file in the default entry tree uses "use client" or client-only React APIs', () => {
+        const violations: string[] = [];
+
+        for (const { abs, rel } of walk(SRC, SRC)) {
+            if (isClientAllowed(rel) || isTestFile(rel)) continue;
+
+            const content = readFileSync(abs, 'utf8');
+            if (/^\s*['"]use client['"]/m.test(content)) {
+                violations.push(`${rel}: contains 'use client'`);
+            }
+            if (DISALLOWED_IMPORTS.test(content)) {
+                violations.push(`${rel}: imports a client-only React hook / API`);
+            }
+        }
+
+        if (violations.length > 0) {
+            throw new Error(
+                `RSC-safe tree contains client-only code:\n  - ${violations.join('\n  - ')}\n\n` +
+                    `If these are client by design, add them to CLIENT_ALLOWED in rsc-safety.test.ts.`
+            );
+        }
+    });
+
+    it('all CLIENT_ALLOWED files actually contain "use client"', () => {
+        const missing: string[] = [];
+        for (const rel of CLIENT_ALLOWED) {
+            if (rel.endsWith('/')) continue; // directory entries are checked per-file via walk
+            const content = readFileSync(join(SRC, rel), 'utf8');
+            if (!/^\s*['"]use client['"]/m.test(content)) {
+                missing.push(rel);
+            }
+        }
+        expect(missing).toEqual([]);
+    });
+});
