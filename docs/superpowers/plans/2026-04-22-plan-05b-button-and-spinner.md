@@ -682,3 +682,12 @@ All exit 0.
 - [ ] `yarn test` total: 54 (from 05a) + 15 = 69 passing.
 
 When all boxes are ticked, continue with Plan 05c (TextInput + TextArea) and Plan 05d (Checkbox + Switch). Both follow the exact pattern established here — each component gets one task for impl+test, one for story+registry, one for Playwright, one for Maestro.
+
+---
+
+## Errata (post-execution notes)
+
+1. **Jest RN mock needs Pressable-onClick wiring.** `fireEvent.click` does NOT trigger RN's `onPress`. Extend `packages/ui/jest.rn-setup.ts` so the mocked `Pressable` dispatches `onPress` via `onClick` and maps `accessibilityState.busy` → `aria-busy`, `accessibilityState.checked` → `aria-checked`, `accessibilityState.disabled` → `aria-disabled`. Plan 05c/05d tests for interactive components rely on this.
+2. **`ActivityIndicator` mock** needs to flatten style arrays and default `accessibilityRole: 'progressbar'`. The Spinner test expects `role="progressbar"` on the rendered DOM.
+3. **`story-registry.tsx` eslint warnings** (inline styles, color literals) are pre-existing from Plan 05a and accepted. Don't fight them in 05c/05d.
+4. **Pressable `aria-*` direct props vs `accessibilityState`**: if the component sets both, the mock order produces consistent output. Prefer `aria-*` direct props on web-facing surfaces and rely on the mock to map `accessibilityState` on native-facing surfaces.
