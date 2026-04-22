@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "unbogify-playground",
+    "slug": "unbogify-playground",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "newArchEnabled": true,
+    "ios": { "supportsTablet": true, "bundleIdentifier": "dev.unbogify.playground" },
+    "android": { "package": "dev.unbogify.playground" },
+    "web": { "bundler": "metro" },
+    "plugins": []
+  }
+}

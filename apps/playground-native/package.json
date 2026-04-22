@@ -1,0 +1,32 @@
+{
+  "name": "playground-native",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'no unit tests — e2e only' && exit 0"
+  },
+  "dependencies": {
+    "@unbogify/tokens": "workspace:*",
+    "expo": "~55.0.0",
+    "expo-status-bar": "~55.0.0",
+    "nativewind": "^4",
+    "react": "^19",
+    "react-native": "0.83.6",
+    "react-native-reanimated": "~4.2.0",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "unbogify-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/react": "^19",
+    "tailwindcss": "^3.4",
+    "typescript": "^5.6"
+  }
+}
