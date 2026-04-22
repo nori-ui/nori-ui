@@ -1,0 +1,33 @@
+{
+  "name": "playground-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'no unit tests — e2e only' && exit 0",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build:storybook": "storybook build -o storybook-static"
+  },
+  "dependencies": {
+    "@unbogify/tokens": "workspace:*",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-native-web": "^0.19",
+    "unbogify-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "autoprefixer": "^10",
+    "nativewind": "^4",
+    "postcss": "^8",
+    "tailwindcss": "^3.4",
+    "typescript": "^5.6",
+    "vite": "^5"
+  }
+}
