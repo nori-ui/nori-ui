@@ -50,3 +50,7 @@ Thumbs.db
 
 # storybook
 storybook-static/
+
+# playwright
+e2e/web/playwright-report/
+e2e/web/test-results/

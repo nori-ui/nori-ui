@@ -1,0 +1,17 @@
+{
+  "name": "@unbogify/e2e-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "codegen": "playwright codegen http://localhost:5173",
+    "install:browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10",
+    "@playwright/test": "^1.48",
+    "playwright": "^1.48"
+  }
+}

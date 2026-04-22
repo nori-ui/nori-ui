@@ -6,7 +6,8 @@
   "workspaces": [
     "packages/*",
     "apps/*",
-    "tooling"
+    "tooling",
+    "e2e/*"
   ],
   "engines": {
     "node": ">=20"

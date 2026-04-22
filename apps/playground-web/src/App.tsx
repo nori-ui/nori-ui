@@ -5,7 +5,7 @@ import { UnbogifyProvider, useTheme } from 'unbogify-ui/client';
 function SmokeContent() {
     const theme = useTheme();
     return (
-        <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
+        <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
             <h1 data-testid="title">unbogify-ui playground (web)</h1>
             <p>
                 Primary token value resolved from <code>@unbogify/tokens</code>:
@@ -20,7 +20,7 @@ function SmokeContent() {
                 }}
             />
             <p data-testid="primary-hex">{theme.color.primary['500']}</p>
-        </div>
+        </main>
     );
 }
 
