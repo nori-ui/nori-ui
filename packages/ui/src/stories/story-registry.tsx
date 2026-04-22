@@ -9,8 +9,10 @@ import type { ComponentType } from 'react';
 import { View } from 'react-native';
 import { Box } from '../components/Box';
 import { Button } from '../components/Button';
+import { Checkbox } from '../components/Checkbox';
 import { HStack } from '../components/HStack';
 import { Spinner } from '../components/Spinner';
+import { Switch } from '../components/Switch';
 import { Text } from '../components/Text';
 import { TextArea } from '../components/TextArea';
 import { TextInput } from '../components/TextInput';
@@ -124,5 +126,25 @@ export const stories: StoryEntry[] = [
         id: 'text-area.default',
         title: 'TextArea · default',
         render: () => <TextArea testID="story-text-area-default" label="Bio" numberOfLines={3} />,
+    },
+    {
+        id: 'checkbox.default',
+        title: 'Checkbox · default',
+        render: () => <Checkbox testID="story-checkbox-default" label="Accept" />,
+    },
+    {
+        id: 'checkbox.checked',
+        title: 'Checkbox · checked',
+        render: () => <Checkbox testID="story-checkbox-checked" label="Accept" defaultChecked />,
+    },
+    {
+        id: 'switch.default',
+        title: 'Switch · default',
+        render: () => <Switch testID="story-switch-default" label="Dark mode" />,
+    },
+    {
+        id: 'switch.on',
+        title: 'Switch · on',
+        render: () => <Switch testID="story-switch-on" label="Dark mode" defaultChecked />,
     },
 ];
