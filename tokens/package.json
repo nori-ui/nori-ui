@@ -21,5 +21,8 @@
     "clean": "rm -rf build",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
+  },
+  "devDependencies": {
+    "style-dictionary": "^4"
   }
 }
