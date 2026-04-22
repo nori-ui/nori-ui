@@ -1169,3 +1169,16 @@ git commit -m "test(e2e): add docs site smoke tests"
 - [ ] Lighthouse target ≥ 95 on all four axes (Perf, A11y, BP, SEO) — run in a separate follow-up once deployed.
 
 Plan 07 (release pipeline) is next.
+
+---
+
+## Errata (post-execution notes)
+
+1. **fumadocs-mdx v11 / fumadocs-core v15 API mismatch**: `createMDXSource` returns `{files: () => …}` whereas `loader()` expects `{files: VirtualFile[]}`. Adapt by calling the function and passing the array; lifecycle scripts (`predev`/`prebuild`/`pretypecheck`) must run `fumadocs-mdx` to codegen `.source/`. Add `.source/` to `.gitignore`.
+2. **RSC boundary**: Button's `onPress` cannot serialize through MDX → client-component children. Consume library components from a local `'use client'` re-export (`apps/docs/components/ui-client.ts`) so MDX imports resolve through a client boundary.
+3. **`react-native-augment.d.ts` in the docs app** carries the NativeWind `className` type augmentation across the workspace boundary (workspace TS references don't reach `packages/ui/src/react-native.d.ts` through the published shape).
+4. **LivePreview defers child mount via `useEffect`** to avoid event-handler serialization issues at hydrate time — briefly flashes empty, acceptable for v0.1; revisit in Plan 08+ if hydration UX matters.
+5. **MCP SDK shape**: `McpServer` + `WebStandardStreamableHTTPServerTransport` + `enableJsonResponse: true` is the working combination in `@modelcontextprotocol/sdk@1.29.0`. GET returns 406 without `accept: text/event-stream` or `application/json` — expected per spec.
+6. **Commit scope**: the plan's `test(e2e):` breaks commitlint kebab rule; use `test(playground-web):` (matches 05a/05b/05c/05d precedent).
+7. **MCP eval** seeded with 5 questions (plan 50-target deferred and flagged via a TODO key in `apps/docs/eval/questions.json`).
+8. **Biome overrides** added for `apps/docs/content/**/*.mdx` (formatter off — same reason as `docs/superpowers/**`) and `**/*.css` (`noUnknownAtRules: off` — Tailwind `@tailwind` directives).
