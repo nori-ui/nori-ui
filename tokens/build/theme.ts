@@ -116,7 +116,7 @@ export type Theme = typeof theme;
 // Generated for dark mode.
 // Do not edit — run `yarn build:tokens`.
 
-export const themeDarkDark = {
+export const themeDark = {
     color: {
         danger: "#ef4444",
         info: "#3b82f6",
