@@ -1,0 +1,17 @@
+appId: dev.unbogify.playground
+---
+- launchApp
+- assertVisible:
+    id: 'title'
+- scrollUntilVisible:
+    element:
+      id: 'section-text.body-md'
+- assertVisible:
+    id: 'section-text.heading-1'
+- assertVisible:
+    id: 'section-box.default'
+- assertVisible:
+    id: 'section-hstack.gap-4'
+- scrollUntilVisible:
+    element:
+      id: 'section-vstack.gap-4'
