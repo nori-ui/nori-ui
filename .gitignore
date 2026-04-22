@@ -18,6 +18,9 @@ build/
 coverage/
 *.tsbuildinfo
 
+# design tokens: build outputs ARE committed
+!tokens/build/
+
 # caches
 .cache/
 .expo/
