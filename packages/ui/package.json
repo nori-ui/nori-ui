@@ -17,7 +17,12 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./theme": "./src/theme/index.ts"
+    "./client": "./src/client.ts",
+    "./theme": "./src/theme/index.ts",
+    "./i18n": "./src/i18n/index.ts",
+    "./icons": "./src/icons/index.ts",
+    "./slot": "./src/slot/index.ts",
+    "./utils/cn": "./src/utils/cn.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
