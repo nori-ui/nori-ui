@@ -21,7 +21,12 @@ jest.mock('react-native', () => {
         testID?: string;
         accessibilityRole?: string;
         accessibilityLabel?: string;
-        accessibilityState?: { disabled?: boolean; selected?: boolean; checked?: boolean };
+        accessibilityState?: {
+            disabled?: boolean;
+            selected?: boolean;
+            checked?: boolean | 'mixed';
+            busy?: boolean;
+        };
         style?: React.CSSProperties;
     } & Record<string, unknown>;
 
@@ -66,13 +71,25 @@ jest.mock('react-native', () => {
         if (className !== undefined) domProps.className = className;
         if (testID !== undefined) domProps['data-testid'] = testID;
         if (nativeID !== undefined) domProps.id = nativeID;
-        const role = mapA11yRole(accessibilityRole);
+        const existingRole = domProps.role as string | undefined;
+        const role = existingRole ?? mapA11yRole(accessibilityRole);
         if (role !== undefined) domProps.role = role;
-        if (accessibilityLabel !== undefined) domProps['aria-label'] = accessibilityLabel;
-        if (accessibilityState?.disabled !== undefined) domProps['aria-disabled'] = accessibilityState.disabled;
-        if (accessibilityState?.selected !== undefined) domProps['aria-selected'] = accessibilityState.selected;
-        if (accessibilityState?.checked !== undefined) domProps['aria-checked'] = accessibilityState.checked;
-        if (accessibilityState?.busy !== undefined) domProps['aria-busy'] = accessibilityState.busy;
+        if (accessibilityLabel !== undefined && domProps['aria-label'] === undefined) {
+            domProps['aria-label'] = accessibilityLabel;
+        }
+        // Explicit aria-* props (passed via rest) take precedence over accessibilityState.
+        if (accessibilityState?.disabled !== undefined && domProps['aria-disabled'] === undefined) {
+            domProps['aria-disabled'] = accessibilityState.disabled;
+        }
+        if (accessibilityState?.selected !== undefined && domProps['aria-selected'] === undefined) {
+            domProps['aria-selected'] = accessibilityState.selected;
+        }
+        if (accessibilityState?.checked !== undefined && domProps['aria-checked'] === undefined) {
+            domProps['aria-checked'] = accessibilityState.checked;
+        }
+        if (accessibilityState?.busy !== undefined && domProps['aria-busy'] === undefined) {
+            domProps['aria-busy'] = accessibilityState.busy;
+        }
         const flatStyle = flattenStyle(style);
         if (flatStyle !== undefined) domProps.style = flatStyle;
         return React.createElement(tag, domProps, children);

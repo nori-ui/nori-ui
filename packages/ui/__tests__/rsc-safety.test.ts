@@ -20,6 +20,7 @@ const CLIENT_ALLOWED = [
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
+    'components/Checkbox/Checkbox.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {
