@@ -1,0 +1,22 @@
+{
+  "name": "unbogify-ui-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "yarn@4.14.1",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "tooling"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "yarn workspaces foreach -A -pt run typecheck",
+    "lint": "biome check . && yarn eslint:rn",
+    "eslint:rn": "eslint .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "test": "yarn workspaces foreach -A -pt run test"
+  }
+}
