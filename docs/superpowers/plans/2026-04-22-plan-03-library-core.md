@@ -1662,3 +1662,15 @@ git add -A && git commit -m "chore(ui): finalize library core" || true
 - [ ] Total additional gzipped bundle for the whole core (no components yet): within first-import budget (≤ 40 KB gzip from spec §1 Success Criteria #2). `yarn size` tells you.
 
 When all boxes are ticked, Plan 03 is complete and Plan 04 (Playground Apps) can begin.
+
+---
+
+## Errata (post-execution notes)
+
+1. **Jest key name**: the correct Jest option is `setupFilesAfterEnv`, not `setupFilesAfterEach`. Task 1 Step 3 had the wrong key — use `setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']`.
+2. **`resolveI18n` consumer-fn path**: Task 6's implementation `return input;` directly returns the consumer function. That works semantically but the test asserts `toHaveBeenCalledWith('greet', undefined)` — which fails when a direct function reference is called with 1 arg (React or caller drops the second). Wrap as `return (key, opts) => input(key, opts)` to preserve the arg shape.
+3. **`default-semantic-icons.tsx` not `.ts`**: the file contains JSX (`<svg>…`), so it must have the `.tsx` extension for ts-jest to transform it. Update the File Structure entry to `default-semantic-icons.tsx`.
+4. **`exactOptionalPropertyTypes` strictness**: the shared tsconfig enables `exactOptionalPropertyTypes: true`. In `icon.tsx` and `unbogify-provider.tsx`, pass-through of optional props requires conditional spreading so `undefined` is never explicitly passed. Example: `<IconComponent size={numericSize} {...(color !== undefined ? { color } : {})} />`. No runtime difference.
+5. **Size-limit budget**: Plan 02 errata bumped `.size-limit.cjs` to 2 KB. After Plan 03 the core is ~2.07 KB brotli — bump to 4 KB. Still way under the spec's 40 KB first-import budget.
+6. **React 19 `child.ref` deprecation**: Slot reads `child.ref` to merge refs (Radix-style). React 19 moves `ref` from a special prop to a regular prop and emits a runtime deprecation warning when you access `.ref` on a React element. Tests still pass. TODO for a later plan: migrate Slot to read `child.props.ref` once React 19's final semantics are locked.
+7. **ESLint react-native plugin flags** 4 inline-style warnings in `slot.test.tsx` — test code intentionally uses inline styles to exercise the merge logic. Consider a test-file-scoped disable rule in `eslint.config.mjs` in a future cleanup pass.
