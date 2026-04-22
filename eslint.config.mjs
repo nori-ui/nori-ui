@@ -17,6 +17,9 @@ export default [
             '**/.expo/**',
             '**/coverage/**',
             '**/.yarn/**',
+            '**/storybook-static/**',
+            '**/playwright-report/**',
+            '**/test-results/**',
         ],
     },
     {
