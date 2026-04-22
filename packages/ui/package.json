@@ -23,7 +23,7 @@
     "./icons": "./src/icons/index.ts",
     "./slot": "./src/slot/index.ts",
     "./utils/cn": "./src/utils/cn.ts",
-    "./stories": "./src/stories/story-registry.ts"
+    "./stories": "./src/stories/story-registry.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
