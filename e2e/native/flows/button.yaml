@@ -1,0 +1,15 @@
+appId: dev.unbogify.playground
+---
+- launchApp
+- scrollUntilVisible:
+    element:
+      id: 'section-button.primary'
+- assertVisible:
+    id: 'story-button-primary'
+- tapOn:
+    id: 'story-button-primary'
+- scrollUntilVisible:
+    element:
+      id: 'section-button.loading'
+- assertVisible:
+    id: 'story-button-loading'
