@@ -21,6 +21,7 @@
     "test": "yarn workspaces foreach -A -pt run test",
     "size": "yarn workspace unbogify-ui exec size-limit",
     "build:tokens": "yarn workspace @unbogify/tokens build",
+    "build:ui": "yarn workspace unbogify-ui build",
     "dev:web": "yarn workspace playground-web dev",
     "dev:native": "yarn workspace playground-native start",
     "dev:storybook": "yarn workspace playground-web storybook",

@@ -13,19 +13,62 @@
   },
   "sideEffects": false,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "exports": {
-    ".": "./src/index.ts",
-    "./client": "./src/client.ts",
-    "./theme": "./src/theme/index.ts",
-    "./i18n": "./src/i18n/index.ts",
-    "./icons": "./src/icons/index.ts",
-    "./slot": "./src/slot/index.ts",
-    "./utils/cn": "./src/utils/cn.ts",
-    "./stories": "./src/stories/story-registry.tsx"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
+    },
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme/index.js",
+      "require": "./dist/theme/index.cjs"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js",
+      "require": "./dist/i18n/index.cjs"
+    },
+    "./icons": {
+      "types": "./dist/icons/index.d.ts",
+      "import": "./dist/icons/index.js",
+      "require": "./dist/icons/index.cjs"
+    },
+    "./slot": {
+      "types": "./dist/slot/index.d.ts",
+      "import": "./dist/slot/index.js",
+      "require": "./dist/slot/index.cjs"
+    },
+    "./utils/cn": {
+      "types": "./dist/utils/cn.d.ts",
+      "import": "./dist/utils/cn.js",
+      "require": "./dist/utils/cn.cjs"
+    },
+    "./stories": {
+      "types": "./dist/stories/story-registry.d.ts",
+      "import": "./dist/stories/story-registry.js",
+      "require": "./dist/stories/story-registry.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org",
+    "provenance": true
   },
   "scripts": {
+    "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
   },
@@ -40,24 +83,29 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/react-native-web": "^0",
+    "@unbogify/tokens": "workspace:*",
     "jest": "^29",
     "jest-environment-jsdom": "^29",
     "react-native-web": "^0.19",
     "size-limit": "^12.1.0",
     "ts-jest": "^29",
+    "tsup": "^8.5.1",
     "typescript": "^5.6.0"
   },
   "dependencies": {
-    "@unbogify/tokens": "workspace:*",
     "react": "^19",
     "react-dom": "^19"
   },
   "peerDependencies": {
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "react-native": "^0.83"
   },
   "peerDependenciesMeta": {
     "react-dom": {
+      "optional": true
+    },
+    "react-native": {
       "optional": true
     }
   }
