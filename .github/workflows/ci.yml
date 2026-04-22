@@ -30,6 +30,17 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Build design tokens
+        run: yarn build:tokens
+
+      - name: Verify tokens/build is up to date
+        run: |
+          if [[ -n "$(git status --porcelain tokens/build/)" ]]; then
+              echo "::error::tokens/build is stale — commit regenerated outputs."
+              git --no-pager diff tokens/build/
+              exit 1
+          fi
+
       - name: Biome check (lint + format)
         run: yarn biome check .
 
