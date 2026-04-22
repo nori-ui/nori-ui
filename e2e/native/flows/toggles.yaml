@@ -1,0 +1,13 @@
+appId: dev.unbogify.playground
+---
+- launchApp
+- scrollUntilVisible:
+    element:
+      id: 'section-checkbox.default'
+- tapOn:
+    id: 'story-checkbox-default'
+- scrollUntilVisible:
+    element:
+      id: 'section-switch.default'
+- tapOn:
+    id: 'story-switch-default'
