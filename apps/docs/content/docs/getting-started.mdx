@@ -1,0 +1,49 @@
+---
+title: Getting started
+description: Install and render your first component in under five minutes.
+since: 0.1.0
+tags: [install, setup]
+platform: both
+---
+
+## Install
+
+```bash
+yarn add unbogify-ui
+# optional — any icon library works; Lucide is recommended:
+yarn add lucide-react lucide-react-native
+```
+
+## Tailwind preset
+
+Add the `@unbogify/tokens` preset to your consumer `tailwind.config.ts`:
+
+```ts
+import unbogifyPreset from '@unbogify/tokens/tailwind-preset';
+export default { presets: [unbogifyPreset], content: [/* your globs */] };
+```
+
+## Provider
+
+Wrap your app once. The library works without a provider too — provider only customizes theme / i18n / semantic icons.
+
+```tsx
+'use client';
+import { UnbogifyProvider } from 'unbogify-ui/client';
+
+export default function App() {
+    return (
+        <UnbogifyProvider>
+            <YourApp />
+        </UnbogifyProvider>
+    );
+}
+```
+
+## First component
+
+```tsx
+import { Button } from 'unbogify-ui';
+
+<Button variant="primary">Click me</Button>
+```

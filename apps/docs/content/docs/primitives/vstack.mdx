@@ -1,0 +1,38 @@
+---
+title: VStack
+description: Vertical stack with gap, align, and justify.
+since: 0.1.0
+tags: [primitive, layout]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Text, VStack } from 'unbogify-ui';
+
+## At a glance
+
+- Flex column with configurable `gap`, `align`, `justify`.
+- Mirror of [HStack](/docs/primitives/hstack) for vertical layouts.
+
+## Web preview
+
+<LivePreview>
+    <VStack gap="sm">
+        <Text variant="heading2">Section</Text>
+        <Text>Stacked content below the heading.</Text>
+    </VStack>
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/vstack-smoke" height={300} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `gap` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Space between children |
+| `align` | `'start' \| 'center' \| 'end' \| 'stretch'` | `'stretch'` | Cross-axis alignment |
+| `justify` | `'start' \| 'center' \| 'end' \| 'between' \| 'around'` | `'start'` | Main-axis justification |
+| `className` | `string` | — | NativeWind class overrides |

@@ -1,0 +1,38 @@
+---
+title: Icon
+description: Thin wrapper around a user-supplied icon component with token-driven size and color.
+since: 0.1.0
+tags: [misc]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Icon } from 'unbogify-ui';
+
+## At a glance
+
+- Icon-library-agnostic — pass any component matching `{ size?: number; color?: string }`.
+- Pair with `SemanticIconsProvider` to alias semantic keys (`checkmark`, `close`, `spinner`) to your chosen icons.
+
+## Web preview
+
+```tsx
+import { Star } from 'lucide-react';
+import { Icon } from 'unbogify-ui';
+
+<Icon as={Star} size="md" />;
+```
+
+## Native preview
+
+<ExpoSnack id="@unbogify/icon-smoke" height={250} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `as` | `ComponentType<{ size?: number; color?: string }>` | — | Icon component reference |
+| `size` | `'sm' \| 'md' \| 'lg' \| number` | `'md'` | Numeric or token size |
+| `color` | `string` | — | Icon color; inherits currentColor when omitted |
+| `label` | `string` | — | Accessible label — required when icon is meaningful |

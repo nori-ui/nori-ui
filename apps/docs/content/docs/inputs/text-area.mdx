@@ -1,0 +1,39 @@
+---
+title: TextArea
+description: Multi-line text input with label, helper text, and validation states.
+since: 0.1.0
+tags: [input, form]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { TextArea } from 'unbogify-ui';
+
+## At a glance
+
+- Multi-line variant of [TextInput](/docs/inputs/text-input) with matching API.
+- Configure minimum height via `rows`.
+
+## Web preview
+
+<LivePreview>
+    <TextArea label="Description" rows={4} placeholder="Tell us more…" />
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/text-area-smoke" height={400} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `string` | — | Visible label tied via aria |
+| `helperText` | `string` | — | Helper / error text below the input |
+| `variant` | `'default' \| 'error' \| 'success'` | `'default'` | Validation state |
+| `rows` | `number` | `3` | Visible rows — controls min-height |
+| `value` | `string` | — | Controlled value |
+| `defaultValue` | `string` | — | Uncontrolled initial value |
+| `onChangeText` | `(text: string) => void` | — | Change handler |
+| `disabled` | `boolean` | `false` | Disables interaction |

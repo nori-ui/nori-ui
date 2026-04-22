@@ -1,0 +1,43 @@
+---
+title: Checkbox
+description: Controlled or uncontrolled checkbox with indeterminate support and asChild.
+since: 0.1.0
+tags: [control, form]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Checkbox } from 'unbogify-ui';
+
+## At a glance
+
+- **States:** unchecked, checked, indeterminate, disabled.
+- Emits semantic icon via `checkmark` key from `SemanticIconsProvider`.
+- `asChild` passes control to a supplied root element.
+
+## Web preview
+
+<LivePreview>
+    <Checkbox label="Accept the terms" defaultChecked />
+</LivePreview>
+
+<LivePreview>
+    <Checkbox label="Partial" indeterminate />
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/checkbox-smoke" height={300} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `checked` | `boolean` | — | Controlled checked state |
+| `defaultChecked` | `boolean` | `false` | Uncontrolled initial state |
+| `indeterminate` | `boolean` | `false` | Visual-only indeterminate state |
+| `onCheckedChange` | `(checked: boolean) => void` | — | Change handler |
+| `disabled` | `boolean` | `false` | Disables interaction |
+| `label` | `string` | — | Visible label tied via aria |
+| `asChild` | `boolean` | `false` | Renders the supplied child as root |

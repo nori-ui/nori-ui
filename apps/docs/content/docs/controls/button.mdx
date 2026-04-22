@@ -1,0 +1,58 @@
+---
+title: Button
+description: Clickable action with variants, sizes, loading state, icon slots, and asChild.
+since: 0.1.0
+tags: [control, action]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Button } from 'unbogify-ui';
+
+## At a glance
+
+- **Variants:** `primary`, `secondary`, `ghost`, `destructive`
+- **Sizes:** `sm`, `md`, `lg`
+- **States:** default, pressed, disabled, loading
+- **Composition:** `asChild` renders a supplied element (e.g. `<Link>`) as the interactive root.
+
+## Web preview
+
+<LivePreview>
+    <Button>Click me</Button>
+</LivePreview>
+
+## Variants
+
+<LivePreview>
+    <Button variant="secondary">Secondary</Button>
+</LivePreview>
+
+<LivePreview>
+    <Button variant="destructive">Delete</Button>
+</LivePreview>
+
+## Native preview (Expo Snack)
+
+{/* Replace id with a real Snack when authoring. Plan 06 ships the infrastructure. */}
+<ExpoSnack id="@unbogify/button-smoke" height={400} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `'primary' \| 'secondary' \| 'ghost' \| 'destructive'` | `'primary'` | Visual intent |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Control height + text size |
+| `loading` | `boolean` | `false` | Replaces leading icon with Spinner; blocks press |
+| `disabled` | `boolean` | `false` | Visually muted + non-interactive |
+| `leadingIcon` / `trailingIcon` | `ComponentType<{ size?: number; color?: string }>` | — | Icon component reference |
+| `asChild` | `boolean` | `false` | Renders the single child as the interactive root |
+
+## asChild
+
+```tsx
+<Button asChild variant="primary">
+    <Link href="/somewhere">Go</Link>
+</Button>
+```

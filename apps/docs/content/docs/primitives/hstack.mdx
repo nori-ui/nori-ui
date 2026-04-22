@@ -1,0 +1,38 @@
+---
+title: HStack
+description: Horizontal stack with gap, align, and justify.
+since: 0.1.0
+tags: [primitive, layout]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Button, HStack } from 'unbogify-ui';
+
+## At a glance
+
+- Flex row with configurable `gap`, `align`, `justify`.
+- Maps to `flex-row` on web, flex direction row on native.
+
+## Web preview
+
+<LivePreview>
+    <HStack gap="md" align="center">
+        <Button>Save</Button>
+        <Button variant="ghost">Cancel</Button>
+    </HStack>
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/hstack-smoke" height={300} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `gap` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Space between children |
+| `align` | `'start' \| 'center' \| 'end' \| 'stretch'` | `'stretch'` | Cross-axis alignment |
+| `justify` | `'start' \| 'center' \| 'end' \| 'between' \| 'around'` | `'start'` | Main-axis justification |
+| `className` | `string` | — | NativeWind class overrides |

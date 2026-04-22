@@ -1,0 +1,23 @@
+{
+  "title": "unbogify-ui",
+  "pages": [
+    "index",
+    "getting-started",
+    "---Primitives---",
+    "primitives/text",
+    "primitives/box",
+    "primitives/hstack",
+    "primitives/vstack",
+    "---Feedback---",
+    "feedback/spinner",
+    "---Controls---",
+    "controls/button",
+    "controls/checkbox",
+    "controls/switch",
+    "---Inputs---",
+    "inputs/text-input",
+    "inputs/text-area",
+    "---Misc---",
+    "misc/icon"
+  ]
+}

@@ -1,0 +1,35 @@
+---
+title: Box
+description: Generic container primitive; the library's <View>.
+since: 0.1.0
+tags: [primitive, layout]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Box, Text } from 'unbogify-ui';
+
+## At a glance
+
+- Thin wrapper over RN `<View>` / web `<div>` with className pass-through.
+- Use for ad-hoc containers; reach for `HStack` / `VStack` for aligned rows/columns.
+
+## Web preview
+
+<LivePreview>
+    <Box className="rounded-md bg-neutral-100 p-4">
+        <Text>Inside a Box</Text>
+    </Box>
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/box-smoke" height={300} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `className` | `string` | — | NativeWind class overrides |
+| `children` | `ReactNode` | — | Contents |

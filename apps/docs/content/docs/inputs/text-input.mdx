@@ -1,0 +1,42 @@
+---
+title: TextInput
+description: Single-line text input with label, helper text, and validation states.
+since: 0.1.0
+tags: [input, form]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { TextInput } from 'unbogify-ui';
+
+## At a glance
+
+- Wraps RN `<TextInput>` / web `<input>` with a unified label + helper text layout.
+- Supports `variant: 'default' | 'error' | 'success'` for validation feedback.
+
+## Web preview
+
+<LivePreview>
+    <TextInput label="Email" placeholder="you@example.com" />
+</LivePreview>
+
+<LivePreview>
+    <TextInput label="Password" variant="error" helperText="Required" />
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/text-input-smoke" height={350} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `string` | — | Visible label tied via aria |
+| `helperText` | `string` | — | Helper / error text below the input |
+| `variant` | `'default' \| 'error' \| 'success'` | `'default'` | Validation state |
+| `value` | `string` | — | Controlled value |
+| `defaultValue` | `string` | — | Uncontrolled initial value |
+| `onChangeText` | `(text: string) => void` | — | Change handler (text-only) |
+| `disabled` | `boolean` | `false` | Disables interaction |

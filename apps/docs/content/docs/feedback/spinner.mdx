@@ -1,0 +1,34 @@
+---
+title: Spinner
+description: Indeterminate loading indicator.
+since: 0.1.0
+tags: [feedback, loading]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Spinner } from 'unbogify-ui';
+
+## At a glance
+
+- Wraps RN `<ActivityIndicator>` on native; CSS animation on web.
+- Three sizes and optional `label` for a11y.
+
+## Web preview
+
+<LivePreview>
+    <Spinner size="md" label="Loading" />
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/spinner-smoke" height={250} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Visual size |
+| `label` | `string` | — | Accessible label (falls back to default for a11y) |
+| `color` | `string` | — | Spinner color; defaults to current text color |

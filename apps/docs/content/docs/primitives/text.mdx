@@ -1,0 +1,39 @@
+---
+title: Text
+description: Typographic primitive with token-driven variants.
+since: 0.1.0
+tags: [primitive, typography]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Text } from 'unbogify-ui';
+
+## At a glance
+
+- **Variants:** `body`, `caption`, `heading1`, `heading2`, `heading3`, `label`
+- Maps to RN `<Text>` on native and `<span>` / heading elements on web.
+- Accepts `className` for NativeWind-driven overrides.
+
+## Web preview
+
+<LivePreview>
+    <Text variant="heading1">Heading</Text>
+</LivePreview>
+
+<LivePreview>
+    <Text variant="body">The quick brown fox jumps over the lazy dog.</Text>
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/text-smoke" height={300} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `'body' \| 'caption' \| 'heading1' \| 'heading2' \| 'heading3' \| 'label'` | `'body'` | Visual size + role |
+| `className` | `string` | — | NativeWind class overrides |
+| `children` | `ReactNode` | — | Text content |

@@ -1,0 +1,37 @@
+---
+title: Switch
+description: Binary on/off toggle with controlled and uncontrolled modes.
+since: 0.1.0
+tags: [control, form]
+platform: both
+---
+
+import { LivePreview } from '@/components/live-preview';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Switch } from 'unbogify-ui';
+
+## At a glance
+
+- Renders with `role="switch"` on web; maps to RN `<Switch>` on native.
+- Controlled via `checked` or uncontrolled via `defaultChecked`.
+
+## Web preview
+
+<LivePreview>
+    <Switch label="Enable notifications" defaultChecked />
+</LivePreview>
+
+## Native preview
+
+<ExpoSnack id="@unbogify/switch-smoke" height={300} />
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `checked` | `boolean` | — | Controlled value |
+| `defaultChecked` | `boolean` | `false` | Uncontrolled initial value |
+| `onCheckedChange` | `(checked: boolean) => void` | — | Change handler |
+| `disabled` | `boolean` | `false` | Disables interaction |
+| `label` | `string` | — | Visible label tied via aria |
+| `asChild` | `boolean` | `false` | Renders the supplied child as root |
