@@ -21,6 +21,7 @@ const CLIENT_ALLOWED = [
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
     'components/Checkbox/Checkbox.tsx',
+    'components/Switch/Switch.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {
