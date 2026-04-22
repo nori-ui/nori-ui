@@ -22,7 +22,8 @@
     "./i18n": "./src/i18n/index.ts",
     "./icons": "./src/icons/index.ts",
     "./slot": "./src/slot/index.ts",
-    "./utils/cn": "./src/utils/cn.ts"
+    "./utils/cn": "./src/utils/cn.ts",
+    "./stories": "./src/stories/story-registry.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^12.1.0",
+    "@storybook/react": "^8.4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6",
     "@testing-library/react": "^16",
