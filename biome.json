@@ -74,7 +74,7 @@
       "formatter": { "indentWidth": 2 }
     },
     {
-      "includes": ["docs/superpowers/**/*.md", "README.md"],
+      "includes": ["docs/superpowers/**/*.md", "README.md", "RUNBOOK.md"],
       "formatter": { "enabled": false }
     },
     {
