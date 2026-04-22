@@ -1163,3 +1163,22 @@ git add -A && git commit -m "chore: finalize playground apps scaffold" || true
 - [ ] `storybook-static/`, `playwright-report/`, `test-results/` are gitignored.
 
 When all boxes are ticked, Plan 04 is complete and Plan 05 (v0.1 components) can begin.
+
+---
+
+## Errata (post-execution notes)
+
+1. **`test(e2e): …` commit scope is rejected by commitlint.** The repo's `scope-case = kebab-case` rule blocks scopes containing digits. Use `test(playground-web)` and `test(native)` (or equivalent) instead. Later plans (05a–05d, 06, 07) that use `test(e2e):` scopes must do the same swap.
+2. **Expo-managed version bumps via `npx expo install --check`** (applies to Plan 04 Task 5 Step 6 and any future Expo bumps):
+   - `expo-status-bar`: `~55.0.0` (plan's `~2.3.0` was pre-SDK-55 versioning)
+   - `react-native`: `0.83.6` (plan said `0.83.0`)
+   - `react-native-reanimated`: `~4.2.0` (plan said `~4.1.0`)
+   - `react-native-safe-area-context`: `~5.6.2` (plan said `5.6.0`)
+   - `react-native-screens`: `~4.23.0` (plan said `4.20.0`)
+   - Add `react-native-worklets@^0.8.1` — new Reanimated peer dep.
+3. **Duplicate `presets` field in Task 6's `tailwind.config.ts`** — combine into one array: `presets: [unbogifyPreset, require('nativewind/preset')]`.
+4. **`App.tsx` needs a `<main>` landmark** for axe-core to pass. Use `<main>` (not `<div>`) as the outer element when the smoke page renders page-level content.
+5. **`nativewind-env.d.ts` is auto-generated** by NativeWind on first `expo export`. Commit the file as-is (NativeWind also patches `tsconfig.json` to include it).
+6. **Storybook 8.6.x (not 10.x)** — React 19 support in the 8.4+ line. Upgrading to 10.x is a future plan.
+7. **React 19.2.5 vs Expo-recommended 19.2.0** is a 0.5-patch delta — leave unless native surface regressions appear; then pin via `resolutions` in the root `package.json`.
+8. **Final chore commit message should describe the actual diff** — don't commit a no-op "finalize" message when there's a substantive change. Match the message to the change.
