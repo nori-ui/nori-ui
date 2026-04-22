@@ -33,4 +33,16 @@ module.exports = [
         limit: '1.5 KB',
         ignore: ['react', 'react-native'],
     },
+    {
+        name: 'Spinner',
+        path: 'src/components/Spinner/index.ts',
+        limit: '1.5 KB',
+        ignore: ['react', 'react-native'],
+    },
+    {
+        name: 'Button',
+        path: 'src/components/Button/index.ts',
+        limit: '4 KB',
+        ignore: ['react', 'react-native'],
+    },
 ];
