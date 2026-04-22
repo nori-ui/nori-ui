@@ -81,7 +81,20 @@ jest.mock('react-native', () => {
     const ScrollView = (props: Props) => buildDomProps(props, 'div');
     const SafeAreaView = (props: Props) => buildDomProps(props, 'div');
     const StatusBar = () => null;
-    const Pressable = (props: Props) => buildDomProps(props, 'div');
+    const Pressable = (props: Props) => {
+        const { onPress, disabled, ...rest } = props as Props & { onPress?: (ev: unknown) => void; disabled?: boolean };
+        const nextProps: Props = { ...rest };
+        if (onPress !== undefined) {
+            (nextProps as { onClick?: (ev: unknown) => void }).onClick = (ev) => {
+                if (disabled) return;
+                onPress(ev);
+            };
+        }
+        if (disabled !== undefined) {
+            (nextProps as { disabled?: boolean }).disabled = disabled;
+        }
+        return buildDomProps(nextProps, 'div');
+    };
     const ActivityIndicator = (props: Props) => {
         const { size, color, ...rest } = props as Props & { size?: number | string; color?: string };
         const px = typeof size === 'number' ? size : size === 'large' ? 36 : size === 'small' ? 16 : undefined;
