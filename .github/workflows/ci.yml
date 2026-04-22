@@ -55,3 +55,41 @@ jobs:
 
       - name: Size limit
         run: yarn size
+
+  e2e-web:
+    name: playwright (chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build design tokens
+        run: yarn build:tokens
+
+      - name: Install Playwright browsers
+        run: yarn e2e:browsers
+
+      - name: Run Playwright tests
+        run: yarn test:e2e:web
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/web/playwright-report/
+          retention-days: 7
