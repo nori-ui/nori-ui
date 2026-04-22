@@ -1,0 +1,24 @@
+{
+  "semantic": {
+    "background": {
+      "default": { "value": "{color.neutral.50}", "type": "color" },
+      "subtle": { "value": "{color.neutral.100}", "type": "color" },
+      "elevated": { "value": "#ffffff", "type": "color" }
+    },
+    "text": {
+      "default": { "value": "{color.neutral.900}", "type": "color" },
+      "muted": { "value": "{color.neutral.600}", "type": "color" },
+      "inverted": { "value": "{color.neutral.50}", "type": "color" }
+    },
+    "border": {
+      "default": { "value": "{color.neutral.200}", "type": "color" },
+      "strong": { "value": "{color.neutral.300}", "type": "color" }
+    },
+    "interactive": {
+      "primary": { "value": "{color.primary.600}", "type": "color" },
+      "primaryHover": { "value": "{color.primary.700}", "type": "color" },
+      "primaryPressed": { "value": "{color.primary.800}", "type": "color" },
+      "destructive": { "value": "{color.danger}", "type": "color" }
+    }
+  }
+}
