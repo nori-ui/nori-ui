@@ -1,0 +1,15 @@
+appId: dev.unbogify.playground
+---
+- launchApp
+- scrollUntilVisible:
+    element:
+      id: 'section-text-input.default'
+- tapOn:
+    id: 'story-text-input-default'
+- inputText: 'hello@example.com'
+- scrollUntilVisible:
+    element:
+      id: 'section-text-area.default'
+- tapOn:
+    id: 'story-text-area-default'
+- inputText: 'a multiline\nvalue'
