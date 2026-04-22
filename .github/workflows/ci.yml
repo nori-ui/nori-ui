@@ -133,7 +133,7 @@ jobs:
             fi
             sleep 1
           done
-          MCP_BASE_URL=http://localhost:3000 yarn tsx apps/docs/eval/run-eval.ts
+          MCP_BASE_URL=http://localhost:3000 yarn node --import tsx apps/docs/eval/run-eval.ts
           EVAL_EXIT=$?
           kill $DOCS_PID || true
           exit $EVAL_EXIT

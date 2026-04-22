@@ -25,7 +25,7 @@ test('mcp eval >= 95% pass rate', async () => {
     const up = await docsIsUp();
     test.skip(!up, `docs server not running at ${DOCS_URL} — run \`yarn dev:docs\` first`);
 
-    const output = execFileSync('yarn', ['tsx', 'apps/docs/eval/run-eval.ts'], {
+    const output = execFileSync('yarn', ['node', '--import', 'tsx', 'apps/docs/eval/run-eval.ts'], {
         encoding: 'utf8',
         cwd: repoRoot,
         env: { ...process.env, MCP_BASE_URL: DOCS_URL },

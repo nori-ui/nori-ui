@@ -21,9 +21,9 @@
     },
     {
       "q": "what is Button's loading state?",
-      "tool": "search_components",
-      "input": { "query": "button loading" },
-      "expect": { "includesName": "Button" }
+      "tool": "get_component_docs",
+      "input": { "name": "Button" },
+      "expect": { "namePresent": "Button" }
     },
     {
       "q": "show me a list of examples for TextInput",
