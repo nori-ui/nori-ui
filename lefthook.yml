@@ -1,0 +1,18 @@
+# Lefthook runs git hooks. Kept small — CI is the real gate.
+# pre-commit: fast checks on staged files only.
+# commit-msg: enforce Conventional Commits.
+
+pre-commit:
+  parallel: true
+  commands:
+    biome-format:
+      glob: '*.{ts,tsx,js,jsx,json,jsonc,md,yml,yaml}'
+      run: yarn biome check --staged --no-errors-on-unmatched {staged_files}
+    typecheck:
+      glob: '*.{ts,tsx}'
+      run: yarn workspace unbogify-ui typecheck
+
+commit-msg:
+  commands:
+    commitlint:
+      run: yarn commitlint --edit {1}
