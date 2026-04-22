@@ -9,6 +9,7 @@ import type { ComponentType } from 'react';
 import { View } from 'react-native';
 import { Box } from '../components/Box';
 import { HStack } from '../components/HStack';
+import { Spinner } from '../components/Spinner';
 import { Text } from '../components/Text';
 import { VStack } from '../components/VStack';
 
@@ -72,5 +73,15 @@ export const stories: StoryEntry[] = [
                 </View>
             </VStack>
         ),
+    },
+    {
+        id: 'spinner.md',
+        title: 'Spinner · md',
+        render: () => <Spinner testID="story-spinner-md" size="md" />,
+    },
+    {
+        id: 'spinner.lg',
+        title: 'Spinner · lg',
+        render: () => <Spinner testID="story-spinner-lg" size="lg" />,
     },
 ];
