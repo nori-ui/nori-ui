@@ -71,9 +71,11 @@ function stableStringify(value, indent = 4) {
         value,
         (_key, v) => {
             if (v && typeof v === 'object' && !Array.isArray(v)) {
-                return Object.keys(v)
-                    .sort()
-                    .reduce((acc, k) => ({ ...acc, [k]: v[k] }), {});
+                const sorted = {};
+                for (const k of Object.keys(v).sort()) {
+                    sorted[k] = v[k];
+                }
+                return sorted;
             }
             return v;
         },

@@ -84,6 +84,14 @@
           "suspicious": { "noExplicitAny": "off", "noConsole": "off" }
         }
       }
+    },
+    {
+      "includes": ["packages/tokens/src/config.mjs", "packages/tokens/src/formats/**"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noConsole": "off" }
+        }
+      }
     }
   ]
 }
