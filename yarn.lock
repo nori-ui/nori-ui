@@ -2221,7 +2221,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unbogify/tokens@workspace:tokens":
+"@unbogify/tokens@workspace:*, @unbogify/tokens@workspace:tokens":
   version: 0.0.0-use.local
   resolution: "@unbogify/tokens@workspace:tokens"
   dependencies:
@@ -6893,6 +6893,7 @@ __metadata:
   dependencies:
     "@size-limit/preset-small-lib": "npm:^12.1.0"
     "@types/jest": "npm:^30.0.0"
+    "@unbogify/tokens": "workspace:*"
     jest: "npm:^29"
     size-limit: "npm:^12.1.0"
     ts-jest: "npm:^29"

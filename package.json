@@ -19,7 +19,8 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "test": "yarn workspaces foreach -A -pt run test",
-    "size": "yarn workspace unbogify-ui exec size-limit"
+    "size": "yarn workspace unbogify-ui exec size-limit",
+    "build:tokens": "yarn workspace @unbogify/tokens build"
   },
   "devDependencies": {
     "@biomejs/biome": "~2.4.12",

@@ -7,9 +7,11 @@
 // size-limit only checks the package entry, which is empty.
 module.exports = [
     {
-        name: 'package entry (placeholder — populated in Plan 05)',
+        name: 'package entry (theme only — components arrive in Plan 05)',
         path: 'src/index.ts',
-        limit: '500 B',
+        // 40 KB first-import budget per spec §1; theme alone is ~600 B.
+        // Bumps to 40 KB once components land in Plan 05.
+        limit: '2 KB',
         ignore: ['react', 'react-native'],
     },
 ];
