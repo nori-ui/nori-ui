@@ -5,6 +5,8 @@
 // Consumers who use any hook or provider MUST import from `unbogify-ui/client`
 // and add `'use client'` to the importing file.
 
+// components (RSC-safe pure primitives)
+export * from './components';
 // i18n (RSC-safe subset: types + defaults + resolver)
 export {
     type Dictionary,

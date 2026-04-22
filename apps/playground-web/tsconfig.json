@@ -4,12 +4,8 @@
     "jsx": "react-jsx",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": false,
-    "types": ["vite/client"],
-    "noEmit": true,
-    "paths": {
-      "react-native": ["../../node_modules/react-native-web"],
-      "react-native/*": ["../../node_modules/react-native-web/*"]
-    }
+    "types": ["vite/client", "nativewind/types"],
+    "noEmit": true
   },
   "include": ["src/**/*", "vite.config.ts", ".storybook/**/*"]
 }
