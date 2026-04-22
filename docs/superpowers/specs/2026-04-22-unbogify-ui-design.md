@@ -254,7 +254,7 @@ ui-kit/
 | Concern | Choice |
 |---|---|
 | Runtime target (current tier) | Expo SDK 55 (RN 0.83, React 19, New Architecture) |
-| Runtime engines | Node 20+, iOS 15.1+, Android API 24+ (Android 7.0), browsers = last 2 modern versions |
+| Runtime engines | Node 20+, iOS 15.1+, Android API 24+(Android 7.0), browsers = last 2 modern versions |
 | Support window | Rolling 3 tiers: current, maintained, legacy. See §5 Version Support Policy. |
 | Language | TypeScript 5.6+, `strict: true`, no `any` in library source, no un-justified `as` / `@ts-ignore` |
 | Composition pattern | `asChild` on every interactive component + exported `<Slot>` primitive (Radix/shadcn pattern) |
@@ -266,8 +266,8 @@ ui-kit/
 | Package manager | Yarn 4 (Berry), `nodeLinker: node-modules` |
 | Linting — primary | Biome |
 | Linting — gap filler | ESLint with `eslint-plugin-react-native` only; removed when Biome covers RN |
-| Testing — unit/behavior | Jest + `@testing-library/react-native` |
-| Testing — web e2e | Playwright + `@axe-core/playwright` + visual regression screenshots |
+| Testing — unit/behavior | Jest +`@testing-library/react-native` |
+| Testing — web e2e | Playwright +`@axe-core/playwright` + visual regression screenshots |
 | Testing — native e2e | Maestro (iOS simulator + Android emulator), local CI first; Maestro Cloud if needed |
 | Docs | Fumadocs on Next.js App Router, deployed to Vercel |
 | MCP | `@modelcontextprotocol/sdk` as Next.js route handler |
@@ -429,15 +429,15 @@ The library supports a **rolling window of 3 Expo SDK tiers**. Anchor: SDK 55 is
 ## 6. Definition of Done for v0.1
 
 The library ships when:
-- [ ] All 11 components implemented + documented + tested (unit, e2e web, e2e native).
-- [ ] Every interactive component supports `asChild` with a11y-correct prop/ref forwarding.
-- [ ] Library split into RSC-safe default entry + `unbogify-ui/client` subpath; CI check enforces no hooks in default entry.
-- [ ] Every component with motion respects `prefers-reduced-motion` on web and native.
-- [ ] Every component passes WCAG 2.2 Level AA audits (axe on web, RNTL a11y assertions on native).
-- [ ] `size-limit` budgets set and passing for every exported component (per §1 success criteria).
-- [ ] Docs site live, Lighthouse ≥ 95 on all four axes; `llms.txt` and `llms-full.txt` served; `/mcp` endpoint live with 50-question eval ≥ 95%.
-- [ ] Release workflow green: a tagged release appears on GitHub, published to npm via OIDC with provenance, changelog auto-generated from Conventional Commits.
-- [ ] Test matrix runs against Current, Maintained, and Legacy Expo SDK tiers (§5 Version Support Policy).
-- [ ] TypeScript strictness audit passes: zero `any`, zero un-justified `as` / `@ts-ignore` in library source.
-- [ ] `README.md` covers install, provider setup, Tailwind preset, theming, i18n, icons, `asChild`, RSC usage, and the compatibility table — in under 250 lines.
-- [ ] `RUNBOOK.md` covers: releasing, rotating credentials, responding to a broken publish, rolling back a release, dropping a tier when a new SDK ships.
+- [] All 11 components implemented + documented + tested (unit, e2e web, e2e native).
+- [] Every interactive component supports `asChild` with a11y-correct prop/ref forwarding.
+- [] Library split into RSC-safe default entry + `unbogify-ui/client` subpath; CI check enforces no hooks in default entry.
+- [] Every component with motion respects `prefers-reduced-motion` on web and native.
+- [] Every component passes WCAG 2.2 Level AA audits (axe on web, RNTL a11y assertions on native).
+- [] `size-limit` budgets set and passing for every exported component (per §1 success criteria).
+- [] Docs site live, Lighthouse ≥ 95 on all four axes; `llms.txt` and `llms-full.txt` served; `/mcp` endpoint live with 50-question eval ≥ 95%.
+- [] Release workflow green: a tagged release appears on GitHub, published to npm via OIDC with provenance, changelog auto-generated from Conventional Commits.
+- [] Test matrix runs against Current, Maintained, and Legacy Expo SDK tiers (§5 Version Support Policy).
+- [] TypeScript strictness audit passes: zero `any`, zero un-justified `as` / `@ts-ignore` in library source.
+- [] `README.md` covers install, provider setup, Tailwind preset, theming, i18n, icons, `asChild`, RSC usage, and the compatibility table — in under 250 lines.
+- [] `RUNBOOK.md` covers: releasing, rotating credentials, responding to a broken publish, rolling back a release, dropping a tier when a new SDK ships.

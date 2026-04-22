@@ -20,6 +20,7 @@
     "test": "yarn workspaces foreach -A -pt run test"
   },
   "devDependencies": {
+    "@biomejs/biome": "~2.4.12",
     "typescript": "^5.6.0"
   }
 }
