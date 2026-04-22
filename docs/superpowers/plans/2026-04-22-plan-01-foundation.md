@@ -68,13 +68,13 @@ The repo already exists at `/Users/manuelbieh/htdocs/_git/ui-kit`, `git init` is
 - Create: `.gitattributes`
 - Create: `.gitignore`
 
-- [] **Step 1: Create `.nvmrc`** — pins Node major for contributors with nvm/fnm.
+- [ ] **Step 1: Create `.nvmrc`** — pins Node major for contributors with nvm/fnm.
 
 ```
 20
 ```
 
-- [] **Step 2: Create `.editorconfig`** — matches barhoppers-guide's 4-space / 2-space-for-data convention.
+- [ ] **Step 2: Create `.editorconfig`** — matches barhoppers-guide's 4-space / 2-space-for-data convention.
 
 ```ini
 root = true
@@ -91,7 +91,7 @@ insert_final_newline = true
 indent_size = 2
 ```
 
-- [] **Step 3: Create `.gitattributes`** — ensures consistent line endings across platforms.
+- [ ] **Step 3: Create `.gitattributes`** — ensures consistent line endings across platforms.
 
 ```
 * text=auto eol=lf
@@ -104,7 +104,7 @@ indent_size = 2
 *.woff2 binary
 ```
 
-- [] **Step 4: Create `.gitignore`** — standard Node + Yarn Berry (with node-modules linker) + OS + editor + build outputs.
+- [ ] **Step 4: Create `.gitignore`** — standard Node + Yarn Berry (with node-modules linker) + OS + editor + build outputs.
 
 ```
 # dependencies
@@ -155,7 +155,7 @@ Thumbs.db
 !.vscode/launch.json
 ```
 
-- [] **Step 5: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add .nvmrc .editorconfig .gitattributes .gitignore
@@ -170,7 +170,7 @@ git commit -m "chore: add baseline editor, gitignore, and node pinning"
 - Create: `.yarnrc.yml`
 - Create: `package.json` (workspace root)
 
-- [] **Step 1: Enable corepack and set Yarn 4** (one-time per machine).
+- [ ] **Step 1: Enable corepack and set Yarn 4** (one-time per machine).
 
 Run:
 ```bash
@@ -181,7 +181,7 @@ yarn set version stable
 
 Expected: `.yarn/releases/yarn-4.*.cjs` created, `packageManager` field may be added to package.json automatically. If package.json doesn't exist yet, yarn will error — that's fine, run after step 2.
 
-- [] **Step 2: Create workspace-root `package.json`.**
+- [ ] **Step 2: Create workspace-root `package.json`.**
 
 ```json
 {
@@ -210,7 +210,7 @@ Expected: `.yarn/releases/yarn-4.*.cjs` created, `packageManager` field may be a
 
 Note: the `packageManager` value pins a specific Yarn 4.x. Step 1 may have written a slightly different minor — if so, match what `yarn --version` reports.
 
-- [] **Step 3: Create `.yarnrc.yml`** — lock the linker to node-modules (safest for Expo/Metro/RN tooling).
+- [ ] **Step 3: Create `.yarnrc.yml`** — lock the linker to node-modules (safest for Expo/Metro/RN tooling).
 
 ```yaml
 nodeLinker: node-modules
@@ -220,7 +220,7 @@ yarnPath: .yarn/releases/yarn-4.5.0.cjs
 
 The `yarnPath` should match the exact file in `.yarn/releases/`. If `yarn set version stable` produced a different file, use that.
 
-- [] **Step 4: Install** (creates empty `yarn.lock` / `node_modules`).
+- [ ] **Step 4: Install** (creates empty `yarn.lock` / `node_modules`).
 
 Run:
 ```bash
@@ -229,7 +229,7 @@ yarn install
 
 Expected: exits 0. Creates `yarn.lock`.
 
-- [] **Step 5: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add .yarnrc.yml package.json yarn.lock .yarn/releases/
@@ -247,7 +247,7 @@ git commit -m "chore: initialize yarn berry workspaces with node-modules linker"
 - Create: `tokens/.gitkeep`
 - Create: `tooling/package.json` (workspace package so configs can be shared via `@unbogify/tooling` workspace import)
 
-- [] **Step 1: Create `packages/ui/package.json` stub.**
+- [ ] **Step 1: Create `packages/ui/package.json` stub.**
 
 ```json
 {
@@ -282,21 +282,21 @@ Notes:
 - `"main"`/`"types"`/`"exports"` point at `.ts` sources for now; Plan 07 introduces the compiled dual-build (ESM + CJS + `.d.ts`).
 - `private: true` until Plan 07 flips it for the first publish.
 
-- [] **Step 2: Create an empty barrel** so tsc and Jest don't choke.
+- [ ] **Step 2: Create an empty barrel** so tsc and Jest don't choke.
 
 Create `packages/ui/src/index.ts`:
 ```ts
 export {};
 ```
 
-- [] **Step 3: Create placeholder directories** for future plans.
+- [ ] **Step 3: Create placeholder directories** for future plans.
 
 ```bash
 mkdir -p apps tokens
 touch apps/.gitkeep tokens/.gitkeep
 ```
 
-- [] **Step 4: Create `tooling/package.json`** as a workspace package so later plans can share configs via workspace imports.
+- [ ] **Step 4: Create `tooling/package.json`** as a workspace package so later plans can share configs via workspace imports.
 
 ```json
 {
@@ -312,7 +312,7 @@ Create `tooling/index.cjs`:
 module.exports = {};
 ```
 
-- [] **Step 5: Re-install** so Yarn picks up the new workspaces.
+- [ ] **Step 5: Re-install** so Yarn picks up the new workspaces.
 
 Run:
 ```bash
@@ -321,7 +321,7 @@ yarn install
 
 Expected: exits 0. `node_modules/unbogify-ui` symlink appears. `yarn workspaces list` lists all three workspaces.
 
-- [] **Step 6: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add packages/ apps/ tokens/ tooling/
@@ -339,7 +339,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 - Create: `tsconfig.json` (workspace root, references only)
 - Create: `packages/ui/tsconfig.json`
 
-- [] **Step 1: Create `tooling/tsconfig.base.json`.** Maximum strictness; enforces the "no any" bar from the PRD.
+- [ ] **Step 1: Create `tooling/tsconfig.base.json`.** Maximum strictness; enforces the "no any" bar from the PRD.
 
 ```json
 {
@@ -376,7 +376,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 }
 ```
 
-- [] **Step 2: Create `tooling/tsconfig.library.json`** for shipped library source (emits declarations in a later plan).
+- [ ] **Step 2: Create `tooling/tsconfig.library.json`** for shipped library source (emits declarations in a later plan).
 
 ```json
 {
@@ -390,7 +390,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 }
 ```
 
-- [] **Step 3: Create `tooling/tsconfig.test.json`** for test files (allows Jest globals, looser on unused locals).
+- [ ] **Step 3: Create `tooling/tsconfig.test.json`** for test files (allows Jest globals, looser on unused locals).
 
 ```json
 {
@@ -403,7 +403,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 }
 ```
 
-- [] **Step 4: Create root `tsconfig.json`** — references-only root.
+- [ ] **Step 4: Create root `tsconfig.json`** — references-only root.
 
 ```json
 {
@@ -414,7 +414,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 }
 ```
 
-- [] **Step 5: Create `packages/ui/tsconfig.json`.**
+- [ ] **Step 5: Create `packages/ui/tsconfig.json`.**
 
 ```json
 {
@@ -429,7 +429,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 }
 ```
 
-- [] **Step 6: Install TypeScript.**
+- [ ] **Step 6: Install TypeScript.**
 
 Run:
 ```bash
@@ -438,7 +438,7 @@ yarn add -D -W typescript@^5.6.0
 
 The `-W` flag scopes to the workspace root.
 
-- [] **Step 7: Verify typecheck works.**
+- [ ] **Step 7: Verify typecheck works.**
 
 Run:
 ```bash
@@ -447,7 +447,7 @@ yarn workspace unbogify-ui typecheck
 
 Expected: exits 0. `packages/ui/src/index.ts` is an empty export, so no errors.
 
-- [] **Step 8: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add tooling/ tsconfig.json packages/ui/tsconfig.json package.json yarn.lock
@@ -461,14 +461,14 @@ git commit -m "chore: add shared tsconfig (strict, no any, composite)"
 **Files:**
 - Create: `biome.json`
 
-- [] **Step 1: Install Biome.**
+- [ ] **Step 1: Install Biome.**
 
 Run:
 ```bash
 yarn add -D -W @biomejs/biome
 ```
 
-- [] **Step 2: Create `biome.json`** translating barhoppers-guide's `.prettierrc.json` + sensible lint defaults.
+- [ ] **Step 2: Create `biome.json`** translating barhoppers-guide's `.prettierrc.json` + sensible lint defaults.
 
 ```json
 {
@@ -558,7 +558,7 @@ Notes:
 - `a11y.recommended` enables all Biome a11y rules by default.
 - `useExhaustiveDependencies` + `useHookAtTopLevel` cover the core React-hooks lints (Biome's built-ins).
 
-- [] **Step 3: Format the repo once so Biome owns the baseline.**
+- [ ] **Step 3: Format the repo once so Biome owns the baseline.**
 
 Run:
 ```bash
@@ -567,7 +567,7 @@ yarn biome format --write .
 
 Expected: reformats JSON / MD files only (source files are empty).
 
-- [] **Step 4: Verify lint is green.**
+- [ ] **Step 4: Verify lint is green.**
 
 Run:
 ```bash
@@ -576,7 +576,7 @@ yarn biome check .
 
 Expected: exits 0.
 
-- [] **Step 5: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add biome.json package.json yarn.lock
@@ -590,14 +590,14 @@ git commit -m "chore: add biome config (formatter + linter, translated from pret
 **Files:**
 - Create: `eslint.config.mjs`
 
-- [] **Step 1: Install ESLint + the RN plugin.**
+- [ ] **Step 1: Install ESLint + the RN plugin.**
 
 Run:
 ```bash
 yarn add -D -W eslint@^9 eslint-plugin-react-native@^4 globals@^15
 ```
 
-- [] **Step 2: Create `eslint.config.mjs`** — flat config, RN plugin only, no formatting rules (Biome owns those), no React rules (Biome owns those).
+- [ ] **Step 2: Create `eslint.config.mjs`** — flat config, RN plugin only, no formatting rules (Biome owns those), no React rules (Biome owns those).
 
 ```js
 // eslint.config.mjs — this config runs ALONGSIDE Biome.
@@ -645,7 +645,7 @@ export default [
 ];
 ```
 
-- [] **Step 3: Run ESLint to confirm it boots.**
+- [ ] **Step 3: Run ESLint to confirm it boots.**
 
 Run:
 ```bash
@@ -654,7 +654,7 @@ yarn eslint .
 
 Expected: exits 0 (no source files yet, so nothing to lint).
 
-- [] **Step 4: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add eslint.config.mjs package.json yarn.lock
@@ -669,14 +669,14 @@ git commit -m "chore: add eslint flat config with react-native rules only"
 - Create: `commitlint.config.cjs`
 - Create: `lefthook.yml`
 
-- [] **Step 1: Install commitlint + lefthook.**
+- [ ] **Step 1: Install commitlint + lefthook.**
 
 Run:
 ```bash
 yarn add -D -W @commitlint/cli @commitlint/config-conventional lefthook
 ```
 
-- [] **Step 2: Create `commitlint.config.cjs`.**
+- [ ] **Step 2: Create `commitlint.config.cjs`.**
 
 ```js
 module.exports = {
@@ -706,7 +706,7 @@ module.exports = {
 };
 ```
 
-- [] **Step 3: Create `lefthook.yml`.**
+- [ ] **Step 3: Create `lefthook.yml`.**
 
 ```yaml
 # Lefthook runs git hooks. Kept small — CI is the real gate.
@@ -729,7 +729,7 @@ commit-msg:
             run: yarn commitlint --edit {1}
 ```
 
-- [] **Step 4: Install the hooks.**
+- [ ] **Step 4: Install the hooks.**
 
 Run:
 ```bash
@@ -738,7 +738,7 @@ yarn lefthook install
 
 Expected: `Lefthook installed` message; `.git/hooks/pre-commit` and `.git/hooks/commit-msg` are now lefthook shims.
 
-- [] **Step 5: Smoke-test the commit-msg hook.**
+- [ ] **Step 5: Smoke-test the commit-msg hook.**
 
 Run a deliberately bad commit message:
 ```bash
@@ -754,7 +754,7 @@ git commit --allow-empty -m "chore: verify commitlint hook"
 
 Expected: passes. That's an empty verification commit — keep it.
 
-- [] **Step 6: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add commitlint.config.cjs lefthook.yml package.json yarn.lock
@@ -770,14 +770,14 @@ git commit -m "chore: enforce conventional commits via commitlint and lefthook"
 - Create: `packages/ui/jest.config.cjs`
 - Create: `packages/ui/src/__tests__/smoke.test.ts`
 
-- [] **Step 1: Install Jest + TS transformer.**
+- [ ] **Step 1: Install Jest + TS transformer.**
 
 Run:
 ```bash
 yarn add -D -W jest@^29 @types/jest ts-jest@^29
 ```
 
-- [] **Step 2: Create `jest.config.base.cjs` at repo root.**
+- [ ] **Step 2: Create `jest.config.base.cjs` at repo root.**
 
 ```js
 /** @type {import('jest').Config} */
@@ -796,7 +796,7 @@ module.exports = {
 
 Note: later plans override `testEnvironment` (`jsdom` for web tests, a RN preset for native component tests). Keeping `node` as the base because plan 1 has no DOM code.
 
-- [] **Step 3: Create `packages/ui/jest.config.cjs`.**
+- [ ] **Step 3: Create `packages/ui/jest.config.cjs`.**
 
 ```js
 const base = require('../../jest.config.base.cjs');
@@ -809,7 +809,7 @@ module.exports = {
 };
 ```
 
-- [] **Step 4: Write a smoke test** so the toolchain is exercised end-to-end.
+- [ ] **Step 4: Write a smoke test** so the toolchain is exercised end-to-end.
 
 Create `packages/ui/src/__tests__/smoke.test.ts`:
 
@@ -830,7 +830,7 @@ describe('toolchain smoke', () => {
 });
 ```
 
-- [] **Step 5: Run the test.**
+- [ ] **Step 5: Run the test.**
 
 Run:
 ```bash
@@ -839,7 +839,7 @@ yarn workspace unbogify-ui test
 
 Expected: 2 passed, 0 failed.
 
-- [] **Step 6: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add jest.config.base.cjs packages/ui/jest.config.cjs packages/ui/src/__tests__/smoke.test.ts package.json yarn.lock
@@ -853,14 +853,14 @@ git commit -m "test: add jest toolchain with smoke test in packages/ui"
 **Files:**
 - Create: `packages/ui/.size-limit.cjs`
 
-- [] **Step 1: Install size-limit.**
+- [ ] **Step 1: Install size-limit.**
 
 Run:
 ```bash
 yarn add -D -W size-limit @size-limit/preset-small-lib
 ```
 
-- [] **Step 2: Create `packages/ui/.size-limit.cjs` with the budgets from the PRD.**
+- [ ] **Step 2: Create `packages/ui/.size-limit.cjs` with the budgets from the PRD.**
 
 ```js
 // Budgets from spec §1 Success Criteria:
@@ -880,7 +880,7 @@ module.exports = [
 ];
 ```
 
-- [] **Step 3: Add a root script for size checking.** Update root `package.json` by appending to `scripts`:
+- [ ] **Step 3: Add a root script for size checking.** Update root `package.json` by appending to `scripts`:
 
 Modify `package.json` to include:
 ```json
@@ -891,7 +891,7 @@ Modify `package.json` to include:
 }
 ```
 
-- [] **Step 4: Run size-limit.**
+- [ ] **Step 4: Run size-limit.**
 
 Run:
 ```bash
@@ -900,7 +900,7 @@ yarn size
 
 Expected: exits 0 (empty entry point is well under 500 B).
 
-- [] **Step 5: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add packages/ui/.size-limit.cjs package.json yarn.lock
@@ -914,7 +914,7 @@ git commit -m "chore: add size-limit skeleton with spec budgets"
 **Files:**
 - Create: `.github/workflows/ci.yml`
 
-- [] **Step 1: Create `.github/workflows/ci.yml`.**
+- [ ] **Step 1: Create `.github/workflows/ci.yml`.**
 
 ```yaml
 name: ci
@@ -970,7 +970,7 @@ Notes:
 - Each step runs independently, so a lint failure still reports typecheck/test results.
 - The full Expo SDK tier matrix (current/maintained/legacy) lands in Plan 07 — Plan 01's CI is single-version because there's nothing yet to test across tiers.
 
-- [] **Step 2: Commit**
+- [ ] **Step 2: Commit**
 
 ```bash
 git add .github/workflows/ci.yml
@@ -984,7 +984,7 @@ git commit -m "ci: add baseline workflow (lint, typecheck, test, size)"
 **Files:**
 - Create: `README.md`
 
-- [] **Step 1: Create `README.md`** — dual-audience (humans + LLMs) per the memory policy. Short, factual, scannable.
+- [ ] **Step 1: Create `README.md`** — dual-audience (humans + LLMs) per the memory policy. Short, factual, scannable.
 
 ````markdown
 # unbogify-ui
@@ -1047,7 +1047,7 @@ git commit -m "docs: add README skeleton"
 
 This task has no new files. It runs the full local equivalent of CI end-to-end to prove the scaffold works.
 
-- [] **Step 1: Clean install from a fresh state.**
+- [ ] **Step 1: Clean install from a fresh state.**
 
 Run:
 ```bash
@@ -1059,7 +1059,7 @@ yarn install --immutable
 
 Expected: exits 0. If `--immutable` fails, the previous steps did not commit `yarn.lock` — go back and fix.
 
-- [] **Step 2: Run the full CI pipeline locally.**
+- [ ] **Step 2: Run the full CI pipeline locally.**
 
 Run:
 ```bash
@@ -1072,7 +1072,7 @@ yarn size
 
 Each must exit 0.
 
-- [] **Step 3: Confirm commit hooks fire correctly.**
+- [ ] **Step 3: Confirm commit hooks fire correctly.**
 
 Run:
 ```bash
@@ -1088,7 +1088,7 @@ git commit --allow-empty -m "chore: final foundation verification"
 
 Expected: succeeds.
 
-- [] **Step 4: Final commit (if any residual changes from the verification steps).**
+- [ ] **Step 4: Final commit (if any residual changes from the verification steps).**
 
 ```bash
 git status
@@ -1101,16 +1101,16 @@ git commit -m "chore: finalize foundation scaffold"
 
 ## Done criteria for Plan 01
 
-- [] `yarn install --immutable` runs clean.
-- [] `yarn biome check .` is green.
-- [] `yarn eslint .` is green.
-- [] `yarn typecheck` is green.
-- [] `yarn test` is green (smoke test passes).
-- [] `yarn size` is green.
-- [] `git commit` with a non-conventional message is blocked by lefthook.
-- [] `git commit` with a conventional message succeeds.
-- [] The `.github/workflows/ci.yml` exists and is valid YAML.
-- [] `README.md` renders the quick reference table.
+- [ ] `yarn install --immutable` runs clean.
+- [ ] `yarn biome check .` is green.
+- [ ] `yarn eslint .` is green.
+- [ ] `yarn typecheck` is green.
+- [ ] `yarn test` is green (smoke test passes).
+- [ ] `yarn size` is green.
+- [ ] `git commit` with a non-conventional message is blocked by lefthook.
+- [ ] `git commit` with a conventional message succeeds.
+- [ ] The `.github/workflows/ci.yml` exists and is valid YAML.
+- [ ] `README.md` renders the quick reference table.
 
 When all boxes are ticked, Plan 01 is complete and Plan 02 can begin.
 

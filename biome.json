@@ -74,6 +74,10 @@
       "formatter": { "indentWidth": 2 }
     },
     {
+      "includes": ["docs/superpowers/**/*.md", "README.md"],
+      "formatter": { "enabled": false }
+    },
+    {
       "includes": ["**/*.test.ts", "**/*.test.tsx"],
       "linter": {
         "rules": {
