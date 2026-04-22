@@ -137,3 +137,51 @@ jobs:
           EVAL_EXIT=$?
           kill $DOCS_PID || true
           exit $EVAL_EXIT
+
+  tier-matrix:
+    name: tests @ expo sdk ${{ matrix.tier }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tier: "current (55)"
+            expo: "~55.0.0"
+            rn: "0.83.0"
+            react: "^19"
+          # When SDK 56 ships, add:
+          # - tier: "maintained (55)"
+          #   expo: "~55.0.0"
+          #   rn: "0.83.0"
+          #   react: "^19"
+          # - tier: "current (56)"
+          #   expo: "~56.0.0"
+          #   rn: "0.84.0"   # or whatever 56 pairs with
+          #   react: "^19"
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --immutable
+      - run: yarn build:tokens
+      - name: Override playground-native Expo/RN versions for tier
+        env:
+          TIER_EXPO: ${{ matrix.expo }}
+          TIER_RN: ${{ matrix.rn }}
+          TIER_REACT: ${{ matrix.react }}
+        run: |
+          jq --arg e "$TIER_EXPO" --arg r "$TIER_RN" --arg k "$TIER_REACT" '
+            .dependencies.expo = $e |
+            .dependencies["react-native"] = $r |
+            .dependencies.react = $k
+          ' apps/playground-native/package.json > /tmp/pkg.json
+          mv /tmp/pkg.json apps/playground-native/package.json
+          yarn install
+      - run: yarn typecheck
+      - run: yarn test
+      - run: yarn build:ui
