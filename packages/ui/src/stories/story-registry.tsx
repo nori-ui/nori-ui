@@ -8,6 +8,7 @@
 import type { ComponentType } from 'react';
 import { View } from 'react-native';
 import { Box } from '../components/Box';
+import { Button } from '../components/Button';
 import { HStack } from '../components/HStack';
 import { Spinner } from '../components/Spinner';
 import { Text } from '../components/Text';
@@ -83,5 +84,28 @@ export const stories: StoryEntry[] = [
         id: 'spinner.lg',
         title: 'Spinner · lg',
         render: () => <Spinner testID="story-spinner-lg" size="lg" />,
+    },
+    {
+        id: 'button.primary',
+        title: 'Button · primary',
+        render: () => <Button testID="story-button-primary">Click me</Button>,
+    },
+    {
+        id: 'button.destructive',
+        title: 'Button · destructive',
+        render: () => (
+            <Button testID="story-button-destructive" variant="destructive">
+                Delete
+            </Button>
+        ),
+    },
+    {
+        id: 'button.loading',
+        title: 'Button · loading',
+        render: () => (
+            <Button testID="story-button-loading" loading>
+                Saving
+            </Button>
+        ),
     },
 ];
