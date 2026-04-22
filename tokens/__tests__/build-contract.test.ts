@@ -19,7 +19,6 @@ describe('tokens build contract', () => {
         const presetPath = path.join(buildDir, 'tailwind-preset.cjs');
         expect(existsSync(presetPath)).toBe(true);
 
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const preset = require(presetPath);
         expect(preset).toEqual(
             expect.objectContaining({
@@ -40,7 +39,6 @@ describe('tokens build contract', () => {
     });
 
     it('includes primary scale 50..900 in tailwind preset', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const preset = require(path.join(buildDir, 'tailwind-preset.cjs'));
         const primary = preset.theme.extend.colors.primary;
         for (const step of ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900']) {
