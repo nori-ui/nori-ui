@@ -591,3 +591,14 @@ Expected: at minimum, `packages/ui/dist/client.js` and any client-context module
 - [ ] The placeholder-name sweep is documented in the RUNBOOK so the first publish is a conscious act.
 
 When all boxes are ticked, the library is ready to be renamed and published. v0.1 can ship.
+
+---
+
+## Errata (post-execution notes)
+
+1. **`semantic-release@^25` requires Node 22+ / 24+** — conflicts with the PRD's Node 20+ engine. Pin `semantic-release@^23` (same plugin contract, Node 20-compatible). Installed 2026-04-22.
+2. **Local `semantic-release --dry-run` fails with `ERELEASEBRANCHES`** in the dev environment because the repo has no remote HEAD pushed (`origin/main`). The error message (`Your configuration for the problematic branches is []`) is misleading — the `.releaserc.json` branches field IS set; semantic-release just can't evaluate branches without a git remote. In CI this works normally because GitHub Actions checks out the repo with `fetch-depth: 0` and remote refs present. For local verification, run after `git push -u origin main` the first time, or skip the check and rely on CI.
+3. **Biome markdown formatter + `RUNBOOK.md`** — same checkbox-stripping bug seen for `docs/superpowers/**`. Add `RUNBOOK.md` to the formatter-disabled override in `biome.json`.
+4. **`'use client'` directive preservation in tsup output** — not yet verified in this plan's commits. Consumers in RSC contexts should import client-only pieces from `unbogify-ui/client` (which has its own `'use client'` banner), so the directive should survive at the entry-file level. Per-file directive preservation across sub-bundles is a follow-up (may need `esbuild-plugin-preserve-directives` or tsup 8+'s `banner` per entry).
+5. **Plan 07 Tasks 1–5 landed during the primary execution** (tsup build, .npmignore, semantic-release config, release.yml, tier-matrix). **Tasks 6–8 completed in a follow-up pass**: Task 6 (RUNBOOK) and a local green-build verification sweep; Task 7's full dry-run deferred to post-push (see #2). All green-build criteria satisfied: `yarn build:tokens`, `yarn build:ui`, `yarn biome check .`, `yarn typecheck`, `yarn test`, `yarn size`, `yarn workspace unbogify-ui pack --dry-run` all exit 0.
+6. **Publish readiness**: the tarball contains `LICENSE`, `README.md`, `package.json`, and `dist/**` (ESM + CJS + `.d.ts` + source maps for every entry). `src/` and test files correctly excluded via `.npmignore`. **`packages/ui/package.json` is still `private: true`** — flip to `false` only after the rename sweep during the first-release checklist (see RUNBOOK).
