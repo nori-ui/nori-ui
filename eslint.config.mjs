@@ -3,6 +3,7 @@
 // ESLint owns: ONLY eslint-plugin-react-native rules, because Biome has no RN-specific plugin today.
 // When Biome ships RN rules, DELETE this file and remove eslint deps.
 
+import tsParser from '@typescript-eslint/parser';
 import reactNative from 'eslint-plugin-react-native';
 import globals from 'globals';
 
@@ -24,6 +25,7 @@ export default [
             'react-native': reactNative,
         },
         languageOptions: {
+            parser: tsParser,
             globals: {
                 ...globals.browser,
                 ...globals.node,
