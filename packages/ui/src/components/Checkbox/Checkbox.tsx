@@ -78,10 +78,30 @@ export function Checkbox({
     }
 
     const boxClasses = cn('w-5 h-5 rounded-sm border border-semantic-border-strong items-center justify-center');
+    // Inline style mirrors the Tailwind box size so RNW renders a visible hit-target even when
+    // NativeWind's className transform is not active (e.g. the playground-web Vite build).
+    const boxStyle = {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#52525b',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+    };
+    const rowStyle = {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        gap: 8,
+        opacity: disabled ? 0.6 : 1,
+    };
 
     return (
-        <View className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}>
-            <Pressable onPress={toggle} {...commonProps} className={boxClasses}>
+        <View
+            className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}
+            style={rowStyle}
+        >
+            <Pressable onPress={toggle} {...commonProps} className={boxClasses} style={boxStyle}>
                 {(value || indeterminate) && !disabled ? <Check size={14} color="currentColor" /> : null}
             </Pressable>
             {children ?? (label !== undefined ? <View>{label}</View> : null)}
