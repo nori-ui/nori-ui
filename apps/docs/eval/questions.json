@@ -1,0 +1,35 @@
+{
+  "TODO": "Grow to 50 gold-labelled questions per PRD §7. Plan 06 ships the harness with 5 seed questions to prove the loop works.",
+  "questions": [
+    {
+      "q": "which component is a checkbox?",
+      "tool": "search_components",
+      "input": { "query": "checkbox" },
+      "expect": { "includesName": "Checkbox" }
+    },
+    {
+      "q": "tell me about Button",
+      "tool": "get_component_docs",
+      "input": { "name": "Button" },
+      "expect": { "namePresent": "Button" }
+    },
+    {
+      "q": "props of Switch",
+      "tool": "get_component_props",
+      "input": { "name": "Switch" },
+      "expect": { "nonNull": true }
+    },
+    {
+      "q": "what is Button's loading state?",
+      "tool": "search_components",
+      "input": { "query": "button loading" },
+      "expect": { "includesName": "Button" }
+    },
+    {
+      "q": "show me a list of examples for TextInput",
+      "tool": "list_examples",
+      "input": { "component": "TextInput" },
+      "expect": { "nonEmpty": true }
+    }
+  ]
+}
