@@ -1170,3 +1170,18 @@ git add -A && git commit -m "chore: finalize tokens pipeline"
 - [ ] Adding a new token to `src/tokens/core/*.json`, running `yarn build:tokens`, and observing it appear in `build/tailwind-preset.cjs` + `build/theme.ts` works end-to-end (manual smoke check during execution).
 
 When all boxes are ticked, Plan 02 is complete and Plan 03 (Library Core) can begin.
+
+---
+
+## Errata (post-execution notes)
+
+1. **Root `workspaces` glob:** Plan 01's root `package.json` uses `workspaces: ["packages/*", "apps/*", "tooling"]` — `tokens` is not included. Task 1 must add `"tokens"` to the array, or later `yarn workspace @unbogify/tokens …` commands fail.
+2. **CSS merge in `src/config.mjs`:** with Style Dictionary v4, two successive builds that write the same `destination: theme.css` overwrite each other. Emit per-mode (`theme.light.css`, `theme.dark.css`) then concatenate into `theme.css` as the last step of `main()`. Contract test #5 (`:root` + `[data-theme="dark"]` both present) gates this.
+3. **Theme-types merge double-replace:** the plan text substitutes `theme` → `themeDark` via regex when merging dark types. The `theme-types.mjs` format already emits `themeDark` for dark mode — drop the substitutions or they produce `themeDarkDark`.
+4. **`tokens/tsconfig.json` needs `"types": ["jest", "node"]`** (plan has `["node"]`) so the Jest contract tests typecheck.
+5. **`tokens/package.json` devDeps** should include `typescript` explicitly — the `typecheck` script runs from the tokens directory and won't resolve workspace-root `typescript` through Yarn 4 script PATH (see Plan 01 errata #6).
+6. **`tokens/jest.config.cjs`:** the `transform.tsconfig` path in the shared base (`jest.config.base.cjs`) is written as `<rootDir>/../../tooling/tsconfig.test.json` (two levels up). `tokens` is depth-1, not depth-2 — override `transform` in `tokens/jest.config.cjs` with `<rootDir>/../tooling/tsconfig.test.json`.
+7. **`packages/ui/.size-limit.cjs` budget:** the `500 B` placeholder from Plan 01 is too tight once the theme export lands (~588 B gzipped). Bump to `2 KB` in Task 11 Step 5 to reflect reality. This is still vastly under the spec's 40 KB first-import budget and 70 KB total budget.
+8. **ESLint `// eslint-disable-next-line @typescript-eslint/no-require-imports` directives:** our ESLint config only has `eslint-plugin-react-native` rules — the `@typescript-eslint/*` namespace isn't loaded, so those directives raise "rule not found" errors. Drop them; raw `require()` in `.cjs` or in contract tests is fine.
+
+Future plans should read these before they hit the same surfaces.
