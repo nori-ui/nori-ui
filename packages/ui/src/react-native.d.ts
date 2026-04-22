@@ -18,6 +18,7 @@ declare module 'react-native' {
         contentContainerClassName?: string;
     }
     interface TextInputProps {
+        className?: string;
         placeholderClassName?: string;
     }
 }

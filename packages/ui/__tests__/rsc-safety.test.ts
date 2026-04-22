@@ -44,8 +44,12 @@ function* walk(dir: string, base: string): Generator<{ abs: string; rel: string 
 }
 
 describe('RSC safety boundary', () => {
+    // Note: `useId` is intentionally NOT in this list — React 19 guarantees it
+    // is RSC-safe and hydrates consistently across server/client. Components
+    // like TextInput use it to mint a stable id/htmlFor pair without needing
+    // to be marked as client.
     const DISALLOWED_IMPORTS =
-        /\b(useState|useEffect|useContext|useReducer|useMemo|useCallback|useRef|useLayoutEffect|useInsertionEffect|useId|createContext)\b/;
+        /\b(useState|useEffect|useContext|useReducer|useMemo|useCallback|useRef|useLayoutEffect|useInsertionEffect|createContext)\b/;
 
     it('no file in the default entry tree uses "use client" or client-only React APIs', () => {
         const violations: string[] = [];

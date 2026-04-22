@@ -60,10 +60,12 @@ jest.mock('react-native', () => {
             style,
             ...rest
         } = props;
+        const { nativeID, ...domRest } = rest as Props & { nativeID?: string };
 
-        const domProps: Record<string, unknown> = { ...rest };
+        const domProps: Record<string, unknown> = { ...domRest };
         if (className !== undefined) domProps.className = className;
         if (testID !== undefined) domProps['data-testid'] = testID;
+        if (nativeID !== undefined) domProps.id = nativeID;
         const role = mapA11yRole(accessibilityRole);
         if (role !== undefined) domProps.role = role;
         if (accessibilityLabel !== undefined) domProps['aria-label'] = accessibilityLabel;
@@ -95,6 +97,76 @@ jest.mock('react-native', () => {
         }
         return buildDomProps(nextProps, 'div');
     };
+    const TextInput = (props: Props) => {
+        const {
+            children,
+            className,
+            testID,
+            accessibilityRole,
+            accessibilityLabel,
+            accessibilityState,
+            style,
+            ...rest
+        } = props as Props & {
+            value?: string;
+            defaultValue?: string;
+            placeholder?: string;
+            editable?: boolean;
+            multiline?: boolean;
+            numberOfLines?: number;
+            nativeID?: string;
+            onChangeText?: (text: string) => void;
+            onChange?: (e: unknown) => void;
+        };
+        const {
+            value,
+            defaultValue,
+            placeholder,
+            editable,
+            multiline,
+            numberOfLines,
+            nativeID,
+            onChangeText,
+            onChange,
+            ...other
+        } = rest as Props & {
+            value?: string;
+            defaultValue?: string;
+            placeholder?: string;
+            editable?: boolean;
+            multiline?: boolean;
+            numberOfLines?: number;
+            nativeID?: string;
+            onChangeText?: (text: string) => void;
+            onChange?: (e: unknown) => void;
+        };
+
+        const tag = multiline ? 'textarea' : 'input';
+        const domProps: Record<string, unknown> = { ...other };
+        if (className !== undefined) domProps.className = className;
+        if (testID !== undefined) domProps['data-testid'] = testID;
+        if (nativeID !== undefined) domProps.id = nativeID;
+        if (accessibilityLabel !== undefined) domProps['aria-label'] = accessibilityLabel;
+        const role = mapA11yRole(accessibilityRole);
+        if (role !== undefined) domProps.role = role;
+        if (accessibilityState?.disabled !== undefined) domProps['aria-disabled'] = accessibilityState.disabled;
+        if (value !== undefined) domProps.value = value;
+        if (defaultValue !== undefined) domProps.defaultValue = defaultValue;
+        if (placeholder !== undefined) domProps.placeholder = placeholder;
+        if (editable === false) domProps.disabled = true;
+        if (multiline && numberOfLines !== undefined) domProps.rows = numberOfLines;
+        const flatStyle = flattenStyle(style);
+        if (flatStyle !== undefined) domProps.style = flatStyle;
+
+        domProps.onChange = (e: { target?: { value?: string } } & Record<string, unknown>) => {
+            if (editable === false) return;
+            const next = e?.target?.value ?? '';
+            if (onChangeText) onChangeText(next);
+            if (onChange) onChange(e);
+        };
+
+        return React.createElement(tag, domProps);
+    };
     const ActivityIndicator = (props: Props) => {
         const { size, color, ...rest } = props as Props & { size?: number | string; color?: string };
         const px = typeof size === 'number' ? size : size === 'large' ? 36 : size === 'small' ? 16 : undefined;
@@ -117,6 +189,7 @@ jest.mock('react-native', () => {
         SafeAreaView,
         StatusBar,
         Pressable,
+        TextInput,
         ActivityIndicator,
         StyleSheet: {
             create: <T extends Record<string, unknown>>(styles: T) => styles,
