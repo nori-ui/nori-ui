@@ -92,6 +92,18 @@
           "suspicious": { "noConsole": "off" }
         }
       }
+    },
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noUnknownAtRules": "off" }
+        }
+      }
+    },
+    {
+      "includes": ["apps/docs/content/**/*.mdx"],
+      "formatter": { "enabled": false }
     }
   ]
 }
