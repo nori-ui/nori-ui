@@ -21,22 +21,23 @@ const CORE_VERSION = JSON.parse(
     readFileSync(join(HERE, '..', '..', '..', 'packages', 'core', 'package.json'), 'utf8')
 ).version;
 
-// Shared header every snack uses — wraps the component in NoriProvider so
-// Nori's theme is applied when the Snack preview boots.
-const wrap = (body) => `import { NoriProvider } from '@nori-ui/core/client';
-import { Text, View, SafeAreaView, StatusBar } from 'react-native';
+// Shared header every snack uses. We intentionally skip NoriProvider here:
+// Snack's dependency resolver doesn't walk package.json `exports` maps, so it
+// rejects `@nori-ui/core/client` as "not a declared dependency." The library
+// has sane defaults without the provider (default theme, English i18n,
+// inline semantic icons) so rendering directly from the main entry works.
+// Consumers configuring theme/i18n would add NoriProvider in their own app.
+const wrap = (body) => `import { SafeAreaView, StatusBar, View } from 'react-native';
 ${body.imports ?? ''}
 
 export default function App() {
     return (
-        <NoriProvider>
-            <SafeAreaView style={{ flex: 1 }}>
-                <StatusBar />
-                <View style={{ padding: 24, gap: 16 }}>
-                    ${body.render}
-                </View>
-            </SafeAreaView>
-        </NoriProvider>
+        <SafeAreaView style={{ flex: 1 }}>
+            <StatusBar />
+            <View style={{ padding: 24, gap: 16 }}>
+                ${body.render}
+            </View>
+        </SafeAreaView>
     );
 }
 `;
