@@ -1,0 +1,13 @@
+diff --git a/dist/tailwind-plugin.js b/dist/tailwind-plugin.js
+index a56ee9f3de3d4bd30be5780c9e59b4cb93975313..e09ff88ad02ff46828a22acaf1c33ea5767be14e 100644
+--- a/dist/tailwind-plugin.js
++++ b/dist/tailwind-plugin.js
+@@ -2,7 +2,7 @@ import "./chunk-MLKGABMK.js";
+ 
+ // src/tailwind-plugin.ts
+ import typography2 from "@tailwindcss/typography";
+-import plugin from "tailwindcss/plugin";
++import plugin from "tailwindcss/plugin.js";
+ 
+ // src/theme/colors.ts
+ var defaultPreset = {

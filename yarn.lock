@@ -7567,7 +7567,7 @@ __metadata:
     autoprefixer: "npm:^10"
     fumadocs-core: "npm:14.0.0"
     fumadocs-mdx: "npm:^11"
-    fumadocs-ui: "npm:14.0.0"
+    fumadocs-ui: "patch:fumadocs-ui@npm%3A14.0.0#~/.yarn/patches/fumadocs-ui-npm-14.0.0-557c7c2e7a.patch"
     nativewind: "npm:^4"
     next: "npm:^15"
     postcss: "npm:^8"
@@ -11884,6 +11884,43 @@ __metadata:
     tailwindcss:
       optional: true
   checksum: 10c0/2ea1d3fff7726212edbf9da0bb7c796e91de0555fae3e7c6a29fad6ae19983c335cce33f64798a1b56d66b87f4757fde1d83fe653ab9e87a9fdb113749d1a36e
+  languageName: node
+  linkType: hard
+
+"fumadocs-ui@patch:fumadocs-ui@npm%3A14.0.0#~/.yarn/patches/fumadocs-ui-npm-14.0.0-557c7c2e7a.patch":
+  version: 14.0.0
+  resolution: "fumadocs-ui@patch:fumadocs-ui@npm%3A14.0.0#~/.yarn/patches/fumadocs-ui-npm-14.0.0-557c7c2e7a.patch::version=14.0.0&hash=ad65c2"
+  dependencies:
+    "@algolia/client-search": "npm:^4.0.0"
+    "@radix-ui/react-accordion": "npm:^1.2.1"
+    "@radix-ui/react-collapsible": "npm:^1.1.1"
+    "@radix-ui/react-dialog": "npm:^1.1.2"
+    "@radix-ui/react-direction": "npm:^1.1.0"
+    "@radix-ui/react-navigation-menu": "npm:^1.2.1"
+    "@radix-ui/react-popover": "npm:^1.1.2"
+    "@radix-ui/react-scroll-area": "npm:^1.2.0"
+    "@radix-ui/react-tabs": "npm:^1.1.1"
+    "@tailwindcss/typography": "npm:^0.5.15"
+    algoliasearch: "npm:^4.24.0"
+    class-variance-authority: "npm:^0.7.0"
+    cmdk: "npm:^1.0.0"
+    fumadocs-core: "npm:14.0.0"
+    next-themes: "npm:^0.3.0"
+    react-medium-image-zoom: "npm:^5.2.10"
+    tailwind-merge: "npm:^2.5.4"
+    tailwindcss: "npm:3.4.14"
+  peerDependencies:
+    next: 14.x.x || 15.x.x
+    react: ">= 18"
+    react-dom: ">= 18"
+  dependenciesMeta:
+    "@algolia/client-search":
+      optional: true
+    algoliasearch:
+      optional: true
+    tailwindcss:
+      optional: true
+  checksum: 10c0/e8c0206bc5c0fa79b04cf77f4ac5b3792ec4d6b174db4c1ee2d74f3e1cf76190ea860d0d68a17fa64cb0875e279ea5b96c91bff61d405c40fda0fe54af8090c1
   languageName: node
   linkType: hard
 
