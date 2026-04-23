@@ -4,7 +4,7 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'nori-ui',
+    displayName: '@nori-ui/core',
     projects: [
         {
             ...base,

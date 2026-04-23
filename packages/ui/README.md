@@ -1,6 +1,8 @@
-# nori-ui
+# @nori-ui/core
 
-> **Placeholder name.** This package will be renamed before the first public release.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/nori-ui/nori-ui/main/nori-ui.png" alt="nori-ui" width="180" />
+</p>
 
 A React Native + React Native Web component library. Ships ESM, CJS, and `.d.ts`
 via `tsup`; RSC-safe default entry with a `./client` subpath for stateful
@@ -9,31 +11,32 @@ providers and hooks.
 ## Install
 
 ```bash
-yarn add nori-ui
+yarn add @nori-ui/core
 ```
 
 Peer deps: `react@^19`, `react-dom@^19` (optional, web), `react-native@^0.83`
-(optional, native).
+(optional, native), `nativewind@^4`, `react-native-css-interop`.
 
 ## Usage
 
 Server Components / RSC-safe entry:
 
 ```tsx
-import { Button, Text } from 'nori-ui';
+import { Button, Text, cn } from '@nori-ui/core';
 ```
 
-Client-only providers and hooks (add `'use client'` at the top of the importing
-file in a Next.js App Router context):
+Client components / providers / hooks:
 
 ```tsx
 'use client';
-
-import { NoriProvider, useTheme, useTranslation } from 'nori-ui/client';
+import { NoriProvider, useTheme, useTranslation } from '@nori-ui/core/client';
 ```
 
-See the docs site for the full component catalog, props, and examples.
+## Links
+
+- Source: https://github.com/nori-ui/nori-ui
+- Docs: https://github.com/nori-ui/nori-ui#readme
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT.

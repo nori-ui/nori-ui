@@ -27,7 +27,7 @@ export default defineConfig({
     },
     // Let Vite prebundle workspace packages to speed up cold starts.
     optimizeDeps: {
-        include: ['nori-ui', 'nori-ui/client', '@nori-ui/tokens', 'nativewind', 'react-native-css-interop'],
+        include: ['@nori-ui/core', 'nori-ui/client', '@nori-ui/tokens', 'nativewind', 'react-native-css-interop'],
         // react-native-css-interop and some RN-ecosystem deps ship JSX inside .js files.
         // Tell esbuild to parse them as JSX during prebundling.
         esbuildOptions: {

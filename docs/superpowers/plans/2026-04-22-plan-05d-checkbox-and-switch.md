@@ -203,7 +203,7 @@ export { Checkbox, type CheckboxProps } from './Checkbox';
 ```
 
 ```bash
-yarn workspace nori-ui test Checkbox.test
+yarn workspace @nori-ui/core test Checkbox.test
 # 8 passed
 git add packages/ui/src/components/Checkbox/
 git commit -m "feat(ui): add Checkbox with indeterminate, asChild, semantic-icon checkmark"
@@ -375,7 +375,7 @@ export { Switch, type SwitchProps } from './Switch';
 ```
 
 ```bash
-yarn workspace nori-ui test Switch.test
+yarn workspace @nori-ui/core test Switch.test
 # 7 passed
 git add packages/ui/src/components/Switch/
 git commit -m "feat(ui): add Switch with role=switch, controlled+uncontrolled, asChild"

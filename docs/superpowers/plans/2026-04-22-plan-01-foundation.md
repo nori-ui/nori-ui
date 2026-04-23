@@ -251,7 +251,7 @@ git commit -m "chore: initialize yarn berry workspaces with node-modules linker"
 
 ```json
 {
-  "name": "nori-ui",
+  "name": "@nori-ui/core",
   "version": "0.0.0",
   "private": true,
   "description": "React Native + React Native Web UI component library — placeholder name, will be renamed",
@@ -442,7 +442,7 @@ The `-W` flag scopes to the workspace root.
 
 Run:
 ```bash
-yarn workspace nori-ui typecheck
+yarn workspace @nori-ui/core typecheck
 ```
 
 Expected: exits 0. `packages/ui/src/index.ts` is an empty export, so no errors.
@@ -721,7 +721,7 @@ pre-commit:
             run: yarn biome check --staged --no-errors-on-unmatched {staged_files}
         typecheck:
             glob: '*.{ts,tsx}'
-            run: yarn workspace nori-ui typecheck
+            run: yarn workspace @nori-ui/core typecheck
 
 commit-msg:
     commands:
@@ -805,7 +805,7 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'nori-ui',
+    displayName: '@nori-ui/core',
 };
 ```
 
@@ -834,7 +834,7 @@ describe('toolchain smoke', () => {
 
 Run:
 ```bash
-yarn workspace nori-ui test
+yarn workspace @nori-ui/core test
 ```
 
 Expected: 2 passed, 0 failed.
@@ -886,7 +886,7 @@ Modify `package.json` to include:
 ```json
 {
     "scripts": {
-        "size": "yarn workspace nori-ui exec size-limit"
+        "size": "yarn workspace @nori-ui/core exec size-limit"
     }
 }
 ```

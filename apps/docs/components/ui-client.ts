@@ -7,4 +7,4 @@
 // file. Importing from this module in MDX flips the render frame to the
 // client so the event handlers stay on the client.
 
-export * from 'nori-ui/client';
+export * from '@nori-ui/core/client';

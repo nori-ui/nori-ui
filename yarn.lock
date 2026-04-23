@@ -4653,11 +4653,56 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nori-ui/core@workspace:*, @nori-ui/core@workspace:packages/ui":
+  version: 0.0.0-use.local
+  resolution: "@nori-ui/core@workspace:packages/ui"
+  dependencies:
+    "@nori-ui/tokens": "workspace:*"
+    "@size-limit/preset-small-lib": "npm:^12.1.0"
+    "@storybook/react": "npm:^8.4"
+    "@testing-library/dom": "npm:^10.4.1"
+    "@testing-library/jest-dom": "npm:^6"
+    "@testing-library/react": "npm:^16"
+    "@testing-library/react-native": "npm:^12"
+    "@types/jest": "npm:^30.0.0"
+    "@types/react": "npm:^19.2.14"
+    "@types/react-dom": "npm:^19.2.3"
+    "@types/react-native-web": "npm:^0"
+    jest: "npm:^29"
+    jest-environment-jsdom: "npm:^29"
+    nativewind: "npm:^4"
+    react: "npm:^19"
+    react-dom: "npm:^19"
+    react-native-css-interop: "npm:^0.2.3"
+    react-native-web: "npm:^0.21"
+    size-limit: "npm:^12.1.0"
+    ts-jest: "npm:^29"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.6.0"
+  peerDependencies:
+    nativewind: ^4
+    react: ^19
+    react-dom: ^19
+    react-native: ^0.83
+    react-native-css-interop: ">=0.2.0"
+  peerDependenciesMeta:
+    nativewind:
+      optional: false
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+    react-native-css-interop:
+      optional: false
+  languageName: unknown
+  linkType: soft
+
 "@nori-ui/docs@workspace:apps/docs":
   version: 0.0.0-use.local
   resolution: "@nori-ui/docs@workspace:apps/docs"
   dependencies:
     "@modelcontextprotocol/sdk": "npm:^1"
+    "@nori-ui/core": "workspace:*"
     "@nori-ui/tokens": "workspace:*"
     "@tailwindcss/typography": "npm:^0.5"
     "@types/node": "npm:^20"
@@ -4669,7 +4714,6 @@ __metadata:
     fumadocs-ui: "patch:fumadocs-ui@npm%3A14.0.0#~/.yarn/patches/fumadocs-ui-npm-14.0.0-557c7c2e7a.patch"
     nativewind: "npm:^4"
     next: "npm:^15"
-    nori-ui: "workspace:*"
     postcss: "npm:^8"
     react: "npm:^19"
     react-dom: "npm:^19"
@@ -17111,50 +17155,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"nori-ui@workspace:*, nori-ui@workspace:packages/ui":
-  version: 0.0.0-use.local
-  resolution: "nori-ui@workspace:packages/ui"
-  dependencies:
-    "@nori-ui/tokens": "workspace:*"
-    "@size-limit/preset-small-lib": "npm:^12.1.0"
-    "@storybook/react": "npm:^8.4"
-    "@testing-library/dom": "npm:^10.4.1"
-    "@testing-library/jest-dom": "npm:^6"
-    "@testing-library/react": "npm:^16"
-    "@testing-library/react-native": "npm:^12"
-    "@types/jest": "npm:^30.0.0"
-    "@types/react": "npm:^19.2.14"
-    "@types/react-dom": "npm:^19.2.3"
-    "@types/react-native-web": "npm:^0"
-    jest: "npm:^29"
-    jest-environment-jsdom: "npm:^29"
-    nativewind: "npm:^4"
-    react: "npm:^19"
-    react-dom: "npm:^19"
-    react-native-css-interop: "npm:^0.2.3"
-    react-native-web: "npm:^0.21"
-    size-limit: "npm:^12.1.0"
-    ts-jest: "npm:^29"
-    tsup: "npm:^8.5.1"
-    typescript: "npm:^5.6.0"
-  peerDependencies:
-    nativewind: ^4
-    react: ^19
-    react-dom: ^19
-    react-native: ^0.83
-    react-native-css-interop: ">=0.2.0"
-  peerDependenciesMeta:
-    nativewind:
-      optional: false
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-    react-native-css-interop:
-      optional: false
-  languageName: unknown
-  linkType: soft
-
 "normalize-package-data@npm:^6.0.0":
   version: 6.0.2
   resolution: "normalize-package-data@npm:6.0.2"
@@ -18147,12 +18147,12 @@ __metadata:
   resolution: "playground-native@workspace:apps/playground-native"
   dependencies:
     "@babel/core": "npm:^7.25.0"
+    "@nori-ui/core": "workspace:*"
     "@nori-ui/tokens": "workspace:*"
     "@types/react": "npm:^19"
     expo: "npm:~55.0.0"
     expo-status-bar: "npm:~55.0.0"
     nativewind: "npm:^4"
-    nori-ui: "workspace:*"
     react: "npm:^19"
     react-native: "npm:0.83.6"
     react-native-reanimated: "npm:~4.2.0"
@@ -18168,6 +18168,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "playground-web@workspace:apps/playground-web"
   dependencies:
+    "@nori-ui/core": "workspace:*"
     "@nori-ui/tokens": "workspace:*"
     "@storybook/addon-a11y": "npm:^8"
     "@storybook/addon-essentials": "npm:^8"
@@ -18178,7 +18179,6 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4"
     autoprefixer: "npm:^10"
     nativewind: "npm:^4"
-    nori-ui: "workspace:*"
     postcss: "npm:^8"
     react: "npm:^19"
     react-dom: "npm:^19"

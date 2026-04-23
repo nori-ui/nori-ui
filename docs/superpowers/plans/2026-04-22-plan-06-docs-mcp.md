@@ -104,7 +104,7 @@ e2e/web/tests/mcp-eval.spec.ts
         "test": "echo 'integration tests via e2e' && exit 0"
     },
     "dependencies": {
-        "nori-ui": "workspace:*",
+        "@nori-ui/core": "workspace:*",
         "@nori-ui/tokens": "workspace:*",
         "next": "^15",
         "react": "^19",
@@ -166,7 +166,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    transpilePackages: ['nori-ui', '@nori-ui/tokens'],
+    transpilePackages: ['@nori-ui/core', '@nori-ui/tokens'],
     webpack: (config) => {
         config.resolve.alias = {
             ...(config.resolve.alias ?? {}),
@@ -395,7 +395,7 @@ git commit -m "feat(docs): add root + /docs layouts, MDX page, home page"
 ```tsx
 'use client';
 
-import { NoriProvider } from 'nori-ui/client';
+import { NoriProvider } from '@nori-ui/core/client';
 import type { ReactNode } from 'react';
 
 export type LivePreviewProps = {
@@ -529,7 +529,7 @@ platform: both
 ## Install
 
 ```bash
-yarn add nori-ui
+yarn add @nori-ui/core
 # optional — any icon library works; Lucide is recommended:
 yarn add lucide-react lucide-react-native
 ```
@@ -549,7 +549,7 @@ Wrap your app once. The library works without a provider too — provider only c
 
 ```tsx
 'use client';
-import { NoriProvider } from 'nori-ui/client';
+import { NoriProvider } from '@nori-ui/core/client';
 
 export default function App() {
     return (
@@ -563,7 +563,7 @@ export default function App() {
 ## First component
 
 ```tsx
-import { Button } from 'nori-ui';
+import { Button } from '@nori-ui/core';
 
 <Button variant="primary">Click me</Button>
 ```
@@ -584,7 +584,7 @@ platform: both
 
 import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Button } from 'nori-ui';
+import { Button } from '@nori-ui/core';
 
 ## At a glance
 

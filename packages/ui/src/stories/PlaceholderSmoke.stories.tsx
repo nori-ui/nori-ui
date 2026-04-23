@@ -1,8 +1,8 @@
 // Smoke placeholder story — exists so Storybook + the playgrounds have
 // something to render before Plan 05. Remove when Button lands.
 
+import { NoriProvider, useTheme } from '@nori-ui/core/client';
 import type { Meta, StoryObj } from '@storybook/react';
-import { NoriProvider, useTheme } from 'nori-ui/client';
 
 function PlaceholderSmoke() {
     const theme = useTheme();

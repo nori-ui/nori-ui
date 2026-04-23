@@ -60,7 +60,7 @@ Components use RN primitives (`Text`, `View`) that need a testing shim in jsdom.
 - [ ] **Step 1: Install RN-Web for test target.**
 
 ```bash
-yarn workspace nori-ui add -D react-native-web@^0.19 @testing-library/react-native@^12
+yarn workspace @nori-ui/core add -D react-native-web@^0.19 @testing-library/react-native@^12
 ```
 
 - [ ] **Step 2: Update `packages/ui/jest.config.cjs`.**
@@ -72,7 +72,7 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'nori-ui',
+    displayName: '@nori-ui/core',
     projects: [
         {
             ...base,
@@ -128,7 +128,7 @@ console.warn = (...args: unknown[]) => {
 - [ ] **Step 4: Run existing tests to confirm nothing broke.**
 
 ```bash
-yarn workspace nori-ui test
+yarn workspace @nori-ui/core test
 ```
 
 Expected: still 36 passed.
@@ -252,7 +252,7 @@ export { Text, type TextProps, type TextVariant } from './Text';
 - [ ] **Step 4: Run the test — should pass.**
 
 ```bash
-yarn workspace nori-ui test Text.test
+yarn workspace @nori-ui/core test Text.test
 ```
 
 Expected: 5 passed. If the className regex doesn't match, NativeWind may strip classes before they reach jsdom — the test asserts a substring match, not a rendered CSS effect, so the className attribute should carry the classes verbatim.
@@ -341,7 +341,7 @@ export { Box, type BoxProps } from './Box';
 - [ ] **Step 4: Run.**
 
 ```bash
-yarn workspace nori-ui test Box.test
+yarn workspace @nori-ui/core test Box.test
 ```
 
 Expected: 3 passed.
@@ -471,7 +471,7 @@ export { HStack, type HStackProps, type StackAlign, type StackGap, type StackJus
 Then:
 
 ```bash
-yarn workspace nori-ui test HStack.test
+yarn workspace @nori-ui/core test HStack.test
 # 6 passed
 git add packages/ui/src/components/HStack/
 git commit -m "feat(ui): add HStack layout primitive with gap/align/justify"
@@ -581,7 +581,7 @@ export { VStack, type VStackProps } from './VStack';
 Then:
 
 ```bash
-yarn workspace nori-ui test VStack.test
+yarn workspace @nori-ui/core test VStack.test
 # 4 passed
 git add packages/ui/src/components/VStack/
 git commit -m "feat(ui): add VStack layout primitive"
@@ -827,8 +827,8 @@ Replace the smoke content with a registry renderer:
 ```tsx
 'use client';
 
-import { NoriProvider } from 'nori-ui/client';
-import { stories } from 'nori-ui/stories';
+import { NoriProvider } from '@nori-ui/core/client';
+import { stories } from '@nori-ui/core/stories';
 
 function StoriesPage() {
     return (
@@ -908,8 +908,8 @@ git commit -m "test(e2e): add layout primitives playwright coverage + axe audit"
 
 ```tsx
 import { SafeAreaView, ScrollView, StatusBar, Text as RNText, View } from 'react-native';
-import { NoriProvider } from 'nori-ui/client';
-import { stories } from 'nori-ui/stories';
+import { NoriProvider } from '@nori-ui/core/client';
+import { stories } from '@nori-ui/core/stories';
 
 export function App() {
     return (

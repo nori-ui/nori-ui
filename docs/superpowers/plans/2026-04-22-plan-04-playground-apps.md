@@ -90,7 +90,7 @@ package.json                               (modified — add dev/e2e scripts)
         "build:storybook": "storybook build -o storybook-static"
     },
     "dependencies": {
-        "nori-ui": "workspace:*",
+        "@nori-ui/core": "workspace:*",
         "@nori-ui/tokens": "workspace:*",
         "react": "^19",
         "react-dom": "^19",
@@ -158,7 +158,7 @@ export default defineConfig({
     },
     // Let Vite prebundle workspace packages to speed up cold starts.
     optimizeDeps: {
-        include: ['nori-ui', 'nori-ui/client', '@nori-ui/tokens'],
+        include: ['@nori-ui/core', 'nori-ui/client', '@nori-ui/tokens'],
     },
     build: {
         outDir: path.resolve(__dirname, 'dist'),
@@ -207,7 +207,7 @@ createRoot(el).render(
 ```tsx
 'use client';
 
-import { NoriProvider, useTheme } from 'nori-ui/client';
+import { NoriProvider, useTheme } from '@nori-ui/core/client';
 
 function SmokeContent() {
     const theme = useTheme();
@@ -384,7 +384,7 @@ export const stories: StoryEntry[] = [
 // something to render before Plan 05. Remove when Button lands.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { NoriProvider, useTheme } from 'nori-ui/client';
+import { NoriProvider, useTheme } from '@nori-ui/core/client';
 
 function PlaceholderSmoke() {
     const theme = useTheme();
@@ -426,7 +426,7 @@ export const Default: StoryObj<typeof WrappedSmoke> = {};
 - [ ] **Step 3: Install `@storybook/react` types** into the ui workspace so the story typechecks.
 
 ```bash
-yarn workspace nori-ui add -D @storybook/react
+yarn workspace @nori-ui/core add -D @storybook/react
 ```
 
 - [ ] **Step 4: Add `./stories` subpath export** in `packages/ui/package.json`:
@@ -449,7 +449,7 @@ yarn workspace nori-ui add -D @storybook/react
 - [ ] **Step 5: Typecheck.**
 
 ```bash
-yarn workspace nori-ui typecheck
+yarn workspace @nori-ui/core typecheck
 ```
 
 - [ ] **Step 6: Commit.**
@@ -580,7 +580,7 @@ git commit -m "feat(playground-web): add storybook 8 on vite builder, discovers 
         "test": "echo 'no unit tests — e2e only' && exit 0"
     },
     "dependencies": {
-        "nori-ui": "workspace:*",
+        "@nori-ui/core": "workspace:*",
         "@nori-ui/tokens": "workspace:*",
         "expo": "~55.0.0",
         "expo-status-bar": "~2.3.0",
@@ -649,7 +649,7 @@ registerRootComponent(App);
 
 ```tsx
 import { SafeAreaView, StatusBar, Text, View } from 'react-native';
-import { NoriProvider, useTheme } from 'nori-ui/client';
+import { NoriProvider, useTheme } from '@nori-ui/core/client';
 
 function SmokeContent() {
     const theme = useTheme();

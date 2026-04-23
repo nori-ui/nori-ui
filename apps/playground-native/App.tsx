@@ -1,5 +1,5 @@
-import { NoriProvider } from 'nori-ui/client';
-import { stories } from 'nori-ui/stories';
+import { NoriProvider } from '@nori-ui/core/client';
+import { stories } from '@nori-ui/core/stories';
 import { Text as RNText, SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
 
 export function App() {

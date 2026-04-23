@@ -1,7 +1,7 @@
 'use client';
 
-import { NoriProvider } from 'nori-ui/client';
-import { stories } from 'nori-ui/stories';
+import { NoriProvider } from '@nori-ui/core/client';
+import { stories } from '@nori-ui/core/stories';
 
 function StoriesPage() {
     return (

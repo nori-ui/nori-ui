@@ -68,8 +68,8 @@ packages/ui/package.json                      (modified — exports map + react 
 - [ ] **Step 1: Install React 19 + testing libs in the ui workspace.**
 
 ```bash
-yarn workspace nori-ui add react@^19 react-dom@^19
-yarn workspace nori-ui add -D @types/react @types/react-dom @testing-library/react@^16 @testing-library/jest-dom@^6 jest-environment-jsdom@^29
+yarn workspace @nori-ui/core add react@^19 react-dom@^19
+yarn workspace @nori-ui/core add -D @types/react @types/react-dom @testing-library/react@^16 @testing-library/jest-dom@^6 jest-environment-jsdom@^29
 ```
 
 Rationale: `react` + `react-dom` as runtime deps (later demoted to peerDependencies in Plan 07's publish prep). `@testing-library/react` v16 targets React 19. `jest-environment-jsdom` required for DOM-rendering tests.
@@ -102,7 +102,7 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'nori-ui',
+    displayName: '@nori-ui/core',
     projects: [
         {
             ...base,
@@ -136,7 +136,7 @@ import '@testing-library/jest-dom';
 - [ ] **Step 5: Verify Jest still runs.**
 
 ```bash
-yarn workspace nori-ui test
+yarn workspace @nori-ui/core test
 ```
 
 Expected: 2 passed (the smoke test from Plan 01).
@@ -194,7 +194,7 @@ describe('cn', () => {
 - [ ] **Step 2: Run to confirm failure.**
 
 ```bash
-yarn workspace nori-ui test cn.test
+yarn workspace @nori-ui/core test cn.test
 ```
 
 Expected: FAIL — `cn` not exported.
@@ -245,7 +245,7 @@ function append(out: string[], input: ClassInput): void {
 - [ ] **Step 4: Run the test — should pass.**
 
 ```bash
-yarn workspace nori-ui test cn.test
+yarn workspace @nori-ui/core test cn.test
 ```
 
 Expected: 6 passed.
@@ -412,7 +412,7 @@ describe('<Slot>', () => {
 - [ ] **Step 2: Run — should fail.**
 
 ```bash
-yarn workspace nori-ui test slot.test
+yarn workspace @nori-ui/core test slot.test
 ```
 
 Expected: FAIL — `Slot` not found.
@@ -514,7 +514,7 @@ export { composeRefs } from './compose-refs';
 - [ ] **Step 5: Run the test — should pass.**
 
 ```bash
-yarn workspace nori-ui test slot.test
+yarn workspace @nori-ui/core test slot.test
 ```
 
 Expected: 7 passed.
@@ -762,7 +762,7 @@ function interpolate(template: string, options: I18nOptions | undefined): string
 - [ ] **Step 4: Run the tests — should pass (8 cases).**
 
 ```bash
-yarn workspace nori-ui test resolve.test
+yarn workspace @nori-ui/core test resolve.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -873,7 +873,7 @@ export function useTranslation(): I18nContextValue {
 - [ ] **Step 4: Run the test — should pass (3 cases).**
 
 ```bash
-yarn workspace nori-ui test context.test
+yarn workspace @nori-ui/core test context.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -998,7 +998,7 @@ export function useTheme() {
 - [ ] **Step 5: Run the test.**
 
 ```bash
-yarn workspace nori-ui test theme/__tests__/context
+yarn workspace @nori-ui/core test theme/__tests__/context
 ```
 
 Expected: 2 passed.
@@ -1098,7 +1098,7 @@ export function Icon({ as: IconComponent, size = 'md', color }: IconProps) {
 - [ ] **Step 3: Run the test — should pass (4 cases).**
 
 ```bash
-yarn workspace nori-ui test icon.test
+yarn workspace @nori-ui/core test icon.test
 ```
 
 - [ ] **Step 4: Commit.**
@@ -1560,7 +1560,7 @@ describe('RSC safety boundary', () => {
 - [ ] **Step 2: Run the test.**
 
 ```bash
-yarn workspace nori-ui test rsc-safety
+yarn workspace @nori-ui/core test rsc-safety
 ```
 
 Expected: 2 passed. If any violation is reported, fix the source file or add the path to `CLIENT_ALLOWED` — do NOT ignore.
@@ -1632,7 +1632,7 @@ export type _UsedTheme = Theme;
 
 Run:
 ```bash
-yarn workspace nori-ui typecheck
+yarn workspace @nori-ui/core typecheck
 ```
 
 Expected: green. Then delete the scratch file:

@@ -238,7 +238,7 @@ export { TextInput, type TextInputProps } from './TextInput';
 - [ ] **Step 4: Run tests — 9 passed.**
 
 ```bash
-yarn workspace nori-ui test TextInput.test
+yarn workspace @nori-ui/core test TextInput.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -320,7 +320,7 @@ export { TextArea, type TextAreaProps } from './TextArea';
 - [ ] **Step 4: Run tests — 4 passed.**
 
 ```bash
-yarn workspace nori-ui test TextArea.test
+yarn workspace @nori-ui/core test TextArea.test
 ```
 
 - [ ] **Step 5: Commit.**

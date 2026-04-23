@@ -41,7 +41,7 @@ docs/superpowers/errata/README.md                (index)
 - [ ] **Step 1: Install tsup.**
 
 ```bash
-yarn workspace nori-ui add -D tsup
+yarn workspace @nori-ui/core add -D tsup
 ```
 
 - [ ] **Step 2: `packages/ui/tsup.config.ts`.**
@@ -158,7 +158,7 @@ Update `packages/ui/package.json` to remove the tokens dep from `dependencies` (
 ```json
 {
     "scripts": {
-        "build:ui": "yarn workspace nori-ui build"
+        "build:ui": "yarn workspace @nori-ui/core build"
     }
 }
 ```
@@ -224,7 +224,7 @@ jest.rn-setup.ts
 - [ ] **Step 2: Dry-run publish.**
 
 ```bash
-yarn workspace nori-ui pack --dry-run
+yarn workspace @nori-ui/core pack --dry-run
 ```
 
 Verify: only `dist/`, `README.md`, `package.json`, `LICENSE` in the output.
@@ -486,7 +486,7 @@ Before the very first publish, confirm:
 
 ## Prerelease
 
-Push to `next`. `semantic-release` will publish with the `next` dist-tag on npm (`yarn add nori-ui@next`). Move GA to `main` when ready.
+Push to `next`. `semantic-release` will publish with the `next` dist-tag on npm (`yarn add @nori-ui/core@next`). Move GA to `main` when ready.
 
 ## Dropping a tier
 
@@ -517,8 +517,8 @@ GitHub: standard repo secrets only — cycle `GITHUB_TOKEN` via the normal workf
 ```bash
 mkdir /tmp/nori-ui-smoke && cd /tmp/nori-ui-smoke
 yarn init -2
-yarn add nori-ui@<version>
-node --input-type=module -e "import { cn, Slot } from 'nori-ui'; console.log(typeof cn, typeof Slot);"
+yarn add @nori-ui/core@<version>
+node --input-type=module -e "import { cn, Slot } from '@nori-ui/core'; console.log(typeof cn, typeof Slot);"
 ```
 
 Expected: `function function`.
@@ -583,7 +583,7 @@ Expected: at minimum, `packages/ui/dist/client.js` and any client-context module
 ## Done criteria for Plan 07
 
 - [ ] `yarn build:ui` emits ESM + CJS + `.d.ts` for every exports subpath.
-- [ ] `yarn workspace nori-ui pack --dry-run` tarball contains only `dist`, `package.json`, `README.md`, `LICENSE`.
+- [ ] `yarn workspace @nori-ui/core pack --dry-run` tarball contains only `dist`, `package.json`, `README.md`, `LICENSE`.
 - [ ] `.releaserc.json` validates; `semantic-release --dry-run` succeeds.
 - [ ] `release.yml` has `id-token: write`, uses `actions/setup-node` with `registry-url`, and runs `yarn semantic-release` with `NPM_CONFIG_PROVENANCE=true`.
 - [ ] `tier-matrix` CI job is scaffolded for multiple Expo SDKs.
@@ -600,5 +600,5 @@ When all boxes are ticked, the library is ready to be renamed and published. v0.
 2. **Local `semantic-release --dry-run` fails with `ERELEASEBRANCHES`** in the dev environment because the repo has no remote HEAD pushed (`origin/main`). The error message (`Your configuration for the problematic branches is []`) is misleading — the `.releaserc.json` branches field IS set; semantic-release just can't evaluate branches without a git remote. In CI this works normally because GitHub Actions checks out the repo with `fetch-depth: 0` and remote refs present. For local verification, run after `git push -u origin main` the first time, or skip the check and rely on CI.
 3. **Biome markdown formatter + `RUNBOOK.md`** — same checkbox-stripping bug seen for `docs/superpowers/**`. Add `RUNBOOK.md` to the formatter-disabled override in `biome.json`.
 4. **`'use client'` directive preservation in tsup output** — not yet verified in this plan's commits. Consumers in RSC contexts should import client-only pieces from `nori-ui/client` (which has its own `'use client'` banner), so the directive should survive at the entry-file level. Per-file directive preservation across sub-bundles is a follow-up (may need `esbuild-plugin-preserve-directives` or tsup 8+'s `banner` per entry).
-5. **Plan 07 Tasks 1–5 landed during the primary execution** (tsup build, .npmignore, semantic-release config, release.yml, tier-matrix). **Tasks 6–8 completed in a follow-up pass**: Task 6 (RUNBOOK) and a local green-build verification sweep; Task 7's full dry-run deferred to post-push (see #2). All green-build criteria satisfied: `yarn build:tokens`, `yarn build:ui`, `yarn biome check .`, `yarn typecheck`, `yarn test`, `yarn size`, `yarn workspace nori-ui pack --dry-run` all exit 0.
+5. **Plan 07 Tasks 1–5 landed during the primary execution** (tsup build, .npmignore, semantic-release config, release.yml, tier-matrix). **Tasks 6–8 completed in a follow-up pass**: Task 6 (RUNBOOK) and a local green-build verification sweep; Task 7's full dry-run deferred to post-push (see #2). All green-build criteria satisfied: `yarn build:tokens`, `yarn build:ui`, `yarn biome check .`, `yarn typecheck`, `yarn test`, `yarn size`, `yarn workspace @nori-ui/core pack --dry-run` all exit 0.
 6. **Publish readiness**: the tarball contains `LICENSE`, `README.md`, `package.json`, and `dist/**` (ESM + CJS + `.d.ts` + source maps for every entry). `src/` and test files correctly excluded via `.npmignore`. **`packages/ui/package.json` is still `private: true`** — flip to `false` only after the rename sweep during the first-release checklist (see RUNBOOK).

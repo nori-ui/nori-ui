@@ -9,7 +9,7 @@ platform: both
 ## Install
 
 ```bash
-yarn add nori-ui
+yarn add @nori-ui/core
 # optional — any icon library works; Lucide is recommended:
 yarn add lucide-react lucide-react-native
 ```
@@ -29,7 +29,7 @@ Wrap your app once. The library works without a provider too — provider only c
 
 ```tsx
 'use client';
-import { NoriProvider } from 'nori-ui/client';
+import { NoriProvider } from '@nori-ui/core/client';
 
 export default function App() {
     return (
@@ -43,7 +43,7 @@ export default function App() {
 ## First component
 
 ```tsx
-import { Button } from 'nori-ui';
+import { Button } from '@nori-ui/core';
 
 <Button variant="primary">Click me</Button>
 ```

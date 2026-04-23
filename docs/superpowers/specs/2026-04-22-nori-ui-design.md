@@ -16,7 +16,7 @@ Teams building cross-platform apps with React Native + Expo Web lack a modern, c
 `nori-ui` — a greenfield, Expo-first, New-Architecture-ready React Native + React Native Web component library. Styled with NativeWind v4, themed via Figma design tokens, i18next-compatible (without forcing i18next on consumers), and documented on a Fumadocs site with a first-class MCP server for AI tooling. Ships as a single published package with a single visible version.
 
 ### Success Criteria
-1. **Install-to-first-component ≤ 5 minutes** on a fresh Expo project — from `yarn add nori-ui` to a `<Button>` rendering correctly on iOS, Android, and web.
+1. **Install-to-first-component ≤ 5 minutes** on a fresh Expo project — from `yarn add @nori-ui/core` to a `<Button>` rendering correctly on iOS, Android, and web.
 2. **Tree-shaking verified with concrete budgets** — enforced by `size-limit` CI gates:
    - First component import (includes provider, theme, i18n core): ≤ 40 KB gzip.
    - Each additional component: ≤ 5 KB gzip marginal cost.
@@ -43,7 +43,7 @@ Teams building cross-platform apps with React Native + Expo Web lack a modern, c
 As a developer, I want to install the library and render my first component in under 5 minutes.
 
 _Acceptance Criteria:_
-- `yarn add nori-ui` pulls one package.
+- `yarn add @nori-ui/core` pulls one package.
 - Adding `<NoriProvider>` at the app root and importing `<Button>` renders correctly on iOS, Android, and web without further config beyond the NativeWind preset line in `tailwind.config.ts`.
 - A "Getting Started" docs page walks through this end-to-end.
 
@@ -320,7 +320,7 @@ ui-kit/
 
 ### Consumer Install (the only thing users have to do)
 ```bash
-yarn add nori-ui
+yarn add @nori-ui/core
 # and (optional) any icon library you like — directly imported:
 yarn add lucide-react-native lucide-react
 ```
@@ -334,7 +334,7 @@ export default { presets: [noriPreset], content: [...] };
 ```tsx
 // app root (client boundary)
 'use client';
-import { NoriProvider } from 'nori-ui/client';
+import { NoriProvider } from '@nori-ui/core/client';
 
 export default function App() {
   return (
@@ -348,7 +348,7 @@ export default function App() {
 ```tsx
 // using icons — direct import, tree-shaken automatically
 import { ChevronRight } from 'lucide-react-native';
-import { Button } from 'nori-ui';
+import { Button } from '@nori-ui/core';
 
 <Button trailingIcon={ChevronRight}>Continue</Button>
 ```

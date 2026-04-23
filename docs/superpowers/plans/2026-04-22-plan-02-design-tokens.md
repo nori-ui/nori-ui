@@ -956,7 +956,7 @@ git commit -m "test(tokens): add build-contract test covering public invariants"
 - [ ] **Step 1: Add the workspace dep to `packages/ui`.**
 
 ```bash
-yarn workspace nori-ui add @nori-ui/tokens@workspace:*
+yarn workspace @nori-ui/core add @nori-ui/tokens@workspace:*
 ```
 
 Expected: `packages/ui/package.json` now has `"@nori-ui/tokens": "workspace:*"` in `dependencies`.
@@ -968,7 +968,7 @@ Expected: `packages/ui/package.json` now has `"@nori-ui/tokens": "workspace:*"` 
 // Re-exports the generated theme types + constants from @nori-ui/tokens under
 // the library's own public namespace.
 //
-// Consumers should import `Theme` from 'nori-ui', not from '@nori-ui/tokens'.
+// Consumers should import `Theme` from '@nori-ui/core', not from '@nori-ui/tokens'.
 
 export { theme, themeDark, type Theme } from '@nori-ui/tokens';
 ```

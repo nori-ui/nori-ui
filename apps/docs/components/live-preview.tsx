@@ -1,6 +1,6 @@
 'use client';
 
-import { NoriProvider } from 'nori-ui/client';
+import { NoriProvider } from '@nori-ui/core/client';
 import { type ReactNode, useEffect, useState } from 'react';
 
 export type LivePreviewProps = {

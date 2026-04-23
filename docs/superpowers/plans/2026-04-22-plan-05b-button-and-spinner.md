@@ -145,7 +145,7 @@ export { Spinner, type SpinnerProps, type SpinnerSize } from './Spinner';
 - [ ] **Step 4: Run tests.**
 
 ```bash
-yarn workspace nori-ui test Spinner.test
+yarn workspace @nori-ui/core test Spinner.test
 ```
 
 Expected: 5 passed.
@@ -433,7 +433,7 @@ export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from '.
 - [ ] **Step 4: Run tests.**
 
 ```bash
-yarn workspace nori-ui test Button.test
+yarn workspace @nori-ui/core test Button.test
 ```
 
 Expected: 10 passed. If the asChild test fails because Slot's `onClick` prop didn't land on the `<a>`, inspect Slot's event-merge logic — it composes outer+inner handlers; the outer here is the Button's handlePress.

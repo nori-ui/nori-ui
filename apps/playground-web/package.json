@@ -13,8 +13,8 @@
     "build:storybook": "storybook build -o storybook-static"
   },
   "dependencies": {
+    "@nori-ui/core": "workspace:*",
     "@nori-ui/tokens": "workspace:*",
-    "nori-ui": "workspace:*",
     "react": "^19",
     "react-dom": "^19",
     "react-native-css-interop": "^0.2.3",

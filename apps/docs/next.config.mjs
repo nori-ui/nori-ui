@@ -7,7 +7,13 @@ const nextConfig = {
     reactStrictMode: true,
     // NativeWind + react-native-css-interop must be transpiled by Next so
     // their JSX runtime is applied uniformly across the app.
-    transpilePackages: ['nori-ui', '@nori-ui/tokens', 'nativewind', 'react-native-css-interop', 'react-native-web'],
+    transpilePackages: [
+        '@nori-ui/core',
+        '@nori-ui/tokens',
+        'nativewind',
+        'react-native-css-interop',
+        'react-native-web',
+    ],
     webpack: (config) => {
         config.resolve.alias = {
             ...(config.resolve.alias ?? {}),
