@@ -1,6 +1,7 @@
 {
   "name": "@nori-ui/tokens",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "description": "Design token pipeline: Tokens Studio JSON → Style Dictionary → Tailwind preset + TS types",
   "type": "module",
