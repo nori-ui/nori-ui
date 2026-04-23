@@ -124,6 +124,39 @@ import { ChevronRight, Check, X } from 'lucide-react-native';`,
     },
 };
 
+// NativeWind config files shared by every Snack. Without these the Tailwind
+// utility classes our library's className strings reference never get compiled
+// into real styles — Snack's build step runs babel-nativewind and Metro's
+// NativeWind wrapper, which requires all four files present at project root.
+const BABEL_CONFIG = `module.exports = function(api) {
+    api.cache(true);
+    return {
+        presets: [
+            ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+            'nativewind/babel',
+        ],
+    };
+};
+`;
+
+const TAILWIND_CONFIG = `const nativewindPreset = require('nativewind/preset');
+module.exports = {
+    content: ['./App.js'],
+    presets: [nativewindPreset],
+};
+`;
+
+const GLOBAL_CSS = `@tailwind base;
+@tailwind components;
+@tailwind utilities;
+`;
+
+const METRO_CONFIG = `const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
+const config = getDefaultConfig(__dirname);
+module.exports = withNativeWind(config, { input: './global.css' });
+`;
+
 async function createSnack(name, code) {
     const payload = {
         manifest: {
@@ -131,16 +164,25 @@ async function createSnack(name, code) {
             description: `Live preview of nori-ui's ${name} component on iOS / Android / web.`,
             sdkVersion: SDK,
         },
+        // Pin to versions recommended for SDK 55 (validator rejects otherwise).
+        // tailwindcss + react-native-svg added as explicit deps because
+        // Snack doesn't follow peerDependencies transitively.
         dependencies: {
             '@nori-ui/core': CORE_VERSION,
             'lucide-react-native': '0.441.0',
-            nativewind: '4.2.3',
-            'react-native-css-interop': '0.2.3',
-            'react-native-reanimated': '~4.2.0',
-            'react-native-safe-area-context': '5.6.2',
+            nativewind: '^4.2.1',
+            'react-native-css-interop': '^0.2.3',
+            'react-native-reanimated': '4.2.1',
+            'react-native-safe-area-context': '~5.6.2',
+            'react-native-svg': '15.14.0',
+            tailwindcss: '^3.4.0',
         },
         code: {
             'App.js': { contents: code, type: 'CODE' },
+            'babel.config.js': { contents: BABEL_CONFIG, type: 'CODE' },
+            'tailwind.config.js': { contents: TAILWIND_CONFIG, type: 'CODE' },
+            'global.css': { contents: GLOBAL_CSS, type: 'ASSET' },
+            'metro.config.js': { contents: METRO_CONFIG, type: 'CODE' },
         },
     };
 
