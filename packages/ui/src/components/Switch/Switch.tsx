@@ -79,34 +79,11 @@ export function Switch({
         disabled ? 'opacity-60' : undefined
     );
     const thumbClasses = cn('w-5 h-5 rounded-full bg-white shadow-sm', value ? 'self-end' : 'self-start');
-    // Inline styles mirror the Tailwind rules so RNW renders a visible track/thumb even when
-    // NativeWind's className transform is not active (e.g. the playground-web Vite build).
-    const trackStyle = {
-        width: 40,
-        height: 24,
-        borderRadius: 9999,
-        justifyContent: 'center' as const,
-        paddingHorizontal: 2,
-        backgroundColor: value ? '#2563eb' : '#d4d4d8',
-        opacity: disabled ? 0.6 : 1,
-    };
-    const thumbStyle = {
-        width: 20,
-        height: 20,
-        borderRadius: 9999,
-        backgroundColor: '#ffffff',
-        alignSelf: value ? ('flex-end' as const) : ('flex-start' as const),
-    };
-    const rowStyle = {
-        flexDirection: 'row' as const,
-        alignItems: 'center' as const,
-        gap: 8,
-    };
 
     return (
-        <View className={cn('flex-row items-center gap-2', className)} style={rowStyle}>
-            <Pressable onPress={toggle} {...commonProps} className={trackClasses} style={trackStyle}>
-                <View className={thumbClasses} style={thumbStyle} />
+        <View className={cn('flex-row items-center gap-2', className)}>
+            <Pressable onPress={toggle} {...commonProps} className={trackClasses}>
+                <View className={thumbClasses} />
             </Pressable>
             {label ? <RNText className="text-md text-semantic-text-default">{label}</RNText> : null}
             {children}
