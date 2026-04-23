@@ -86,7 +86,7 @@
       }
     },
     {
-      "includes": ["packages/tokens/src/config.mjs", "packages/tokens/src/formats/**"],
+      "includes": ["packages/tokens/src/config.mjs", "packages/tokens/src/formats/**", "apps/docs/scripts/**"],
       "linter": {
         "rules": {
           "suspicious": { "noConsole": "off" }
