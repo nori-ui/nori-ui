@@ -1,7 +1,7 @@
 {
   "name": "nori-ui",
   "version": "0.0.0",
-  "private": true,
+  "private": false,
   "description": "React Native + React Native Web UI component library — placeholder name, will be renamed",
   "license": "MIT",
   "repository": {
