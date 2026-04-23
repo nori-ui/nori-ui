@@ -16,6 +16,7 @@
     "@unbogify/tokens": "workspace:*",
     "react": "^19",
     "react-dom": "^19",
+    "react-native-css-interop": "^0.2.3",
     "react-native-web": "^0.19",
     "unbogify-ui": "workspace:*"
   },

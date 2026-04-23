@@ -19,9 +19,11 @@
     "fumadocs-core": "^15",
     "fumadocs-mdx": "^11",
     "fumadocs-ui": "^15",
+    "nativewind": "^4",
     "next": "^15",
     "react": "^19",
     "react-dom": "^19",
+    "react-native-css-interop": "^0.2.3",
     "react-native-web": "^0.19",
     "unbogify-ui": "workspace:*",
     "zod": "^3.23"

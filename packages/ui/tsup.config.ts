@@ -22,16 +22,20 @@ export default defineConfig({
     target: 'es2022',
     // @unbogify/tokens is private and bundled into the dist so consumers only
     // install one package. React / React DOM / React Native stay external as
-    // peer deps.
-    external: ['react', 'react-dom', 'react-native'],
-    // Preserve "use client" directives so RSC consumers honor boundaries.
-    // TODO(release): hook up an esbuild plugin (e.g. esbuild-plugin-preserve-
-    // directives) to preserve per-file "use client" banners after bundling.
-    // For now the banner is empty; keepNames helps debugging. Client modules
-    // still work at runtime — RSC boundary warning is just a hint for Next.js.
+    // peer deps. NativeWind + react-native-css-interop are also external —
+    // they're peer deps that the consumer already has installed for their own
+    // NativeWind setup.
+    external: ['react', 'react-dom', 'react-native', 'nativewind', 'react-native-css-interop'],
+    // Route JSX through NativeWind's runtime so className on RN primitives
+    // reaches react-native-css-interop → style instead of being swallowed by
+    // react-native-web. Without this, consumers who configure NativeWind at
+    // their app level still see the library's primitives render unstyled
+    // because the library's compiled JSX calls would bypass the interop wrap.
     esbuildOptions: (opts) => {
         opts.banner = { js: '' };
         opts.keepNames = true;
+        opts.jsx = 'automatic';
+        opts.jsxImportSource = 'nativewind';
     },
     treeshake: true,
 });

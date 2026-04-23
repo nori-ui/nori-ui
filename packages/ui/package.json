@@ -87,6 +87,8 @@
     "@unbogify/tokens": "workspace:*",
     "jest": "^29",
     "jest-environment-jsdom": "^29",
+    "nativewind": "^4",
+    "react-native-css-interop": "^0.2.3",
     "react-native-web": "^0.19",
     "size-limit": "^12.1.0",
     "ts-jest": "^29",
@@ -98,16 +100,24 @@
     "react-dom": "^19"
   },
   "peerDependencies": {
+    "nativewind": "^4",
     "react": "^19",
     "react-dom": "^19",
-    "react-native": "^0.83"
+    "react-native": "^0.83",
+    "react-native-css-interop": ">=0.2.0"
   },
   "peerDependenciesMeta": {
+    "nativewind": {
+      "optional": false
+    },
     "react-dom": {
       "optional": true
     },
     "react-native": {
       "optional": true
+    },
+    "react-native-css-interop": {
+      "optional": false
     }
   }
 }

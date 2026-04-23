@@ -2,6 +2,7 @@
   "extends": "../../tooling/tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
+    "jsxImportSource": "nativewind",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": false,
     "types": ["vite/client", "nativewind/types"],

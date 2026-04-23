@@ -2,6 +2,7 @@
   "extends": "../../tooling/tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
+    "jsxImportSource": "nativewind",
     "moduleResolution": "Bundler",
     "noEmit": true,
     "incremental": true,
