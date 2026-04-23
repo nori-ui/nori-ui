@@ -131,7 +131,7 @@ async function createSnack(name, code) {
             sdkVersion: SDK,
         },
         dependencies: {
-            '@nori-ui/core': CORE_VERSION,
+            '@nori-ui/core': `https://registry.npmjs.org/@nori-ui/core/-/core-${CORE_VERSION}.tgz`,
             'lucide-react-native': '0.441.0',
             nativewind: '4.2.3',
             'react-native-css-interop': '0.2.3',
