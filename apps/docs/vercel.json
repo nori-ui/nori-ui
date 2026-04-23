@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "cd ../.. && corepack enable && yarn install --immutable",
-  "buildCommand": "cd ../.. && yarn build:tokens && yarn workspace @nori-ui/docs build",
+  "buildCommand": "cd ../.. && yarn build:tokens && yarn workspace @nori-ui/core build && yarn workspace @nori-ui/docs build",
   "outputDirectory": ".next"
 }
