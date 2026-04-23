@@ -4,7 +4,7 @@
 
 **Goal:** Ship `Spinner` and `Button`. Spinner lands first because Button's `loading` state renders one. Button is the flagship component: variants (primary/secondary/ghost/destructive), sizes (sm/md/lg), loading state with i18n label, leading/trailing icon slots, and full `asChild` support via the Slot primitive.
 
-**Architecture:** Both components live under `packages/ui/src/components/<Name>/`. Spinner is pure-render + respects `prefers-reduced-motion`. Button is also pure-render (no hooks) but composes several primitives (Text, Icon wrapper via consumer-provided components, Pressable for press handling, Slot when `asChild`). Both are RSC-safe.
+**Architecture:** Both components live under `packages/core/src/components/<Name>/`. Spinner is pure-render + respects `prefers-reduced-motion`. Button is also pure-render (no hooks) but composes several primitives (Text, Icon wrapper via consumer-provided components, Pressable for press handling, Slot when `asChild`). Both are RSC-safe.
 
 **Tech Stack:** React 19, react-native primitives (Pressable, ActivityIndicator for Spinner's native side), NativeWind classNames. Tests use the jsdom RN-Web project set up in Plan 05a Task 1.
 
@@ -16,37 +16,37 @@
 
 **Created in this plan:**
 ```
-packages/ui/src/components/Spinner/Spinner.tsx
-packages/ui/src/components/Spinner/index.ts
-packages/ui/src/components/Spinner/Spinner.stories.tsx
-packages/ui/src/components/Spinner/__tests__/Spinner.test.tsx
+packages/core/src/components/Spinner/Spinner.tsx
+packages/core/src/components/Spinner/index.ts
+packages/core/src/components/Spinner/Spinner.stories.tsx
+packages/core/src/components/Spinner/__tests__/Spinner.test.tsx
 
-packages/ui/src/components/Button/Button.tsx
-packages/ui/src/components/Button/index.ts
-packages/ui/src/components/Button/Button.stories.tsx
-packages/ui/src/components/Button/__tests__/Button.test.tsx
+packages/core/src/components/Button/Button.tsx
+packages/core/src/components/Button/index.ts
+packages/core/src/components/Button/Button.stories.tsx
+packages/core/src/components/Button/__tests__/Button.test.tsx
 
 e2e/web/tests/button.spec.ts
 e2e/native/flows/button.yaml
 ```
 
 **Modified:**
-- `packages/ui/src/components/index.ts` — add Spinner + Button barrels
-- `packages/ui/src/stories/story-registry.ts` — append entries
-- `packages/ui/.size-limit.cjs` — add per-component budgets
+- `packages/core/src/components/index.ts` — add Spinner + Button barrels
+- `packages/core/src/stories/story-registry.ts` — append entries
+- `packages/core/.size-limit.cjs` — add per-component budgets
 
 ---
 
 ## Task 1 — `Spinner` component
 
 **Files:**
-- Create: `packages/ui/src/components/Spinner/Spinner.tsx`
-- Create: `packages/ui/src/components/Spinner/index.ts`
-- Create: `packages/ui/src/components/Spinner/__tests__/Spinner.test.tsx`
+- Create: `packages/core/src/components/Spinner/Spinner.tsx`
+- Create: `packages/core/src/components/Spinner/index.ts`
+- Create: `packages/core/src/components/Spinner/__tests__/Spinner.test.tsx`
 
 - [ ] **Step 1: Write the failing test.**
 
-`packages/ui/src/components/Spinner/__tests__/Spinner.test.tsx`:
+`packages/core/src/components/Spinner/__tests__/Spinner.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -86,7 +86,7 @@ describe('<Spinner>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/Spinner/Spinner.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/Spinner/Spinner.tsx`.**
 
 ```tsx
 import { ActivityIndicator } from 'react-native';
@@ -136,7 +136,7 @@ export function Spinner({ label = 'Loading', size = 'md', testID, color, style, 
 }
 ```
 
-- [ ] **Step 3: `packages/ui/src/components/Spinner/index.ts`.**
+- [ ] **Step 3: `packages/core/src/components/Spinner/index.ts`.**
 
 ```ts
 export { Spinner, type SpinnerProps, type SpinnerSize } from './Spinner';
@@ -153,7 +153,7 @@ Expected: 5 passed.
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/Spinner/
+git add packages/core/src/components/Spinner/
 git commit -m "feat(ui): add Spinner with a11y role=progressbar and reduced-motion support"
 ```
 
@@ -162,10 +162,10 @@ git commit -m "feat(ui): add Spinner with a11y role=progressbar and reduced-moti
 ## Task 2 — `Spinner` story + registry entry
 
 **Files:**
-- Create: `packages/ui/src/components/Spinner/Spinner.stories.tsx`
-- Modify: `packages/ui/src/stories/story-registry.ts`
+- Create: `packages/core/src/components/Spinner/Spinner.stories.tsx`
+- Modify: `packages/core/src/stories/story-registry.ts`
 
-- [ ] **Step 1: `packages/ui/src/components/Spinner/Spinner.stories.tsx`.**
+- [ ] **Step 1: `packages/core/src/components/Spinner/Spinner.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -186,7 +186,7 @@ export const Large: StoryObj<typeof Spinner> = { args: { size: 'lg' } };
 export const CustomLabel: StoryObj<typeof Spinner> = { args: { label: 'Fetching results' } };
 ```
 
-- [ ] **Step 2: Append to `packages/ui/src/stories/story-registry.ts`:**
+- [ ] **Step 2: Append to `packages/core/src/stories/story-registry.ts`:**
 
 ```ts
 // add after the VStack entry
@@ -211,7 +211,7 @@ import { Spinner } from '../components/Spinner';
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/src/components/Spinner/Spinner.stories.tsx packages/ui/src/stories/story-registry.ts
+git add packages/core/src/components/Spinner/Spinner.stories.tsx packages/core/src/stories/story-registry.ts
 git commit -m "feat(ui): add Spinner stories and registry entries"
 ```
 
@@ -220,13 +220,13 @@ git commit -m "feat(ui): add Spinner stories and registry entries"
 ## Task 3 — `Button` component: test, implementation, barrel
 
 **Files:**
-- Create: `packages/ui/src/components/Button/Button.tsx`
-- Create: `packages/ui/src/components/Button/index.ts`
-- Create: `packages/ui/src/components/Button/__tests__/Button.test.tsx`
+- Create: `packages/core/src/components/Button/Button.tsx`
+- Create: `packages/core/src/components/Button/index.ts`
+- Create: `packages/core/src/components/Button/__tests__/Button.test.tsx`
 
 - [ ] **Step 1: Write the failing test.**
 
-`packages/ui/src/components/Button/__tests__/Button.test.tsx`:
+`packages/core/src/components/Button/__tests__/Button.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -307,7 +307,7 @@ describe('<Button>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/Button/Button.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/Button/Button.tsx`.**
 
 ```tsx
 import { forwardRef } from 'react';
@@ -424,7 +424,7 @@ Design notes:
 - `accessibilityState` on native; `aria-disabled`/`aria-busy` on web. Both fire.
 - Size maps to both classname and icon pixel size.
 
-- [ ] **Step 3: `packages/ui/src/components/Button/index.ts`.**
+- [ ] **Step 3: `packages/core/src/components/Button/index.ts`.**
 
 ```ts
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
@@ -441,7 +441,7 @@ Expected: 10 passed. If the asChild test fails because Slot's `onClick` prop did
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/Button/
+git add packages/core/src/components/Button/
 git commit -m "feat(ui): add Button with 4 variants, 3 sizes, loading state, icon slots, asChild"
 ```
 
@@ -450,11 +450,11 @@ git commit -m "feat(ui): add Button with 4 variants, 3 sizes, loading state, ico
 ## Task 4 — Button story + registry entries
 
 **Files:**
-- Create: `packages/ui/src/components/Button/Button.stories.tsx`
-- Modify: `packages/ui/src/stories/story-registry.ts`
-- Modify: `packages/ui/src/components/index.ts`
+- Create: `packages/core/src/components/Button/Button.stories.tsx`
+- Modify: `packages/core/src/stories/story-registry.ts`
+- Modify: `packages/core/src/components/index.ts`
 
-- [ ] **Step 1: `packages/ui/src/components/Button/Button.stories.tsx`.**
+- [ ] **Step 1: `packages/core/src/components/Button/Button.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -484,7 +484,7 @@ export const Small: Story = { args: { size: 'sm', children: 'Small' } };
 export const Large: Story = { args: { size: 'lg', children: 'Large' } };
 ```
 
-- [ ] **Step 2: Append to `packages/ui/src/stories/story-registry.ts`:**
+- [ ] **Step 2: Append to `packages/core/src/stories/story-registry.ts`:**
 
 ```ts
 import { Button } from '../components/Button';
@@ -507,7 +507,7 @@ import { Button } from '../components/Button';
 },
 ```
 
-- [ ] **Step 3: Update `packages/ui/src/components/index.ts`** to re-export Button and Spinner.
+- [ ] **Step 3: Update `packages/core/src/components/index.ts`** to re-export Button and Spinner.
 
 ```ts
 export * from './Text';
@@ -521,7 +521,7 @@ export * from './Button';
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add packages/ui/src/components/Button/Button.stories.tsx packages/ui/src/components/index.ts packages/ui/src/stories/story-registry.ts
+git add packages/core/src/components/Button/Button.stories.tsx packages/core/src/components/index.ts packages/core/src/stories/story-registry.ts
 git commit -m "feat(ui): add Button stories and re-export Button + Spinner from components barrel"
 ```
 
@@ -620,7 +620,7 @@ git commit -m "test(e2e): add maestro button flow for playground-native"
 ## Task 7 — Update size-limit budgets
 
 **Files:**
-- Modify: `packages/ui/.size-limit.cjs`
+- Modify: `packages/core/.size-limit.cjs`
 
 - [ ] **Step 1: Add Spinner + Button entries.**
 
@@ -647,7 +647,7 @@ module.exports = [
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/.size-limit.cjs
+git add packages/core/.size-limit.cjs
 git commit -m "chore(ui): add Spinner + Button size-limit entries"
 ```
 
@@ -687,7 +687,7 @@ When all boxes are ticked, continue with Plan 05c (TextInput + TextArea) and Pla
 
 ## Errata (post-execution notes)
 
-1. **Jest RN mock needs Pressable-onClick wiring.** `fireEvent.click` does NOT trigger RN's `onPress`. Extend `packages/ui/jest.rn-setup.ts` so the mocked `Pressable` dispatches `onPress` via `onClick` and maps `accessibilityState.busy` → `aria-busy`, `accessibilityState.checked` → `aria-checked`, `accessibilityState.disabled` → `aria-disabled`. Plan 05c/05d tests for interactive components rely on this.
+1. **Jest RN mock needs Pressable-onClick wiring.** `fireEvent.click` does NOT trigger RN's `onPress`. Extend `packages/core/jest.rn-setup.ts` so the mocked `Pressable` dispatches `onPress` via `onClick` and maps `accessibilityState.busy` → `aria-busy`, `accessibilityState.checked` → `aria-checked`, `accessibilityState.disabled` → `aria-disabled`. Plan 05c/05d tests for interactive components rely on this.
 2. **`ActivityIndicator` mock** needs to flatten style arrays and default `accessibilityRole: 'progressbar'`. The Spinner test expects `role="progressbar"` on the rendered DOM.
 3. **`story-registry.tsx` eslint warnings** (inline styles, color literals) are pre-existing from Plan 05a and accepted. Don't fight them in 05c/05d.
 4. **Pressable `aria-*` direct props vs `accessibilityState`**: if the component sets both, the mock order produces consistent output. Prefer `aria-*` direct props on web-facing surfaces and rely on the mock to map `accessibilityState` on native-facing surfaces.

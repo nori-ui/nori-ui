@@ -4,7 +4,7 @@
 
 **Goal:** Ship `Checkbox` (with indeterminate state) and `Switch`. Both support controlled + uncontrolled usage, `asChild`, proper ARIA roles, and a label slot.
 
-**Architecture:** Each lives under `packages/ui/src/components/<Name>/`. Both use `Pressable` internally (or `Slot` when `asChild`). Internal semantic glyphs for Checkbox's ✓ come from the semantic icon registry via `useSemanticIcon('checkmark')`.
+**Architecture:** Each lives under `packages/core/src/components/<Name>/`. Both use `Pressable` internally (or `Slot` when `asChild`). Internal semantic glyphs for Checkbox's ✓ come from the semantic icon registry via `useSemanticIcon('checkmark')`.
 
 **Applies all prior errata.**
 
@@ -14,37 +14,37 @@
 
 **Created:**
 ```
-packages/ui/src/components/Checkbox/Checkbox.tsx
-packages/ui/src/components/Checkbox/index.ts
-packages/ui/src/components/Checkbox/Checkbox.stories.tsx
-packages/ui/src/components/Checkbox/__tests__/Checkbox.test.tsx
+packages/core/src/components/Checkbox/Checkbox.tsx
+packages/core/src/components/Checkbox/index.ts
+packages/core/src/components/Checkbox/Checkbox.stories.tsx
+packages/core/src/components/Checkbox/__tests__/Checkbox.test.tsx
 
-packages/ui/src/components/Switch/Switch.tsx
-packages/ui/src/components/Switch/index.ts
-packages/ui/src/components/Switch/Switch.stories.tsx
-packages/ui/src/components/Switch/__tests__/Switch.test.tsx
+packages/core/src/components/Switch/Switch.tsx
+packages/core/src/components/Switch/index.ts
+packages/core/src/components/Switch/Switch.stories.tsx
+packages/core/src/components/Switch/__tests__/Switch.test.tsx
 
 e2e/web/tests/toggles.spec.ts
 e2e/native/flows/toggles.yaml
 ```
 
 **Modified:**
-- `packages/ui/src/components/index.ts`
-- `packages/ui/src/stories/story-registry.ts`
-- `packages/ui/.size-limit.cjs`
+- `packages/core/src/components/index.ts`
+- `packages/core/src/stories/story-registry.ts`
+- `packages/core/.size-limit.cjs`
 
 ---
 
 ## Task 1 — `Checkbox` component
 
 **Files:**
-- Create: `packages/ui/src/components/Checkbox/Checkbox.tsx`
-- Create: `packages/ui/src/components/Checkbox/index.ts`
-- Create: `packages/ui/src/components/Checkbox/__tests__/Checkbox.test.tsx`
+- Create: `packages/core/src/components/Checkbox/Checkbox.tsx`
+- Create: `packages/core/src/components/Checkbox/index.ts`
+- Create: `packages/core/src/components/Checkbox/__tests__/Checkbox.test.tsx`
 
 - [ ] **Step 1: Write the failing test.**
 
-`packages/ui/src/components/Checkbox/__tests__/Checkbox.test.tsx`:
+`packages/core/src/components/Checkbox/__tests__/Checkbox.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -114,7 +114,7 @@ describe('<Checkbox>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/Checkbox/Checkbox.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/Checkbox/Checkbox.tsx`.**
 
 ```tsx
 'use client';
@@ -198,14 +198,14 @@ export function Checkbox({
 - [ ] **Step 3: Barrel + run + commit.**
 
 ```ts
-// packages/ui/src/components/Checkbox/index.ts
+// packages/core/src/components/Checkbox/index.ts
 export { Checkbox, type CheckboxProps } from './Checkbox';
 ```
 
 ```bash
 yarn workspace @nori-ui/core test Checkbox.test
 # 8 passed
-git add packages/ui/src/components/Checkbox/
+git add packages/core/src/components/Checkbox/
 git commit -m "feat(ui): add Checkbox with indeterminate, asChild, semantic-icon checkmark"
 ```
 
@@ -214,13 +214,13 @@ git commit -m "feat(ui): add Checkbox with indeterminate, asChild, semantic-icon
 ## Task 2 — `Switch` component
 
 **Files:**
-- Create: `packages/ui/src/components/Switch/Switch.tsx`
-- Create: `packages/ui/src/components/Switch/index.ts`
-- Create: `packages/ui/src/components/Switch/__tests__/Switch.test.tsx`
+- Create: `packages/core/src/components/Switch/Switch.tsx`
+- Create: `packages/core/src/components/Switch/index.ts`
+- Create: `packages/core/src/components/Switch/__tests__/Switch.test.tsx`
 
 - [ ] **Step 1: Write the test.**
 
-`packages/ui/src/components/Switch/__tests__/Switch.test.tsx`:
+`packages/core/src/components/Switch/__tests__/Switch.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -282,7 +282,7 @@ describe('<Switch>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/Switch/Switch.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/Switch/Switch.tsx`.**
 
 ```tsx
 'use client';
@@ -370,14 +370,14 @@ export function Switch({
 - [ ] **Step 3: Barrel + run + commit.**
 
 ```ts
-// packages/ui/src/components/Switch/index.ts
+// packages/core/src/components/Switch/index.ts
 export { Switch, type SwitchProps } from './Switch';
 ```
 
 ```bash
 yarn workspace @nori-ui/core test Switch.test
 # 7 passed
-git add packages/ui/src/components/Switch/
+git add packages/core/src/components/Switch/
 git commit -m "feat(ui): add Switch with role=switch, controlled+uncontrolled, asChild"
 ```
 
@@ -386,12 +386,12 @@ git commit -m "feat(ui): add Switch with role=switch, controlled+uncontrolled, a
 ## Task 3 — Stories + registry + barrel
 
 **Files:**
-- Create: `packages/ui/src/components/Checkbox/Checkbox.stories.tsx`
-- Create: `packages/ui/src/components/Switch/Switch.stories.tsx`
-- Modify: `packages/ui/src/components/index.ts`
-- Modify: `packages/ui/src/stories/story-registry.ts`
+- Create: `packages/core/src/components/Checkbox/Checkbox.stories.tsx`
+- Create: `packages/core/src/components/Switch/Switch.stories.tsx`
+- Modify: `packages/core/src/components/index.ts`
+- Modify: `packages/core/src/stories/story-registry.ts`
 
-- [ ] **Step 1: `packages/ui/src/components/Checkbox/Checkbox.stories.tsx`.**
+- [ ] **Step 1: `packages/core/src/components/Checkbox/Checkbox.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -411,7 +411,7 @@ export const Indeterminate: Story = { args: { indeterminate: true } };
 export const Disabled: Story = { args: { disabled: true } };
 ```
 
-- [ ] **Step 2: `packages/ui/src/components/Switch/Switch.stories.tsx`.**
+- [ ] **Step 2: `packages/core/src/components/Switch/Switch.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -433,12 +433,12 @@ export const Disabled: Story = { args: { disabled: true } };
 - [ ] **Step 3: Update components barrel.**
 
 ```ts
-// packages/ui/src/components/index.ts — add:
+// packages/core/src/components/index.ts — add:
 export * from './Checkbox';
 export * from './Switch';
 ```
 
-- [ ] **Step 4: Append registry entries** in `packages/ui/src/stories/story-registry.ts`:
+- [ ] **Step 4: Append registry entries** in `packages/core/src/stories/story-registry.ts`:
 
 ```ts
 import { Checkbox } from '../components/Checkbox';
@@ -470,7 +470,7 @@ import { Switch } from '../components/Switch';
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/ packages/ui/src/stories/story-registry.ts
+git add packages/core/src/components/ packages/core/src/stories/story-registry.ts
 git commit -m "feat(ui): add Checkbox + Switch stories and registry entries"
 ```
 
@@ -547,7 +547,7 @@ git commit -m "test(e2e): add maestro toggles flow"
 
 ## Task 6 — Size budgets + final verification
 
-Append to `packages/ui/.size-limit.cjs`:
+Append to `packages/core/.size-limit.cjs`:
 
 ```js
 {
@@ -578,7 +578,7 @@ yarn test:e2e:web
 All green.
 
 ```bash
-git add packages/ui/.size-limit.cjs
+git add packages/core/.size-limit.cjs
 git commit -m "chore(ui): add Checkbox + Switch size-limit entries"
 ```
 
@@ -599,7 +599,7 @@ When all boxes are ticked, Plan 05 is complete. Plan 06 (Docs + MCP) can begin.
 ## Errata (post-execution notes)
 
 1. **Jest RN mock — `aria-checked="mixed"` support.** `accessibilityState.checked` now accepts `'mixed'` as well as booleans. Explicit `aria-*` props passed via rest must take precedence over `accessibilityState.*` mappings — order matters in the mock. Required so Checkbox's indeterminate test passes.
-2. **RSC-safety allowlist.** `components/Checkbox/Checkbox.tsx` and `components/Switch/Switch.tsx` must be added to `CLIENT_ALLOWED` in `packages/ui/__tests__/rsc-safety.test.ts` — they declare `'use client'` because they use `useState`/`useCallback`.
+2. **RSC-safety allowlist.** `components/Checkbox/Checkbox.tsx` and `components/Switch/Switch.tsx` must be added to `CLIENT_ALLOWED` in `packages/core/__tests__/rsc-safety.test.ts` — they declare `'use client'` because they use `useState`/`useCallback`.
 3. **asChild test stubs need `tabIndex={0}`** to satisfy a11y lint and focusability, plus a `biome-ignore lint/a11y/useSemanticElements` comment — `role="checkbox"` on a `<div>` is flagged (fair: production usage should target native elements, but the test stub is intentional).
 4. **NativeWind doesn't compile for playground-web (Vite target)** — component className layout classes (`w-5 h-5`, `bg-neutral-300`, `rounded-full`) don't produce real CSS there. Fix: add inline `style={{ …fallback dimensions and colors }}` alongside the `className` so the visual renders on the playground-web build. This is a playground-rendering issue, not a library issue; production consumers with NativeWind's Babel plugin active get the className-only path.
 

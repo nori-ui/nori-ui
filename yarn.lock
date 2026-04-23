@@ -4653,9 +4653,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nori-ui/core@workspace:*, @nori-ui/core@workspace:packages/ui":
+"@nori-ui/core@workspace:*, @nori-ui/core@workspace:packages/core":
   version: 0.0.0-use.local
-  resolution: "@nori-ui/core@workspace:packages/ui"
+  resolution: "@nori-ui/core@workspace:packages/core"
   dependencies:
     "@nori-ui/tokens": "workspace:*"
     "@size-limit/preset-small-lib": "npm:^12.1.0"

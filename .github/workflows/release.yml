@@ -38,13 +38,13 @@ jobs:
 
       - name: Verify build artifacts
         run: |
-          test -f packages/ui/dist/index.js
-          test -f packages/ui/dist/index.cjs
-          test -f packages/ui/dist/index.d.ts
+          test -f packages/core/dist/index.js
+          test -f packages/core/dist/index.cjs
+          test -f packages/core/dist/index.d.ts
 
       # semantic-release handles version bump + publish + changelog + github release.
       # npm publish is invoked by @semantic-release/npm; we ensure provenance is on
-      # via the publishConfig in packages/ui/package.json and NPM_CONFIG_PROVENANCE
+      # via the publishConfig in packages/core/package.json and NPM_CONFIG_PROVENANCE
       # below, and id-token: write above authorizes OIDC trusted-publisher auth.
       # No NPM_TOKEN secret is used.
       - name: Release

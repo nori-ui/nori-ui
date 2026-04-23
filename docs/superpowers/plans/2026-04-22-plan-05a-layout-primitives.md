@@ -4,7 +4,7 @@
 
 **Goal:** Ship the four layout primitives — `Text`, `Box`, `HStack`, `VStack` — each with unit tests (Jest + RNTL), a CSF story wired into the shared registry, Playwright coverage (web + axe a11y), and a Maestro flow (native). All four are pure-render, RSC-safe, and consume NativeWind classNames for styling.
 
-**Architecture:** Each component lives under `packages/ui/src/components/<Name>/` with a `<Name>.tsx`, `index.ts`, `<Name>.stories.tsx`, and a `__tests__/<Name>.test.tsx`. Components are written against `react-native` primitives (`Text`, `View`) so web resolves via `react-native-web` in the playground. All four use the `cn()` helper from Plan 03 to compose consumer `className` with internal defaults.
+**Architecture:** Each component lives under `packages/core/src/components/<Name>/` with a `<Name>.tsx`, `index.ts`, `<Name>.stories.tsx`, and a `__tests__/<Name>.test.tsx`. Components are written against `react-native` primitives (`Text`, `View`) so web resolves via `react-native-web` in the playground. All four use the `cn()` helper from Plan 03 to compose consumer `className` with internal defaults.
 
 **Tech Stack:** React 19, react-native primitives, NativeWind v4 classNames (compiled at consumer build time), Jest + RNTL for unit tests, Playwright for web e2e, Maestro for native e2e.
 
@@ -16,44 +16,44 @@
 
 **Created in this plan:**
 ```
-packages/ui/src/components/Text/Text.tsx
-packages/ui/src/components/Text/index.ts
-packages/ui/src/components/Text/Text.stories.tsx
-packages/ui/src/components/Text/__tests__/Text.test.tsx
+packages/core/src/components/Text/Text.tsx
+packages/core/src/components/Text/index.ts
+packages/core/src/components/Text/Text.stories.tsx
+packages/core/src/components/Text/__tests__/Text.test.tsx
 
-packages/ui/src/components/Box/Box.tsx
-packages/ui/src/components/Box/index.ts
-packages/ui/src/components/Box/Box.stories.tsx
-packages/ui/src/components/Box/__tests__/Box.test.tsx
+packages/core/src/components/Box/Box.tsx
+packages/core/src/components/Box/index.ts
+packages/core/src/components/Box/Box.stories.tsx
+packages/core/src/components/Box/__tests__/Box.test.tsx
 
-packages/ui/src/components/HStack/HStack.tsx
-packages/ui/src/components/HStack/index.ts
-packages/ui/src/components/HStack/HStack.stories.tsx
-packages/ui/src/components/HStack/__tests__/HStack.test.tsx
+packages/core/src/components/HStack/HStack.tsx
+packages/core/src/components/HStack/index.ts
+packages/core/src/components/HStack/HStack.stories.tsx
+packages/core/src/components/HStack/__tests__/HStack.test.tsx
 
-packages/ui/src/components/VStack/VStack.tsx
-packages/ui/src/components/VStack/index.ts
-packages/ui/src/components/VStack/VStack.stories.tsx
-packages/ui/src/components/VStack/__tests__/VStack.test.tsx
+packages/core/src/components/VStack/VStack.tsx
+packages/core/src/components/VStack/index.ts
+packages/core/src/components/VStack/VStack.stories.tsx
+packages/core/src/components/VStack/__tests__/VStack.test.tsx
 
-packages/ui/src/components/index.ts
+packages/core/src/components/index.ts
 
 e2e/web/tests/layout.spec.ts
 e2e/native/flows/layout.yaml
 ```
 
 **Modified:**
-- `packages/ui/src/index.ts` — re-export components
-- `packages/ui/src/stories/story-registry.ts` — append 4 story entries
-- `packages/ui/jest.config.cjs` — add react-native preset for .tsx tests rendering RN primitives
+- `packages/core/src/index.ts` — re-export components
+- `packages/core/src/stories/story-registry.ts` — append 4 story entries
+- `packages/core/jest.config.cjs` — add react-native preset for .tsx tests rendering RN primitives
 
 ---
 
 ## Task 1 — Jest config: add react-native preset + setup
 
 **Files:**
-- Modify: `packages/ui/jest.config.cjs`
-- Create: `packages/ui/jest.rn-setup.ts`
+- Modify: `packages/core/jest.config.cjs`
+- Create: `packages/core/jest.rn-setup.ts`
 
 Components use RN primitives (`Text`, `View`) that need a testing shim in jsdom. RNTL's `@testing-library/react-native` resolves through a jest preset. Simplest path: alias `react-native` → `react-native-web` at the Jest module level so jsdom renders HTML equivalents.
 
@@ -63,7 +63,7 @@ Components use RN primitives (`Text`, `View`) that need a testing shim in jsdom.
 yarn workspace @nori-ui/core add -D react-native-web@^0.19 @testing-library/react-native@^12
 ```
 
-- [ ] **Step 2: Update `packages/ui/jest.config.cjs`.**
+- [ ] **Step 2: Update `packages/core/jest.config.cjs`.**
 
 ```js
 const base = require('../../jest.config.base.cjs');
@@ -107,7 +107,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 3: Create `packages/ui/jest.rn-setup.ts`.**
+- [ ] **Step 3: Create `packages/core/jest.rn-setup.ts`.**
 
 ```ts
 // RN-Web rendering shims. Keeps the jsdom project stable for both plain
@@ -136,7 +136,7 @@ Expected: still 36 passed.
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/jest.config.cjs packages/ui/jest.rn-setup.ts packages/ui/package.json yarn.lock
+git add packages/core/jest.config.cjs packages/core/jest.rn-setup.ts packages/core/package.json yarn.lock
 git commit -m "test(ui): alias react-native → react-native-web in jsdom jest project"
 ```
 
@@ -145,13 +145,13 @@ git commit -m "test(ui): alias react-native → react-native-web in jsdom jest p
 ## Task 2 — `Text` component
 
 **Files:**
-- Create: `packages/ui/src/components/Text/Text.tsx`
-- Create: `packages/ui/src/components/Text/index.ts`
-- Create: `packages/ui/src/components/Text/__tests__/Text.test.tsx`
+- Create: `packages/core/src/components/Text/Text.tsx`
+- Create: `packages/core/src/components/Text/index.ts`
+- Create: `packages/core/src/components/Text/__tests__/Text.test.tsx`
 
 - [ ] **Step 1: Write the failing test.**
 
-`packages/ui/src/components/Text/__tests__/Text.test.tsx`:
+`packages/core/src/components/Text/__tests__/Text.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -188,7 +188,7 @@ describe('<Text>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/Text/Text.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/Text/Text.tsx`.**
 
 ```tsx
 import { Text as RNText } from 'react-native';
@@ -243,7 +243,7 @@ export function Text({ variant = 'body-md', className, testID, children, ...rest
 }
 ```
 
-- [ ] **Step 3: Create `packages/ui/src/components/Text/index.ts`.**
+- [ ] **Step 3: Create `packages/core/src/components/Text/index.ts`.**
 
 ```ts
 export { Text, type TextProps, type TextVariant } from './Text';
@@ -260,7 +260,7 @@ Expected: 5 passed. If the className regex doesn't match, NativeWind may strip c
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/Text/Text.tsx packages/ui/src/components/Text/index.ts packages/ui/src/components/Text/__tests__/
+git add packages/core/src/components/Text/Text.tsx packages/core/src/components/Text/index.ts packages/core/src/components/Text/__tests__/
 git commit -m "feat(ui): add Text primitive with 7 variants and heading a11y role"
 ```
 
@@ -269,13 +269,13 @@ git commit -m "feat(ui): add Text primitive with 7 variants and heading a11y rol
 ## Task 3 — `Box` component
 
 **Files:**
-- Create: `packages/ui/src/components/Box/Box.tsx`
-- Create: `packages/ui/src/components/Box/index.ts`
-- Create: `packages/ui/src/components/Box/__tests__/Box.test.tsx`
+- Create: `packages/core/src/components/Box/Box.tsx`
+- Create: `packages/core/src/components/Box/index.ts`
+- Create: `packages/core/src/components/Box/__tests__/Box.test.tsx`
 
 - [ ] **Step 1: Write test.**
 
-`packages/ui/src/components/Box/__tests__/Box.test.tsx`:
+`packages/core/src/components/Box/__tests__/Box.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -307,7 +307,7 @@ describe('<Box>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/Box/Box.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/Box/Box.tsx`.**
 
 ```tsx
 import { View } from 'react-native';
@@ -332,7 +332,7 @@ export function Box({ className, children, ...rest }: BoxProps) {
 }
 ```
 
-- [ ] **Step 3: Create `packages/ui/src/components/Box/index.ts`.**
+- [ ] **Step 3: Create `packages/core/src/components/Box/index.ts`.**
 
 ```ts
 export { Box, type BoxProps } from './Box';
@@ -349,7 +349,7 @@ Expected: 3 passed.
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/Box/
+git add packages/core/src/components/Box/
 git commit -m "feat(ui): add Box layout primitive"
 ```
 
@@ -358,13 +358,13 @@ git commit -m "feat(ui): add Box layout primitive"
 ## Task 4 — `HStack` component
 
 **Files:**
-- Create: `packages/ui/src/components/HStack/HStack.tsx`
-- Create: `packages/ui/src/components/HStack/index.ts`
-- Create: `packages/ui/src/components/HStack/__tests__/HStack.test.tsx`
+- Create: `packages/core/src/components/HStack/HStack.tsx`
+- Create: `packages/core/src/components/HStack/index.ts`
+- Create: `packages/core/src/components/HStack/__tests__/HStack.test.tsx`
 
 - [ ] **Step 1: Write test.**
 
-`packages/ui/src/components/HStack/__tests__/HStack.test.tsx`:
+`packages/core/src/components/HStack/__tests__/HStack.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -403,7 +403,7 @@ describe('<HStack>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/HStack/HStack.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/HStack/HStack.tsx`.**
 
 ```tsx
 import { View } from 'react-native';
@@ -462,7 +462,7 @@ export function HStack({ gap, align, justify, className, children, ...rest }: HS
 
 - [ ] **Step 3: Barrel + run + commit.**
 
-`packages/ui/src/components/HStack/index.ts`:
+`packages/core/src/components/HStack/index.ts`:
 
 ```ts
 export { HStack, type HStackProps, type StackAlign, type StackGap, type StackJustify } from './HStack';
@@ -473,7 +473,7 @@ Then:
 ```bash
 yarn workspace @nori-ui/core test HStack.test
 # 6 passed
-git add packages/ui/src/components/HStack/
+git add packages/core/src/components/HStack/
 git commit -m "feat(ui): add HStack layout primitive with gap/align/justify"
 ```
 
@@ -482,13 +482,13 @@ git commit -m "feat(ui): add HStack layout primitive with gap/align/justify"
 ## Task 5 — `VStack` component
 
 **Files:**
-- Create: `packages/ui/src/components/VStack/VStack.tsx`
-- Create: `packages/ui/src/components/VStack/index.ts`
-- Create: `packages/ui/src/components/VStack/__tests__/VStack.test.tsx`
+- Create: `packages/core/src/components/VStack/VStack.tsx`
+- Create: `packages/core/src/components/VStack/index.ts`
+- Create: `packages/core/src/components/VStack/__tests__/VStack.test.tsx`
 
 - [ ] **Step 1: Write test.**
 
-`packages/ui/src/components/VStack/__tests__/VStack.test.tsx`:
+`packages/core/src/components/VStack/__tests__/VStack.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -519,7 +519,7 @@ describe('<VStack>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/VStack/VStack.tsx`.** Reuses the same type vocabulary as HStack.
+- [ ] **Step 2: Implement `packages/core/src/components/VStack/VStack.tsx`.** Reuses the same type vocabulary as HStack.
 
 ```tsx
 import { View } from 'react-native';
@@ -572,7 +572,7 @@ export function VStack({ gap, align, justify, className, children, ...rest }: VS
 
 - [ ] **Step 3: Barrel + run + commit.**
 
-`packages/ui/src/components/VStack/index.ts`:
+`packages/core/src/components/VStack/index.ts`:
 
 ```ts
 export { VStack, type VStackProps } from './VStack';
@@ -583,7 +583,7 @@ Then:
 ```bash
 yarn workspace @nori-ui/core test VStack.test
 # 4 passed
-git add packages/ui/src/components/VStack/
+git add packages/core/src/components/VStack/
 git commit -m "feat(ui): add VStack layout primitive"
 ```
 
@@ -592,10 +592,10 @@ git commit -m "feat(ui): add VStack layout primitive"
 ## Task 6 — Component barrel + public exports
 
 **Files:**
-- Create: `packages/ui/src/components/index.ts`
-- Modify: `packages/ui/src/index.ts` (re-export components)
+- Create: `packages/core/src/components/index.ts`
+- Modify: `packages/core/src/index.ts` (re-export components)
 
-- [ ] **Step 1: `packages/ui/src/components/index.ts`.**
+- [ ] **Step 1: `packages/core/src/components/index.ts`.**
 
 ```ts
 export * from './Text';
@@ -604,7 +604,7 @@ export * from './HStack';
 export * from './VStack';
 ```
 
-- [ ] **Step 2: Update `packages/ui/src/index.ts`** by adding the components re-export. Insert this line in a logical position (near the other subsystem barrels):
+- [ ] **Step 2: Update `packages/core/src/index.ts`** by adding the components re-export. Insert this line in a logical position (near the other subsystem barrels):
 
 ```ts
 // components (RSC-safe pure primitives)
@@ -628,7 +628,7 @@ yarn typecheck
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add packages/ui/src/components/index.ts packages/ui/src/index.ts
+git add packages/core/src/components/index.ts packages/core/src/index.ts
 git commit -m "feat(ui): re-export layout primitives from public entry"
 ```
 
@@ -637,13 +637,13 @@ git commit -m "feat(ui): re-export layout primitives from public entry"
 ## Task 7 — Stories + registry entries
 
 **Files:**
-- Create: `packages/ui/src/components/Text/Text.stories.tsx`
-- Create: `packages/ui/src/components/Box/Box.stories.tsx`
-- Create: `packages/ui/src/components/HStack/HStack.stories.tsx`
-- Create: `packages/ui/src/components/VStack/VStack.stories.tsx`
-- Modify: `packages/ui/src/stories/story-registry.ts`
+- Create: `packages/core/src/components/Text/Text.stories.tsx`
+- Create: `packages/core/src/components/Box/Box.stories.tsx`
+- Create: `packages/core/src/components/HStack/HStack.stories.tsx`
+- Create: `packages/core/src/components/VStack/VStack.stories.tsx`
+- Modify: `packages/core/src/stories/story-registry.ts`
 
-- [ ] **Step 1: `packages/ui/src/components/Text/Text.stories.tsx`.**
+- [ ] **Step 1: `packages/core/src/components/Text/Text.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -668,7 +668,7 @@ export const BodySm: Story = { args: { variant: 'body-sm' } };
 export const Heading1: Story = { args: { variant: 'heading-1', children: 'Heading 1' } };
 ```
 
-- [ ] **Step 2: `packages/ui/src/components/Box/Box.stories.tsx`.**
+- [ ] **Step 2: `packages/core/src/components/Box/Box.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -684,7 +684,7 @@ export default meta;
 export const Default: StoryObj<typeof Box> = {};
 ```
 
-- [ ] **Step 3: `packages/ui/src/components/HStack/HStack.stories.tsx`.**
+- [ ] **Step 3: `packages/core/src/components/HStack/HStack.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -709,7 +709,7 @@ export const WithGap: StoryObj<typeof HStack> = { args: { gap: 4 } };
 export const Between: StoryObj<typeof HStack> = { args: { gap: 2, justify: 'between', className: 'w-full' } };
 ```
 
-- [ ] **Step 4: `packages/ui/src/components/VStack/VStack.stories.tsx`.**
+- [ ] **Step 4: `packages/core/src/components/VStack/VStack.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -733,7 +733,7 @@ export const Default: StoryObj<typeof VStack> = {};
 export const WithGap: StoryObj<typeof VStack> = { args: { gap: 4 } };
 ```
 
-- [ ] **Step 5: Update `packages/ui/src/stories/story-registry.ts`** — append entries so `playground-native` can render them.
+- [ ] **Step 5: Update `packages/core/src/stories/story-registry.ts`** — append entries so `playground-native` can render them.
 
 ```ts
 import type { ComponentType } from 'react';
@@ -807,7 +807,7 @@ export const stories: StoryEntry[] = [
 - [ ] **Step 6: Commit.**
 
 ```bash
-git add packages/ui/src/components/*/Text.stories.tsx packages/ui/src/components/*/*.stories.tsx packages/ui/src/stories/story-registry.ts
+git add packages/core/src/components/*/Text.stories.tsx packages/core/src/components/*/*.stories.tsx packages/core/src/stories/story-registry.ts
 git commit -m "feat(ui): add stories for Text, Box, HStack, VStack + registry entries"
 ```
 
@@ -967,7 +967,7 @@ git commit -m "test(e2e): add maestro flow for layout primitives"
 ## Task 10 — Size-limit entries + budget check
 
 **Files:**
-- Modify: `packages/ui/.size-limit.cjs`
+- Modify: `packages/core/.size-limit.cjs`
 
 - [ ] **Step 1: Replace the placeholder entry with one per component** so size-limit regressions surface per-component.
 
@@ -1011,7 +1011,7 @@ module.exports = [
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/.size-limit.cjs
+git add packages/core/.size-limit.cjs
 git commit -m "chore(ui): add per-component size-limit entries for layout primitives"
 ```
 
@@ -1059,11 +1059,11 @@ When all boxes are ticked, Plan 05a is complete and Plan 05b (form controls + Sp
 
 ## Errata (post-execution notes)
 
-1. **Jest RN mock, not moduleNameMapper.** The plan's `moduleNameMapper: ^react-native$ → react-native-web` breaks className assertions because RN-Web strips `className` and emits CSS-in-JS hashes (`css-text-146c3p1`). The working approach is a `jest.mock('react-native', …)` inside `packages/ui/jest.rn-setup.ts` that renders `View`/`Text`/`ScrollView`/`SafeAreaView`/`Pressable`/`ActivityIndicator`/`TextInput` as plain DOM nodes forwarding `className`, mapping `testID → data-testid`, `accessibilityRole → role`, `accessibilityLabel → aria-label`, `accessibilityState → aria-*`. All component tests from 05b/05c/05d must rely on this mock, not on RN-Web.
-2. **`react-native.d.ts` type augmentation.** `packages/ui/src/react-native.d.ts` augments `react-native` with `className?: string` on `ViewProps`/`TextProps`/`PressableProps`/`ActivityIndicatorProps` (plus `contentContainerClassName` for `ScrollViewProps`, `placeholderClassName` for `TextInputProps`). Later plans use `className` directly; do NOT add `@ts-expect-error` comments.
+1. **Jest RN mock, not moduleNameMapper.** The plan's `moduleNameMapper: ^react-native$ → react-native-web` breaks className assertions because RN-Web strips `className` and emits CSS-in-JS hashes (`css-text-146c3p1`). The working approach is a `jest.mock('react-native', …)` inside `packages/core/jest.rn-setup.ts` that renders `View`/`Text`/`ScrollView`/`SafeAreaView`/`Pressable`/`ActivityIndicator`/`TextInput` as plain DOM nodes forwarding `className`, mapping `testID → data-testid`, `accessibilityRole → role`, `accessibilityLabel → aria-label`, `accessibilityState → aria-*`. All component tests from 05b/05c/05d must rely on this mock, not on RN-Web.
+2. **`react-native.d.ts` type augmentation.** `packages/core/src/react-native.d.ts` augments `react-native` with `className?: string` on `ViewProps`/`TextProps`/`PressableProps`/`ActivityIndicatorProps` (plus `contentContainerClassName` for `ScrollViewProps`, `placeholderClassName` for `TextInputProps`). Later plans use `className` directly; do NOT add `@ts-expect-error` comments.
 3. **`playground-web/tsconfig.json` removes the `paths` alias** for `react-native` → `react-native-web` (RN-Web has no `.d.ts` there); instead adds `nativewind/types` to `types` so className is typed at compile time. The Vite runtime alias in `vite.config.ts` remains untouched.
 4. **Commit-scope kebab-case:** same rule as Plan 04 — `test(e2e):` fails commitlint because digits break kebab-case. Use `test(playground-web):` / `test(playground-native):` / `test(ui):` as appropriate.
-5. **Story registry file is `.tsx`** — it contains JSX in the render functions. Import path `nori-ui/stories` stays the same; the `exports` map in `packages/ui/package.json` points at `.tsx`.
+5. **Story registry file is `.tsx`** — it contains JSX in the render functions. Import path `nori-ui/stories` stays the same; the `exports` map in `packages/core/package.json` points at `.tsx`.
 6. **`smoke.spec.ts` needs updating after registry-renderer swap.** Once `apps/playground-web/src/App.tsx` is rewritten to render the story registry, the Plan 04 smoke spec asserting `primary-swatch`/`primary-hex` testIDs will fail. Replace with assertions on `title` + first section visibility. Future plans that modify `App.tsx` must remember to sync smoke tests.
 7. **ESLint `react-native/no-inline-styles` warnings** (23 of them) from inline-style story wrappers are expected and accepted — test code intentionally uses inline styles.
 8. **NativeWind CSS compilation is at consumer build time.** In the Jest environment, `className` values reach the DOM but are not compiled to CSS. Tests assert on className *strings*, not computed styles. Playwright picks up the real CSS because Vite runs NativeWind's transform.

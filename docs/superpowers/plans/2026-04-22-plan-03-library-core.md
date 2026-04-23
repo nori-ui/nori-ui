@@ -4,7 +4,7 @@
 
 **Goal:** Build the foundational primitives every component (Plan 05) depends on: the `cn()` class-merger, the `<Slot>` primitive for `asChild` composition, the i18n runtime with i18next-shape `t()`, the theme provider + hook, the swappable semantic-icon registry + `<Icon>` wrapper, and the RSC-safe / client-entry split (`nori-ui` vs `nori-ui/client`). Ship these with behavior tests that a consumer can audit.
 
-**Architecture:** `packages/ui/src/` is split into tightly-scoped modules — one concern per folder (`slot/`, `i18n/`, `theme/`, `icons/`, `utils/`). The default entry (`src/index.ts`) re-exports only RSC-safe pieces (types, pure functions, pure components); stateful pieces (`NoriProvider`, hooks) live under `src/client.ts` with `'use client'` at the top. The package's `exports` map exposes both entries plus subpath exports per module so consumers can cherry-pick.
+**Architecture:** `packages/core/src/` is split into tightly-scoped modules — one concern per folder (`slot/`, `i18n/`, `theme/`, `icons/`, `utils/`). The default entry (`src/index.ts`) re-exports only RSC-safe pieces (types, pure functions, pure components); stateful pieces (`NoriProvider`, hooks) live under `src/client.ts` with `'use client'` at the top. The package's `exports` map exposes both entries plus subpath exports per module so consumers can cherry-pick.
 
 **Tech Stack:** React 19 (peer dep + workspace dev dep). No React Native yet — v0.1 component code in Plan 05 adds RN; Plan 03 stays platform-agnostic so the core modules work in RSC, jsdom, and native environments unchanged.
 
@@ -16,45 +16,45 @@
 
 **Created in this plan:**
 ```
-packages/ui/src/utils/cn.ts
-packages/ui/src/utils/__tests__/cn.test.ts
+packages/core/src/utils/cn.ts
+packages/core/src/utils/__tests__/cn.test.ts
 
-packages/ui/src/slot/slot.tsx
-packages/ui/src/slot/compose-refs.ts
-packages/ui/src/slot/index.ts
-packages/ui/src/slot/__tests__/slot.test.tsx
+packages/core/src/slot/slot.tsx
+packages/core/src/slot/compose-refs.ts
+packages/core/src/slot/index.ts
+packages/core/src/slot/__tests__/slot.test.tsx
 
-packages/ui/src/i18n/types.ts
-packages/ui/src/i18n/default-dictionary.ts
-packages/ui/src/i18n/resolve.ts
-packages/ui/src/i18n/context.tsx
-packages/ui/src/i18n/use-translation.ts
-packages/ui/src/i18n/index.ts
-packages/ui/src/i18n/__tests__/resolve.test.ts
-packages/ui/src/i18n/__tests__/context.test.tsx
+packages/core/src/i18n/types.ts
+packages/core/src/i18n/default-dictionary.ts
+packages/core/src/i18n/resolve.ts
+packages/core/src/i18n/context.tsx
+packages/core/src/i18n/use-translation.ts
+packages/core/src/i18n/index.ts
+packages/core/src/i18n/__tests__/resolve.test.ts
+packages/core/src/i18n/__tests__/context.test.tsx
 
-packages/ui/src/theme/context.tsx
-packages/ui/src/theme/use-theme.ts
-packages/ui/src/theme/__tests__/context.test.tsx
-(existing from Plan 02:) packages/ui/src/theme/index.ts — extended to re-export the hook's type only
+packages/core/src/theme/context.tsx
+packages/core/src/theme/use-theme.ts
+packages/core/src/theme/__tests__/context.test.tsx
+(existing from Plan 02:) packages/core/src/theme/index.ts — extended to re-export the hook's type only
 
-packages/ui/src/icons/icon.tsx
-packages/ui/src/icons/semantic-context.tsx
-packages/ui/src/icons/use-semantic-icon.ts
-packages/ui/src/icons/default-semantic-icons.ts
-packages/ui/src/icons/index.ts
-packages/ui/src/icons/__tests__/icon.test.tsx
-packages/ui/src/icons/__tests__/semantic.test.tsx
+packages/core/src/icons/icon.tsx
+packages/core/src/icons/semantic-context.tsx
+packages/core/src/icons/use-semantic-icon.ts
+packages/core/src/icons/default-semantic-icons.ts
+packages/core/src/icons/index.ts
+packages/core/src/icons/__tests__/icon.test.tsx
+packages/core/src/icons/__tests__/semantic.test.tsx
 
-packages/ui/src/provider/nori-ui-provider.tsx
-packages/ui/src/provider/index.ts
+packages/core/src/provider/nori-ui-provider.tsx
+packages/core/src/provider/index.ts
 
-packages/ui/src/client.ts                     (new — 'use client' entry)
-packages/ui/src/index.ts                      (modified — pure RSC-safe barrel)
-packages/ui/__tests__/rsc-safety.test.ts      (grep-based boundary test)
+packages/core/src/client.ts                     (new — 'use client' entry)
+packages/core/src/index.ts                      (modified — pure RSC-safe barrel)
+packages/core/__tests__/rsc-safety.test.ts      (grep-based boundary test)
 
-packages/ui/jest.config.cjs                   (modified — add jsdom environment for *.tsx tests)
-packages/ui/package.json                      (modified — exports map + react peer/dev deps)
+packages/core/jest.config.cjs                   (modified — add jsdom environment for *.tsx tests)
+packages/core/package.json                      (modified — exports map + react peer/dev deps)
 ```
 
 ---
@@ -62,8 +62,8 @@ packages/ui/package.json                      (modified — exports map + react 
 ## Task 1 — Install React + testing-library, update Jest for DOM tests
 
 **Files:**
-- Modify: `packages/ui/package.json` (add deps)
-- Modify: `packages/ui/jest.config.cjs` (jsdom env for `.tsx` tests)
+- Modify: `packages/core/package.json` (add deps)
+- Modify: `packages/core/jest.config.cjs` (jsdom env for `.tsx` tests)
 
 - [ ] **Step 1: Install React 19 + testing libs in the ui workspace.**
 
@@ -74,7 +74,7 @@ yarn workspace @nori-ui/core add -D @types/react @types/react-dom @testing-libra
 
 Rationale: `react` + `react-dom` as runtime deps (later demoted to peerDependencies in Plan 07's publish prep). `@testing-library/react` v16 targets React 19. `jest-environment-jsdom` required for DOM-rendering tests.
 
-- [ ] **Step 2: Mark react/react-dom as peer + runtime** in `packages/ui/package.json`. Add `peerDependencies` block and keep them in `dependencies` for workspace resolution:
+- [ ] **Step 2: Mark react/react-dom as peer + runtime** in `packages/core/package.json`. Add `peerDependencies` block and keep them in `dependencies` for workspace resolution:
 
 ```json
 {
@@ -93,7 +93,7 @@ Rationale: `react` + `react-dom` as runtime deps (later demoted to peerDependenc
 }
 ```
 
-- [ ] **Step 3: Update `packages/ui/jest.config.cjs`** to select jsdom for `.tsx` tests, keeping node for `.ts` tests.
+- [ ] **Step 3: Update `packages/core/jest.config.cjs`** to select jsdom for `.tsx` tests, keeping node for `.ts` tests.
 
 ```js
 const base = require('../../jest.config.base.cjs');
@@ -127,7 +127,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 4: Create `packages/ui/jest.setup.ts`.** Registers `@testing-library/jest-dom` matchers.
+- [ ] **Step 4: Create `packages/core/jest.setup.ts`.** Registers `@testing-library/jest-dom` matchers.
 
 ```ts
 import '@testing-library/jest-dom';
@@ -144,7 +144,7 @@ Expected: 2 passed (the smoke test from Plan 01).
 - [ ] **Step 6: Commit.**
 
 ```bash
-git add packages/ui/package.json packages/ui/jest.config.cjs packages/ui/jest.setup.ts yarn.lock
+git add packages/core/package.json packages/core/jest.config.cjs packages/core/jest.setup.ts yarn.lock
 git commit -m "chore(ui): add react 19 + testing-library, split jest into node + jsdom projects"
 ```
 
@@ -153,12 +153,12 @@ git commit -m "chore(ui): add react 19 + testing-library, split jest into node +
 ## Task 2 — `cn()` class-name helper
 
 **Files:**
-- Create: `packages/ui/src/utils/cn.ts`
-- Create: `packages/ui/src/utils/__tests__/cn.test.ts`
+- Create: `packages/core/src/utils/cn.ts`
+- Create: `packages/core/src/utils/__tests__/cn.test.ts`
 
 - [ ] **Step 1: Write the failing test first** (TDD).
 
-`packages/ui/src/utils/__tests__/cn.test.ts`:
+`packages/core/src/utils/__tests__/cn.test.ts`:
 
 ```ts
 import { cn } from '../cn';
@@ -199,7 +199,7 @@ yarn workspace @nori-ui/core test cn.test
 
 Expected: FAIL — `cn` not exported.
 
-- [ ] **Step 3: Implement `packages/ui/src/utils/cn.ts`.**
+- [ ] **Step 3: Implement `packages/core/src/utils/cn.ts`.**
 
 ```ts
 // cn — class-name merger. clsx-compatible shape.
@@ -253,7 +253,7 @@ Expected: 6 passed.
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/utils/
+git add packages/core/src/utils/
 git commit -m "feat(ui): add cn() class-name helper with clsx-compatible shape"
 ```
 
@@ -262,9 +262,9 @@ git commit -m "feat(ui): add cn() class-name helper with clsx-compatible shape"
 ## Task 3 — `composeRefs` helper (needed by Slot and forwardRef-ing components)
 
 **Files:**
-- Create: `packages/ui/src/slot/compose-refs.ts`
+- Create: `packages/core/src/slot/compose-refs.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/slot/compose-refs.ts`.**
+- [ ] **Step 1: Write `packages/core/src/slot/compose-refs.ts`.**
 
 ```ts
 // composeRefs — merges multiple React refs (callback or object) into a single callback.
@@ -292,7 +292,7 @@ export function composeRefs<T>(...refs: Array<PossibleRef<T>>): RefCallback<T> {
 - [ ] **Step 2: Commit.**
 
 ```bash
-git add packages/ui/src/slot/compose-refs.ts
+git add packages/core/src/slot/compose-refs.ts
 git commit -m "feat(ui): add composeRefs helper for merging refs"
 ```
 
@@ -301,13 +301,13 @@ git commit -m "feat(ui): add composeRefs helper for merging refs"
 ## Task 4 — `<Slot>` primitive (underpins `asChild`)
 
 **Files:**
-- Create: `packages/ui/src/slot/slot.tsx`
-- Create: `packages/ui/src/slot/index.ts`
-- Create: `packages/ui/src/slot/__tests__/slot.test.tsx`
+- Create: `packages/core/src/slot/slot.tsx`
+- Create: `packages/core/src/slot/index.ts`
+- Create: `packages/core/src/slot/__tests__/slot.test.tsx`
 
 - [ ] **Step 1: Write the failing test.**
 
-`packages/ui/src/slot/__tests__/slot.test.tsx`:
+`packages/core/src/slot/__tests__/slot.test.tsx`:
 
 ```tsx
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -417,7 +417,7 @@ yarn workspace @nori-ui/core test slot.test
 
 Expected: FAIL — `Slot` not found.
 
-- [ ] **Step 3: Implement `packages/ui/src/slot/slot.tsx`.**
+- [ ] **Step 3: Implement `packages/core/src/slot/slot.tsx`.**
 
 ```tsx
 import { Children, cloneElement, forwardRef, isValidElement } from 'react';
@@ -504,7 +504,7 @@ function composeHandlers(outer: Fn, inner: Fn): Fn {
 }
 ```
 
-- [ ] **Step 4: Write `packages/ui/src/slot/index.ts` barrel.**
+- [ ] **Step 4: Write `packages/core/src/slot/index.ts` barrel.**
 
 ```ts
 export { Slot, type SlotProps } from './slot';
@@ -522,7 +522,7 @@ Expected: 7 passed.
 - [ ] **Step 6: Commit.**
 
 ```bash
-git add packages/ui/src/slot/
+git add packages/core/src/slot/
 git commit -m "feat(ui): add Slot primitive for asChild composition pattern"
 ```
 
@@ -531,10 +531,10 @@ git commit -m "feat(ui): add Slot primitive for asChild composition pattern"
 ## Task 5 — i18n types and default dictionary
 
 **Files:**
-- Create: `packages/ui/src/i18n/types.ts`
-- Create: `packages/ui/src/i18n/default-dictionary.ts`
+- Create: `packages/core/src/i18n/types.ts`
+- Create: `packages/core/src/i18n/default-dictionary.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/i18n/types.ts`.** This is the public contract — every string override target.
+- [ ] **Step 1: Write `packages/core/src/i18n/types.ts`.** This is the public contract — every string override target.
 
 ```ts
 // i18n types — API shape intentionally mirrors i18next so consumers who already use
@@ -581,7 +581,7 @@ export interface I18nKeys {
 }
 ```
 
-- [ ] **Step 2: Write `packages/ui/src/i18n/default-dictionary.ts`.** Seed with a small set of strings the library itself uses internally. Plan 05 extends this as components arrive.
+- [ ] **Step 2: Write `packages/core/src/i18n/default-dictionary.ts`.** Seed with a small set of strings the library itself uses internally. Plan 05 extends this as components arrive.
 
 ```ts
 import type { Dictionary } from './types';
@@ -624,7 +624,7 @@ export const defaultDictionary: Dictionary = {
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/src/i18n/types.ts packages/ui/src/i18n/default-dictionary.ts
+git add packages/core/src/i18n/types.ts packages/core/src/i18n/default-dictionary.ts
 git commit -m "feat(ui): seed i18n types and default English dictionary"
 ```
 
@@ -633,12 +633,12 @@ git commit -m "feat(ui): seed i18n types and default English dictionary"
 ## Task 6 — i18n `resolve()` — dictionary-or-function → TranslateFn
 
 **Files:**
-- Create: `packages/ui/src/i18n/resolve.ts`
-- Create: `packages/ui/src/i18n/__tests__/resolve.test.ts`
+- Create: `packages/core/src/i18n/resolve.ts`
+- Create: `packages/core/src/i18n/__tests__/resolve.test.ts`
 
 - [ ] **Step 1: Write the test first.**
 
-`packages/ui/src/i18n/__tests__/resolve.test.ts`:
+`packages/core/src/i18n/__tests__/resolve.test.ts`:
 
 ```ts
 import { resolveI18n } from '../resolve';
@@ -702,7 +702,7 @@ describe('resolveI18n', () => {
 
 - [ ] **Step 2: Run — should fail.** `resolveI18n` not exported.
 
-- [ ] **Step 3: Implement `packages/ui/src/i18n/resolve.ts`.**
+- [ ] **Step 3: Implement `packages/core/src/i18n/resolve.ts`.**
 
 ```ts
 import type { Dictionary, I18nInput, I18nOptions, TranslateFn } from './types';
@@ -768,7 +768,7 @@ yarn workspace @nori-ui/core test resolve.test
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/i18n/resolve.ts packages/ui/src/i18n/__tests__/resolve.test.ts
+git add packages/core/src/i18n/resolve.ts packages/core/src/i18n/__tests__/resolve.test.ts
 git commit -m "feat(ui): add i18n resolver for dict/function/default inputs with interpolation and plurals"
 ```
 
@@ -777,13 +777,13 @@ git commit -m "feat(ui): add i18n resolver for dict/function/default inputs with
 ## Task 7 — i18n context + `useTranslation` hook
 
 **Files:**
-- Create: `packages/ui/src/i18n/context.tsx`
-- Create: `packages/ui/src/i18n/use-translation.ts`
-- Create: `packages/ui/src/i18n/__tests__/context.test.tsx`
+- Create: `packages/core/src/i18n/context.tsx`
+- Create: `packages/core/src/i18n/use-translation.ts`
+- Create: `packages/core/src/i18n/__tests__/context.test.tsx`
 
 - [ ] **Step 1: Write the test.**
 
-`packages/ui/src/i18n/__tests__/context.test.tsx`:
+`packages/core/src/i18n/__tests__/context.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -822,7 +822,7 @@ describe('<I18nProvider> + useTranslation()', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/i18n/context.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/i18n/context.tsx`.**
 
 ```tsx
 'use client';
@@ -857,7 +857,7 @@ export function I18nProvider({ i18n, children }: I18nProviderProps) {
 }
 ```
 
-- [ ] **Step 3: Implement `packages/ui/src/i18n/use-translation.ts`.**
+- [ ] **Step 3: Implement `packages/core/src/i18n/use-translation.ts`.**
 
 ```ts
 'use client';
@@ -879,7 +879,7 @@ yarn workspace @nori-ui/core test context.test
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/i18n/context.tsx packages/ui/src/i18n/use-translation.ts packages/ui/src/i18n/__tests__/context.test.tsx
+git add packages/core/src/i18n/context.tsx packages/core/src/i18n/use-translation.ts packages/core/src/i18n/__tests__/context.test.tsx
 git commit -m "feat(ui): add I18nProvider and useTranslation hook"
 ```
 
@@ -888,14 +888,14 @@ git commit -m "feat(ui): add I18nProvider and useTranslation hook"
 ## Task 8 — i18n public barrel
 
 **Files:**
-- Create: `packages/ui/src/i18n/index.ts`
+- Create: `packages/core/src/i18n/index.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/i18n/index.ts`.** Splits exports so RSC-safe pieces (types + resolve + defaults) stay importable from server components; the provider and hook are re-exported from `src/client.ts`.
+- [ ] **Step 1: Write `packages/core/src/i18n/index.ts`.** Splits exports so RSC-safe pieces (types + resolve + defaults) stay importable from server components; the provider and hook are re-exported from `src/client.ts`.
 
 ```ts
 // RSC-safe i18n exports.
 // Provider + hook live in './context' and './use-translation' — these are re-exported
-// from packages/ui/src/client.ts (which has 'use client'), NOT from here.
+// from packages/core/src/client.ts (which has 'use client'), NOT from here.
 
 export { defaultDictionary } from './default-dictionary';
 export { resolveI18n } from './resolve';
@@ -905,7 +905,7 @@ export type { Dictionary, I18nInput, I18nKeys, I18nOptions, TranslateFn } from '
 - [ ] **Step 2: Commit.**
 
 ```bash
-git add packages/ui/src/i18n/index.ts
+git add packages/core/src/i18n/index.ts
 git commit -m "feat(ui): add i18n public barrel (rsc-safe subset)"
 ```
 
@@ -914,14 +914,14 @@ git commit -m "feat(ui): add i18n public barrel (rsc-safe subset)"
 ## Task 9 — Theme context and `useTheme` hook
 
 **Files:**
-- Create: `packages/ui/src/theme/context.tsx`
-- Create: `packages/ui/src/theme/use-theme.ts`
-- Create: `packages/ui/src/theme/__tests__/context.test.tsx`
-- Modify: `packages/ui/src/theme/index.ts`
+- Create: `packages/core/src/theme/context.tsx`
+- Create: `packages/core/src/theme/use-theme.ts`
+- Create: `packages/core/src/theme/__tests__/context.test.tsx`
+- Modify: `packages/core/src/theme/index.ts`
 
 - [ ] **Step 1: Write the test.**
 
-`packages/ui/src/theme/__tests__/context.test.tsx`:
+`packages/core/src/theme/__tests__/context.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -958,7 +958,7 @@ describe('<ThemeProvider> + useTheme()', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/theme/context.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/theme/context.tsx`.**
 
 ```tsx
 'use client';
@@ -980,7 +980,7 @@ export function ThemeProvider({ theme = defaultTheme, children }: ThemeProviderP
 }
 ```
 
-- [ ] **Step 3: Implement `packages/ui/src/theme/use-theme.ts`.**
+- [ ] **Step 3: Implement `packages/core/src/theme/use-theme.ts`.**
 
 ```ts
 'use client';
@@ -993,7 +993,7 @@ export function useTheme() {
 }
 ```
 
-- [ ] **Step 4: Leave `packages/ui/src/theme/index.ts` RSC-safe** — it already re-exports type + constants from `@nori-ui/tokens` (Plan 02). Do not add provider/hook exports here — those go in `client.ts`.
+- [ ] **Step 4: Leave `packages/core/src/theme/index.ts` RSC-safe** — it already re-exports type + constants from `@nori-ui/tokens` (Plan 02). Do not add provider/hook exports here — those go in `client.ts`.
 
 - [ ] **Step 5: Run the test.**
 
@@ -1006,7 +1006,7 @@ Expected: 2 passed.
 - [ ] **Step 6: Commit.**
 
 ```bash
-git add packages/ui/src/theme/context.tsx packages/ui/src/theme/use-theme.ts packages/ui/src/theme/__tests__/
+git add packages/core/src/theme/context.tsx packages/core/src/theme/use-theme.ts packages/core/src/theme/__tests__/
 git commit -m "feat(ui): add ThemeProvider and useTheme hook"
 ```
 
@@ -1015,12 +1015,12 @@ git commit -m "feat(ui): add ThemeProvider and useTheme hook"
 ## Task 10 — `<Icon>` wrapper component (RSC-safe)
 
 **Files:**
-- Create: `packages/ui/src/icons/icon.tsx`
-- Create: `packages/ui/src/icons/__tests__/icon.test.tsx`
+- Create: `packages/core/src/icons/icon.tsx`
+- Create: `packages/core/src/icons/__tests__/icon.test.tsx`
 
 - [ ] **Step 1: Write the test.**
 
-`packages/ui/src/icons/__tests__/icon.test.tsx`:
+`packages/core/src/icons/__tests__/icon.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -1057,7 +1057,7 @@ describe('<Icon>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/icons/icon.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/icons/icon.tsx`.**
 
 ```tsx
 import type { ComponentType } from 'react';
@@ -1104,7 +1104,7 @@ yarn workspace @nori-ui/core test icon.test
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add packages/ui/src/icons/icon.tsx packages/ui/src/icons/__tests__/icon.test.tsx
+git add packages/core/src/icons/icon.tsx packages/core/src/icons/__tests__/icon.test.tsx
 git commit -m "feat(ui): add RSC-safe Icon wrapper with keyword + numeric size"
 ```
 
@@ -1113,12 +1113,12 @@ git commit -m "feat(ui): add RSC-safe Icon wrapper with keyword + numeric size"
 ## Task 11 — Semantic-icon registry (default + provider override)
 
 **Files:**
-- Create: `packages/ui/src/icons/default-semantic-icons.ts`
-- Create: `packages/ui/src/icons/semantic-context.tsx`
-- Create: `packages/ui/src/icons/use-semantic-icon.ts`
-- Create: `packages/ui/src/icons/__tests__/semantic.test.tsx`
+- Create: `packages/core/src/icons/default-semantic-icons.ts`
+- Create: `packages/core/src/icons/semantic-context.tsx`
+- Create: `packages/core/src/icons/use-semantic-icon.ts`
+- Create: `packages/core/src/icons/__tests__/semantic.test.tsx`
 
-- [ ] **Step 1: Write `packages/ui/src/icons/default-semantic-icons.ts`.** Tiny placeholder SVG components serve as defaults — Lucide is declared optional; if a consumer doesn't install Lucide, internal components still render legible shapes. Consumers can override via the provider.
+- [ ] **Step 1: Write `packages/core/src/icons/default-semantic-icons.ts`.** Tiny placeholder SVG components serve as defaults — Lucide is declared optional; if a consumer doesn't install Lucide, internal components still render legible shapes. Consumers can override via the provider.
 
 ```tsx
 // default-semantic-icons — minimal built-in SVG placeholders for internal
@@ -1171,7 +1171,7 @@ export const defaultSemanticIcons: SemanticIcons = {
 };
 ```
 
-- [ ] **Step 2: Write `packages/ui/src/icons/semantic-context.tsx`.**
+- [ ] **Step 2: Write `packages/core/src/icons/semantic-context.tsx`.**
 
 ```tsx
 'use client';
@@ -1194,7 +1194,7 @@ export function SemanticIconsProvider({ icons, children }: SemanticIconsProvider
 }
 ```
 
-- [ ] **Step 3: Write `packages/ui/src/icons/use-semantic-icon.ts`.**
+- [ ] **Step 3: Write `packages/core/src/icons/use-semantic-icon.ts`.**
 
 ```ts
 'use client';
@@ -1209,7 +1209,7 @@ export function useSemanticIcon<K extends keyof SemanticIcons>(name: K): Semanti
 }
 ```
 
-- [ ] **Step 4: Write the test `packages/ui/src/icons/__tests__/semantic.test.tsx`.**
+- [ ] **Step 4: Write the test `packages/core/src/icons/__tests__/semantic.test.tsx`.**
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -1246,7 +1246,7 @@ describe('semantic icons', () => {
 - [ ] **Step 6: Commit.**
 
 ```bash
-git add packages/ui/src/icons/default-semantic-icons.ts packages/ui/src/icons/semantic-context.tsx packages/ui/src/icons/use-semantic-icon.ts packages/ui/src/icons/__tests__/semantic.test.tsx
+git add packages/core/src/icons/default-semantic-icons.ts packages/core/src/icons/semantic-context.tsx packages/core/src/icons/use-semantic-icon.ts packages/core/src/icons/__tests__/semantic.test.tsx
 git commit -m "feat(ui): add semantic-icons registry with provider override"
 ```
 
@@ -1255,13 +1255,13 @@ git commit -m "feat(ui): add semantic-icons registry with provider override"
 ## Task 12 — Icons public barrel
 
 **Files:**
-- Create: `packages/ui/src/icons/index.ts`
+- Create: `packages/core/src/icons/index.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/icons/index.ts`.**
+- [ ] **Step 1: Write `packages/core/src/icons/index.ts`.**
 
 ```ts
 // RSC-safe icons exports. Provider + hook live under `./semantic-context` and
-// `./use-semantic-icon`; both are re-exported from packages/ui/src/client.ts.
+// `./use-semantic-icon`; both are re-exported from packages/core/src/client.ts.
 
 export { Icon, type IconProps, type IconSize, type IconComponentProps } from './icon';
 export { defaultSemanticIcons, type SemanticIcons } from './default-semantic-icons';
@@ -1270,7 +1270,7 @@ export { defaultSemanticIcons, type SemanticIcons } from './default-semantic-ico
 - [ ] **Step 2: Commit.**
 
 ```bash
-git add packages/ui/src/icons/index.ts
+git add packages/core/src/icons/index.ts
 git commit -m "feat(ui): add icons public barrel"
 ```
 
@@ -1279,10 +1279,10 @@ git commit -m "feat(ui): add icons public barrel"
 ## Task 13 — `NoriProvider` composition (theme + i18n + semantic icons)
 
 **Files:**
-- Create: `packages/ui/src/provider/nori-ui-provider.tsx`
-- Create: `packages/ui/src/provider/index.ts`
+- Create: `packages/core/src/provider/nori-ui-provider.tsx`
+- Create: `packages/core/src/provider/index.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/provider/nori-ui-provider.tsx`.** Composes all three client providers into one so consumers only wrap the app once.
+- [ ] **Step 1: Write `packages/core/src/provider/nori-ui-provider.tsx`.** Composes all three client providers into one so consumers only wrap the app once.
 
 ```tsx
 'use client';
@@ -1318,7 +1318,7 @@ export function NoriProvider({ theme, i18n, icons, children }: NoriProviderProps
 }
 ```
 
-- [ ] **Step 2: Write `packages/ui/src/provider/index.ts`.**
+- [ ] **Step 2: Write `packages/core/src/provider/index.ts`.**
 
 ```ts
 export { NoriProvider, type NoriProviderProps } from './nori-ui-provider';
@@ -1327,7 +1327,7 @@ export { NoriProvider, type NoriProviderProps } from './nori-ui-provider';
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/src/provider/
+git add packages/core/src/provider/
 git commit -m "feat(ui): add NoriProvider composing theme/i18n/icons"
 ```
 
@@ -1336,9 +1336,9 @@ git commit -m "feat(ui): add NoriProvider composing theme/i18n/icons"
 ## Task 14 — Default entry (`src/index.ts`) — RSC-safe barrel
 
 **Files:**
-- Modify: `packages/ui/src/index.ts`
+- Modify: `packages/core/src/index.ts`
 
-- [ ] **Step 1: Rewrite `packages/ui/src/index.ts` as a pure RSC-safe barrel.** Do NOT add `'use client'`. Do NOT re-export the provider or hooks.
+- [ ] **Step 1: Rewrite `packages/core/src/index.ts` as a pure RSC-safe barrel.** Do NOT add `'use client'`. Do NOT re-export the provider or hooks.
 
 ```ts
 // Public entry for `nori-ui`. RSC-safe exports only.
@@ -1375,7 +1375,7 @@ export { Icon, type IconProps, type IconSize, type IconComponentProps, type Sema
 - [ ] **Step 2: Commit.**
 
 ```bash
-git add packages/ui/src/index.ts
+git add packages/core/src/index.ts
 git commit -m "feat(ui): rewrite default entry as RSC-safe barrel"
 ```
 
@@ -1384,9 +1384,9 @@ git commit -m "feat(ui): rewrite default entry as RSC-safe barrel"
 ## Task 15 — Client entry (`src/client.ts`) — `'use client'` exports
 
 **Files:**
-- Create: `packages/ui/src/client.ts`
+- Create: `packages/core/src/client.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/client.ts`.**
+- [ ] **Step 1: Write `packages/core/src/client.ts`.**
 
 ```ts
 'use client';
@@ -1413,16 +1413,16 @@ export { useSemanticIcon } from './icons/use-semantic-icon';
 - [ ] **Step 2: Commit.**
 
 ```bash
-git add packages/ui/src/client.ts
+git add packages/core/src/client.ts
 git commit -m "feat(ui): add client entry with use-client exports"
 ```
 
 ---
 
-## Task 16 — Update `packages/ui/package.json` exports map
+## Task 16 — Update `packages/core/package.json` exports map
 
 **Files:**
-- Modify: `packages/ui/package.json`
+- Modify: `packages/core/package.json`
 
 - [ ] **Step 1: Update the `exports` field.**
 
@@ -1453,7 +1453,7 @@ Expected: green.
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/package.json
+git add packages/core/package.json
 git commit -m "chore(ui): add exports map for client / theme / i18n / icons / slot / utils subpaths"
 ```
 
@@ -1462,9 +1462,9 @@ git commit -m "chore(ui): add exports map for client / theme / i18n / icons / sl
 ## Task 17 — RSC-safety boundary test
 
 **Files:**
-- Create: `packages/ui/__tests__/rsc-safety.test.ts`
+- Create: `packages/core/__tests__/rsc-safety.test.ts`
 
-- [ ] **Step 1: Write `packages/ui/__tests__/rsc-safety.test.ts`.**
+- [ ] **Step 1: Write `packages/core/__tests__/rsc-safety.test.ts`.**
 
 ```ts
 // RSC safety boundary check.
@@ -1568,7 +1568,7 @@ Expected: 2 passed. If any violation is reported, fix the source file or add the
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/__tests__/rsc-safety.test.ts
+git add packages/core/__tests__/rsc-safety.test.ts
 git commit -m "test(ui): add rsc-safety boundary test for default entry tree"
 ```
 
@@ -1591,14 +1591,14 @@ Expected: all exit 0.
 - [ ] **Step 2: Confirm the public surface by printing exports.**
 
 ```bash
-node --input-type=module -e "console.log(Object.keys(await import('./packages/ui/src/index.ts').catch(() => ({ notLoadable: true }))))"
+node --input-type=module -e "console.log(Object.keys(await import('./packages/core/src/index.ts').catch(() => ({ notLoadable: true }))))"
 ```
 
 Import may fail because `.ts` isn't loadable in node without a loader; `yarn typecheck` is the authoritative check. Skip this step if node errors.
 
 - [ ] **Step 3: Smoke-test the consumer story.** Write a throwaway TS file and confirm tsc sees the exports.
 
-Create `packages/ui/__scratch__/consumer.ts`:
+Create `packages/core/__scratch__/consumer.ts`:
 
 ```ts
 // Throwaway smoke file — DELETE after verifying.
@@ -1638,7 +1638,7 @@ yarn workspace @nori-ui/core typecheck
 Expected: green. Then delete the scratch file:
 
 ```bash
-rm -rf packages/ui/__scratch__
+rm -rf packages/core/__scratch__
 ```
 
 - [ ] **Step 4: Final commit if anything changed during verification** (shouldn't).

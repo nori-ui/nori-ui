@@ -4,7 +4,7 @@
 
 **Goal:** Stand up the two apps that serve as e2e test targets: `apps/playground-web` (Vite + React + `react-native-web` + Storybook 8, Playwright target) and `apps/playground-native` (Expo SDK 55 + New Architecture + NativeWind, Maestro target). Both boot, render a smoke screen that consumes `@nori-ui/tokens` via `useTheme()`, and can be driven by their respective e2e tool.
 
-**Architecture:** Each playground is an independent workspace that depends on `nori-ui` (workspace:*). Component stories live in `packages/ui/src/<component>/*.stories.tsx` (CSF 3 format) as a single source of truth — the web Storybook indexes them directly; a tiny `story-registry.ts` in `packages/ui/src/stories/` enumerates the same set so `playground-native` can iterate and render them for Maestro. Plan 04 ships the infrastructure and a placeholder story; the 11 real component stories arrive in Plan 05.
+**Architecture:** Each playground is an independent workspace that depends on `nori-ui` (workspace:*). Component stories live in `packages/core/src/<component>/*.stories.tsx` (CSF 3 format) as a single source of truth — the web Storybook indexes them directly; a tiny `story-registry.ts` in `packages/core/src/stories/` enumerates the same set so `playground-native` can iterate and render them for Maestro. Plan 04 ships the infrastructure and a placeholder story; the 11 real component stories arrive in Plan 05.
 
 **Tech Stack:** Vite 5, React 19, `react-native-web`, Storybook 8 with the Vite builder, Expo SDK 55 (React Native 0.83, React 19, New Architecture default), NativeWind v4, Playwright 1.x, Maestro CLI.
 
@@ -42,7 +42,7 @@ apps/playground-native/
     index.ts
     App.tsx
 
-packages/ui/src/stories/
+packages/core/src/stories/
     story-registry.ts
     PlaceholderSmoke.stories.tsx
 
@@ -292,7 +292,7 @@ const config: Config = {
     content: [
         './index.html',
         './src/**/*.{ts,tsx}',
-        '../../packages/ui/src/**/*.{ts,tsx}',
+        '../../packages/core/src/**/*.{ts,tsx}',
     ],
 };
 
@@ -347,11 +347,11 @@ git commit -m "feat(playground-web): wire nativewind + tailwind preset from @nor
 ## Task 3 — Shared story registry + one placeholder story
 
 **Files:**
-- Create: `packages/ui/src/stories/story-registry.ts`
-- Create: `packages/ui/src/stories/PlaceholderSmoke.stories.tsx`
-- Modify: `packages/ui/package.json` (add `./stories` subpath export)
+- Create: `packages/core/src/stories/story-registry.ts`
+- Create: `packages/core/src/stories/PlaceholderSmoke.stories.tsx`
+- Modify: `packages/core/package.json` (add `./stories` subpath export)
 
-- [ ] **Step 1: `packages/ui/src/stories/story-registry.ts`.**
+- [ ] **Step 1: `packages/core/src/stories/story-registry.ts`.**
 
 ```ts
 // Story registry — enumerated list of CSF stories in the library.
@@ -377,7 +377,7 @@ export const stories: StoryEntry[] = [
 ];
 ```
 
-- [ ] **Step 2: `packages/ui/src/stories/PlaceholderSmoke.stories.tsx`.**
+- [ ] **Step 2: `packages/core/src/stories/PlaceholderSmoke.stories.tsx`.**
 
 ```tsx
 // Smoke placeholder story — exists so Storybook + the playgrounds have
@@ -429,7 +429,7 @@ export const Default: StoryObj<typeof WrappedSmoke> = {};
 yarn workspace @nori-ui/core add -D @storybook/react
 ```
 
-- [ ] **Step 4: Add `./stories` subpath export** in `packages/ui/package.json`:
+- [ ] **Step 4: Add `./stories` subpath export** in `packages/core/package.json`:
 
 ```json
 {
@@ -455,7 +455,7 @@ yarn workspace @nori-ui/core typecheck
 - [ ] **Step 6: Commit.**
 
 ```bash
-git add packages/ui/src/stories/ packages/ui/package.json yarn.lock
+git add packages/core/src/stories/ packages/core/package.json yarn.lock
 git commit -m "feat(ui): add story registry and placeholder smoke story"
 ```
 
@@ -480,7 +480,7 @@ import type { StorybookConfig } from '@storybook/react-vite';
 
 const config: StorybookConfig = {
     stories: [
-        '../../../packages/ui/src/**/*.stories.@(ts|tsx)',
+        '../../../packages/core/src/**/*.stories.@(ts|tsx)',
     ],
     addons: ['@storybook/addon-essentials', '@storybook/addon-a11y'],
     framework: {
@@ -759,7 +759,7 @@ const config: Config = {
     content: [
         './App.tsx',
         './index.ts',
-        '../../packages/ui/src/**/*.{ts,tsx}',
+        '../../packages/core/src/**/*.{ts,tsx}',
     ],
     presets: [require('nativewind/preset')],
 };

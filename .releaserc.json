@@ -21,7 +21,7 @@
     [
       "@semantic-release/npm",
       {
-        "pkgRoot": "packages/ui",
+        "pkgRoot": "packages/core",
         "npmPublish": true
       }
     ],
@@ -29,7 +29,7 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "packages/ui/package.json", "package.json", "yarn.lock"],
+        "assets": ["CHANGELOG.md", "packages/core/package.json", "package.json", "yarn.lock"],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ]

@@ -30,12 +30,12 @@ tsconfig.json                            (root, references only)
 tooling/tsconfig.base.json
 tooling/tsconfig.library.json
 tooling/tsconfig.test.json
-packages/ui/package.json
-packages/ui/tsconfig.json
-packages/ui/jest.config.cjs
-packages/ui/src/index.ts
-packages/ui/src/__tests__/smoke.test.ts
-packages/ui/.size-limit.cjs
+packages/core/package.json
+packages/core/tsconfig.json
+packages/core/jest.config.cjs
+packages/core/src/index.ts
+packages/core/src/__tests__/smoke.test.ts
+packages/core/.size-limit.cjs
 .github/workflows/ci.yml
 README.md
 ```
@@ -241,13 +241,13 @@ git commit -m "chore: initialize yarn berry workspaces with node-modules linker"
 ## Task 3 — Monorepo directory scaffold
 
 **Files:**
-- Create: `packages/ui/package.json` (stub — filled in Task 6)
-- Create: `packages/ui/src/index.ts` (empty barrel for now)
+- Create: `packages/core/package.json` (stub — filled in Task 6)
+- Create: `packages/core/src/index.ts` (empty barrel for now)
 - Create: `apps/.gitkeep`
 - Create: `tokens/.gitkeep`
 - Create: `tooling/package.json` (workspace package so configs can be shared via `@nori-ui/tooling` workspace import)
 
-- [ ] **Step 1: Create `packages/ui/package.json` stub.**
+- [ ] **Step 1: Create `packages/core/package.json` stub.**
 
 ```json
 {
@@ -284,7 +284,7 @@ Notes:
 
 - [ ] **Step 2: Create an empty barrel** so tsc and Jest don't choke.
 
-Create `packages/ui/src/index.ts`:
+Create `packages/core/src/index.ts`:
 ```ts
 export {};
 ```
@@ -337,7 +337,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 - Create: `tooling/tsconfig.library.json`
 - Create: `tooling/tsconfig.test.json`
 - Create: `tsconfig.json` (workspace root, references only)
-- Create: `packages/ui/tsconfig.json`
+- Create: `packages/core/tsconfig.json`
 
 - [ ] **Step 1: Create `tooling/tsconfig.base.json`.** Maximum strictness; enforces the "no any" bar from the PRD.
 
@@ -414,7 +414,7 @@ git commit -m "chore: scaffold monorepo directory layout"
 }
 ```
 
-- [ ] **Step 5: Create `packages/ui/tsconfig.json`.**
+- [ ] **Step 5: Create `packages/core/tsconfig.json`.**
 
 ```json
 {
@@ -445,12 +445,12 @@ Run:
 yarn workspace @nori-ui/core typecheck
 ```
 
-Expected: exits 0. `packages/ui/src/index.ts` is an empty export, so no errors.
+Expected: exits 0. `packages/core/src/index.ts` is an empty export, so no errors.
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add tooling/ tsconfig.json packages/ui/tsconfig.json package.json yarn.lock
+git add tooling/ tsconfig.json packages/core/tsconfig.json package.json yarn.lock
 git commit -m "chore: add shared tsconfig (strict, no any, composite)"
 ```
 
@@ -767,8 +767,8 @@ git commit -m "chore: enforce conventional commits via commitlint and lefthook"
 
 **Files:**
 - Create: `jest.config.base.cjs`
-- Create: `packages/ui/jest.config.cjs`
-- Create: `packages/ui/src/__tests__/smoke.test.ts`
+- Create: `packages/core/jest.config.cjs`
+- Create: `packages/core/src/__tests__/smoke.test.ts`
 
 - [ ] **Step 1: Install Jest + TS transformer.**
 
@@ -796,7 +796,7 @@ module.exports = {
 
 Note: later plans override `testEnvironment` (`jsdom` for web tests, a RN preset for native component tests). Keeping `node` as the base because plan 1 has no DOM code.
 
-- [ ] **Step 3: Create `packages/ui/jest.config.cjs`.**
+- [ ] **Step 3: Create `packages/core/jest.config.cjs`.**
 
 ```js
 const base = require('../../jest.config.base.cjs');
@@ -811,7 +811,7 @@ module.exports = {
 
 - [ ] **Step 4: Write a smoke test** so the toolchain is exercised end-to-end.
 
-Create `packages/ui/src/__tests__/smoke.test.ts`:
+Create `packages/core/src/__tests__/smoke.test.ts`:
 
 ```ts
 describe('toolchain smoke', () => {
@@ -842,7 +842,7 @@ Expected: 2 passed, 0 failed.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add jest.config.base.cjs packages/ui/jest.config.cjs packages/ui/src/__tests__/smoke.test.ts package.json yarn.lock
+git add jest.config.base.cjs packages/core/jest.config.cjs packages/core/src/__tests__/smoke.test.ts package.json yarn.lock
 git commit -m "test: add jest toolchain with smoke test in packages/ui"
 ```
 
@@ -851,7 +851,7 @@ git commit -m "test: add jest toolchain with smoke test in packages/ui"
 ## Task 9 — `size-limit` skeleton
 
 **Files:**
-- Create: `packages/ui/.size-limit.cjs`
+- Create: `packages/core/.size-limit.cjs`
 
 - [ ] **Step 1: Install size-limit.**
 
@@ -860,7 +860,7 @@ Run:
 yarn add -D -W size-limit @size-limit/preset-small-lib
 ```
 
-- [ ] **Step 2: Create `packages/ui/.size-limit.cjs` with the budgets from the PRD.**
+- [ ] **Step 2: Create `packages/core/.size-limit.cjs` with the budgets from the PRD.**
 
 ```js
 // Budgets from spec §1 Success Criteria:
@@ -903,7 +903,7 @@ Expected: exits 0 (empty entry point is well under 500 B).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/ui/.size-limit.cjs package.json yarn.lock
+git add packages/core/.size-limit.cjs package.json yarn.lock
 git commit -m "chore: add size-limit skeleton with spec budgets"
 ```
 
@@ -1051,7 +1051,7 @@ This task has no new files. It runs the full local equivalent of CI end-to-end t
 
 Run:
 ```bash
-rm -rf node_modules packages/ui/node_modules apps tokens
+rm -rf node_modules packages/core/node_modules apps tokens
 mkdir apps tokens
 touch apps/.gitkeep tokens/.gitkeep
 yarn install --immutable
@@ -1125,7 +1125,7 @@ Recording deviations discovered while executing the plan so that future plans av
 3. **Biome 2.x key names:** the config in Task 5 used Biome 1.x names. In Biome 2.x: top-level `files.include`/`files.ignore` becomes `files.includes` (with glob patterns), and top-level `organizeImports` moves to `assist.actions.source.organizeImports`. Pin to a specific 2.x minor (current: `~2.4.12`) to avoid future re-churn.
 4. **ESLint 9 + RN plugin:** `eslint-plugin-react-native@^4` peer-requires ESLint ≤ 8. Use `eslint-plugin-react-native@^5` with ESLint 9.
 5. **ESLint needs a TS parser** even when most rules are tokenized via Biome. Add `@typescript-eslint/parser` and reference it in the flat config so `.ts`/`.tsx` files don't error on `:` tokens during parse.
-6. **Yarn 4 does not hoist root devDependencies onto workspace scripts' PATH.** Tools invoked via `yarn workspace <name> <script>` (typescript, jest, size-limit) must be devDependencies of that workspace. Move the following to `packages/ui/package.json` devDependencies: `typescript`, `jest`, `ts-jest`, `@types/jest`, `size-limit`, `@size-limit/preset-small-lib`.
+6. **Yarn 4 does not hoist root devDependencies onto workspace scripts' PATH.** Tools invoked via `yarn workspace <name> <script>` (typescript, jest, size-limit) must be devDependencies of that workspace. Move the following to `packages/core/package.json` devDependencies: `typescript`, `jest`, `ts-jest`, `@types/jest`, `size-limit`, `@size-limit/preset-small-lib`.
 7. **The `-W` / `--ignore-workspace-root-check` flag is Yarn 1 syntax** and does not exist in Yarn 4. Install workspace-root devDeps with plain `yarn add -D <pkg>` when at the repo root; install workspace-specific ones with `yarn workspace <name> add -D <pkg>`.
 8. **Biome formatting pass applies to Markdown:** executing Task 5's `yarn biome format --write .` reformats `docs/**/*.md` (including this plan and the spec). That is expected and harmless — the 2-space override for Markdown in `biome.json` governs the result. Checkbox syntax stays `- [ ]` semantically even if a reviewer's rendering shows it collapsed.
 

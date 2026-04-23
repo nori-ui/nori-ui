@@ -3,7 +3,7 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
     presets: [noriPreset, require('nativewind/preset')],
-    content: ['./App.tsx', './index.ts', '../../packages/ui/src/**/*.{ts,tsx}'],
+    content: ['./App.tsx', './index.ts', '../../packages/core/src/**/*.{ts,tsx}'],
 };
 
 export default config;

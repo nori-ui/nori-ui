@@ -14,37 +14,37 @@
 
 **Created:**
 ```
-packages/ui/src/components/TextInput/TextInput.tsx
-packages/ui/src/components/TextInput/index.ts
-packages/ui/src/components/TextInput/TextInput.stories.tsx
-packages/ui/src/components/TextInput/__tests__/TextInput.test.tsx
+packages/core/src/components/TextInput/TextInput.tsx
+packages/core/src/components/TextInput/index.ts
+packages/core/src/components/TextInput/TextInput.stories.tsx
+packages/core/src/components/TextInput/__tests__/TextInput.test.tsx
 
-packages/ui/src/components/TextArea/TextArea.tsx
-packages/ui/src/components/TextArea/index.ts
-packages/ui/src/components/TextArea/TextArea.stories.tsx
-packages/ui/src/components/TextArea/__tests__/TextArea.test.tsx
+packages/core/src/components/TextArea/TextArea.tsx
+packages/core/src/components/TextArea/index.ts
+packages/core/src/components/TextArea/TextArea.stories.tsx
+packages/core/src/components/TextArea/__tests__/TextArea.test.tsx
 
 e2e/web/tests/inputs.spec.ts
 e2e/native/flows/inputs.yaml
 ```
 
 **Modified:**
-- `packages/ui/src/components/index.ts` — add TextInput + TextArea
-- `packages/ui/src/stories/story-registry.ts` — append entries
-- `packages/ui/.size-limit.cjs` — add budgets
+- `packages/core/src/components/index.ts` — add TextInput + TextArea
+- `packages/core/src/stories/story-registry.ts` — append entries
+- `packages/core/.size-limit.cjs` — add budgets
 
 ---
 
 ## Task 1 — `TextInput` component
 
 **Files:**
-- Create: `packages/ui/src/components/TextInput/TextInput.tsx`
-- Create: `packages/ui/src/components/TextInput/index.ts`
-- Create: `packages/ui/src/components/TextInput/__tests__/TextInput.test.tsx`
+- Create: `packages/core/src/components/TextInput/TextInput.tsx`
+- Create: `packages/core/src/components/TextInput/index.ts`
+- Create: `packages/core/src/components/TextInput/__tests__/TextInput.test.tsx`
 
 - [ ] **Step 1: Write the failing test.**
 
-`packages/ui/src/components/TextInput/__tests__/TextInput.test.tsx`:
+`packages/core/src/components/TextInput/__tests__/TextInput.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -123,7 +123,7 @@ describe('<TextInput>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/TextInput/TextInput.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/TextInput/TextInput.tsx`.**
 
 ```tsx
 import { useId } from 'react';
@@ -229,7 +229,7 @@ Design notes:
 - `<label htmlFor>` is a raw DOM element (web-only); on native, `accessibilityLabel` covers the labeling contract. RN-Web treats `<label>` as native HTML, so the `htmlFor` assertion in tests works.
 - `aria-describedby` points at whichever message is shown (error > helper).
 
-- [ ] **Step 3: Create `packages/ui/src/components/TextInput/index.ts`.**
+- [ ] **Step 3: Create `packages/core/src/components/TextInput/index.ts`.**
 
 ```ts
 export { TextInput, type TextInputProps } from './TextInput';
@@ -244,7 +244,7 @@ yarn workspace @nori-ui/core test TextInput.test
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/TextInput/
+git add packages/core/src/components/TextInput/
 git commit -m "feat(ui): add TextInput with label, helper, error, prefix/suffix slots, WCAG AA a11y"
 ```
 
@@ -253,13 +253,13 @@ git commit -m "feat(ui): add TextInput with label, helper, error, prefix/suffix 
 ## Task 2 — `TextArea` component
 
 **Files:**
-- Create: `packages/ui/src/components/TextArea/TextArea.tsx`
-- Create: `packages/ui/src/components/TextArea/index.ts`
-- Create: `packages/ui/src/components/TextArea/__tests__/TextArea.test.tsx`
+- Create: `packages/core/src/components/TextArea/TextArea.tsx`
+- Create: `packages/core/src/components/TextArea/index.ts`
+- Create: `packages/core/src/components/TextArea/__tests__/TextArea.test.tsx`
 
 - [ ] **Step 1: Write the test.**
 
-`packages/ui/src/components/TextArea/__tests__/TextArea.test.tsx`:
+`packages/core/src/components/TextArea/__tests__/TextArea.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -294,7 +294,7 @@ describe('<TextArea>', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `packages/ui/src/components/TextArea/TextArea.tsx`.**
+- [ ] **Step 2: Implement `packages/core/src/components/TextArea/TextArea.tsx`.**
 
 ```tsx
 import type { TextInputProps } from '../TextInput';
@@ -311,7 +311,7 @@ export function TextArea({ numberOfLines = 4, ...rest }: TextAreaProps) {
 }
 ```
 
-- [ ] **Step 3: `packages/ui/src/components/TextArea/index.ts`.**
+- [ ] **Step 3: `packages/core/src/components/TextArea/index.ts`.**
 
 ```ts
 export { TextArea, type TextAreaProps } from './TextArea';
@@ -326,7 +326,7 @@ yarn workspace @nori-ui/core test TextArea.test
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/TextArea/
+git add packages/core/src/components/TextArea/
 git commit -m "feat(ui): add TextArea as multiline wrapper over TextInput"
 ```
 
@@ -335,12 +335,12 @@ git commit -m "feat(ui): add TextArea as multiline wrapper over TextInput"
 ## Task 3 — Stories + registry entries + barrel
 
 **Files:**
-- Create: `packages/ui/src/components/TextInput/TextInput.stories.tsx`
-- Create: `packages/ui/src/components/TextArea/TextArea.stories.tsx`
-- Modify: `packages/ui/src/stories/story-registry.ts`
-- Modify: `packages/ui/src/components/index.ts`
+- Create: `packages/core/src/components/TextInput/TextInput.stories.tsx`
+- Create: `packages/core/src/components/TextArea/TextArea.stories.tsx`
+- Modify: `packages/core/src/stories/story-registry.ts`
+- Modify: `packages/core/src/components/index.ts`
 
-- [ ] **Step 1: `packages/ui/src/components/TextInput/TextInput.stories.tsx`.**
+- [ ] **Step 1: `packages/core/src/components/TextInput/TextInput.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -360,7 +360,7 @@ export const WithError: Story = { args: { error: 'Required', value: '' } };
 export const Disabled: Story = { args: { disabled: true, value: 'read only' } };
 ```
 
-- [ ] **Step 2: `packages/ui/src/components/TextArea/TextArea.stories.tsx`.**
+- [ ] **Step 2: `packages/core/src/components/TextArea/TextArea.stories.tsx`.**
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -377,7 +377,7 @@ export const Default: StoryObj<typeof TextArea> = {};
 export const WithError: StoryObj<typeof TextArea> = { args: { error: 'Max 500 characters' } };
 ```
 
-- [ ] **Step 3: Append to `packages/ui/src/stories/story-registry.ts`:**
+- [ ] **Step 3: Append to `packages/core/src/stories/story-registry.ts`:**
 
 ```ts
 import { TextInput } from '../components/TextInput';
@@ -401,7 +401,7 @@ import { TextArea } from '../components/TextArea';
 },
 ```
 
-- [ ] **Step 4: Update `packages/ui/src/components/index.ts`** to re-export.
+- [ ] **Step 4: Update `packages/core/src/components/index.ts`** to re-export.
 
 ```ts
 export * from './Text';
@@ -417,7 +417,7 @@ export * from './TextArea';
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add packages/ui/src/components/TextInput/TextInput.stories.tsx packages/ui/src/components/TextArea/TextArea.stories.tsx packages/ui/src/components/index.ts packages/ui/src/stories/story-registry.ts
+git add packages/core/src/components/TextInput/TextInput.stories.tsx packages/core/src/components/TextArea/TextArea.stories.tsx packages/core/src/components/index.ts packages/core/src/stories/story-registry.ts
 git commit -m "feat(ui): add TextInput + TextArea stories, re-export from components barrel"
 ```
 
@@ -504,7 +504,7 @@ git commit -m "test(e2e): add maestro inputs flow"
 
 ## Task 6 — Size-limit + final verification
 
-- [ ] **Step 1:** append to `packages/ui/.size-limit.cjs`:
+- [ ] **Step 1:** append to `packages/core/.size-limit.cjs`:
 
 ```js
 {
@@ -524,7 +524,7 @@ git commit -m "test(e2e): add maestro inputs flow"
 Then: `yarn size`, `yarn test`, `yarn test:e2e:web` — all green.
 
 ```bash
-git add packages/ui/.size-limit.cjs
+git add packages/core/.size-limit.cjs
 git commit -m "chore(ui): add TextInput + TextArea size-limit entries"
 ```
 

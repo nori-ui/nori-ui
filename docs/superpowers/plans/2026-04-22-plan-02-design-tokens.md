@@ -36,12 +36,12 @@ tokens/build/tailwind-preset.cjs                     (generated — committed)
 tokens/build/theme.ts                                (generated — committed)
 tokens/build/theme.css                               (generated — CSS custom properties, for web/docs)
 tokens/__tests__/build-contract.test.ts
-packages/ui/src/theme/index.ts                       (re-exports Theme type from @nori-ui/tokens)
+packages/core/src/theme/index.ts                       (re-exports Theme type from @nori-ui/tokens)
 ```
 
 **Modified in this plan:**
-- `packages/ui/package.json` — adds `@nori-ui/tokens` as workspace dependency, adds `theme` export path
-- `packages/ui/src/index.ts` — re-exports theme module
+- `packages/core/package.json` — adds `@nori-ui/tokens` as workspace dependency, adds `theme` export path
+- `packages/core/src/index.ts` — re-exports theme module
 - root `package.json` — adds `build:tokens` script
 - `.github/workflows/ci.yml` — builds tokens before typecheck/test so generated outputs are present
 
@@ -948,9 +948,9 @@ git commit -m "test(tokens): add build-contract test covering public invariants"
 ## Task 11 — Wire into `packages/ui` and root scripts
 
 **Files:**
-- Modify: `packages/ui/package.json` (add dep + export path)
-- Create: `packages/ui/src/theme/index.ts`
-- Modify: `packages/ui/src/index.ts`
+- Modify: `packages/core/package.json` (add dep + export path)
+- Create: `packages/core/src/theme/index.ts`
+- Modify: `packages/core/src/index.ts`
 - Modify: root `package.json` (add `build:tokens` script)
 
 - [ ] **Step 1: Add the workspace dep to `packages/ui`.**
@@ -959,12 +959,12 @@ git commit -m "test(tokens): add build-contract test covering public invariants"
 yarn workspace @nori-ui/core add @nori-ui/tokens@workspace:*
 ```
 
-Expected: `packages/ui/package.json` now has `"@nori-ui/tokens": "workspace:*"` in `dependencies`.
+Expected: `packages/core/package.json` now has `"@nori-ui/tokens": "workspace:*"` in `dependencies`.
 
-- [ ] **Step 2: Create `packages/ui/src/theme/index.ts`.** This is the library's public re-export surface for theme — every consumer gets types from here.
+- [ ] **Step 2: Create `packages/core/src/theme/index.ts`.** This is the library's public re-export surface for theme — every consumer gets types from here.
 
 ```ts
-// packages/ui/src/theme/index.ts
+// packages/core/src/theme/index.ts
 // Re-exports the generated theme types + constants from @nori-ui/tokens under
 // the library's own public namespace.
 //
@@ -973,10 +973,10 @@ Expected: `packages/ui/package.json` now has `"@nori-ui/tokens": "workspace:*"` 
 export { theme, themeDark, type Theme } from '@nori-ui/tokens';
 ```
 
-- [ ] **Step 3: Update `packages/ui/src/index.ts`** so the barrel re-exports the theme module.
+- [ ] **Step 3: Update `packages/core/src/index.ts`** so the barrel re-exports the theme module.
 
 ```ts
-// packages/ui/src/index.ts
+// packages/core/src/index.ts
 // Public entry for the `nori-ui` package. RSC-safe exports only.
 // Stateful/client-only exports (provider, hooks) live in `nori-ui/client` (Plan 03).
 
@@ -985,7 +985,7 @@ export * from './theme';
 
 - [ ] **Step 4: Add `nori-ui/theme` subpath export** so consumers can cherry-pick.
 
-Edit `packages/ui/package.json`'s `exports`:
+Edit `packages/core/package.json`'s `exports`:
 
 ```json
 {
@@ -1018,13 +1018,13 @@ yarn size
 ```
 
 All must exit 0. Specifically:
-- `yarn typecheck` resolves `@nori-ui/tokens` from the workspace and type-checks `packages/ui/src/theme/index.ts` against the generated `Theme` type.
+- `yarn typecheck` resolves `@nori-ui/tokens` from the workspace and type-checks `packages/core/src/theme/index.ts` against the generated `Theme` type.
 - `yarn size` now measures the theme export — it's a `const` object so gzip-after-tree-shake is tiny, well under the 40 KB first-import budget.
 
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add packages/ui/package.json packages/ui/src/ package.json yarn.lock
+git add packages/core/package.json packages/core/src/ package.json yarn.lock
 git commit -m "feat(ui): wire @nori-ui/tokens into packages/ui as theme export"
 ```
 
@@ -1128,7 +1128,7 @@ git commit -m "ci: build design tokens and verify generated outputs are up to da
 - [ ] **Step 1: Fresh clean-install simulation.**
 
 ```bash
-rm -rf node_modules packages/ui/node_modules tokens/node_modules tokens/build
+rm -rf node_modules packages/core/node_modules tokens/node_modules tokens/build
 yarn install --immutable
 yarn build:tokens
 yarn biome check .
@@ -1145,7 +1145,7 @@ All must exit 0.
 Open a REPL or write a throwaway script at repo root:
 
 ```bash
-node --input-type=module -e "import('./packages/ui/src/theme/index.ts').catch(e => { console.error(e); process.exit(1); });"
+node --input-type=module -e "import('./packages/core/src/theme/index.ts').catch(e => { console.error(e); process.exit(1); });"
 ```
 
 This will fail because `.ts` isn't directly loadable — but `yarn typecheck` already proved the types resolve. The node sanity check is just for peace of mind; skip if tsc is green.
@@ -1166,7 +1166,7 @@ git add -A && git commit -m "chore: finalize tokens pipeline"
 - [ ] `yarn build:tokens` regenerates `tokens/build/{tailwind-preset.cjs, theme.ts, theme.css}` from source JSON.
 - [ ] Generated outputs are committed.
 - [ ] `yarn workspace @nori-ui/tokens test` runs all 6 contract tests green.
-- [ ] `packages/ui/src/theme/index.ts` re-exports `Theme` + `theme` + `themeDark` from `@nori-ui/tokens`.
+- [ ] `packages/core/src/theme/index.ts` re-exports `Theme` + `theme` + `themeDark` from `@nori-ui/tokens`.
 - [ ] `nori-ui/theme` subpath export is resolvable via `exports` map.
 - [ ] CI pipeline builds tokens and fails if `tokens/build/` is stale vs `src/**`.
 - [ ] Adding a new token to `src/tokens/core/*.json`, running `yarn build:tokens`, and observing it appear in `build/tailwind-preset.cjs` + `build/theme.ts` works end-to-end (manual smoke check during execution).
@@ -1183,7 +1183,7 @@ When all boxes are ticked, Plan 02 is complete and Plan 03 (Library Core) can be
 4. **`tokens/tsconfig.json` needs `"types": ["jest", "node"]`** (plan has `["node"]`) so the Jest contract tests typecheck.
 5. **`tokens/package.json` devDeps** should include `typescript` explicitly — the `typecheck` script runs from the tokens directory and won't resolve workspace-root `typescript` through Yarn 4 script PATH (see Plan 01 errata #6).
 6. **`tokens/jest.config.cjs`:** the `transform.tsconfig` path in the shared base (`jest.config.base.cjs`) is written as `<rootDir>/../../tooling/tsconfig.test.json` (two levels up). `tokens` is depth-1, not depth-2 — override `transform` in `tokens/jest.config.cjs` with `<rootDir>/../tooling/tsconfig.test.json`.
-7. **`packages/ui/.size-limit.cjs` budget:** the `500 B` placeholder from Plan 01 is too tight once the theme export lands (~588 B gzipped). Bump to `2 KB` in Task 11 Step 5 to reflect reality. This is still vastly under the spec's 40 KB first-import budget and 70 KB total budget.
+7. **`packages/core/.size-limit.cjs` budget:** the `500 B` placeholder from Plan 01 is too tight once the theme export lands (~588 B gzipped). Bump to `2 KB` in Task 11 Step 5 to reflect reality. This is still vastly under the spec's 40 KB first-import budget and 70 KB total budget.
 8. **ESLint `// eslint-disable-next-line @typescript-eslint/no-require-imports` directives:** our ESLint config only has `eslint-plugin-react-native` rules — the `@typescript-eslint/*` namespace isn't loaded, so those directives raise "rule not found" errors. Drop them; raw `require()` in `.cjs` or in contract tests is fine.
 
 Future plans should read these before they hit the same surfaces.

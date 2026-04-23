@@ -17,7 +17,7 @@ const config: Config = {
         './app/**/*.{ts,tsx,mdx}',
         './components/**/*.{ts,tsx}',
         './content/**/*.{md,mdx}',
-        '../../packages/ui/src/**/*.{ts,tsx}',
+        '../../packages/core/src/**/*.{ts,tsx}',
         // Fumadocs ships pre-compiled components with Tailwind classes inside;
         // Tailwind only generates utilities it sees used, so scan the dist.
         '../../node_modules/fumadocs-ui/dist/**/*.{js,mjs}',

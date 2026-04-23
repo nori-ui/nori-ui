@@ -14,7 +14,7 @@ Push any commit to `main` with a Conventional Commits token that implies a relea
 
 1. `yarn install --immutable`
 2. `yarn build:tokens && yarn build:ui`
-3. Verifies `packages/ui/dist/{index.js,index.cjs,index.d.ts}` exist
+3. Verifies `packages/core/dist/{index.js,index.cjs,index.d.ts}` exist
 4. `yarn semantic-release` — computes next version, writes `CHANGELOG.md`, commits as `chore(release): x.y.z`, tags, publishes to npm via OIDC trusted publisher with `--provenance`, creates a GitHub Release.
 
 **No `NPM_TOKEN` secret is stored** — authentication is via OIDC configured once on npmjs.com for the specific package.
@@ -28,7 +28,7 @@ Before the first real publish:
     ```bash
     grep -r "nori-ui" --include='*.ts' --include='*.tsx' --include='*.json' --include='*.md' --include='*.yml' --include='*.yaml' --include='*.mdx' .
     ```
-- [ ] Set `packages/ui/package.json`'s `private` to `false` (still `true` as of this commit).
+- [ ] Set `packages/core/package.json`'s `private` to `false` (still `true` as of this commit).
 - [ ] Register the real package name on npm with this repo's `release.yml` as a **trusted publisher**. Docs: <https://docs.npmjs.com/trusted-publishers>.
 - [ ] Run a dry-run preview locally: `GITHUB_TOKEN=fake-token npx semantic-release --dry-run --no-ci`. Expect: "computed version X.Y.Z" printed, no publish.
 - [ ] Push a commit to the `next` branch to cut a prerelease and verify the full pipeline end-to-end before GA. First real release on `next` is `@next` on npm: `npm install <name>@next`.

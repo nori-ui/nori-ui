@@ -1,6 +1,6 @@
 // tokens/__tests__/build-contract.test.ts
 // These tests assert the CONTRACT of the build pipeline, not implementation details.
-// If any of these fail, downstream consumers (packages/ui, docs, playgrounds) will break.
+// If any of these fail, downstream consumers (packages/core, docs, playgrounds) will break.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';

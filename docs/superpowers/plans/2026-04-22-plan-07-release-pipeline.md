@@ -4,7 +4,7 @@
 
 **Goal:** Ship v0.1 to npm under an as-yet-unchosen name with full release automation: `tsup`-built ESM + CJS + `.d.ts` outputs, `semantic-release` driving version/changelog/tag/publish from Conventional Commits, npm **OIDC trusted publisher** (no long-lived tokens), `--provenance` attestations, and a CI matrix running the full test suite against the **current + maintained + legacy** Expo SDK tiers. Also: a `RUNBOOK.md` for operators.
 
-**Architecture:** `packages/ui` keeps its source tree; `tsup` compiles it into `packages/ui/dist/` with `.js` (ESM), `.cjs`, and `.d.ts`. Public `exports` map flips from `./src/*` source to `./dist/*` artifacts. `semantic-release` runs on push to `main`; plugins generate version + changelog, publish to npm with provenance, cut a GitHub Release, and commit the CHANGELOG back.
+**Architecture:** `packages/ui` keeps its source tree; `tsup` compiles it into `packages/core/dist/` with `.js` (ESM), `.cjs`, and `.d.ts`. Public `exports` map flips from `./src/*` source to `./dist/*` artifacts. `semantic-release` runs on push to `main`; plugins generate version + changelog, publish to npm with provenance, cut a GitHub Release, and commit the CHANGELOG back.
 
 **Tech Stack:** `tsup` (esbuild-based build), `semantic-release` + `@semantic-release/{commit-analyzer,release-notes-generator,changelog,npm,github,git}`, GitHub Actions, npm OIDC trusted publisher.
 
@@ -16,8 +16,8 @@
 
 **Created:**
 ```
-packages/ui/tsup.config.ts
-packages/ui/.npmignore
+packages/core/tsup.config.ts
+packages/core/.npmignore
 .releaserc.json
 .github/workflows/release.yml
 RUNBOOK.md
@@ -25,9 +25,9 @@ docs/superpowers/errata/README.md                (index)
 ```
 
 **Modified:**
-- `packages/ui/package.json` — `main`/`module`/`types`/`exports` flipped to `./dist/*`; `files` set; publish config; peer deps finalized; `private: false` (only when the real name is chosen)
+- `packages/core/package.json` — `main`/`module`/`types`/`exports` flipped to `./dist/*`; `files` set; publish config; peer deps finalized; `private: false` (only when the real name is chosen)
 - `.github/workflows/ci.yml` — adds a matrix strategy for Expo SDK tiers
-- `packages/ui/src/index.ts` — unchanged
+- `packages/core/src/index.ts` — unchanged
 - root `package.json` — adds `build:ui` script
 
 ---
@@ -35,8 +35,8 @@ docs/superpowers/errata/README.md                (index)
 ## Task 1 — `tsup` build for packages/ui
 
 **Files:**
-- Create: `packages/ui/tsup.config.ts`
-- Modify: `packages/ui/package.json`
+- Create: `packages/core/tsup.config.ts`
+- Modify: `packages/core/package.json`
 
 - [ ] **Step 1: Install tsup.**
 
@@ -44,7 +44,7 @@ docs/superpowers/errata/README.md                (index)
 yarn workspace @nori-ui/core add -D tsup
 ```
 
-- [ ] **Step 2: `packages/ui/tsup.config.ts`.**
+- [ ] **Step 2: `packages/core/tsup.config.ts`.**
 
 ```ts
 import { defineConfig } from 'tsup';
@@ -75,7 +75,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 3: Update `packages/ui/package.json`** to reflect compiled outputs.
+- [ ] **Step 3: Update `packages/core/package.json`** to reflect compiled outputs.
 
 ```json
 {
@@ -151,7 +151,7 @@ Update `tsup.config.ts` `external` to drop `@nori-ui/tokens`:
 external: ['react', 'react-dom', 'react-native'],
 ```
 
-Update `packages/ui/package.json` to remove the tokens dep from `dependencies` (tokens are now bundled). Move it to `devDependencies`.
+Update `packages/core/package.json` to remove the tokens dep from `dependencies` (tokens are now bundled). Move it to `devDependencies`.
 
 - [ ] **Step 4: Add root build script.** Update root `package.json`:
 
@@ -170,7 +170,7 @@ yarn build:tokens
 yarn build:ui
 ```
 
-Expected: `packages/ui/dist/` populated with `.js`, `.cjs`, `.d.ts` for every entry. `yarn size` runs against the dist tree now — update `.size-limit.cjs` entries' `path` to `dist/index.js`, etc.
+Expected: `packages/core/dist/` populated with `.js`, `.cjs`, `.d.ts` for every entry. `yarn size` runs against the dist tree now — update `.size-limit.cjs` entries' `path` to `dist/index.js`, etc.
 
 - [ ] **Step 6: Update `.size-limit.cjs` paths** (example):
 
@@ -187,7 +187,7 @@ Expected: `packages/ui/dist/` populated with `.js`, `.cjs`, `.d.ts` for every en
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add packages/ui/tsup.config.ts packages/ui/package.json packages/ui/.size-limit.cjs package.json yarn.lock
+git add packages/core/tsup.config.ts packages/core/package.json packages/core/.size-limit.cjs package.json yarn.lock
 git commit -m "build(ui): add tsup dual build (esm + cjs + dts) and flip exports to dist"
 ```
 
@@ -196,9 +196,9 @@ git commit -m "build(ui): add tsup dual build (esm + cjs + dts) and flip exports
 ## Task 2 — `.npmignore` + publish smoke
 
 **Files:**
-- Create: `packages/ui/.npmignore`
+- Create: `packages/core/.npmignore`
 
-- [ ] **Step 1: `packages/ui/.npmignore`** — exclude dev-only files from the tarball.
+- [ ] **Step 1: `packages/core/.npmignore`** — exclude dev-only files from the tarball.
 
 ```
 # development
@@ -232,7 +232,7 @@ Verify: only `dist/`, `README.md`, `package.json`, `LICENSE` in the output.
 - [ ] **Step 3: Commit.**
 
 ```bash
-git add packages/ui/.npmignore
+git add packages/core/.npmignore
 git commit -m "chore(ui): add .npmignore to exclude dev files from tarball"
 ```
 
@@ -289,7 +289,7 @@ yarn add -D semantic-release @semantic-release/changelog @semantic-release/git c
         [
             "@semantic-release/git",
             {
-                "assets": ["CHANGELOG.md", "packages/ui/package.json", "package.json", "yarn.lock"],
+                "assets": ["CHANGELOG.md", "packages/core/package.json", "package.json", "yarn.lock"],
                 "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
             }
         ]
@@ -354,9 +354,9 @@ jobs:
 
             - name: Verify build artifacts
               run: |
-                  test -f packages/ui/dist/index.js
-                  test -f packages/ui/dist/index.cjs
-                  test -f packages/ui/dist/index.d.ts
+                  test -f packages/core/dist/index.js
+                  test -f packages/core/dist/index.cjs
+                  test -f packages/core/dist/index.d.ts
 
             # semantic-release handles version bump + publish + changelog + github release.
             # npm publish is invoked by @semantic-release/npm; we ensure provenance is on
@@ -368,9 +368,9 @@ jobs:
               run: yarn semantic-release
 ```
 
-**Prerequisite on the npm side:** once a final package name is chosen and `packages/ui/package.json` is `private: false`, configure the npm registry page of that package as a **trusted publisher** pointing at this GitHub repo's `release.yml` workflow. That's a one-time manual step in the npm UI; no token is ever stored.
+**Prerequisite on the npm side:** once a final package name is chosen and `packages/core/package.json` is `private: false`, configure the npm registry page of that package as a **trusted publisher** pointing at this GitHub repo's `release.yml` workflow. That's a one-time manual step in the npm UI; no token is ever stored.
 
-Add `publishConfig` to `packages/ui/package.json` so provenance is declared at the package level too:
+Add `publishConfig` to `packages/core/package.json` so provenance is declared at the package level too:
 
 ```json
 {
@@ -385,7 +385,7 @@ Add `publishConfig` to `packages/ui/package.json` so provenance is declared at t
 - [ ] **Step 2: Commit.**
 
 ```bash
-git add .github/workflows/release.yml packages/ui/package.json
+git add .github/workflows/release.yml packages/core/package.json
 git commit -m "ci: add release workflow with npm OIDC trusted publisher + provenance"
 ```
 
@@ -480,7 +480,7 @@ Push any commit to `main` with a `feat:` / `fix:` / `BREAKING CHANGE:` token. `r
 Before the very first publish, confirm:
 
 - [ ] The placeholder name `nori-ui` has been replaced everywhere. Search: `nori-ui`, `@nori-ui/*`, `NoriProvider`, `git@github.com:nori-ui/*`, docs domain. See project memory for the rename-hygiene list.
-- [ ] `packages/ui/package.json` has `private: false` and the real name.
+- [ ] `packages/core/package.json` has `private: false` and the real name.
 - [ ] npm: create the package page for the real name and add this repo's `release.yml` workflow as a **trusted publisher**. No `NPM_TOKEN` secret is needed.
 - [ ] Run a prerelease first via the `next` branch (`yarn semantic-release` locally with `--dry-run` to preview the version/changelog, then push a commit to `next`).
 
@@ -573,10 +573,10 @@ All exit 0.
 - [ ] **Step 2:** Verify every file in `dist/` honors `'use client'` directives for client-only modules.
 
 ```bash
-grep -l "'use client'" packages/ui/dist/*.js packages/ui/dist/client.js || true
+grep -l "'use client'" packages/core/dist/*.js packages/core/dist/client.js || true
 ```
 
-Expected: at minimum, `packages/ui/dist/client.js` and any client-context modules preserve the directive.
+Expected: at minimum, `packages/core/dist/client.js` and any client-context modules preserve the directive.
 
 ---
 
@@ -601,4 +601,4 @@ When all boxes are ticked, the library is ready to be renamed and published. v0.
 3. **Biome markdown formatter + `RUNBOOK.md`** — same checkbox-stripping bug seen for `docs/superpowers/**`. Add `RUNBOOK.md` to the formatter-disabled override in `biome.json`.
 4. **`'use client'` directive preservation in tsup output** — not yet verified in this plan's commits. Consumers in RSC contexts should import client-only pieces from `nori-ui/client` (which has its own `'use client'` banner), so the directive should survive at the entry-file level. Per-file directive preservation across sub-bundles is a follow-up (may need `esbuild-plugin-preserve-directives` or tsup 8+'s `banner` per entry).
 5. **Plan 07 Tasks 1–5 landed during the primary execution** (tsup build, .npmignore, semantic-release config, release.yml, tier-matrix). **Tasks 6–8 completed in a follow-up pass**: Task 6 (RUNBOOK) and a local green-build verification sweep; Task 7's full dry-run deferred to post-push (see #2). All green-build criteria satisfied: `yarn build:tokens`, `yarn build:ui`, `yarn biome check .`, `yarn typecheck`, `yarn test`, `yarn size`, `yarn workspace @nori-ui/core pack --dry-run` all exit 0.
-6. **Publish readiness**: the tarball contains `LICENSE`, `README.md`, `package.json`, and `dist/**` (ESM + CJS + `.d.ts` + source maps for every entry). `src/` and test files correctly excluded via `.npmignore`. **`packages/ui/package.json` is still `private: true`** — flip to `false` only after the rename sweep during the first-release checklist (see RUNBOOK).
+6. **Publish readiness**: the tarball contains `LICENSE`, `README.md`, `package.json`, and `dist/**` (ESM + CJS + `.d.ts` + source maps for every entry). `src/` and test files correctly excluded via `.npmignore`. **`packages/core/package.json` is still `private: true`** — flip to `false` only after the rename sweep during the first-release checklist (see RUNBOOK).

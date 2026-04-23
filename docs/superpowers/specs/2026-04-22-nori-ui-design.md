@@ -213,7 +213,7 @@ The Fumadocs site (Next.js App Router) hosts:
   - 10 × examples ("show me a form with validation")
 - **Grading:** for each question, a JSON gold answer lists the expected components / props / example IDs. Success = F1 ≥ 0.9 on returned items.
 - **Target:** ≥ 95% aggregate success rate.
-- **CI:** eval runs on every PR that touches `/apps/docs` or `/packages/ui/src/components`. Blocks merge on regression.
+- **CI:** eval runs on every PR that touches `/apps/docs` or `/packages/core/src/components`. Blocks merge on regression.
 
 ---
 

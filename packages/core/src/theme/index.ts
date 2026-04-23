@@ -1,4 +1,4 @@
-// packages/ui/src/theme/index.ts
+// packages/core/src/theme/index.ts
 // Re-exports the generated theme types + constants from @nori-ui/tokens under
 // the library's own public namespace.
 //

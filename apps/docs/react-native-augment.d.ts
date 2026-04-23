@@ -1,4 +1,4 @@
-// Mirror the NativeWind `className` augmentation that `packages/ui` relies on
+// Mirror the NativeWind `className` augmentation that `packages/core` relies on
 // for its source. Without this, the docs typecheck — which imports
 // `nori-ui` directly as workspace source — fails on primitives that
 // forward className.
