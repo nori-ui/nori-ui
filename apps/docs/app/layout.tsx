@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import './global.css';
 
 export const metadata = {
-    title: 'nori-ui — placeholder name',
+    title: 'nori-ui — React Native + Web components',
     description: 'React Native + Web component library, AI-documented, Expo-first.',
 };
 
