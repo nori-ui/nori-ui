@@ -2,13 +2,13 @@
 // something to render before Plan 05. Remove when Button lands.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { UnbogifyProvider, useTheme } from 'unbogify-ui/client';
+import { NoriProvider, useTheme } from 'nori-ui/client';
 
 function PlaceholderSmoke() {
     const theme = useTheme();
     return (
         <div data-testid="smoke" style={{ padding: 16, fontFamily: 'system-ui, sans-serif' }}>
-            <strong>unbogify-ui smoke</strong>
+            <strong>nori-ui smoke</strong>
             <div
                 data-testid="smoke-swatch"
                 style={{
@@ -25,9 +25,9 @@ function PlaceholderSmoke() {
 
 function WrappedSmoke() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <PlaceholderSmoke />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 

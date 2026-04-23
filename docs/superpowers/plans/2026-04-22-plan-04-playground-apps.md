@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Stand up the two apps that serve as e2e test targets: `apps/playground-web` (Vite + React + `react-native-web` + Storybook 8, Playwright target) and `apps/playground-native` (Expo SDK 55 + New Architecture + NativeWind, Maestro target). Both boot, render a smoke screen that consumes `@unbogify/tokens` via `useTheme()`, and can be driven by their respective e2e tool.
+**Goal:** Stand up the two apps that serve as e2e test targets: `apps/playground-web` (Vite + React + `react-native-web` + Storybook 8, Playwright target) and `apps/playground-native` (Expo SDK 55 + New Architecture + NativeWind, Maestro target). Both boot, render a smoke screen that consumes `@nori-ui/tokens` via `useTheme()`, and can be driven by their respective e2e tool.
 
-**Architecture:** Each playground is an independent workspace that depends on `unbogify-ui` (workspace:*). Component stories live in `packages/ui/src/<component>/*.stories.tsx` (CSF 3 format) as a single source of truth — the web Storybook indexes them directly; a tiny `story-registry.ts` in `packages/ui/src/stories/` enumerates the same set so `playground-native` can iterate and render them for Maestro. Plan 04 ships the infrastructure and a placeholder story; the 11 real component stories arrive in Plan 05.
+**Architecture:** Each playground is an independent workspace that depends on `nori-ui` (workspace:*). Component stories live in `packages/ui/src/<component>/*.stories.tsx` (CSF 3 format) as a single source of truth — the web Storybook indexes them directly; a tiny `story-registry.ts` in `packages/ui/src/stories/` enumerates the same set so `playground-native` can iterate and render them for Maestro. Plan 04 ships the infrastructure and a placeholder story; the 11 real component stories arrive in Plan 05.
 
 **Tech Stack:** Vite 5, React 19, `react-native-web`, Storybook 8 with the Vite builder, Expo SDK 55 (React Native 0.83, React 19, New Architecture default), NativeWind v4, Playwright 1.x, Maestro CLI.
 
@@ -90,8 +90,8 @@ package.json                               (modified — add dev/e2e scripts)
         "build:storybook": "storybook build -o storybook-static"
     },
     "dependencies": {
-        "unbogify-ui": "workspace:*",
-        "@unbogify/tokens": "workspace:*",
+        "nori-ui": "workspace:*",
+        "@nori-ui/tokens": "workspace:*",
         "react": "^19",
         "react-dom": "^19",
         "react-native-web": "^0.19"
@@ -143,7 +143,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
-// Alias react-native → react-native-web so imports from `unbogify-ui` and
+// Alias react-native → react-native-web so imports from `nori-ui` and
 // `lucide-react-native` resolve to web-compatible components.
 export default defineConfig({
     plugins: [react()],
@@ -158,7 +158,7 @@ export default defineConfig({
     },
     // Let Vite prebundle workspace packages to speed up cold starts.
     optimizeDeps: {
-        include: ['unbogify-ui', 'unbogify-ui/client', '@unbogify/tokens'],
+        include: ['nori-ui', 'nori-ui/client', '@nori-ui/tokens'],
     },
     build: {
         outDir: path.resolve(__dirname, 'dist'),
@@ -175,7 +175,7 @@ export default defineConfig({
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>unbogify-ui playground (web)</title>
+        <title>nori-ui playground (web)</title>
     </head>
     <body>
         <div id="root"></div>
@@ -202,20 +202,20 @@ createRoot(el).render(
 );
 ```
 
-- [ ] **Step 7: `apps/playground-web/src/App.tsx`** — smoke page using `useTheme()` from unbogify-ui/client.
+- [ ] **Step 7: `apps/playground-web/src/App.tsx`** — smoke page using `useTheme()` from nori-ui/client.
 
 ```tsx
 'use client';
 
-import { UnbogifyProvider, useTheme } from 'unbogify-ui/client';
+import { NoriProvider, useTheme } from 'nori-ui/client';
 
 function SmokeContent() {
     const theme = useTheme();
     return (
         <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-            <h1 data-testid="title">unbogify-ui playground (web)</h1>
+            <h1 data-testid="title">nori-ui playground (web)</h1>
             <p>
-                Primary token value resolved from <code>@unbogify/tokens</code>:
+                Primary token value resolved from <code>@nori-ui/tokens</code>:
             </p>
             <div
                 data-testid="primary-swatch"
@@ -233,9 +233,9 @@ function SmokeContent() {
 
 export function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <SmokeContent />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 ```
@@ -280,15 +280,15 @@ git commit -m "feat(playground-web): scaffold vite + react 19 + react-native-web
 - Create: `apps/playground-web/postcss.config.cjs`
 - Modify: `apps/playground-web/src/styles.css` (add Tailwind directives)
 
-- [ ] **Step 1: `apps/playground-web/tailwind.config.ts`.** Uses the preset from `@unbogify/tokens`.
+- [ ] **Step 1: `apps/playground-web/tailwind.config.ts`.** Uses the preset from `@nori-ui/tokens`.
 
 ```ts
 import type { Config } from 'tailwindcss';
 // biome-ignore lint/correctness/noNodejsModules: tailwind config runs in node
-import unbogifyPreset from '@unbogify/tokens/tailwind-preset';
+import noriPreset from '@nori-ui/tokens/tailwind-preset';
 
 const config: Config = {
-    presets: [unbogifyPreset],
+    presets: [noriPreset],
     content: [
         './index.html',
         './src/**/*.{ts,tsx}',
@@ -339,7 +339,7 @@ Expected: `dist/` produced, `dist/assets/*.css` contains Tailwind utility classe
 
 ```bash
 git add apps/playground-web/tailwind.config.ts apps/playground-web/postcss.config.cjs apps/playground-web/src/styles.css
-git commit -m "feat(playground-web): wire nativewind + tailwind preset from @unbogify/tokens"
+git commit -m "feat(playground-web): wire nativewind + tailwind preset from @nori-ui/tokens"
 ```
 
 ---
@@ -384,13 +384,13 @@ export const stories: StoryEntry[] = [
 // something to render before Plan 05. Remove when Button lands.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { UnbogifyProvider, useTheme } from 'unbogify-ui/client';
+import { NoriProvider, useTheme } from 'nori-ui/client';
 
 function PlaceholderSmoke() {
     const theme = useTheme();
     return (
         <div data-testid="smoke" style={{ padding: 16, fontFamily: 'system-ui, sans-serif' }}>
-            <strong>unbogify-ui smoke</strong>
+            <strong>nori-ui smoke</strong>
             <div
                 data-testid="smoke-swatch"
                 style={{
@@ -407,9 +407,9 @@ function PlaceholderSmoke() {
 
 function WrappedSmoke() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <PlaceholderSmoke />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 
@@ -426,7 +426,7 @@ export const Default: StoryObj<typeof WrappedSmoke> = {};
 - [ ] **Step 3: Install `@storybook/react` types** into the ui workspace so the story typechecks.
 
 ```bash
-yarn workspace unbogify-ui add -D @storybook/react
+yarn workspace nori-ui add -D @storybook/react
 ```
 
 - [ ] **Step 4: Add `./stories` subpath export** in `packages/ui/package.json`:
@@ -449,7 +449,7 @@ yarn workspace unbogify-ui add -D @storybook/react
 - [ ] **Step 5: Typecheck.**
 
 ```bash
-yarn workspace unbogify-ui typecheck
+yarn workspace nori-ui typecheck
 ```
 
 - [ ] **Step 6: Commit.**
@@ -580,8 +580,8 @@ git commit -m "feat(playground-web): add storybook 8 on vite builder, discovers 
         "test": "echo 'no unit tests — e2e only' && exit 0"
     },
     "dependencies": {
-        "unbogify-ui": "workspace:*",
-        "@unbogify/tokens": "workspace:*",
+        "nori-ui": "workspace:*",
+        "@nori-ui/tokens": "workspace:*",
         "expo": "~55.0.0",
         "expo-status-bar": "~2.3.0",
         "react": "^19",
@@ -623,13 +623,13 @@ Notes:
 ```json
 {
     "expo": {
-        "name": "unbogify-playground",
-        "slug": "unbogify-playground",
+        "name": "nori-ui-playground",
+        "slug": "nori-ui-playground",
         "version": "0.0.0",
         "orientation": "portrait",
         "newArchEnabled": true,
-        "ios": { "supportsTablet": true, "bundleIdentifier": "dev.unbogify.playground" },
-        "android": { "package": "dev.unbogify.playground" },
+        "ios": { "supportsTablet": true, "bundleIdentifier": "dev.noriui.playground" },
+        "android": { "package": "dev.noriui.playground" },
         "web": { "bundler": "metro" },
         "plugins": []
     }
@@ -649,16 +649,16 @@ registerRootComponent(App);
 
 ```tsx
 import { SafeAreaView, StatusBar, Text, View } from 'react-native';
-import { UnbogifyProvider, useTheme } from 'unbogify-ui/client';
+import { NoriProvider, useTheme } from 'nori-ui/client';
 
 function SmokeContent() {
     const theme = useTheme();
     return (
         <View style={{ padding: 24, gap: 12 }}>
             <Text testID="title" style={{ fontSize: 22, fontWeight: '600' }}>
-                unbogify-ui playground (native)
+                nori-ui playground (native)
             </Text>
-            <Text>Primary token value resolved from @unbogify/tokens:</Text>
+            <Text>Primary token value resolved from @nori-ui/tokens:</Text>
             <View
                 testID="primary-swatch"
                 style={{
@@ -675,12 +675,12 @@ function SmokeContent() {
 
 export function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <SafeAreaView style={{ flex: 1 }}>
                 <StatusBar />
                 <SmokeContent />
             </SafeAreaView>
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 ```
@@ -752,10 +752,10 @@ module.exports = withNativeWind(config, { input: './global.css' });
 
 ```ts
 import type { Config } from 'tailwindcss';
-import unbogifyPreset from '@unbogify/tokens/tailwind-preset';
+import noriPreset from '@nori-ui/tokens/tailwind-preset';
 
 const config: Config = {
-    presets: [unbogifyPreset],
+    presets: [noriPreset],
     content: [
         './App.tsx',
         './index.ts',
@@ -813,7 +813,7 @@ git commit -m "feat(playground-native): wire nativewind v4, metro workspace reso
 
 ```json
 {
-    "name": "@unbogify/e2e-web",
+    "name": "@nori-ui/e2e-web",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -848,7 +848,7 @@ git commit -m "feat(playground-native): wire nativewind v4, metro workspace reso
 
 ```bash
 yarn install
-yarn workspace @unbogify/e2e-web install:browsers
+yarn workspace @nori-ui/e2e-web install:browsers
 ```
 
 - [ ] **Step 4: `e2e/web/playwright.config.ts`.**
@@ -893,9 +893,9 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 test.describe('web playground smoke', () => {
-    test('renders the title and primary swatch from @unbogify/tokens', async ({ page }) => {
+    test('renders the title and primary swatch from @nori-ui/tokens', async ({ page }) => {
         await page.goto('/');
-        await expect(page.getByTestId('title')).toHaveText('unbogify-ui playground (web)');
+        await expect(page.getByTestId('title')).toHaveText('nori-ui playground (web)');
         const swatch = page.getByTestId('primary-swatch');
         await expect(swatch).toBeVisible();
         const hex = await page.getByTestId('primary-hex').textContent();
@@ -913,7 +913,7 @@ test.describe('web playground smoke', () => {
 - [ ] **Step 6: Run.**
 
 ```bash
-yarn workspace @unbogify/e2e-web test
+yarn workspace @nori-ui/e2e-web test
 ```
 
 Expected: 2 passed. Playwright boots the Vite dev server automatically, runs the tests, shuts the server down.
@@ -951,7 +951,7 @@ git commit -m "test(e2e): add playwright smoke test for playground-web with axe 
 #
 # Requires Maestro CLI installed: https://maestro.mobile.dev
 
-appId: dev.unbogify.playground
+appId: dev.noriui.playground
 ---
 - launchApp
 - assertVisible:
@@ -1012,8 +1012,8 @@ git commit -m "test(e2e): add maestro smoke flow + README for playground-native"
         "dev:native": "yarn workspace playground-native start",
         "dev:storybook": "yarn workspace playground-web storybook",
         "build:storybook": "yarn workspace playground-web build:storybook",
-        "test:e2e:web": "yarn workspace @unbogify/e2e-web test",
-        "e2e:browsers": "yarn workspace @unbogify/e2e-web install:browsers"
+        "test:e2e:web": "yarn workspace @nori-ui/e2e-web test",
+        "e2e:browsers": "yarn workspace @nori-ui/e2e-web install:browsers"
     }
 }
 ```
@@ -1135,7 +1135,7 @@ All exit 0.
 # web
 yarn dev:web &
 sleep 5
-curl -sf http://localhost:5173 | grep -q "unbogify-ui playground" && echo WEB_OK
+curl -sf http://localhost:5173 | grep -q "nori-ui playground" && echo WEB_OK
 kill %1 2>/dev/null
 
 # native — skip unless you have a simulator/emulator up; Maestro is manual in v0.1
@@ -1152,14 +1152,14 @@ git add -A && git commit -m "chore: finalize playground apps scaffold" || true
 
 ## Done criteria for Plan 04
 
-- [ ] `yarn dev:web` boots Vite on :5173 with the smoke page rendering `@unbogify/tokens` theme values.
+- [ ] `yarn dev:web` boots Vite on :5173 with the smoke page rendering `@nori-ui/tokens` theme values.
 - [ ] `yarn dev:native` starts Metro + Expo on the workspace app.
 - [ ] `yarn dev:storybook` boots Storybook 8 on :6006 with the PlaceholderSmoke story visible.
 - [ ] `yarn test:e2e:web` runs Playwright + axe — 2 tests passing.
 - [ ] `maestro test e2e/native/flows/smoke.yaml` runs locally against a booted playground-native.
 - [ ] CI's Playwright job is green.
-- [ ] Both playgrounds depend on `unbogify-ui` + `@unbogify/tokens` via workspace:* (no published versions referenced).
-- [ ] NativeWind is wired in both: Tailwind preset from `@unbogify/tokens` is loaded; NativeWind preset is loaded alongside it on native.
+- [ ] Both playgrounds depend on `nori-ui` + `@nori-ui/tokens` via workspace:* (no published versions referenced).
+- [ ] NativeWind is wired in both: Tailwind preset from `@nori-ui/tokens` is loaded; NativeWind preset is loaded alongside it on native.
 - [ ] `storybook-static/`, `playwright-report/`, `test-results/` are gitignored.
 
 When all boxes are ticked, Plan 04 is complete and Plan 05 (v0.1 components) can begin.
@@ -1176,7 +1176,7 @@ When all boxes are ticked, Plan 04 is complete and Plan 05 (v0.1 components) can
    - `react-native-safe-area-context`: `~5.6.2` (plan said `5.6.0`)
    - `react-native-screens`: `~4.23.0` (plan said `4.20.0`)
    - Add `react-native-worklets@^0.8.1` — new Reanimated peer dep.
-3. **Duplicate `presets` field in Task 6's `tailwind.config.ts`** — combine into one array: `presets: [unbogifyPreset, require('nativewind/preset')]`.
+3. **Duplicate `presets` field in Task 6's `tailwind.config.ts`** — combine into one array: `presets: [noriPreset, require('nativewind/preset')]`.
 4. **`App.tsx` needs a `<main>` landmark** for axe-core to pass. Use `<main>` (not `<div>`) as the outer element when the smoke page renders page-level content.
 5. **`nativewind-env.d.ts` is auto-generated** by NativeWind on first `expo export`. Commit the file as-is (NativeWind also patches `tsconfig.json` to include it).
 6. **Storybook 8.6.x (not 10.x)** — React 19 support in the 8.4+ line. Upgrading to 10.x is a future plan.

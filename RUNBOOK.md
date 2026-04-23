@@ -1,6 +1,6 @@
 # Release Runbook
 
-Operational doc for releasing `unbogify-ui`. Dual-audience: humans for context, LLMs for agent-driven ops.
+Operational doc for releasing `nori-ui`. Dual-audience: humans for context, LLMs for agent-driven ops.
 
 ## Normal release (fully automated)
 
@@ -21,12 +21,12 @@ Push any commit to `main` with a Conventional Commits token that implies a relea
 
 ## First-release checklist
 
-The placeholder name `unbogify-ui` is NOT ready to publish. Before the first release:
+Before the first real publish:
 
-- [ ] Pick the real name. Update project memory (`feedback_package_versioning`, `project_temporary_name`) with the chosen name.
-- [ ] Run the rename sweep. Replace `unbogify-ui`, `@unbogify/*`, `UnbogifyProvider`, `git@github.com:unbogify/unbogify-ui.git`, docs domain, and any class-name or semantic-key prefixes. Verify with:
+- [x] Name locked as `nori-ui`.
+- [x] Rename sweep complete.
     ```bash
-    grep -r "unbogify" --include='*.ts' --include='*.tsx' --include='*.json' --include='*.md' --include='*.yml' --include='*.yaml' --include='*.mdx' .
+    grep -r "nori-ui" --include='*.ts' --include='*.tsx' --include='*.json' --include='*.md' --include='*.yml' --include='*.yaml' --include='*.mdx' .
     ```
 - [ ] Set `packages/ui/package.json`'s `private` to `false` (still `true` as of this commit).
 - [ ] Register the real package name on npm with this repo's `release.yml` as a **trusted publisher**. Docs: <https://docs.npmjs.com/trusted-publishers>.
@@ -80,7 +80,7 @@ Symptoms: bad tag, wrong changelog, partial npm publish.
 ## Smoke-testing a freshly published version
 
 ```bash
-mkdir /tmp/unbogify-smoke && cd /tmp/unbogify-smoke
+mkdir /tmp/nori-ui-smoke && cd /tmp/nori-ui-smoke
 yarn init -2
 yarn add <package>@<version>
 node --input-type=module -e "import { cn, Slot } from '<package>'; console.log(typeof cn, typeof Slot);"

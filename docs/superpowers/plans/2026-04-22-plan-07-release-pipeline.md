@@ -8,7 +8,7 @@
 
 **Tech Stack:** `tsup` (esbuild-based build), `semantic-release` + `@semantic-release/{commit-analyzer,release-notes-generator,changelog,npm,github,git}`, GitHub Actions, npm OIDC trusted publisher.
 
-**Applies all prior errata.** Publishing requires the library's placeholder name (`unbogify-ui`) to be replaced with the final name before the first public release — the rename sweep list is in the project-memory file.
+**Applies all prior errata.** Publishing requires the library's placeholder name (`nori-ui`) to be replaced with the final name before the first public release — the rename sweep list is in the project-memory file.
 
 ---
 
@@ -41,7 +41,7 @@ docs/superpowers/errata/README.md                (index)
 - [ ] **Step 1: Install tsup.**
 
 ```bash
-yarn workspace unbogify-ui add -D tsup
+yarn workspace nori-ui add -D tsup
 ```
 
 - [ ] **Step 2: `packages/ui/tsup.config.ts`.**
@@ -65,7 +65,7 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     target: 'es2022',
-    external: ['react', 'react-dom', 'react-native', '@unbogify/tokens'],
+    external: ['react', 'react-dom', 'react-native', '@nori-ui/tokens'],
     // Preserve "use client" directives so RSC consumers honor boundaries.
     esbuildOptions: (opts) => {
         opts.banner = { js: '' };
@@ -143,9 +143,9 @@ export default defineConfig({
 }
 ```
 
-Keep `dependencies: { "@unbogify/tokens": "workspace:*" }` — at publish time, yarn rewrites workspace protocol to the actual published version. But since we're shipping `@unbogify/tokens` as a **private** workspace, tokens must be inlined into the dist OR we publish tokens too. Cleanest for v0.1: **inline tokens into the UI dist** by removing it from `external` and letting esbuild bundle it.
+Keep `dependencies: { "@nori-ui/tokens": "workspace:*" }` — at publish time, yarn rewrites workspace protocol to the actual published version. But since we're shipping `@nori-ui/tokens` as a **private** workspace, tokens must be inlined into the dist OR we publish tokens too. Cleanest for v0.1: **inline tokens into the UI dist** by removing it from `external` and letting esbuild bundle it.
 
-Update `tsup.config.ts` `external` to drop `@unbogify/tokens`:
+Update `tsup.config.ts` `external` to drop `@nori-ui/tokens`:
 
 ```ts
 external: ['react', 'react-dom', 'react-native'],
@@ -158,7 +158,7 @@ Update `packages/ui/package.json` to remove the tokens dep from `dependencies` (
 ```json
 {
     "scripts": {
-        "build:ui": "yarn workspace unbogify-ui build"
+        "build:ui": "yarn workspace nori-ui build"
     }
 }
 ```
@@ -224,7 +224,7 @@ jest.rn-setup.ts
 - [ ] **Step 2: Dry-run publish.**
 
 ```bash
-yarn workspace unbogify-ui pack --dry-run
+yarn workspace nori-ui pack --dry-run
 ```
 
 Verify: only `dist/`, `README.md`, `package.json`, `LICENSE` in the output.
@@ -479,14 +479,14 @@ Push any commit to `main` with a `feat:` / `fix:` / `BREAKING CHANGE:` token. `r
 
 Before the very first publish, confirm:
 
-- [ ] The placeholder name `unbogify-ui` has been replaced everywhere. Search: `unbogify-ui`, `@unbogify/*`, `UnbogifyProvider`, `git@github.com:unbogify/*`, docs domain. See project memory for the rename-hygiene list.
+- [ ] The placeholder name `nori-ui` has been replaced everywhere. Search: `nori-ui`, `@nori-ui/*`, `NoriProvider`, `git@github.com:nori-ui/*`, docs domain. See project memory for the rename-hygiene list.
 - [ ] `packages/ui/package.json` has `private: false` and the real name.
 - [ ] npm: create the package page for the real name and add this repo's `release.yml` workflow as a **trusted publisher**. No `NPM_TOKEN` secret is needed.
 - [ ] Run a prerelease first via the `next` branch (`yarn semantic-release` locally with `--dry-run` to preview the version/changelog, then push a commit to `next`).
 
 ## Prerelease
 
-Push to `next`. `semantic-release` will publish with the `next` dist-tag on npm (`yarn add unbogify-ui@next`). Move GA to `main` when ready.
+Push to `next`. `semantic-release` will publish with the `next` dist-tag on npm (`yarn add nori-ui@next`). Move GA to `main` when ready.
 
 ## Dropping a tier
 
@@ -515,10 +515,10 @@ GitHub: standard repo secrets only — cycle `GITHUB_TOKEN` via the normal workf
 ## Smoke-testing a freshly-published version
 
 ```bash
-mkdir /tmp/unbogify-smoke && cd /tmp/unbogify-smoke
+mkdir /tmp/nori-ui-smoke && cd /tmp/nori-ui-smoke
 yarn init -2
-yarn add unbogify-ui@<version>
-node --input-type=module -e "import { cn, Slot } from 'unbogify-ui'; console.log(typeof cn, typeof Slot);"
+yarn add nori-ui@<version>
+node --input-type=module -e "import { cn, Slot } from 'nori-ui'; console.log(typeof cn, typeof Slot);"
 ```
 
 Expected: `function function`.
@@ -583,7 +583,7 @@ Expected: at minimum, `packages/ui/dist/client.js` and any client-context module
 ## Done criteria for Plan 07
 
 - [ ] `yarn build:ui` emits ESM + CJS + `.d.ts` for every exports subpath.
-- [ ] `yarn workspace unbogify-ui pack --dry-run` tarball contains only `dist`, `package.json`, `README.md`, `LICENSE`.
+- [ ] `yarn workspace nori-ui pack --dry-run` tarball contains only `dist`, `package.json`, `README.md`, `LICENSE`.
 - [ ] `.releaserc.json` validates; `semantic-release --dry-run` succeeds.
 - [ ] `release.yml` has `id-token: write`, uses `actions/setup-node` with `registry-url`, and runs `yarn semantic-release` with `NPM_CONFIG_PROVENANCE=true`.
 - [ ] `tier-matrix` CI job is scaffolded for multiple Expo SDKs.
@@ -599,6 +599,6 @@ When all boxes are ticked, the library is ready to be renamed and published. v0.
 1. **`semantic-release@^25` requires Node 22+ / 24+** — conflicts with the PRD's Node 20+ engine. Pin `semantic-release@^23` (same plugin contract, Node 20-compatible). Installed 2026-04-22.
 2. **Local `semantic-release --dry-run` fails with `ERELEASEBRANCHES`** in the dev environment because the repo has no remote HEAD pushed (`origin/main`). The error message (`Your configuration for the problematic branches is []`) is misleading — the `.releaserc.json` branches field IS set; semantic-release just can't evaluate branches without a git remote. In CI this works normally because GitHub Actions checks out the repo with `fetch-depth: 0` and remote refs present. For local verification, run after `git push -u origin main` the first time, or skip the check and rely on CI.
 3. **Biome markdown formatter + `RUNBOOK.md`** — same checkbox-stripping bug seen for `docs/superpowers/**`. Add `RUNBOOK.md` to the formatter-disabled override in `biome.json`.
-4. **`'use client'` directive preservation in tsup output** — not yet verified in this plan's commits. Consumers in RSC contexts should import client-only pieces from `unbogify-ui/client` (which has its own `'use client'` banner), so the directive should survive at the entry-file level. Per-file directive preservation across sub-bundles is a follow-up (may need `esbuild-plugin-preserve-directives` or tsup 8+'s `banner` per entry).
-5. **Plan 07 Tasks 1–5 landed during the primary execution** (tsup build, .npmignore, semantic-release config, release.yml, tier-matrix). **Tasks 6–8 completed in a follow-up pass**: Task 6 (RUNBOOK) and a local green-build verification sweep; Task 7's full dry-run deferred to post-push (see #2). All green-build criteria satisfied: `yarn build:tokens`, `yarn build:ui`, `yarn biome check .`, `yarn typecheck`, `yarn test`, `yarn size`, `yarn workspace unbogify-ui pack --dry-run` all exit 0.
+4. **`'use client'` directive preservation in tsup output** — not yet verified in this plan's commits. Consumers in RSC contexts should import client-only pieces from `nori-ui/client` (which has its own `'use client'` banner), so the directive should survive at the entry-file level. Per-file directive preservation across sub-bundles is a follow-up (may need `esbuild-plugin-preserve-directives` or tsup 8+'s `banner` per entry).
+5. **Plan 07 Tasks 1–5 landed during the primary execution** (tsup build, .npmignore, semantic-release config, release.yml, tier-matrix). **Tasks 6–8 completed in a follow-up pass**: Task 6 (RUNBOOK) and a local green-build verification sweep; Task 7's full dry-run deferred to post-push (see #2). All green-build criteria satisfied: `yarn build:tokens`, `yarn build:ui`, `yarn biome check .`, `yarn typecheck`, `yarn test`, `yarn size`, `yarn workspace nori-ui pack --dry-run` all exit 0.
 6. **Publish readiness**: the tarball contains `LICENSE`, `README.md`, `package.json`, and `dist/**` (ESM + CJS + `.d.ts` + source maps for every entry). `src/` and test files correctly excluded via `.npmignore`. **`packages/ui/package.json` is still `private: true`** — flip to `false` only after the rename sweep during the first-release checklist (see RUNBOOK).

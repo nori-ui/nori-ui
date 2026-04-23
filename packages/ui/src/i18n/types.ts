@@ -1,5 +1,5 @@
 // i18n types — API shape intentionally mirrors i18next so consumers who already use
-// i18next can pass their `t` function directly to <UnbogifyProvider i18n={t}>.
+// i18next can pass their `t` function directly to <NoriProvider i18n={t}>.
 
 /** Options accepted by the library's internal t() calls. Subset of i18next's TOptions. */
 export type I18nOptions = {
@@ -28,7 +28,7 @@ export type Dictionary = Readonly<Record<string, string>>;
  * Keys shipped by the library — augmentable by consumers via module augmentation:
  *
  * ```ts
- * declare module 'unbogify-ui' {
+ * declare module 'nori-ui' {
  *     interface I18nKeys {
  *         'myApp.customLabel': string;
  *     }

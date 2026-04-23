@@ -9,18 +9,18 @@ platform: both
 ## Install
 
 ```bash
-yarn add unbogify-ui
+yarn add nori-ui
 # optional — any icon library works; Lucide is recommended:
 yarn add lucide-react lucide-react-native
 ```
 
 ## Tailwind preset
 
-Add the `@unbogify/tokens` preset to your consumer `tailwind.config.ts`:
+Add the `@nori-ui/tokens` preset to your consumer `tailwind.config.ts`:
 
 ```ts
-import unbogifyPreset from '@unbogify/tokens/tailwind-preset';
-export default { presets: [unbogifyPreset], content: [/* your globs */] };
+import noriPreset from '@nori-ui/tokens/tailwind-preset';
+export default { presets: [noriPreset], content: [/* your globs */] };
 ```
 
 ## Provider
@@ -29,13 +29,13 @@ Wrap your app once. The library works without a provider too — provider only c
 
 ```tsx
 'use client';
-import { UnbogifyProvider } from 'unbogify-ui/client';
+import { NoriProvider } from 'nori-ui/client';
 
 export default function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <YourApp />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 ```
@@ -43,7 +43,7 @@ export default function App() {
 ## First component
 
 ```tsx
-import { Button } from 'unbogify-ui';
+import { Button } from 'nori-ui';
 
 <Button variant="primary">Click me</Button>
 ```

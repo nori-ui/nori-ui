@@ -25,7 +25,7 @@ test.describe('docs site smoke', () => {
 
     test('home page renders', async ({ page }) => {
         await page.goto(`${DOCS_URL}/`);
-        await expect(page.getByRole('heading', { level: 1 })).toHaveText(/unbogify-ui/);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(/nori-ui/);
     });
 
     test('docs index renders', async ({ page }) => {
@@ -36,6 +36,6 @@ test.describe('docs site smoke', () => {
     test('llms.txt served', async ({ request }) => {
         const res = await request.get(`${DOCS_URL}/llms.txt`);
         expect(res.status()).toBe(200);
-        expect(await res.text()).toContain('unbogify-ui');
+        expect(await res.text()).toContain('nori-ui');
     });
 });

@@ -4,11 +4,11 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'unbogify-ui',
+    displayName: 'nori-ui',
     projects: [
         {
             ...base,
-            displayName: 'unbogify-ui:node',
+            displayName: 'nori-ui:node',
             testEnvironment: 'node',
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.ts', '<rootDir>/__tests__/**/*.test.ts'],
             transform: {
@@ -17,7 +17,7 @@ module.exports = {
         },
         {
             ...base,
-            displayName: 'unbogify-ui:jsdom',
+            displayName: 'nori-ui:jsdom',
             testEnvironment: 'jsdom',
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.tsx'],
             setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/jest.rn-setup.ts'],

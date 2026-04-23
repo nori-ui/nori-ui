@@ -56,6 +56,6 @@ function emitLiteral(value, depth) {
 }
 
 export default {
-    name: 'unbogify/theme-types',
+    name: 'nori-ui/theme-types',
     format: formatThemeTypes,
 };

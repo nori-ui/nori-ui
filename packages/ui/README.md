@@ -1,4 +1,4 @@
-# unbogify-ui
+# nori-ui
 
 > **Placeholder name.** This package will be renamed before the first public release.
 
@@ -9,7 +9,7 @@ providers and hooks.
 ## Install
 
 ```bash
-yarn add unbogify-ui
+yarn add nori-ui
 ```
 
 Peer deps: `react@^19`, `react-dom@^19` (optional, web), `react-native@^0.83`
@@ -20,7 +20,7 @@ Peer deps: `react@^19`, `react-dom@^19` (optional, web), `react-native@^0.83`
 Server Components / RSC-safe entry:
 
 ```tsx
-import { Button, Text } from 'unbogify-ui';
+import { Button, Text } from 'nori-ui';
 ```
 
 Client-only providers and hooks (add `'use client'` at the top of the importing
@@ -29,7 +29,7 @@ file in a Next.js App Router context):
 ```tsx
 'use client';
 
-import { UnbogifyProvider, useTheme, useTranslation } from 'unbogify-ui/client';
+import { NoriProvider, useTheme, useTranslation } from 'nori-ui/client';
 ```
 
 See the docs site for the full component catalog, props, and examples.

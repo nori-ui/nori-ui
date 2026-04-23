@@ -1,7 +1,7 @@
 'use client';
 
-import { UnbogifyProvider } from 'unbogify-ui/client';
-import { stories } from 'unbogify-ui/stories';
+import { NoriProvider } from 'nori-ui/client';
+import { stories } from 'nori-ui/stories';
 
 function StoriesPage() {
     return (
@@ -9,11 +9,11 @@ function StoriesPage() {
             <header className="mb-10 border-b border-neutral-200 pb-6">
                 <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">Playground · Web</p>
                 <h1 className="mt-2 text-3xl font-bold text-neutral-900" data-testid="title">
-                    unbogify-ui playground (web)
+                    nori-ui playground (web)
                 </h1>
                 <p className="mt-2 text-sm text-neutral-600">
                     Live renderings of every story in{' '}
-                    <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs">@unbogify/ui</code>. Used as the
+                    <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs">@nori-ui/ui</code>. Used as the
                     Playwright target for e2e tests.
                 </p>
             </header>
@@ -38,8 +38,8 @@ function StoriesPage() {
 
 export function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <StoriesPage />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }

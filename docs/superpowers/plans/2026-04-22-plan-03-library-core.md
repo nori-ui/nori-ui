@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the foundational primitives every component (Plan 05) depends on: the `cn()` class-merger, the `<Slot>` primitive for `asChild` composition, the i18n runtime with i18next-shape `t()`, the theme provider + hook, the swappable semantic-icon registry + `<Icon>` wrapper, and the RSC-safe / client-entry split (`unbogify-ui` vs `unbogify-ui/client`). Ship these with behavior tests that a consumer can audit.
+**Goal:** Build the foundational primitives every component (Plan 05) depends on: the `cn()` class-merger, the `<Slot>` primitive for `asChild` composition, the i18n runtime with i18next-shape `t()`, the theme provider + hook, the swappable semantic-icon registry + `<Icon>` wrapper, and the RSC-safe / client-entry split (`nori-ui` vs `nori-ui/client`). Ship these with behavior tests that a consumer can audit.
 
-**Architecture:** `packages/ui/src/` is split into tightly-scoped modules — one concern per folder (`slot/`, `i18n/`, `theme/`, `icons/`, `utils/`). The default entry (`src/index.ts`) re-exports only RSC-safe pieces (types, pure functions, pure components); stateful pieces (`UnbogifyProvider`, hooks) live under `src/client.ts` with `'use client'` at the top. The package's `exports` map exposes both entries plus subpath exports per module so consumers can cherry-pick.
+**Architecture:** `packages/ui/src/` is split into tightly-scoped modules — one concern per folder (`slot/`, `i18n/`, `theme/`, `icons/`, `utils/`). The default entry (`src/index.ts`) re-exports only RSC-safe pieces (types, pure functions, pure components); stateful pieces (`NoriProvider`, hooks) live under `src/client.ts` with `'use client'` at the top. The package's `exports` map exposes both entries plus subpath exports per module so consumers can cherry-pick.
 
 **Tech Stack:** React 19 (peer dep + workspace dev dep). No React Native yet — v0.1 component code in Plan 05 adds RN; Plan 03 stays platform-agnostic so the core modules work in RSC, jsdom, and native environments unchanged.
 
@@ -46,7 +46,7 @@ packages/ui/src/icons/index.ts
 packages/ui/src/icons/__tests__/icon.test.tsx
 packages/ui/src/icons/__tests__/semantic.test.tsx
 
-packages/ui/src/provider/unbogify-provider.tsx
+packages/ui/src/provider/nori-ui-provider.tsx
 packages/ui/src/provider/index.ts
 
 packages/ui/src/client.ts                     (new — 'use client' entry)
@@ -68,8 +68,8 @@ packages/ui/package.json                      (modified — exports map + react 
 - [ ] **Step 1: Install React 19 + testing libs in the ui workspace.**
 
 ```bash
-yarn workspace unbogify-ui add react@^19 react-dom@^19
-yarn workspace unbogify-ui add -D @types/react @types/react-dom @testing-library/react@^16 @testing-library/jest-dom@^6 jest-environment-jsdom@^29
+yarn workspace nori-ui add react@^19 react-dom@^19
+yarn workspace nori-ui add -D @types/react @types/react-dom @testing-library/react@^16 @testing-library/jest-dom@^6 jest-environment-jsdom@^29
 ```
 
 Rationale: `react` + `react-dom` as runtime deps (later demoted to peerDependencies in Plan 07's publish prep). `@testing-library/react` v16 targets React 19. `jest-environment-jsdom` required for DOM-rendering tests.
@@ -79,7 +79,7 @@ Rationale: `react` + `react-dom` as runtime deps (later demoted to peerDependenc
 ```json
 {
     "dependencies": {
-        "@unbogify/tokens": "workspace:*",
+        "@nori-ui/tokens": "workspace:*",
         "react": "^19",
         "react-dom": "^19"
     },
@@ -102,11 +102,11 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'unbogify-ui',
+    displayName: 'nori-ui',
     projects: [
         {
             ...base,
-            displayName: 'unbogify-ui:node',
+            displayName: 'nori-ui:node',
             testEnvironment: 'node',
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.ts', '<rootDir>/__tests__/**/*.test.ts'],
             transform: {
@@ -115,7 +115,7 @@ module.exports = {
         },
         {
             ...base,
-            displayName: 'unbogify-ui:jsdom',
+            displayName: 'nori-ui:jsdom',
             testEnvironment: 'jsdom',
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.tsx'],
             setupFilesAfterEach: ['<rootDir>/jest.setup.ts'],
@@ -136,7 +136,7 @@ import '@testing-library/jest-dom';
 - [ ] **Step 5: Verify Jest still runs.**
 
 ```bash
-yarn workspace unbogify-ui test
+yarn workspace nori-ui test
 ```
 
 Expected: 2 passed (the smoke test from Plan 01).
@@ -194,7 +194,7 @@ describe('cn', () => {
 - [ ] **Step 2: Run to confirm failure.**
 
 ```bash
-yarn workspace unbogify-ui test cn.test
+yarn workspace nori-ui test cn.test
 ```
 
 Expected: FAIL — `cn` not exported.
@@ -245,7 +245,7 @@ function append(out: string[], input: ClassInput): void {
 - [ ] **Step 4: Run the test — should pass.**
 
 ```bash
-yarn workspace unbogify-ui test cn.test
+yarn workspace nori-ui test cn.test
 ```
 
 Expected: 6 passed.
@@ -412,7 +412,7 @@ describe('<Slot>', () => {
 - [ ] **Step 2: Run — should fail.**
 
 ```bash
-yarn workspace unbogify-ui test slot.test
+yarn workspace nori-ui test slot.test
 ```
 
 Expected: FAIL — `Slot` not found.
@@ -514,7 +514,7 @@ export { composeRefs } from './compose-refs';
 - [ ] **Step 5: Run the test — should pass.**
 
 ```bash
-yarn workspace unbogify-ui test slot.test
+yarn workspace nori-ui test slot.test
 ```
 
 Expected: 7 passed.
@@ -538,7 +538,7 @@ git commit -m "feat(ui): add Slot primitive for asChild composition pattern"
 
 ```ts
 // i18n types — API shape intentionally mirrors i18next so consumers who already use
-// i18next can pass their `t` function directly to <UnbogifyProvider i18n={t}>.
+// i18next can pass their `t` function directly to <NoriProvider i18n={t}>.
 
 /** Options accepted by the library's internal t() calls. Subset of i18next's TOptions. */
 export type I18nOptions = {
@@ -567,7 +567,7 @@ export type Dictionary = Readonly<Record<string, string>>;
  * Keys shipped by the library — augmentable by consumers via module augmentation:
  *
  * ```ts
- * declare module 'unbogify-ui' {
+ * declare module 'nori-ui' {
  *     interface I18nKeys {
  *         'myApp.customLabel': string;
  *     }
@@ -762,7 +762,7 @@ function interpolate(template: string, options: I18nOptions | undefined): string
 - [ ] **Step 4: Run the tests — should pass (8 cases).**
 
 ```bash
-yarn workspace unbogify-ui test resolve.test
+yarn workspace nori-ui test resolve.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -873,7 +873,7 @@ export function useTranslation(): I18nContextValue {
 - [ ] **Step 4: Run the test — should pass (3 cases).**
 
 ```bash
-yarn workspace unbogify-ui test context.test
+yarn workspace nori-ui test context.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -925,7 +925,7 @@ git commit -m "feat(ui): add i18n public barrel (rsc-safe subset)"
 
 ```tsx
 import { render, screen } from '@testing-library/react';
-import { theme as defaultTheme, type Theme } from '@unbogify/tokens';
+import { theme as defaultTheme, type Theme } from '@nori-ui/tokens';
 import { ThemeProvider } from '../context';
 import { useTheme } from '../use-theme';
 
@@ -965,7 +965,7 @@ describe('<ThemeProvider> + useTheme()', () => {
 
 import { createContext } from 'react';
 import type { ReactNode } from 'react';
-import { theme as defaultTheme, type Theme } from '@unbogify/tokens';
+import { theme as defaultTheme, type Theme } from '@nori-ui/tokens';
 
 export const ThemeContext = createContext<Theme>(defaultTheme);
 ThemeContext.displayName = 'ThemeContext';
@@ -993,12 +993,12 @@ export function useTheme() {
 }
 ```
 
-- [ ] **Step 4: Leave `packages/ui/src/theme/index.ts` RSC-safe** — it already re-exports type + constants from `@unbogify/tokens` (Plan 02). Do not add provider/hook exports here — those go in `client.ts`.
+- [ ] **Step 4: Leave `packages/ui/src/theme/index.ts` RSC-safe** — it already re-exports type + constants from `@nori-ui/tokens` (Plan 02). Do not add provider/hook exports here — those go in `client.ts`.
 
 - [ ] **Step 5: Run the test.**
 
 ```bash
-yarn workspace unbogify-ui test theme/__tests__/context
+yarn workspace nori-ui test theme/__tests__/context
 ```
 
 Expected: 2 passed.
@@ -1098,7 +1098,7 @@ export function Icon({ as: IconComponent, size = 'md', color }: IconProps) {
 - [ ] **Step 3: Run the test — should pass (4 cases).**
 
 ```bash
-yarn workspace unbogify-ui test icon.test
+yarn workspace nori-ui test icon.test
 ```
 
 - [ ] **Step 4: Commit.**
@@ -1124,7 +1124,7 @@ git commit -m "feat(ui): add RSC-safe Icon wrapper with keyword + numeric size"
 // default-semantic-icons — minimal built-in SVG placeholders for internal
 // library glyphs. Consumers can swap each one via the provider:
 //
-//   <UnbogifyProvider icons={{ checkmark: MyCheck, close: MyX }}>
+//   <NoriProvider icons={{ checkmark: MyCheck, close: MyX }}>
 //
 // These defaults exist so the library renders usable UI out of the box even when
 // lucide-react(-native) is not installed. They are NOT intended to compete with
@@ -1276,26 +1276,26 @@ git commit -m "feat(ui): add icons public barrel"
 
 ---
 
-## Task 13 — `UnbogifyProvider` composition (theme + i18n + semantic icons)
+## Task 13 — `NoriProvider` composition (theme + i18n + semantic icons)
 
 **Files:**
-- Create: `packages/ui/src/provider/unbogify-provider.tsx`
+- Create: `packages/ui/src/provider/nori-ui-provider.tsx`
 - Create: `packages/ui/src/provider/index.ts`
 
-- [ ] **Step 1: Write `packages/ui/src/provider/unbogify-provider.tsx`.** Composes all three client providers into one so consumers only wrap the app once.
+- [ ] **Step 1: Write `packages/ui/src/provider/nori-ui-provider.tsx`.** Composes all three client providers into one so consumers only wrap the app once.
 
 ```tsx
 'use client';
 
 import type { ReactNode } from 'react';
-import type { Theme } from '@unbogify/tokens';
+import type { Theme } from '@nori-ui/tokens';
 import { I18nProvider } from '../i18n/context';
 import type { I18nInput } from '../i18n/types';
 import { SemanticIconsProvider } from '../icons/semantic-context';
 import type { SemanticIcons } from '../icons/default-semantic-icons';
 import { ThemeProvider } from '../theme/context';
 
-export type UnbogifyProviderProps = {
+export type NoriProviderProps = {
     theme?: Theme;
     i18n?: I18nInput;
     icons?: Partial<SemanticIcons>;
@@ -1307,7 +1307,7 @@ export type UnbogifyProviderProps = {
  * Place near the root of your app. Only needed to override defaults — the
  * library works out of the box without any provider.
  */
-export function UnbogifyProvider({ theme, i18n, icons, children }: UnbogifyProviderProps) {
+export function NoriProvider({ theme, i18n, icons, children }: NoriProviderProps) {
     return (
         <ThemeProvider theme={theme}>
             <I18nProvider i18n={i18n}>
@@ -1321,14 +1321,14 @@ export function UnbogifyProvider({ theme, i18n, icons, children }: UnbogifyProvi
 - [ ] **Step 2: Write `packages/ui/src/provider/index.ts`.**
 
 ```ts
-export { UnbogifyProvider, type UnbogifyProviderProps } from './unbogify-provider';
+export { NoriProvider, type NoriProviderProps } from './nori-ui-provider';
 ```
 
 - [ ] **Step 3: Commit.**
 
 ```bash
 git add packages/ui/src/provider/
-git commit -m "feat(ui): add UnbogifyProvider composing theme/i18n/icons"
+git commit -m "feat(ui): add NoriProvider composing theme/i18n/icons"
 ```
 
 ---
@@ -1341,11 +1341,11 @@ git commit -m "feat(ui): add UnbogifyProvider composing theme/i18n/icons"
 - [ ] **Step 1: Rewrite `packages/ui/src/index.ts` as a pure RSC-safe barrel.** Do NOT add `'use client'`. Do NOT re-export the provider or hooks.
 
 ```ts
-// Public entry for `unbogify-ui`. RSC-safe exports only.
+// Public entry for `nori-ui`. RSC-safe exports only.
 //
-// Stateful / client-only surface (UnbogifyProvider, useTheme, useTranslation,
-// SemanticIconsProvider, useSemanticIcon) lives in `unbogify-ui/client`.
-// Consumers who use any hook or provider MUST import from `unbogify-ui/client`
+// Stateful / client-only surface (NoriProvider, useTheme, useTranslation,
+// SemanticIconsProvider, useSemanticIcon) lives in `nori-ui/client`.
+// Consumers who use any hook or provider MUST import from `nori-ui/client`
 // and add `'use client'` to the importing file.
 
 // utilities
@@ -1401,7 +1401,7 @@ git commit -m "feat(ui): rewrite default entry as RSC-safe barrel"
 export * from './index';
 
 // Providers + hooks (client-only)
-export { UnbogifyProvider, type UnbogifyProviderProps } from './provider';
+export { NoriProvider, type NoriProviderProps } from './provider';
 export { ThemeProvider, type ThemeProviderProps } from './theme/context';
 export { useTheme } from './theme/use-theme';
 export { I18nProvider, type I18nProviderProps } from './i18n/context';
@@ -1560,7 +1560,7 @@ describe('RSC safety boundary', () => {
 - [ ] **Step 2: Run the test.**
 
 ```bash
-yarn workspace unbogify-ui test rsc-safety
+yarn workspace nori-ui test rsc-safety
 ```
 
 Expected: 2 passed. If any violation is reported, fix the source file or add the path to `CLIENT_ALLOWED` — do NOT ignore.
@@ -1604,7 +1604,7 @@ Create `packages/ui/__scratch__/consumer.ts`:
 // Throwaway smoke file — DELETE after verifying.
 import { cn, Slot, Icon, theme, type Theme, resolveI18n, defaultDictionary } from '../src/index';
 import {
-    UnbogifyProvider,
+    NoriProvider,
     useTheme,
     useTranslation,
     useSemanticIcon,
@@ -1619,7 +1619,7 @@ void Icon;
 void theme;
 void resolveI18n;
 void defaultDictionary;
-void UnbogifyProvider;
+void NoriProvider;
 void useTheme;
 void useTranslation;
 void useSemanticIcon;
@@ -1632,7 +1632,7 @@ export type _UsedTheme = Theme;
 
 Run:
 ```bash
-yarn workspace unbogify-ui typecheck
+yarn workspace nori-ui typecheck
 ```
 
 Expected: green. Then delete the scratch file:
@@ -1652,8 +1652,8 @@ git add -A && git commit -m "chore(ui): finalize library core" || true
 
 ## Done criteria for Plan 03
 
-- [ ] `cn()`, `<Slot>`, `composeRefs`, `<Icon>`, `defaultSemanticIcons` exported from `unbogify-ui` (RSC-safe).
-- [ ] `UnbogifyProvider`, `ThemeProvider`, `useTheme`, `I18nProvider`, `useTranslation`, `SemanticIconsProvider`, `useSemanticIcon` exported from `unbogify-ui/client`.
+- [ ] `cn()`, `<Slot>`, `composeRefs`, `<Icon>`, `defaultSemanticIcons` exported from `nori-ui` (RSC-safe).
+- [ ] `NoriProvider`, `ThemeProvider`, `useTheme`, `I18nProvider`, `useTranslation`, `SemanticIconsProvider`, `useSemanticIcon` exported from `nori-ui/client`.
 - [ ] `Theme`, `Dictionary`, `I18nInput`, `I18nKeys`, `I18nOptions`, `TranslateFn`, `SemanticIcons`, `IconProps` types re-exported from the default entry.
 - [ ] i18n works in all 3 input modes (undefined → defaults, dict, fn → i18next drop-in). Interpolation `{{var}}`, plural `_one`/`_other`, fallback to key.
 - [ ] Slot correctly composes className, style, refs, event handlers — verified by 7 tests.
@@ -1670,7 +1670,7 @@ When all boxes are ticked, Plan 03 is complete and Plan 04 (Playground Apps) can
 1. **Jest key name**: the correct Jest option is `setupFilesAfterEnv`, not `setupFilesAfterEach`. Task 1 Step 3 had the wrong key — use `setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']`.
 2. **`resolveI18n` consumer-fn path**: Task 6's implementation `return input;` directly returns the consumer function. That works semantically but the test asserts `toHaveBeenCalledWith('greet', undefined)` — which fails when a direct function reference is called with 1 arg (React or caller drops the second). Wrap as `return (key, opts) => input(key, opts)` to preserve the arg shape.
 3. **`default-semantic-icons.tsx` not `.ts`**: the file contains JSX (`<svg>…`), so it must have the `.tsx` extension for ts-jest to transform it. Update the File Structure entry to `default-semantic-icons.tsx`.
-4. **`exactOptionalPropertyTypes` strictness**: the shared tsconfig enables `exactOptionalPropertyTypes: true`. In `icon.tsx` and `unbogify-provider.tsx`, pass-through of optional props requires conditional spreading so `undefined` is never explicitly passed. Example: `<IconComponent size={numericSize} {...(color !== undefined ? { color } : {})} />`. No runtime difference.
+4. **`exactOptionalPropertyTypes` strictness**: the shared tsconfig enables `exactOptionalPropertyTypes: true`. In `icon.tsx` and `nori-ui-provider.tsx`, pass-through of optional props requires conditional spreading so `undefined` is never explicitly passed. Example: `<IconComponent size={numericSize} {...(color !== undefined ? { color } : {})} />`. No runtime difference.
 5. **Size-limit budget**: Plan 02 errata bumped `.size-limit.cjs` to 2 KB. After Plan 03 the core is ~2.07 KB brotli — bump to 4 KB. Still way under the spec's 40 KB first-import budget.
 6. **React 19 `child.ref` deprecation**: Slot reads `child.ref` to merge refs (Radix-style). React 19 moves `ref` from a special prop to a regular prop and emits a runtime deprecation warning when you access `.ref` on a React element. Tests still pass. TODO for a later plan: migrate Slot to read `child.props.ref` once React 19's final semantics are locked.
 7. **ESLint react-native plugin flags** 4 inline-style warnings in `slot.test.tsx` — test code intentionally uses inline styles to exercise the merge logic. Consider a test-file-scoped disable rule in `eslint.config.mjs` in a future cleanup pass.

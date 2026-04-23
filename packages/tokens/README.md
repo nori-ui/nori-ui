@@ -1,6 +1,6 @@
-# @unbogify/tokens
+# @nori-ui/tokens
 
-Design-token source of truth for `unbogify-ui`. Consumes Tokens Studio–format JSON and emits three build outputs:
+Design-token source of truth for `nori-ui`. Consumes Tokens Studio–format JSON and emits three build outputs:
 
 | Output | Path | Purpose |
 |---|---|---|
@@ -13,7 +13,7 @@ Design-token source of truth for `unbogify-ui`. Consumes Tokens Studio–format 
 ```bash
 yarn build:tokens   # from repo root
 # or
-yarn workspace @unbogify/tokens build
+yarn workspace @nori-ui/tokens build
 ```
 
 ## Source layout

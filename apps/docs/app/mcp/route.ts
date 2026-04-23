@@ -10,7 +10,7 @@ import { getComponentDocs, getComponentProps, listExamples, searchComponents } f
 
 function buildServer() {
     const server = new McpServer({
-        name: 'unbogify-ui-docs',
+        name: 'nori-ui-docs',
         version: '0.1.0',
     });
 

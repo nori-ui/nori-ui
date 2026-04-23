@@ -10,7 +10,7 @@ pre-commit:
       run: yarn biome check --staged --no-errors-on-unmatched {staged_files}
     typecheck:
       glob: '*.{ts,tsx}'
-      run: yarn workspace unbogify-ui typecheck
+      run: yarn workspace nori-ui typecheck
 
 commit-msg:
   commands:

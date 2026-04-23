@@ -1,6 +1,6 @@
 'use client';
 
-import { theme as defaultTheme, type Theme } from '@unbogify/tokens';
+import { theme as defaultTheme, type Theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { createContext } from 'react';
 

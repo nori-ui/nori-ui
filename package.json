@@ -1,5 +1,5 @@
 {
-  "name": "unbogify-ui-monorepo",
+  "name": "nori-ui-monorepo",
   "version": "0.0.0",
   "private": true,
   "packageManager": "yarn@4.14.1",
@@ -19,18 +19,18 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "test": "yarn workspaces foreach -A -pt run test",
-    "size": "yarn workspace unbogify-ui exec size-limit",
-    "build:tokens": "yarn workspace @unbogify/tokens build",
-    "build:ui": "yarn workspace unbogify-ui build",
+    "size": "yarn workspace nori-ui exec size-limit",
+    "build:tokens": "yarn workspace @nori-ui/tokens build",
+    "build:ui": "yarn workspace nori-ui build",
     "dev:web": "yarn workspace playground-web dev",
     "dev:native": "yarn workspace playground-native start",
     "dev:storybook": "yarn workspace playground-web storybook",
     "build:storybook": "yarn workspace playground-web build:storybook",
-    "dev:docs": "yarn workspace @unbogify/docs dev",
-    "build:docs": "yarn workspace @unbogify/docs build",
-    "test:mcp-eval": "yarn workspace @unbogify/e2e-web test tests/mcp-eval.spec.ts",
-    "test:e2e:web": "yarn workspace @unbogify/e2e-web test",
-    "e2e:browsers": "yarn workspace @unbogify/e2e-web install:browsers"
+    "dev:docs": "yarn workspace @nori-ui/docs dev",
+    "build:docs": "yarn workspace @nori-ui/docs build",
+    "test:mcp-eval": "yarn workspace @nori-ui/e2e-web test tests/mcp-eval.spec.ts",
+    "test:e2e:web": "yarn workspace @nori-ui/e2e-web test",
+    "e2e:browsers": "yarn workspace @nori-ui/e2e-web install:browsers"
   },
   "devDependencies": {
     "@biomejs/biome": "~2.4.12",

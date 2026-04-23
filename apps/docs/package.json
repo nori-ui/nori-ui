@@ -1,5 +1,5 @@
 {
-  "name": "@unbogify/docs",
+  "name": "@nori-ui/docs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,17 +15,17 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1",
-    "@unbogify/tokens": "workspace:*",
+    "@nori-ui/tokens": "workspace:*",
     "fumadocs-core": "14.0.0",
     "fumadocs-mdx": "^11",
     "fumadocs-ui": "patch:fumadocs-ui@npm%3A14.0.0#~/.yarn/patches/fumadocs-ui-npm-14.0.0-557c7c2e7a.patch",
     "nativewind": "^4",
     "next": "^15",
+    "nori-ui": "workspace:*",
     "react": "^19",
     "react-dom": "^19",
     "react-native-css-interop": "^0.2.3",
     "react-native-web": "^0.21",
-    "unbogify-ui": "workspace:*",
     "zod": "^3.23"
   },
   "devDependencies": {

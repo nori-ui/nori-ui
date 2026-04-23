@@ -13,12 +13,12 @@
     "build:storybook": "storybook build -o storybook-static"
   },
   "dependencies": {
-    "@unbogify/tokens": "workspace:*",
+    "@nori-ui/tokens": "workspace:*",
+    "nori-ui": "workspace:*",
     "react": "^19",
     "react-dom": "^19",
     "react-native-css-interop": "^0.2.3",
-    "react-native-web": "^0.21",
-    "unbogify-ui": "workspace:*"
+    "react-native-web": "^0.21"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^8",

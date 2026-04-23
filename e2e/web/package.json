@@ -1,5 +1,5 @@
 {
-  "name": "@unbogify/e2e-web",
+  "name": "@nori-ui/e2e-web",
   "version": "0.0.0",
   "private": true,
   "type": "module",

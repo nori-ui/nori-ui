@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import unbogifyPreset from '@unbogify/tokens/tailwind-preset';
+import noriPreset from '@nori-ui/tokens/tailwind-preset';
 import type { Config } from 'tailwindcss';
 
 const require = createRequire(import.meta.url);
@@ -12,7 +12,7 @@ const nativewindPreset = require('nativewind/preset');
 const { createPreset } = require('fumadocs-ui/tailwind-plugin');
 
 const config: Config = {
-    presets: [createPreset(), unbogifyPreset, nativewindPreset],
+    presets: [createPreset(), noriPreset, nativewindPreset],
     content: [
         './app/**/*.{ts,tsx,mdx}',
         './components/**/*.{ts,tsx}',

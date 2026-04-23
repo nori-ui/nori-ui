@@ -1,4 +1,4 @@
-declare module '@unbogify/tokens/tailwind-preset' {
+declare module '@nori-ui/tokens/tailwind-preset' {
     import type { Config } from 'tailwindcss';
 
     const preset: Partial<Config>;

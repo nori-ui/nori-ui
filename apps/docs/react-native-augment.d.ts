@@ -1,6 +1,6 @@
 // Mirror the NativeWind `className` augmentation that `packages/ui` relies on
 // for its source. Without this, the docs typecheck — which imports
-// `unbogify-ui` directly as workspace source — fails on primitives that
+// `nori-ui` directly as workspace source — fails on primitives that
 // forward className.
 
 import 'react-native';

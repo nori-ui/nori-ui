@@ -5,7 +5,7 @@
 #
 # Requires Maestro CLI installed: https://maestro.mobile.dev
 
-appId: dev.unbogify.playground
+appId: dev.noriui.playground
 ---
 - launchApp
 - assertVisible:

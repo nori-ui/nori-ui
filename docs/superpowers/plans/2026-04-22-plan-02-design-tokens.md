@@ -2,15 +2,15 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **Path correction (post-execution):** this plan was authored when the tokens workspace lived at repo-root `tokens/`. It was moved to `packages/tokens/` immediately after initial execution to keep all workspace packages under `packages/*`. All file paths below that start with `tokens/` should be read as `packages/tokens/`; the commit history reflects the corrected layout. The `@unbogify/tokens` package name is unchanged.
+> **Path correction (post-execution):** this plan was authored when the tokens workspace lived at repo-root `tokens/`. It was moved to `packages/tokens/` immediately after initial execution to keep all workspace packages under `packages/*`. All file paths below that start with `tokens/` should be read as `packages/tokens/`; the commit history reflects the corrected layout. The `@nori-ui/tokens` package name is unchanged.
 
 **Goal:** Build a deterministic pipeline that takes Tokens Studio–format JSON (Figma-exported) and produces (a) a Tailwind/NativeWind preset consumed by `packages/ui`, and (b) a strongly-typed TS `Theme` interface + token constants. `yarn build:tokens` regenerates everything from source; outputs are committed so reviewers can see diffs.
 
-**Architecture:** `tokens/` is a private workspace package `@unbogify/tokens`. It owns seed JSON (structured by Tokens Studio conventions: one file per token category), a Style Dictionary v4 config with custom formats for Tailwind and TS types, and the generated outputs under `tokens/build/`. `packages/ui` depends on `@unbogify/tokens` as a workspace peer and re-exports the `Theme` type at its public surface.
+**Architecture:** `tokens/` is a private workspace package `@nori-ui/tokens`. It owns seed JSON (structured by Tokens Studio conventions: one file per token category), a Style Dictionary v4 config with custom formats for Tailwind and TS types, and the generated outputs under `tokens/build/`. `packages/ui` depends on `@nori-ui/tokens` as a workspace peer and re-exports the `Theme` type at its public surface.
 
 **Tech Stack:** Style Dictionary v4, TypeScript, Jest (already configured in Plan 01). No new runtime dependencies for `packages/ui` — the preset is a Tailwind config object with no side effects at import time.
 
-**Applies Plan 01 errata throughout:** no `-W` flag; workspace-specific devDeps installed via `yarn workspace @unbogify/tokens add -D …`; Biome already in place from Plan 01.
+**Applies Plan 01 errata throughout:** no `-W` flag; workspace-specific devDeps installed via `yarn workspace @nori-ui/tokens add -D …`; Biome already in place from Plan 01.
 
 ---
 
@@ -36,17 +36,17 @@ tokens/build/tailwind-preset.cjs                     (generated — committed)
 tokens/build/theme.ts                                (generated — committed)
 tokens/build/theme.css                               (generated — CSS custom properties, for web/docs)
 tokens/__tests__/build-contract.test.ts
-packages/ui/src/theme/index.ts                       (re-exports Theme type from @unbogify/tokens)
+packages/ui/src/theme/index.ts                       (re-exports Theme type from @nori-ui/tokens)
 ```
 
 **Modified in this plan:**
-- `packages/ui/package.json` — adds `@unbogify/tokens` as workspace dependency, adds `theme` export path
+- `packages/ui/package.json` — adds `@nori-ui/tokens` as workspace dependency, adds `theme` export path
 - `packages/ui/src/index.ts` — re-exports theme module
 - root `package.json` — adds `build:tokens` script
 - `.github/workflows/ci.yml` — builds tokens before typecheck/test so generated outputs are present
 
 **NOT in this plan (deferred):**
-- The `<UnbogifyProvider theme={...}>` runtime consumer (→ Plan 03)
+- The `<NoriProvider theme={...}>` runtime consumer (→ Plan 03)
 - Actual Figma/Tokens Studio integration workflow (that's a design-team workflow external to the repo — the seed JSON here is hand-written but matches the Tokens Studio export shape so a real export can replace it)
 - Dark-mode runtime toggle UI (→ v1.0 per spec)
 
@@ -63,7 +63,7 @@ packages/ui/src/theme/index.ts                       (re-exports Theme type from
 
 ```json
 {
-    "name": "@unbogify/tokens",
+    "name": "@nori-ui/tokens",
     "version": "0.0.0",
     "private": true,
     "description": "Design token pipeline: Tokens Studio JSON → Style Dictionary → Tailwind preset + TS types",
@@ -114,9 +114,9 @@ Notes:
 - [ ] **Step 3: Write `tokens/README.md`** (dual-audience: humans + LLMs).
 
 ```markdown
-# @unbogify/tokens
+# @nori-ui/tokens
 
-Design-token source of truth for `unbogify-ui`. Consumes Tokens Studio–format JSON and emits three build outputs:
+Design-token source of truth for `nori-ui`. Consumes Tokens Studio–format JSON and emits three build outputs:
 
 | Output | Path | Purpose |
 |---|---|---|
@@ -129,7 +129,7 @@ Design-token source of truth for `unbogify-ui`. Consumes Tokens Studio–format 
 ```bash
 yarn build:tokens   # from repo root
 # or
-yarn workspace @unbogify/tokens build
+yarn workspace @nori-ui/tokens build
 ```
 
 ## Source layout
@@ -413,7 +413,7 @@ git commit -m "feat(tokens): seed semantic aliases for light and dark modes"
 - [ ] **Step 1: Install Style Dictionary in the tokens workspace** (remember Plan 01 errata #6: workspace-specific devDeps go in the workspace).
 
 ```bash
-yarn workspace @unbogify/tokens add -D style-dictionary@^4
+yarn workspace @nori-ui/tokens add -D style-dictionary@^4
 ```
 
 - [ ] **Step 2: Write `tokens/src/config.mjs`.**
@@ -423,7 +423,7 @@ yarn workspace @unbogify/tokens add -D style-dictionary@^4
 // Style Dictionary v4 config. Registers two custom formats (tailwind-preset, theme-types)
 // and three build targets (light theme, dark theme, TS types).
 //
-// Invoked by: `yarn workspace @unbogify/tokens build` (which runs `node src/config.mjs`).
+// Invoked by: `yarn workspace @nori-ui/tokens build` (which runs `node src/config.mjs`).
 
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -463,7 +463,7 @@ async function buildForMode(mode /* 'light' | 'dark' */) {
                 files: [
                     {
                         destination: `tailwind-preset.${mode}.cjs`,
-                        format: 'unbogify/tailwind-preset',
+                        format: 'nori-ui/tailwind-preset',
                         options: { mode },
                     },
                 ],
@@ -474,7 +474,7 @@ async function buildForMode(mode /* 'light' | 'dark' */) {
                 files: [
                     {
                         destination: `theme.${mode}.ts`,
-                        format: 'unbogify/theme-types',
+                        format: 'nori-ui/theme-types',
                         options: { mode },
                     },
                 ],
@@ -493,7 +493,7 @@ async function mergeTailwindPresets() {
     const dark = await fs.readFile(`${buildDir}/tailwind-preset.dark.cjs`, 'utf8');
 
     // Both preset files export an object; combine into one with dark-mode class variants.
-    const merged = `// GENERATED by @unbogify/tokens — DO NOT EDIT.\n// Run \`yarn build:tokens\` to regenerate.\n\n${light.replace('module.exports = ', 'const light = ')}\n${dark.replace('module.exports = ', 'const dark = ')}\n\nmodule.exports = {\n    darkMode: ['class', '[data-theme="dark"]'],\n    theme: {\n        extend: {\n            ...light.theme.extend,\n            colors: { ...light.theme.extend.colors, dark: dark.theme.extend.colors },\n        },\n    },\n};\n`;
+    const merged = `// GENERATED by @nori-ui/tokens — DO NOT EDIT.\n// Run \`yarn build:tokens\` to regenerate.\n\n${light.replace('module.exports = ', 'const light = ')}\n${dark.replace('module.exports = ', 'const dark = ')}\n\nmodule.exports = {\n    darkMode: ['class', '[data-theme="dark"]'],\n    theme: {\n        extend: {\n            ...light.theme.extend,\n            colors: { ...light.theme.extend.colors, dark: dark.theme.extend.colors },\n        },\n    },\n};\n`;
     await fs.writeFile(`${buildDir}/tailwind-preset.cjs`, merged, 'utf8');
     await fs.rm(`${buildDir}/tailwind-preset.light.cjs`);
     await fs.rm(`${buildDir}/tailwind-preset.dark.cjs`);
@@ -505,7 +505,7 @@ async function mergeThemeTypes() {
     const dark = await fs.readFile(`${buildDir}/theme.dark.ts`, 'utf8');
 
     // light.ts has the full interface; dark.ts contains only the mode-specific values.
-    const merged = `// GENERATED by @unbogify/tokens — DO NOT EDIT.\n// Run \`yarn build:tokens\` to regenerate.\n\n${light}\n\n// Dark mode overrides\n${dark.replace(/export const theme/g, 'export const themeDark').replace(/export type Theme/g, '// @ts-expect-error intentional: reuses Theme interface\nexport type ThemeDark')}\n`;
+    const merged = `// GENERATED by @nori-ui/tokens — DO NOT EDIT.\n// Run \`yarn build:tokens\` to regenerate.\n\n${light}\n\n// Dark mode overrides\n${dark.replace(/export const theme/g, 'export const themeDark').replace(/export type Theme/g, '// @ts-expect-error intentional: reuses Theme interface\nexport type ThemeDark')}\n`;
     await fs.writeFile(`${buildDir}/theme.ts`, merged, 'utf8');
     await fs.rm(`${buildDir}/theme.light.ts`);
     await fs.rm(`${buildDir}/theme.dark.ts`);
@@ -628,7 +628,7 @@ function stableStringify(value, indent = 4) {
 }
 
 export default {
-    name: 'unbogify/tailwind-preset',
+    name: 'nori-ui/tailwind-preset',
     format: formatTailwindPreset,
 };
 ```
@@ -713,7 +713,7 @@ function emitLiteral(value, depth) {
 }
 
 export default {
-    name: 'unbogify/theme-types',
+    name: 'nori-ui/theme-types',
     format: formatThemeTypes,
 };
 ```
@@ -746,7 +746,7 @@ Inspect `.gitignore`. If a `tokens/build/` rule exists, REMOVE it. The global `b
 - [ ] **Step 2: Run the build.**
 
 ```bash
-yarn workspace @unbogify/tokens build
+yarn workspace @nori-ui/tokens build
 ```
 
 Expected: logs `✓ tokens built` and exits 0. Files in `tokens/build/`:
@@ -786,7 +786,7 @@ git commit -m "build(tokens): generate initial tailwind preset, theme types, and
 - [ ] **Step 1: Write `tokens/src/index.ts`.**
 
 ```ts
-// @unbogify/tokens — public entry.
+// @nori-ui/tokens — public entry.
 // Re-exports generated artifacts so consumers import from the package root,
 // never from subpaths, keeping internal layout refactorable.
 
@@ -794,17 +794,17 @@ export { theme, themeDark, type Theme } from '../build/theme';
 
 // Consumers load the Tailwind preset via CommonJS require in their tailwind.config.ts:
 //
-//   import { unbogifyPreset } from '@unbogify/tokens';
-//   export default { presets: [unbogifyPreset], content: [...] };
+//   import { noriPreset } from '@nori-ui/tokens';
+//   export default { presets: [noriPreset], content: [...] };
 //
 // We re-export the preset path here as a string so the require can be lazy.
-export const tailwindPresetPath = '@unbogify/tokens/tailwind-preset';
+export const tailwindPresetPath = '@nori-ui/tokens/tailwind-preset';
 ```
 
 - [ ] **Step 2: Typecheck.**
 
 ```bash
-yarn workspace @unbogify/tokens typecheck
+yarn workspace @nori-ui/tokens typecheck
 ```
 
 Expected: exits 0.
@@ -917,7 +917,7 @@ const base = require('../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: '@unbogify/tokens',
+    displayName: '@nori-ui/tokens',
     testMatch: ['**/__tests__/**/*.test.ts'],
 };
 ```
@@ -925,13 +925,13 @@ module.exports = {
 - [ ] **Step 3: Install jest deps in the tokens workspace** (Plan 01 errata #6).
 
 ```bash
-yarn workspace @unbogify/tokens add -D jest ts-jest @types/jest
+yarn workspace @nori-ui/tokens add -D jest ts-jest @types/jest
 ```
 
 - [ ] **Step 4: Run the test.**
 
 ```bash
-yarn workspace @unbogify/tokens test
+yarn workspace @nori-ui/tokens test
 ```
 
 Expected: 6 passed.
@@ -956,34 +956,34 @@ git commit -m "test(tokens): add build-contract test covering public invariants"
 - [ ] **Step 1: Add the workspace dep to `packages/ui`.**
 
 ```bash
-yarn workspace unbogify-ui add @unbogify/tokens@workspace:*
+yarn workspace nori-ui add @nori-ui/tokens@workspace:*
 ```
 
-Expected: `packages/ui/package.json` now has `"@unbogify/tokens": "workspace:*"` in `dependencies`.
+Expected: `packages/ui/package.json` now has `"@nori-ui/tokens": "workspace:*"` in `dependencies`.
 
 - [ ] **Step 2: Create `packages/ui/src/theme/index.ts`.** This is the library's public re-export surface for theme — every consumer gets types from here.
 
 ```ts
 // packages/ui/src/theme/index.ts
-// Re-exports the generated theme types + constants from @unbogify/tokens under
+// Re-exports the generated theme types + constants from @nori-ui/tokens under
 // the library's own public namespace.
 //
-// Consumers should import `Theme` from 'unbogify-ui', not from '@unbogify/tokens'.
+// Consumers should import `Theme` from 'nori-ui', not from '@nori-ui/tokens'.
 
-export { theme, themeDark, type Theme } from '@unbogify/tokens';
+export { theme, themeDark, type Theme } from '@nori-ui/tokens';
 ```
 
 - [ ] **Step 3: Update `packages/ui/src/index.ts`** so the barrel re-exports the theme module.
 
 ```ts
 // packages/ui/src/index.ts
-// Public entry for the `unbogify-ui` package. RSC-safe exports only.
-// Stateful/client-only exports (provider, hooks) live in `unbogify-ui/client` (Plan 03).
+// Public entry for the `nori-ui` package. RSC-safe exports only.
+// Stateful/client-only exports (provider, hooks) live in `nori-ui/client` (Plan 03).
 
 export * from './theme';
 ```
 
-- [ ] **Step 4: Add `unbogify-ui/theme` subpath export** so consumers can cherry-pick.
+- [ ] **Step 4: Add `nori-ui/theme` subpath export** so consumers can cherry-pick.
 
 Edit `packages/ui/package.json`'s `exports`:
 
@@ -1003,7 +1003,7 @@ Edit root `package.json`, append to `scripts`:
 ```json
 {
     "scripts": {
-        "build:tokens": "yarn workspace @unbogify/tokens build"
+        "build:tokens": "yarn workspace @nori-ui/tokens build"
     }
 }
 ```
@@ -1018,14 +1018,14 @@ yarn size
 ```
 
 All must exit 0. Specifically:
-- `yarn typecheck` resolves `@unbogify/tokens` from the workspace and type-checks `packages/ui/src/theme/index.ts` against the generated `Theme` type.
+- `yarn typecheck` resolves `@nori-ui/tokens` from the workspace and type-checks `packages/ui/src/theme/index.ts` against the generated `Theme` type.
 - `yarn size` now measures the theme export — it's a `const` object so gzip-after-tree-shake is tiny, well under the 40 KB first-import budget.
 
 - [ ] **Step 7: Commit.**
 
 ```bash
 git add packages/ui/package.json packages/ui/src/ package.json yarn.lock
-git commit -m "feat(ui): wire @unbogify/tokens into packages/ui as theme export"
+git commit -m "feat(ui): wire @nori-ui/tokens into packages/ui as theme export"
 ```
 
 ---
@@ -1165,9 +1165,9 @@ git add -A && git commit -m "chore: finalize tokens pipeline"
 
 - [ ] `yarn build:tokens` regenerates `tokens/build/{tailwind-preset.cjs, theme.ts, theme.css}` from source JSON.
 - [ ] Generated outputs are committed.
-- [ ] `yarn workspace @unbogify/tokens test` runs all 6 contract tests green.
-- [ ] `packages/ui/src/theme/index.ts` re-exports `Theme` + `theme` + `themeDark` from `@unbogify/tokens`.
-- [ ] `unbogify-ui/theme` subpath export is resolvable via `exports` map.
+- [ ] `yarn workspace @nori-ui/tokens test` runs all 6 contract tests green.
+- [ ] `packages/ui/src/theme/index.ts` re-exports `Theme` + `theme` + `themeDark` from `@nori-ui/tokens`.
+- [ ] `nori-ui/theme` subpath export is resolvable via `exports` map.
 - [ ] CI pipeline builds tokens and fails if `tokens/build/` is stale vs `src/**`.
 - [ ] Adding a new token to `src/tokens/core/*.json`, running `yarn build:tokens`, and observing it appear in `build/tailwind-preset.cjs` + `build/theme.ts` works end-to-end (manual smoke check during execution).
 
@@ -1177,7 +1177,7 @@ When all boxes are ticked, Plan 02 is complete and Plan 03 (Library Core) can be
 
 ## Errata (post-execution notes)
 
-1. **Root `workspaces` glob:** Plan 01's root `package.json` uses `workspaces: ["packages/*", "apps/*", "tooling"]` — `tokens` is not included. Task 1 must add `"tokens"` to the array, or later `yarn workspace @unbogify/tokens …` commands fail.
+1. **Root `workspaces` glob:** Plan 01's root `package.json` uses `workspaces: ["packages/*", "apps/*", "tooling"]` — `tokens` is not included. Task 1 must add `"tokens"` to the array, or later `yarn workspace @nori-ui/tokens …` commands fail.
 2. **CSS merge in `src/config.mjs`:** with Style Dictionary v4, two successive builds that write the same `destination: theme.css` overwrite each other. Emit per-mode (`theme.light.css`, `theme.dark.css`) then concatenate into `theme.css` as the last step of `main()`. Contract test #5 (`:root` + `[data-theme="dark"]` both present) gates this.
 3. **Theme-types merge double-replace:** the plan text substitutes `theme` → `themeDark` via regex when merging dark types. The `theme-types.mjs` format already emits `themeDark` for dark mode — drop the substitutions or they produce `themeDarkDark`.
 4. **`tokens/tsconfig.json` needs `"types": ["jest", "node"]`** (plan has `["node"]`) so the Jest contract tests typecheck.

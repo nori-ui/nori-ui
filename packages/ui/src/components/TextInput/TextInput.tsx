@@ -47,7 +47,7 @@ export function TextInput({
     ...rest
 }: TextInputProps) {
     const reactId = useId();
-    const inputId = testID ?? `unbogify-input-${reactId}`;
+    const inputId = testID ?? `nori-ui-input-${reactId}`;
     const describeId = `${inputId}-describe`;
     const hasError = Boolean(error);
     const describedBy = error || helperText ? describeId : undefined;

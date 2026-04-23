@@ -20,7 +20,7 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     target: 'es2022',
-    // @unbogify/tokens is private and bundled into the dist so consumers only
+    // @nori-ui/tokens is private and bundled into the dist so consumers only
     // install one package. React / React DOM / React Native stay external as
     // peer deps. NativeWind + react-native-css-interop are also external —
     // they're peer deps that the consumer already has installed for their own

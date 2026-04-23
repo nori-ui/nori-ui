@@ -84,6 +84,6 @@ function stableStringify(value, indent = 4) {
 }
 
 export default {
-    name: 'unbogify/tailwind-preset',
+    name: 'nori-ui/tailwind-preset',
     format: formatTailwindPreset,
 };

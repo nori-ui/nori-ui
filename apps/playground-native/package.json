@@ -12,17 +12,17 @@
     "test": "echo 'no unit tests — e2e only' && exit 0"
   },
   "dependencies": {
-    "@unbogify/tokens": "workspace:*",
+    "@nori-ui/tokens": "workspace:*",
     "expo": "~55.0.0",
     "expo-status-bar": "~55.0.0",
     "nativewind": "^4",
+    "nori-ui": "workspace:*",
     "react": "^19",
     "react-native": "0.83.6",
     "react-native-reanimated": "~4.2.0",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.23.0",
-    "react-native-worklets": "^0.8.1",
-    "unbogify-ui": "workspace:*"
+    "react-native-worklets": "^0.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",

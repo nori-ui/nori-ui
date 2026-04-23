@@ -1,7 +1,7 @@
 // default-semantic-icons — minimal built-in SVG placeholders for internal
 // library glyphs. Consumers can swap each one via the provider:
 //
-//   <UnbogifyProvider icons={{ checkmark: MyCheck, close: MyX }}>
+//   <NoriProvider icons={{ checkmark: MyCheck, close: MyX }}>
 //
 // These defaults exist so the library renders usable UI out of the box even when
 // lucide-react(-native) is not installed. They are NOT intended to compete with

@@ -4,7 +4,7 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: '@unbogify/tokens',
+    displayName: '@nori-ui/tokens',
     testMatch: ['**/__tests__/**/*.test.ts'],
     transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/../../tooling/tsconfig.test.json' }],

@@ -175,7 +175,7 @@ export function TextInput({
     ...rest
 }: TextInputProps) {
     const reactId = useId();
-    const inputId = testID ?? `unbogify-input-${reactId}`;
+    const inputId = testID ?? `nori-ui-input-${reactId}`;
     const describeId = `${inputId}-describe`;
     const describedBy = error || helperText ? describeId : undefined;
     const hasError = Boolean(error);
@@ -238,7 +238,7 @@ export { TextInput, type TextInputProps } from './TextInput';
 - [ ] **Step 4: Run tests — 9 passed.**
 
 ```bash
-yarn workspace unbogify-ui test TextInput.test
+yarn workspace nori-ui test TextInput.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -320,7 +320,7 @@ export { TextArea, type TextAreaProps } from './TextArea';
 - [ ] **Step 4: Run tests — 4 passed.**
 
 ```bash
-yarn workspace unbogify-ui test TextArea.test
+yarn workspace nori-ui test TextArea.test
 ```
 
 - [ ] **Step 5: Commit.**
@@ -477,7 +477,7 @@ git commit -m "test(e2e): add playwright TextInput/TextArea coverage + axe audit
 - Create: `e2e/native/flows/inputs.yaml`
 
 ```yaml
-appId: dev.unbogify.playground
+appId: dev.noriui.playground
 ---
 - launchApp
 - scrollUntilVisible:

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Theme } from '@unbogify/tokens';
+import type { Theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { I18nProvider } from '../i18n/context';
 import type { I18nInput } from '../i18n/types';
@@ -8,7 +8,7 @@ import type { SemanticIcons } from '../icons/default-semantic-icons';
 import { SemanticIconsProvider } from '../icons/semantic-context';
 import { ThemeProvider } from '../theme/context';
 
-export type UnbogifyProviderProps = {
+export type NoriProviderProps = {
     theme?: Theme;
     i18n?: I18nInput;
     icons?: Partial<SemanticIcons>;
@@ -20,7 +20,7 @@ export type UnbogifyProviderProps = {
  * Place near the root of your app. Only needed to override defaults — the
  * library works out of the box without any provider.
  */
-export function UnbogifyProvider({ theme, i18n, icons, children }: UnbogifyProviderProps) {
+export function NoriProvider({ theme, i18n, icons, children }: NoriProviderProps) {
     // Conditionally spread each optional prop — `exactOptionalPropertyTypes: true`
     // rejects passing `undefined` to a prop typed as `T | missing`.
     const themeProps = theme === undefined ? {} : { theme };

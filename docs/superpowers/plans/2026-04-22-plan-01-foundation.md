@@ -4,7 +4,7 @@
 
 **Goal:** Stand up the monorepo skeleton with all tooling wired — Yarn Berry workspaces, shared TS config, Biome (primary) + ESLint-RN (gap), commitlint + lefthook on Conventional Commits, Jest, CI workflow, size-limit skeleton — so that `yarn install && yarn lint && yarn typecheck && yarn test` runs green on an empty library package.
 
-**Architecture:** Monorepo with one published package (`packages/ui` → `unbogify-ui`) and placeholder app/tooling directories. Shared configs live in `tooling/`. Each file has a single responsibility; splits follow concern, not technical layer. No components yet — just the scaffold on which every later plan depends.
+**Architecture:** Monorepo with one published package (`packages/ui` → `nori-ui`) and placeholder app/tooling directories. Shared configs live in `tooling/`. Each file has a single responsibility; splits follow concern, not technical layer. No components yet — just the scaffold on which every later plan depends.
 
 **Tech Stack:** Yarn 4 (Berry) with `nodeLinker: node-modules`, TypeScript 5.6+, Biome 2.x, ESLint flat config + `eslint-plugin-react-native`, commitlint + `@commitlint/config-conventional`, lefthook, Jest 29 + `@testing-library/react-native`, GitHub Actions, `size-limit`.
 
@@ -52,7 +52,7 @@ README.md
 
 ## Pre-flight
 
-The repo already exists at `/Users/manuelbieh/htdocs/_git/ui-kit`, `git init` is done, remote is `git@github.com:unbogify/unbogify-ui.git`, and the PRD is committed. Work proceeds on `main`.
+The repo already exists at `/Users/manuelbieh/htdocs/_git/ui-kit`, `git init` is done, remote is `git@github.com:nori-ui/nori-ui.git`, and the PRD is committed. Work proceeds on `main`.
 
 **Required local tooling:**
 - Node 20+ installed.
@@ -185,7 +185,7 @@ Expected: `.yarn/releases/yarn-4.*.cjs` created, `packageManager` field may be a
 
 ```json
 {
-  "name": "unbogify-ui-monorepo",
+  "name": "nori-ui-monorepo",
   "version": "0.0.0",
   "private": true,
   "packageManager": "yarn@4.5.0",
@@ -245,20 +245,20 @@ git commit -m "chore: initialize yarn berry workspaces with node-modules linker"
 - Create: `packages/ui/src/index.ts` (empty barrel for now)
 - Create: `apps/.gitkeep`
 - Create: `tokens/.gitkeep`
-- Create: `tooling/package.json` (workspace package so configs can be shared via `@unbogify/tooling` workspace import)
+- Create: `tooling/package.json` (workspace package so configs can be shared via `@nori-ui/tooling` workspace import)
 
 - [ ] **Step 1: Create `packages/ui/package.json` stub.**
 
 ```json
 {
-  "name": "unbogify-ui",
+  "name": "nori-ui",
   "version": "0.0.0",
   "private": true,
   "description": "React Native + React Native Web UI component library — placeholder name, will be renamed",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:unbogify/unbogify-ui.git"
+    "url": "git+ssh://git@github.com:nori-ui/nori-ui.git"
   },
   "engines": {
     "node": ">=20"
@@ -300,7 +300,7 @@ touch apps/.gitkeep tokens/.gitkeep
 
 ```json
 {
-  "name": "@unbogify/tooling",
+  "name": "@nori-ui/tooling",
   "version": "0.0.0",
   "private": true,
   "main": "./index.cjs"
@@ -319,7 +319,7 @@ Run:
 yarn install
 ```
 
-Expected: exits 0. `node_modules/unbogify-ui` symlink appears. `yarn workspaces list` lists all three workspaces.
+Expected: exits 0. `node_modules/nori-ui` symlink appears. `yarn workspaces list` lists all three workspaces.
 
 - [ ] **Step 6: Commit**
 
@@ -442,7 +442,7 @@ The `-W` flag scopes to the workspace root.
 
 Run:
 ```bash
-yarn workspace unbogify-ui typecheck
+yarn workspace nori-ui typecheck
 ```
 
 Expected: exits 0. `packages/ui/src/index.ts` is an empty export, so no errors.
@@ -721,7 +721,7 @@ pre-commit:
             run: yarn biome check --staged --no-errors-on-unmatched {staged_files}
         typecheck:
             glob: '*.{ts,tsx}'
-            run: yarn workspace unbogify-ui typecheck
+            run: yarn workspace nori-ui typecheck
 
 commit-msg:
     commands:
@@ -805,7 +805,7 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'unbogify-ui',
+    displayName: 'nori-ui',
 };
 ```
 
@@ -834,7 +834,7 @@ describe('toolchain smoke', () => {
 
 Run:
 ```bash
-yarn workspace unbogify-ui test
+yarn workspace nori-ui test
 ```
 
 Expected: 2 passed, 0 failed.
@@ -886,7 +886,7 @@ Modify `package.json` to include:
 ```json
 {
     "scripts": {
-        "size": "yarn workspace unbogify-ui exec size-limit"
+        "size": "yarn workspace nori-ui exec size-limit"
     }
 }
 ```
@@ -987,7 +987,7 @@ git commit -m "ci: add baseline workflow (lint, typecheck, test, size)"
 - [ ] **Step 1: Create `README.md`** — dual-audience (humans + LLMs) per the memory policy. Short, factual, scannable.
 
 ````markdown
-# unbogify-ui
+# nori-ui
 
 > **Working name.** This placeholder will be renamed before the first published release.
 
@@ -995,7 +995,7 @@ A React Native + React Native Web UI component library. Expo-first, New Architec
 
 ## Status
 
-**Pre-v0.1 — under active scaffold.** See `docs/superpowers/specs/2026-04-22-unbogify-ui-design.md` for the full PRD and `docs/superpowers/plans/` for implementation plans.
+**Pre-v0.1 — under active scaffold.** See `docs/superpowers/specs/2026-04-22-nori-ui-design.md` for the full PRD and `docs/superpowers/plans/` for implementation plans.
 
 ## Quick reference
 

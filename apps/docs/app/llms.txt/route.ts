@@ -9,7 +9,7 @@ export async function GET() {
         .join('\n');
 
     const body = [
-        '# unbogify-ui',
+        '# nori-ui',
         '',
         'React Native + Web component library. Primary domain reference for LLMs and code agents.',
         '',

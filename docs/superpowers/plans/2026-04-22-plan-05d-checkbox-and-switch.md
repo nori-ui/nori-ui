@@ -203,7 +203,7 @@ export { Checkbox, type CheckboxProps } from './Checkbox';
 ```
 
 ```bash
-yarn workspace unbogify-ui test Checkbox.test
+yarn workspace nori-ui test Checkbox.test
 # 8 passed
 git add packages/ui/src/components/Checkbox/
 git commit -m "feat(ui): add Checkbox with indeterminate, asChild, semantic-icon checkmark"
@@ -375,7 +375,7 @@ export { Switch, type SwitchProps } from './Switch';
 ```
 
 ```bash
-yarn workspace unbogify-ui test Switch.test
+yarn workspace nori-ui test Switch.test
 # 7 passed
 git add packages/ui/src/components/Switch/
 git commit -m "feat(ui): add Switch with role=switch, controlled+uncontrolled, asChild"
@@ -523,7 +523,7 @@ git commit -m "test(e2e): add playwright Checkbox/Switch coverage + axe audit"
 - Create: `e2e/native/flows/toggles.yaml`
 
 ```yaml
-appId: dev.unbogify.playground
+appId: dev.noriui.playground
 ---
 - launchApp
 - scrollUntilVisible:

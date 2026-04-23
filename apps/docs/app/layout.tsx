@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import './global.css';
 
 export const metadata = {
-    title: 'unbogify-ui — placeholder name',
+    title: 'nori-ui — placeholder name',
     description: 'React Native + Web component library, AI-documented, Expo-first.',
 };
 

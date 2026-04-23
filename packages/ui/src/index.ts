@@ -1,8 +1,8 @@
-// Public entry for `unbogify-ui`. RSC-safe exports only.
+// Public entry for `nori-ui`. RSC-safe exports only.
 //
-// Stateful / client-only surface (UnbogifyProvider, useTheme, useTranslation,
-// SemanticIconsProvider, useSemanticIcon) lives in `unbogify-ui/client`.
-// Consumers who use any hook or provider MUST import from `unbogify-ui/client`
+// Stateful / client-only surface (NoriProvider, useTheme, useTranslation,
+// SemanticIconsProvider, useSemanticIcon) lives in `nori-ui/client`.
+// Consumers who use any hook or provider MUST import from `nori-ui/client`
 // and add `'use client'` to the importing file.
 
 // components (RSC-safe pure primitives)

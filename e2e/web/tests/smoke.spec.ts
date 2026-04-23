@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 test.describe('web playground smoke', () => {
     test('renders the title and at least one story section', async ({ page }) => {
         await page.goto('/');
-        await expect(page.getByTestId('title')).toHaveText('unbogify-ui playground (web)');
+        await expect(page.getByTestId('title')).toHaveText('nori-ui playground (web)');
         await expect(page.getByTestId('section-text.body-md')).toBeVisible();
     });
 

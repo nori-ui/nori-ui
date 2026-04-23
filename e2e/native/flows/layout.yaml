@@ -1,4 +1,4 @@
-appId: dev.unbogify.playground
+appId: dev.noriui.playground
 ---
 - launchApp
 - assertVisible:

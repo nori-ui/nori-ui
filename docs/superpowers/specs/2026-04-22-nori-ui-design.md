@@ -1,9 +1,9 @@
-# unbogify-ui — Product Requirements Document
+# nori-ui — Product Requirements Document
 
 **Status:** Draft for review
 **Date:** 2026-04-22
 **Owner:** Manuel Bieh
-**Working name:** `unbogify-ui` (placeholder; rename before v0.1 publish)
+**Name:** `nori-ui` (locked, published under @nori-ui org)
 
 ---
 
@@ -13,10 +13,10 @@
 Teams building cross-platform apps with React Native + Expo Web lack a modern, cohesive UI component library that ships with strong theming, Figma-driven design tokens, first-class TypeScript DX, AI-queryable documentation, and the ergonomic install experience that shadcn/ui has made standard on the web.
 
 ### Proposed Solution
-`unbogify-ui` — a greenfield, Expo-first, New-Architecture-ready React Native + React Native Web component library. Styled with NativeWind v4, themed via Figma design tokens, i18next-compatible (without forcing i18next on consumers), and documented on a Fumadocs site with a first-class MCP server for AI tooling. Ships as a single published package with a single visible version.
+`nori-ui` — a greenfield, Expo-first, New-Architecture-ready React Native + React Native Web component library. Styled with NativeWind v4, themed via Figma design tokens, i18next-compatible (without forcing i18next on consumers), and documented on a Fumadocs site with a first-class MCP server for AI tooling. Ships as a single published package with a single visible version.
 
 ### Success Criteria
-1. **Install-to-first-component ≤ 5 minutes** on a fresh Expo project — from `yarn add unbogify-ui` to a `<Button>` rendering correctly on iOS, Android, and web.
+1. **Install-to-first-component ≤ 5 minutes** on a fresh Expo project — from `yarn add nori-ui` to a `<Button>` rendering correctly on iOS, Android, and web.
 2. **Tree-shaking verified with concrete budgets** — enforced by `size-limit` CI gates:
    - First component import (includes provider, theme, i18n core): ≤ 40 KB gzip.
    - Each additional component: ≤ 5 KB gzip marginal cost.
@@ -43,8 +43,8 @@ Teams building cross-platform apps with React Native + Expo Web lack a modern, c
 As a developer, I want to install the library and render my first component in under 5 minutes.
 
 _Acceptance Criteria:_
-- `yarn add unbogify-ui` pulls one package.
-- Adding `<UnbogifyProvider>` at the app root and importing `<Button>` renders correctly on iOS, Android, and web without further config beyond the NativeWind preset line in `tailwind.config.ts`.
+- `yarn add nori-ui` pulls one package.
+- Adding `<NoriProvider>` at the app root and importing `<Button>` renders correctly on iOS, Android, and web without further config beyond the NativeWind preset line in `tailwind.config.ts`.
 - A "Getting Started" docs page walks through this end-to-end.
 
 **US-2: Theming with Figma tokens**
@@ -52,7 +52,7 @@ As a design-system lead, I want to export tokens from Figma and have them become
 
 _Acceptance Criteria:_
 - Documented pipeline: Tokens Studio → JSON → `style-dictionary` → `tailwind.config.ts` theme + TypeScript `Token` types.
-- Consumers override via `<UnbogifyProvider theme={customTheme}>` with full type safety (token keys autocompleted).
+- Consumers override via `<NoriProvider theme={customTheme}>` with full type safety (token keys autocompleted).
 - All 11 v0.1 components consume tokens for color, spacing, radius, typography, shadow.
 
 **US-3: Tree-shaken imports**
@@ -71,10 +71,10 @@ _Acceptance Criteria:_
 - The library's internal lookup uses an i18next-shape `t(key, options?)` signature.
 - Three consumer modes, all supported:
   1. **No setup** — English defaults render.
-  2. **Static dictionary** — `<UnbogifyProvider i18n={{ 'button.cancel': 'Abbrechen', ... }}>` overrides globally.
-  3. **i18next drop-in** — `<UnbogifyProvider i18n={t}>` where `t` is i18next's translation function; works directly because API shape matches (`{{var}}` interpolation, nested keys, `count` for pluralization).
+  2. **Static dictionary** — `<NoriProvider i18n={{ 'button.cancel': 'Abbrechen', ... }}>` overrides globally.
+  3. **i18next drop-in** — `<NoriProvider i18n={t}>` where `t` is i18next's translation function; works directly because API shape matches (`{{var}}` interpolation, nested keys, `count` for pluralization).
 - Per-instance prop overrides (e.g., `<Button loadingLabel="…" />`) take precedence over provider.
-- A ready-to-copy `unbogify-en.json` resource bundle is shipped in the repo for i18next users who want to add translations incrementally.
+- A ready-to-copy `nori-ui-en.json` resource bundle is shipped in the repo for i18next users who want to add translations incrementally.
 
 **US-5: Icons — direct imports, no registry**
 As a developer, I want to use icons the way React wants me to: import the component I need, pass it as a prop. No global registry, no provider bloat, no bundle surprises.
@@ -91,7 +91,7 @@ _Acceptance Criteria:_
 - Lucide is recommended and used in all docs examples, declared as optional peer dependency. No hard dependency.
 - **Semantic icon overrides** (for internal uses like Checkbox's checkmark, Switch's glyph, TextInput's clear/password-toggle): a small, fixed-size semantic registry is available via provider, with ~10 keys total (`checkmark`, `close`, `eye`, `eyeOff`, `chevronDown`, `chevronUp`, `alertTriangle`, `info`, `check`, `x`). Defaults are Lucide components.
   ```tsx
-  <UnbogifyProvider icons={{ checkmark: MyCheck, close: MyX }}>
+  <NoriProvider icons={{ checkmark: MyCheck, close: MyX }}>
   ```
   The semantic map is typed as a closed interface — no free-form string lookup; no provider bloat.
 
@@ -115,8 +115,8 @@ As a consumer using Next.js App Router or another RSC environment, I want to imp
 
 _Acceptance Criteria:_
 - Library exports are split into two subpaths:
-  - Default import (`'unbogify-ui'`) — primitives safe for RSC (pure render, no hooks/refs/context) are re-exported from here without `'use client'`.
-  - `'unbogify-ui/client'` — everything else (provider, interactive components that use context, refs, or state) is under this subpath, with `'use client'` at the top.
+  - Default import (`'nori-ui'`) — primitives safe for RSC (pure render, no hooks/refs/context) are re-exported from here without `'use client'`.
+  - `'nori-ui/client'` — everything else (provider, interactive components that use context, refs, or state) is under this subpath, with `'use client'` at the top.
 - A CI check verifies that no file in the default entry tree contains React hooks or refers to `React.use*`.
 - Docs site (Fumadocs + Next.js App Router) renders web variants of components from server components where possible — eats our own dog food.
 
@@ -223,7 +223,7 @@ The Fumadocs site (Next.js App Router) hosts:
 ```
 ui-kit/
 ├── packages/
-│   └── ui/                       # the ONLY published package: "unbogify-ui"
+│   └── ui/                       # the ONLY published package: "nori-ui"
 │       ├── src/
 │       │   ├── components/       # one folder per component + barrel-free index
 │       │   ├── theme/            # tokens, provider, types
@@ -235,7 +235,7 @@ ui-kit/
 │   ├── docs/                     # Fumadocs site + /mcp endpoint, deployed to Vercel
 │   ├── playground-web/           # Vite + RN-Web; Playwright target; Storybook build target
 │   └── playground-native/        # Expo app; Maestro target
-├── packages/tokens/              # @unbogify/tokens — Tokens Studio JSON + style-dictionary config (internal workspace package)
+├── packages/tokens/              # @nori-ui/tokens — Tokens Studio JSON + style-dictionary config (internal workspace package)
 ├── tooling/                      # shared configs (biome, tsconfig bases, etc.)
 ├── .github/workflows/
 │   ├── ci.yml
@@ -258,7 +258,7 @@ ui-kit/
 | Support window | Rolling 3 tiers: current, maintained, legacy. See §5 Version Support Policy. |
 | Language | TypeScript 5.6+, `strict: true`, no `any` in library source, no un-justified `as` / `@ts-ignore` |
 | Composition pattern | `asChild` on every interactive component + exported `<Slot>` primitive (Radix/shadcn pattern) |
-| RSC compatibility | Default entry = RSC-safe primitives. `unbogify-ui/client` subpath = components using state/context/refs with `'use client'` |
+| RSC compatibility | Default entry = RSC-safe primitives. `nori-ui/client` subpath = components using state/context/refs with `'use client'` |
 | Styling | NativeWind v4 (Tailwind CSS underneath) |
 | Icons | Direct component imports from any icon library (Lucide recommended, optional peer dep). Small typed semantic registry (~10 keys) overridable via provider for internal glyphs. No string-name registry. |
 | Motion | All components respect `prefers-reduced-motion` and `prefers-color-scheme` from v0.1. |
@@ -311,7 +311,7 @@ ui-kit/
   - Icon props typed as component references, not strings.
 - **Module augmentation supported** for consumer theme/i18n extension:
   ```ts
-  declare module 'unbogify-ui' {
+  declare module 'nori-ui' {
     interface Theme { colors: { brand: string } }
     interface I18nKeys { 'myApp.customLabel': string }
   }
@@ -320,27 +320,27 @@ ui-kit/
 
 ### Consumer Install (the only thing users have to do)
 ```bash
-yarn add unbogify-ui
+yarn add nori-ui
 # and (optional) any icon library you like — directly imported:
 yarn add lucide-react-native lucide-react
 ```
 
 ```ts
 // tailwind.config.ts
-import { unbogifyPreset } from 'unbogify-ui/tailwind-preset';
-export default { presets: [unbogifyPreset], content: [...] };
+import { noriPreset } from 'nori-ui/tailwind-preset';
+export default { presets: [noriPreset], content: [...] };
 ```
 
 ```tsx
 // app root (client boundary)
 'use client';
-import { UnbogifyProvider } from 'unbogify-ui/client';
+import { NoriProvider } from 'nori-ui/client';
 
 export default function App() {
   return (
-    <UnbogifyProvider>
+    <NoriProvider>
       <YourApp />
-    </UnbogifyProvider>
+    </NoriProvider>
   );
 }
 ```
@@ -348,14 +348,14 @@ export default function App() {
 ```tsx
 // using icons — direct import, tree-shaken automatically
 import { ChevronRight } from 'lucide-react-native';
-import { Button } from 'unbogify-ui';
+import { Button } from 'nori-ui';
 
 <Button trailingIcon={ChevronRight}>Continue</Button>
 ```
 
 ### Integration Points
 - **Consumer app** → one dependency + one provider + one Tailwind preset line.
-- **Figma → tokens** → Tokens Studio exports JSON; CI regenerates Tailwind theme + TS types; published as part of `unbogify-ui`.
+- **Figma → tokens** → Tokens Studio exports JSON; CI regenerates Tailwind theme + TS types; published as part of `nori-ui`.
 - **npm** → OIDC trusted publisher linked to this GitHub repo; no long-lived token.
 - **Vercel** → docs site on every `main` push; PR previews on every PR.
 
@@ -421,7 +421,7 @@ The library supports a **rolling window of 3 Expo SDK tiers**. Anchor: SDK 55 is
 ### Open Decisions Deferred to Implementation
 - **Reanimated integration plan** (post-v0.1, but may influence Button press-state choices now — must still honor `prefers-reduced-motion`).
 - **Cross-platform visual regression tool** if Playwright-on-web + Maestro-on-native proves insufficient in practice.
-- **Final library name** to replace `unbogify-ui` before first published release — see project memory for rename-hygiene sweep list.
+- **Final library name** to replace `nori-ui` before first published release — see project memory for rename-hygiene sweep list.
 - **Semantic icon registry final key list** — current draft is ~10 keys (`checkmark`, `close`, `eye`, `eyeOff`, `chevronDown`, `chevronUp`, `alertTriangle`, `info`, `check`, `x`); finalize during Checkbox/Switch/TextInput implementation.
 
 ---
@@ -431,7 +431,7 @@ The library supports a **rolling window of 3 Expo SDK tiers**. Anchor: SDK 55 is
 The library ships when:
 - [] All 11 components implemented + documented + tested (unit, e2e web, e2e native).
 - [] Every interactive component supports `asChild` with a11y-correct prop/ref forwarding.
-- [] Library split into RSC-safe default entry + `unbogify-ui/client` subpath; CI check enforces no hooks in default entry.
+- [] Library split into RSC-safe default entry + `nori-ui/client` subpath; CI check enforces no hooks in default entry.
 - [] Every component with motion respects `prefers-reduced-motion` on web and native.
 - [] Every component passes WCAG 2.2 Level AA audits (axe on web, RNTL a11y assertions on native).
 - [] `size-limit` budgets set and passing for every exported component (per §1 success criteria).

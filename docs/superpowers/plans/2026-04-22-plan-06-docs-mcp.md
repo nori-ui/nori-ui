@@ -4,7 +4,7 @@
 
 **Goal:** Ship `apps/docs`: a Fumadocs 15 site on Next.js App Router with MDX content, inline live web previews of every component (via `react-native-web` alias), Expo Snack embeds for native previews, `llms.txt`/`llms-full.txt` endpoints, and a `/mcp` route exposing four MCP tools reading from the same Fumadocs source. Also: a 50-question MCP eval harness gated in CI.
 
-**Architecture:** Next.js App Router. Fumadocs handles MDX source + llms.txt. An `@modelcontextprotocol/sdk` server runs as a Next.js Route Handler (streamable HTTP transport). Content lives in `apps/docs/content/`. Components are imported directly from the `unbogify-ui` workspace; the Vite-style react-native-web alias is applied via Next.js webpack config.
+**Architecture:** Next.js App Router. Fumadocs handles MDX source + llms.txt. An `@modelcontextprotocol/sdk` server runs as a Next.js Route Handler (streamable HTTP transport). Content lives in `apps/docs/content/`. Components are imported directly from the `nori-ui` workspace; the Vite-style react-native-web alias is applied via Next.js webpack config.
 
 **Tech Stack:** Next.js 15, React 19, Fumadocs 15.x, `@modelcontextprotocol/sdk`, Tailwind, react-native-web. Deployed to Vercel. MCP endpoint is read-only; Vercel edge middleware applies rate limiting.
 
@@ -92,7 +92,7 @@ e2e/web/tests/mcp-eval.spec.ts
 
 ```json
 {
-    "name": "@unbogify/docs",
+    "name": "@nori-ui/docs",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -104,8 +104,8 @@ e2e/web/tests/mcp-eval.spec.ts
         "test": "echo 'integration tests via e2e' && exit 0"
     },
     "dependencies": {
-        "unbogify-ui": "workspace:*",
-        "@unbogify/tokens": "workspace:*",
+        "nori-ui": "workspace:*",
+        "@nori-ui/tokens": "workspace:*",
         "next": "^15",
         "react": "^19",
         "react-dom": "^19",
@@ -166,7 +166,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    transpilePackages: ['unbogify-ui', '@unbogify/tokens'],
+    transpilePackages: ['nori-ui', '@nori-ui/tokens'],
     webpack: (config) => {
         config.resolve.alias = {
             ...(config.resolve.alias ?? {}),
@@ -184,10 +184,10 @@ export default withMDX(nextConfig);
 ```ts
 // apps/docs/tailwind.config.ts
 import type { Config } from 'tailwindcss';
-import unbogifyPreset from '@unbogify/tokens/tailwind-preset';
+import noriPreset from '@nori-ui/tokens/tailwind-preset';
 
 const config: Config = {
-    presets: [unbogifyPreset],
+    presets: [noriPreset],
     content: [
         './app/**/*.{ts,tsx,mdx}',
         './components/**/*.{ts,tsx}',
@@ -288,7 +288,7 @@ import type { ReactNode } from 'react';
 import './global.css';
 
 export const metadata = {
-    title: 'unbogify-ui — placeholder name',
+    title: 'nori-ui — placeholder name',
     description: 'React Native + Web component library, AI-documented, Expo-first.',
 };
 
@@ -311,7 +311,7 @@ import Link from 'next/link';
 export default function Home() {
     return (
         <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
-            <h1 className="text-4xl font-bold">unbogify-ui</h1>
+            <h1 className="text-4xl font-bold">nori-ui</h1>
             <p className="text-lg text-neutral-700">
                 React Native + Web component library. Placeholder name — will be renamed before v0.1.
             </p>
@@ -332,7 +332,7 @@ import { source } from '@/lib/source';
 
 export default function Layout({ children }: { children: ReactNode }) {
     return (
-        <DocsLayout tree={source.pageTree} nav={{ title: 'unbogify-ui' }}>
+        <DocsLayout tree={source.pageTree} nav={{ title: 'nori-ui' }}>
             {children}
         </DocsLayout>
     );
@@ -395,7 +395,7 @@ git commit -m "feat(docs): add root + /docs layouts, MDX page, home page"
 ```tsx
 'use client';
 
-import { UnbogifyProvider } from 'unbogify-ui/client';
+import { NoriProvider } from 'nori-ui/client';
 import type { ReactNode } from 'react';
 
 export type LivePreviewProps = {
@@ -404,14 +404,14 @@ export type LivePreviewProps = {
 };
 
 /**
- * Renders a component inline using the actual `unbogify-ui` web build
+ * Renders a component inline using the actual `nori-ui` web build
  * (via react-native-web alias at the Next.js layer). Consumers of the
  * docs see exactly the component they'd install.
  */
 export function LivePreview({ children, className }: LivePreviewProps) {
     return (
         <div className={`rounded-lg border border-neutral-200 bg-white p-6 ${className ?? ''}`}>
-            <UnbogifyProvider>{children}</UnbogifyProvider>
+            <NoriProvider>{children}</NoriProvider>
         </div>
     );
 }
@@ -468,7 +468,7 @@ git commit -m "feat(docs): add LivePreview (web) and ExpoSnack (native) preview 
 
 ```json
 {
-    "title": "unbogify-ui",
+    "title": "nori-ui",
     "pages": [
         "index",
         "getting-started",
@@ -497,17 +497,17 @@ git commit -m "feat(docs): add LivePreview (web) and ExpoSnack (native) preview 
 ```mdx
 ---
 title: Introduction
-description: unbogify-ui is a React Native + Web component library with Figma-driven tokens.
+description: nori-ui is a React Native + Web component library with Figma-driven tokens.
 since: 0.1.0
 tags: [intro]
 platform: both
 ---
 
-## What is unbogify-ui?
+## What is nori-ui?
 
 A set of primitives and controls that work identically on iOS, Android, and web. Styled with NativeWind and themed via design tokens exported from Figma (Tokens Studio). AI-queryable via `/mcp`.
 
-> **Placeholder name.** `unbogify-ui` will be renamed before the first published release.
+> **Placeholder name.** `nori-ui` will be renamed before the first published release.
 
 ## Start here
 
@@ -529,18 +529,18 @@ platform: both
 ## Install
 
 ```bash
-yarn add unbogify-ui
+yarn add nori-ui
 # optional — any icon library works; Lucide is recommended:
 yarn add lucide-react lucide-react-native
 ```
 
 ## Tailwind preset
 
-Add the `@unbogify/tokens` preset to your consumer `tailwind.config.ts`:
+Add the `@nori-ui/tokens` preset to your consumer `tailwind.config.ts`:
 
 ```ts
-import { unbogifyPreset } from '@unbogify/tokens/tailwind-preset';
-export default { presets: [unbogifyPreset], content: [/* your globs */] };
+import { noriPreset } from '@nori-ui/tokens/tailwind-preset';
+export default { presets: [noriPreset], content: [/* your globs */] };
 ```
 
 ## Provider
@@ -549,13 +549,13 @@ Wrap your app once. The library works without a provider too — provider only c
 
 ```tsx
 'use client';
-import { UnbogifyProvider } from 'unbogify-ui/client';
+import { NoriProvider } from 'nori-ui/client';
 
 export default function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <YourApp />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 ```
@@ -563,7 +563,7 @@ export default function App() {
 ## First component
 
 ```tsx
-import { Button } from 'unbogify-ui';
+import { Button } from 'nori-ui';
 
 <Button variant="primary">Click me</Button>
 ```
@@ -584,7 +584,7 @@ platform: both
 
 import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Button } from 'unbogify-ui';
+import { Button } from 'nori-ui';
 
 ## At a glance
 
@@ -612,7 +612,7 @@ import { Button } from 'unbogify-ui';
 ## Native preview (Expo Snack)
 
 {/* Replace id with a real Snack when authoring. Plan 06 ships the infrastructure. */}
-<ExpoSnack id="@unbogify/button-smoke" height={400} />
+<ExpoSnack id="@nori-ui/button-smoke" height={400} />
 
 ## Props
 
@@ -689,7 +689,7 @@ export async function GET() {
         .join('\n');
 
     const body = [
-        '# unbogify-ui',
+        '# nori-ui',
         '',
         'React Native + Web component library. Primary domain reference for LLMs and code agents.',
         '',
@@ -813,7 +813,7 @@ import { getComponentDocs, getComponentProps, listExamples, searchComponents } f
 
 function buildServer() {
     const server = new McpServer({
-        name: 'unbogify-ui-docs',
+        name: 'nori-ui-docs',
         version: '0.1.0',
     });
 
@@ -1047,7 +1047,7 @@ test('mcp eval ≥ 95% pass rate', async ({ baseURL }) => {
 - [ ] **Step 4: Install tsx for the eval runner.**
 
 ```bash
-yarn workspace @unbogify/e2e-web add -D tsx
+yarn workspace @nori-ui/e2e-web add -D tsx
 ```
 
 - [ ] **Step 5: Commit.**
@@ -1070,9 +1070,9 @@ git commit -m "test(docs): add mcp eval harness with seed 5 questions (grow to 5
 ```json
 {
     "scripts": {
-        "dev:docs": "yarn workspace @unbogify/docs dev",
-        "build:docs": "yarn workspace @unbogify/docs build",
-        "test:mcp-eval": "yarn workspace @unbogify/e2e-web test tests/mcp-eval.spec.ts"
+        "dev:docs": "yarn workspace @nori-ui/docs dev",
+        "build:docs": "yarn workspace @nori-ui/docs build",
+        "test:mcp-eval": "yarn workspace @nori-ui/e2e-web test tests/mcp-eval.spec.ts"
     }
 }
 ```
@@ -1124,7 +1124,7 @@ import { expect, test } from '@playwright/test';
 test.describe('docs site smoke', () => {
     test('home page renders', async ({ page }) => {
         await page.goto('http://localhost:3000/');
-        await expect(page.getByRole('heading', { level: 1 })).toHaveText(/unbogify-ui/);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(/nori-ui/);
     });
 
     test('docs index renders', async ({ page }) => {
@@ -1135,7 +1135,7 @@ test.describe('docs site smoke', () => {
     test('llms.txt served', async ({ request }) => {
         const res = await request.get('http://localhost:3000/llms.txt');
         expect(res.status()).toBe(200);
-        expect(await res.text()).toContain('unbogify-ui');
+        expect(await res.text()).toContain('nori-ui');
     });
 });
 ```
@@ -1161,7 +1161,7 @@ git commit -m "test(e2e): add docs site smoke tests"
 
 - [ ] `apps/docs` builds on Next.js 15 + Fumadocs 15.
 - [ ] One MDX page per v0.1 component (11 pages).
-- [ ] Inline web live previews using actual `unbogify-ui` components via react-native-web alias.
+- [ ] Inline web live previews using actual `nori-ui` components via react-native-web alias.
 - [ ] Expo Snack embeds on each component page.
 - [ ] `/llms.txt` and `/llms-full.txt` endpoints serve per spec §3.
 - [ ] `/mcp` route exposes 4 tools; 50-question eval ≥ 95 %.

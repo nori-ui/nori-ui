@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "unbogify-playground",
-    "slug": "unbogify-playground",
+    "name": "nori-ui-playground",
+    "slug": "nori-ui-playground",
     "version": "0.0.0",
     "orientation": "portrait",
     "newArchEnabled": true,
-    "ios": { "supportsTablet": true, "bundleIdentifier": "dev.unbogify.playground" },
-    "android": { "package": "dev.unbogify.playground" },
+    "ios": { "supportsTablet": true, "bundleIdentifier": "dev.noriui.playground" },
+    "android": { "package": "dev.noriui.playground" },
     "web": { "bundler": "metro" },
     "plugins": []
   }

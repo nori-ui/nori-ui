@@ -60,7 +60,7 @@ Components use RN primitives (`Text`, `View`) that need a testing shim in jsdom.
 - [ ] **Step 1: Install RN-Web for test target.**
 
 ```bash
-yarn workspace unbogify-ui add -D react-native-web@^0.19 @testing-library/react-native@^12
+yarn workspace nori-ui add -D react-native-web@^0.19 @testing-library/react-native@^12
 ```
 
 - [ ] **Step 2: Update `packages/ui/jest.config.cjs`.**
@@ -72,11 +72,11 @@ const base = require('../../jest.config.base.cjs');
 module.exports = {
     ...base,
     rootDir: '.',
-    displayName: 'unbogify-ui',
+    displayName: 'nori-ui',
     projects: [
         {
             ...base,
-            displayName: 'unbogify-ui:node',
+            displayName: 'nori-ui:node',
             testEnvironment: 'node',
             testMatch: [
                 '<rootDir>/src/**/__tests__/**/*.test.ts',
@@ -88,7 +88,7 @@ module.exports = {
         },
         {
             ...base,
-            displayName: 'unbogify-ui:jsdom',
+            displayName: 'nori-ui:jsdom',
             testEnvironment: 'jsdom',
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.tsx'],
             setupFilesAfterEnv: [
@@ -128,7 +128,7 @@ console.warn = (...args: unknown[]) => {
 - [ ] **Step 4: Run existing tests to confirm nothing broke.**
 
 ```bash
-yarn workspace unbogify-ui test
+yarn workspace nori-ui test
 ```
 
 Expected: still 36 passed.
@@ -252,7 +252,7 @@ export { Text, type TextProps, type TextVariant } from './Text';
 - [ ] **Step 4: Run the test — should pass.**
 
 ```bash
-yarn workspace unbogify-ui test Text.test
+yarn workspace nori-ui test Text.test
 ```
 
 Expected: 5 passed. If the className regex doesn't match, NativeWind may strip classes before they reach jsdom — the test asserts a substring match, not a rendered CSS effect, so the className attribute should carry the classes verbatim.
@@ -341,7 +341,7 @@ export { Box, type BoxProps } from './Box';
 - [ ] **Step 4: Run.**
 
 ```bash
-yarn workspace unbogify-ui test Box.test
+yarn workspace nori-ui test Box.test
 ```
 
 Expected: 3 passed.
@@ -471,7 +471,7 @@ export { HStack, type HStackProps, type StackAlign, type StackGap, type StackJus
 Then:
 
 ```bash
-yarn workspace unbogify-ui test HStack.test
+yarn workspace nori-ui test HStack.test
 # 6 passed
 git add packages/ui/src/components/HStack/
 git commit -m "feat(ui): add HStack layout primitive with gap/align/justify"
@@ -581,7 +581,7 @@ export { VStack, type VStackProps } from './VStack';
 Then:
 
 ```bash
-yarn workspace unbogify-ui test VStack.test
+yarn workspace nori-ui test VStack.test
 # 4 passed
 git add packages/ui/src/components/VStack/
 git commit -m "feat(ui): add VStack layout primitive"
@@ -827,13 +827,13 @@ Replace the smoke content with a registry renderer:
 ```tsx
 'use client';
 
-import { UnbogifyProvider } from 'unbogify-ui/client';
-import { stories } from 'unbogify-ui/stories';
+import { NoriProvider } from 'nori-ui/client';
+import { stories } from 'nori-ui/stories';
 
 function StoriesPage() {
     return (
         <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif', display: 'grid', gap: 24 }}>
-            <h1 data-testid="title">unbogify-ui playground (web)</h1>
+            <h1 data-testid="title">nori-ui playground (web)</h1>
             {stories.map(({ id, title, render: Render }) => (
                 <section key={id} data-testid={`section-${id}`} style={{ borderTop: '1px solid #e4e4e7', paddingTop: 12 }}>
                     <h2 style={{ fontSize: 14, fontWeight: 500, margin: '0 0 8px' }}>{title}</h2>
@@ -846,9 +846,9 @@ function StoriesPage() {
 
 export function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <StoriesPage />
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 ```
@@ -908,17 +908,17 @@ git commit -m "test(e2e): add layout primitives playwright coverage + axe audit"
 
 ```tsx
 import { SafeAreaView, ScrollView, StatusBar, Text as RNText, View } from 'react-native';
-import { UnbogifyProvider } from 'unbogify-ui/client';
-import { stories } from 'unbogify-ui/stories';
+import { NoriProvider } from 'nori-ui/client';
+import { stories } from 'nori-ui/stories';
 
 export function App() {
     return (
-        <UnbogifyProvider>
+        <NoriProvider>
             <SafeAreaView style={{ flex: 1 }}>
                 <StatusBar />
                 <ScrollView contentContainerStyle={{ padding: 24 }}>
                     <RNText testID="title" style={{ fontSize: 22, fontWeight: '600', marginBottom: 16 }}>
-                        unbogify-ui playground (native)
+                        nori-ui playground (native)
                     </RNText>
                     {stories.map(({ id, title, render: Render }) => (
                         <View key={id} testID={`section-${id}`} style={{ paddingVertical: 12, gap: 8 }}>
@@ -928,7 +928,7 @@ export function App() {
                     ))}
                 </ScrollView>
             </SafeAreaView>
-        </UnbogifyProvider>
+        </NoriProvider>
     );
 }
 ```
@@ -936,7 +936,7 @@ export function App() {
 - [ ] **Step 2: `e2e/native/flows/layout.yaml`.**
 
 ```yaml
-appId: dev.unbogify.playground
+appId: dev.noriui.playground
 ---
 - launchApp
 - assertVisible:
@@ -977,7 +977,7 @@ module.exports = [
         name: 'core (cn + slot + theme + i18n + icons + provider)',
         path: 'src/client.ts',
         limit: '40 KB',
-        ignore: ['react', 'react-dom', 'react-native', '@unbogify/tokens'],
+        ignore: ['react', 'react-dom', 'react-native', '@nori-ui/tokens'],
     },
     {
         name: 'Text',
@@ -1050,7 +1050,7 @@ pkill -f storybook || true
 - [ ] Playwright layout spec passes (3 tests including an axe audit over the whole stories page).
 - [ ] Maestro layout flow file exists (manual run).
 - [ ] Each component has a size-limit entry under its budget.
-- [ ] Public exports: `Text`, `Box`, `HStack`, `VStack` and their types reach consumers via `unbogify-ui` root import (RSC-safe).
+- [ ] Public exports: `Text`, `Box`, `HStack`, `VStack` and their types reach consumers via `nori-ui` root import (RSC-safe).
 - [ ] `yarn test` reports 36 + 18 = 54 tests passing.
 
 When all boxes are ticked, Plan 05a is complete and Plan 05b (form controls + Spinner) can begin.
@@ -1063,7 +1063,7 @@ When all boxes are ticked, Plan 05a is complete and Plan 05b (form controls + Sp
 2. **`react-native.d.ts` type augmentation.** `packages/ui/src/react-native.d.ts` augments `react-native` with `className?: string` on `ViewProps`/`TextProps`/`PressableProps`/`ActivityIndicatorProps` (plus `contentContainerClassName` for `ScrollViewProps`, `placeholderClassName` for `TextInputProps`). Later plans use `className` directly; do NOT add `@ts-expect-error` comments.
 3. **`playground-web/tsconfig.json` removes the `paths` alias** for `react-native` → `react-native-web` (RN-Web has no `.d.ts` there); instead adds `nativewind/types` to `types` so className is typed at compile time. The Vite runtime alias in `vite.config.ts` remains untouched.
 4. **Commit-scope kebab-case:** same rule as Plan 04 — `test(e2e):` fails commitlint because digits break kebab-case. Use `test(playground-web):` / `test(playground-native):` / `test(ui):` as appropriate.
-5. **Story registry file is `.tsx`** — it contains JSX in the render functions. Import path `unbogify-ui/stories` stays the same; the `exports` map in `packages/ui/package.json` points at `.tsx`.
+5. **Story registry file is `.tsx`** — it contains JSX in the render functions. Import path `nori-ui/stories` stays the same; the `exports` map in `packages/ui/package.json` points at `.tsx`.
 6. **`smoke.spec.ts` needs updating after registry-renderer swap.** Once `apps/playground-web/src/App.tsx` is rewritten to render the story registry, the Plan 04 smoke spec asserting `primary-swatch`/`primary-hex` testIDs will fail. Replace with assertions on `title` + first section visibility. Future plans that modify `App.tsx` must remember to sync smoke tests.
 7. **ESLint `react-native/no-inline-styles` warnings** (23 of them) from inline-style story wrappers are expected and accepted — test code intentionally uses inline styles.
 8. **NativeWind CSS compilation is at consumer build time.** In the Jest environment, `className` values reach the DOM but are not compiled to CSS. Tests assert on className *strings*, not computed styles. Playwright picks up the real CSS because Vite runs NativeWind's transform.

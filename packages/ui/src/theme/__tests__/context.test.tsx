@@ -1,5 +1,5 @@
+import { theme as defaultTheme, type Theme } from '@nori-ui/tokens';
 import { render, screen } from '@testing-library/react';
-import { theme as defaultTheme, type Theme } from '@unbogify/tokens';
 import { ThemeProvider } from '../context';
 import { useTheme } from '../use-theme';
 

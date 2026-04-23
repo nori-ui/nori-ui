@@ -1,1 +1,1 @@
-export { UnbogifyProvider, type UnbogifyProviderProps } from './unbogify-provider';
+export { NoriProvider, type NoriProviderProps } from './nori-provider';

@@ -1,5 +1,5 @@
 {
-  "name": "@unbogify/tooling",
+  "name": "@nori-ui/tooling",
   "version": "0.0.0",
   "private": true,
   "main": "./index.cjs"

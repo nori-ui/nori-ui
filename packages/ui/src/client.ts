@@ -13,6 +13,6 @@ export { useSemanticIcon } from './icons/use-semantic-icon';
 // Re-export everything from the default entry for convenience — consumers can
 // import from a single subpath when they're already in client code.
 export * from './index';
-export { UnbogifyProvider, type UnbogifyProviderProps } from './provider';
+export { NoriProvider, type NoriProviderProps } from './provider';
 export { ThemeProvider, type ThemeProviderProps } from './theme/context';
 export { useTheme } from './theme/use-theme';
