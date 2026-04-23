@@ -139,22 +139,9 @@ const BABEL_CONFIG = `module.exports = function(api) {
 };
 `;
 
-const TAILWIND_CONFIG = `const nativewindPreset = require('nativewind/preset');
-module.exports = {
-    content: ['./App.js'],
-    presets: [nativewindPreset],
-};
-`;
-
 const GLOBAL_CSS = `@tailwind base;
 @tailwind components;
 @tailwind utilities;
-`;
-
-const METRO_CONFIG = `const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
-const config = getDefaultConfig(__dirname);
-module.exports = withNativeWind(config, { input: './global.css' });
 `;
 
 async function createSnack(name, code) {
@@ -164,9 +151,10 @@ async function createSnack(name, code) {
             description: `Live preview of nori-ui's ${name} component on iOS / Android / web.`,
             sdkVersion: SDK,
         },
-        // Pin to versions recommended for SDK 55 (validator rejects otherwise).
-        // tailwindcss + react-native-svg added as explicit deps because
-        // Snack doesn't follow peerDependencies transitively.
+        // Pin versions Snack's SDK 55 validator accepts.
+        // tailwindcss + react-native-svg are added as explicit deps because
+        // Snack doesn't walk peerDependencies transitively, and Snack's
+        // SDK 55 validator requires specific versions.
         dependencies: {
             '@nori-ui/core': CORE_VERSION,
             'lucide-react-native': '0.441.0',
@@ -174,15 +162,20 @@ async function createSnack(name, code) {
             'react-native-css-interop': '^0.2.3',
             'react-native-reanimated': '4.2.1',
             'react-native-safe-area-context': '~5.6.2',
-            'react-native-svg': '15.14.0',
-            tailwindcss: '^3.4.0',
+            'react-native-svg': '15.15.3',
+            tailwindcss: '3.4.14',
         },
+        // Snack rejects subpath imports (e.g. nativewind/preset,
+        // nativewind/metro, expo/metro-config) in config files because its
+        // static analyzer doesn't walk package.json `exports` maps. So we
+        // don't ship tailwind.config.js or metro.config.js — Snack's built-in
+        // Metro config handles NativeWind when `nativewind` is a direct dep,
+        // and the jsxImportSource in babel.config.js routes className through
+        // react-native-css-interop at runtime.
         code: {
             'App.js': { contents: code, type: 'CODE' },
             'babel.config.js': { contents: BABEL_CONFIG, type: 'CODE' },
-            'tailwind.config.js': { contents: TAILWIND_CONFIG, type: 'CODE' },
             'global.css': { contents: GLOBAL_CSS, type: 'ASSET' },
-            'metro.config.js': { contents: METRO_CONFIG, type: 'CODE' },
         },
     };
 
