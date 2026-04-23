@@ -53,6 +53,7 @@
     "typescript": "^5.6.0"
   },
   "resolutions": {
-    "tailwindcss": "^3.4"
+    "tailwindcss": "^3.4",
+    "next": "^15"
   }
 }
