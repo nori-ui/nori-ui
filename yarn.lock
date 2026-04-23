@@ -4442,11 +4442,11 @@ __metadata:
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.6.0"
   peerDependencies:
-    nativewind: ^4
+    nativewind: ^4.2.0
     react: ^19
     react-dom: ^19
     react-native: ^0.83
-    react-native-css-interop: ">=0.2.0"
+    react-native-css-interop: ">=0.2.3"
   peerDependenciesMeta:
     nativewind:
       optional: false

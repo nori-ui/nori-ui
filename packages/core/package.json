@@ -1,6 +1,7 @@
 {
   "name": "@nori-ui/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "private": false,
   "description": "React Native + React Native Web UI component library. Expo-first, NativeWind v4, Figma design tokens, AI-queryable docs.",
   "license": "MIT",
   "repository": {
@@ -99,11 +100,11 @@
     "react-dom": "^19"
   },
   "peerDependencies": {
-    "nativewind": "^4",
+    "nativewind": "^4.2.0",
     "react": "^19",
     "react-dom": "^19",
     "react-native": "^0.83",
-    "react-native-css-interop": ">=0.2.0"
+    "react-native-css-interop": ">=0.2.3"
   },
   "peerDependenciesMeta": {
     "nativewind": {
