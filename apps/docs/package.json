@@ -16,19 +16,20 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1",
     "@unbogify/tokens": "workspace:*",
-    "fumadocs-core": "^15",
+    "fumadocs-core": "14.0.0",
     "fumadocs-mdx": "^11",
-    "fumadocs-ui": "^15",
+    "fumadocs-ui": "14.0.0",
     "nativewind": "^4",
     "next": "^15",
     "react": "^19",
     "react-dom": "^19",
     "react-native-css-interop": "^0.2.3",
-    "react-native-web": "^0.19",
+    "react-native-web": "^0.21",
     "unbogify-ui": "workspace:*",
     "zod": "^3.23"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

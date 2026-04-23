@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Minimal Fumadocs-compatible CSS variables so the default Fumadocs layout
+   components have meaningful fallbacks when the createPreset() integration is
+   shimmed (see tailwind.config.ts for the shim reason).
+   Values match Fumadocs' neutral theme approximately. */
+@layer base {
+    :root {
+        --fd-background: 0 0% 100%;
+        --fd-foreground: 240 10% 3.9%;
+        --fd-muted: 240 4.8% 95.9%;
+        --fd-muted-foreground: 240 3.8% 45%;
+        --fd-popover: 0 0% 100%;
+        --fd-popover-foreground: 240 10% 3.9%;
+        --fd-card: 0 0% 100%;
+        --fd-card-foreground: 240 10% 3.9%;
+        --fd-border: 240 5.9% 90%;
+        --fd-primary: 240 5.9% 10%;
+        --fd-primary-foreground: 0 0% 98%;
+        --fd-secondary: 240 4.8% 95.9%;
+        --fd-secondary-foreground: 240 5.9% 10%;
+        --fd-accent: 240 4.8% 95.9%;
+        --fd-accent-foreground: 240 5.9% 10%;
+        --fd-ring: 240 5% 64.9%;
+    }
+
+    .dark,
+    [data-theme="dark"] {
+        --fd-background: 240 10% 3.9%;
+        --fd-foreground: 0 0% 98%;
+        --fd-muted: 240 3.7% 15.9%;
+        --fd-muted-foreground: 240 5% 64.9%;
+        --fd-popover: 240 10% 3.9%;
+        --fd-popover-foreground: 0 0% 98%;
+        --fd-card: 240 10% 3.9%;
+        --fd-card-foreground: 0 0% 98%;
+        --fd-border: 240 3.7% 15.9%;
+        --fd-primary: 0 0% 98%;
+        --fd-primary-foreground: 240 5.9% 10%;
+        --fd-secondary: 240 3.7% 15.9%;
+        --fd-secondary-foreground: 0 0% 98%;
+        --fd-accent: 240 3.7% 15.9%;
+        --fd-accent-foreground: 0 0% 98%;
+        --fd-ring: 240 4.9% 83.9%;
+    }
+}

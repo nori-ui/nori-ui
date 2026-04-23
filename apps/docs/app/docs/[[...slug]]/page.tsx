@@ -1,4 +1,4 @@
-import defaultMdxComponents, { createRelativeLink } from 'fumadocs-ui/mdx';
+import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
 import { source } from '@/lib/source';
@@ -17,7 +17,6 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
                 <MDX
                     components={{
                         ...defaultMdxComponents,
-                        a: createRelativeLink(source, page),
                     }}
                 />
             </DocsBody>
