@@ -159,18 +159,19 @@ async function createSnack(name, code) {
             '@nori-ui/core': CORE_VERSION,
             'lucide-react-native': '0.441.0',
             nativewind: '^4.2.1',
-            // react-native-css-interop is pulled in by nativewind's dep tree
-            // (pinned to 0.2.1 in nativewind@4.2.1). Declaring it here
-            // created a peer conflict.
+            // react-native-css-interop must be declared because @nori-ui/core
+            // requires it as a peer. Pinned to 0.2.1 to match nativewind@4.2.1's
+            // own dep tree exactly — any other version creates a peer conflict.
+            'react-native-css-interop': '0.2.1',
             'react-native-reanimated': '4.2.1',
             'react-native-safe-area-context': '~5.6.2',
             'react-native-svg': '15.15.3',
-            // tailwindcss is a strict peer of nativewind, but Snackager's
-            // webpack can't bundle real tailwindcss (it uses Node crypto). So
-            // we alias the dep name to our crypto-free stub — NativeWind's
-            // peer check sees tailwindcss@3.3.3 installed and the Snack builds.
-            // See packages/tailwindcss-stub/README.md.
-            tailwindcss: 'npm:@nori-ui/tailwindcss-stub@3.3.3',
+            // NOT declaring tailwindcss: webpack's bundle walk from our library
+            // runs: @nori-ui/core → nativewind/jsx-runtime → react-native-css-
+            // interop/jsx-runtime → NONE of these reach tailwindcss. Declaring
+            // tailwindcss caused Snackager to try to bundle it, which failed
+            // because real tailwindcss requires Node's crypto module. Leaving
+            // it undeclared produces a "missing peer" warning (harmless) instead.
         },
         // Snack rejects subpath imports (e.g. nativewind/preset,
         // nativewind/metro, expo/metro-config) in config files because its
