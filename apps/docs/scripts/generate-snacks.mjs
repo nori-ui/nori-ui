@@ -159,10 +159,16 @@ async function createSnack(name, code) {
             '@nori-ui/core': CORE_VERSION,
             'lucide-react-native': '0.441.0',
             nativewind: '^4.2.1',
-            'react-native-css-interop': '^0.2.3',
+            // react-native-css-interop is pulled in by nativewind's dep tree
+            // (pinned to 0.2.1 in nativewind@4.2.1). Declaring it here
+            // created a peer conflict.
             'react-native-reanimated': '4.2.1',
             'react-native-safe-area-context': '~5.6.2',
             'react-native-svg': '15.15.3',
+            // tailwindcss is nominally a build-time tool but Snack validates
+            // NativeWind's peer requirement. 3.3.3 is in Snack's cache; 3.4.x
+            // was returning 'Failed to fetch' from Snack's sandbox.
+            tailwindcss: '3.3.3',
         },
         // Snack rejects subpath imports (e.g. nativewind/preset,
         // nativewind/metro, expo/metro-config) in config files because its
