@@ -1,7 +1,9 @@
 'use client';
 
+import { theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
+import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
 import { cn } from '../../utils/cn';
@@ -16,6 +18,26 @@ export type SwitchProps = {
     testID?: string;
     asChild?: boolean;
     children?: ReactNode;
+};
+
+const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
+const TRACK_BASE: ViewStyle = {
+    width: 40,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+};
+const THUMB_STYLE: ViewStyle = {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
 };
 
 /**
@@ -80,12 +102,26 @@ export function Switch({
     );
     const thumbClasses = cn('w-5 h-5 rounded-full bg-white shadow-sm', value ? 'self-end' : 'self-start');
 
+    const trackStyle = [
+        TRACK_BASE,
+        { backgroundColor: value ? theme.color.primary['600'] : theme.color.neutral['300'] },
+        disabled ? { opacity: 0.6 } : null,
+    ];
+    const thumbStyle = [THUMB_STYLE, { alignSelf: value ? 'flex-end' : 'flex-start' } as ViewStyle];
+
     return (
-        <View className={cn('flex-row items-center gap-2', className)}>
-            <Pressable onPress={toggle} {...commonProps} className={trackClasses}>
-                <View className={thumbClasses} />
+        <View className={cn('flex-row items-center gap-2', className)} style={ROW_STYLE}>
+            <Pressable onPress={toggle} {...commonProps} className={trackClasses} style={trackStyle}>
+                <View className={thumbClasses} style={thumbStyle} />
             </Pressable>
-            {label ? <RNText className="text-md text-semantic-text-default">{label}</RNText> : null}
+            {label ? (
+                <RNText
+                    className="text-md text-semantic-text-default"
+                    style={{ color: theme.color.neutral['900'], fontSize: 16 }}
+                >
+                    {label}
+                </RNText>
+            ) : null}
             {children}
         </View>
     );

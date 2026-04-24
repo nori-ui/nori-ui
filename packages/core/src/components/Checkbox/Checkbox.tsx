@@ -1,8 +1,10 @@
 'use client';
 
+import { theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import type { ViewStyle } from 'react-native';
+import { Pressable, Text as RNText, View } from 'react-native';
 import { useSemanticIcon } from '../../icons/use-semantic-icon';
 import { Slot } from '../../slot';
 import { cn } from '../../utils/cn';
@@ -18,6 +20,23 @@ export type CheckboxProps = {
     testID?: string;
     asChild?: boolean;
     children?: ReactNode;
+};
+
+// Inline defaults so the checkbox renders correctly without NativeWind.
+const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
+const BOX_STYLE: ViewStyle = {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.color.neutral['300'],
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+};
+const BOX_STYLE_CHECKED: ViewStyle = {
+    backgroundColor: theme.color.primary['600'],
+    borderColor: theme.color.primary['600'],
 };
 
 /**
@@ -41,6 +60,7 @@ export function Checkbox({
     const value = isControlled ? Boolean(checked) : inner;
 
     const ariaChecked: 'true' | 'false' | 'mixed' = indeterminate ? 'mixed' : value ? 'true' : 'false';
+    const isMarked = value || Boolean(indeterminate);
 
     const toggle = useCallback(() => {
         if (disabled) return;
@@ -80,11 +100,22 @@ export function Checkbox({
     const boxClasses = cn('w-5 h-5 rounded-sm border border-semantic-border-strong items-center justify-center');
 
     return (
-        <View className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}>
-            <Pressable onPress={toggle} {...commonProps} className={boxClasses}>
-                {(value || indeterminate) && !disabled ? <Check size={14} color="currentColor" /> : null}
+        <View
+            className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}
+            style={[ROW_STYLE, disabled ? { opacity: 0.6 } : null]}
+        >
+            <Pressable
+                onPress={toggle}
+                {...commonProps}
+                className={boxClasses}
+                style={[BOX_STYLE, isMarked && !disabled ? BOX_STYLE_CHECKED : null]}
+            >
+                {isMarked && !disabled ? <Check size={14} color="#ffffff" /> : null}
             </Pressable>
-            {children ?? (label !== undefined ? <View>{label}</View> : null)}
+            {children ??
+                (label !== undefined ? (
+                    <RNText style={{ color: theme.color.neutral['900'], fontSize: 16 }}>{label}</RNText>
+                ) : null)}
         </View>
     );
 }

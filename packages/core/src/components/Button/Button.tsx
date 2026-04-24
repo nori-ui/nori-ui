@@ -1,6 +1,7 @@
+import { theme } from '@nori-ui/tokens';
 import type { ComponentType, ReactNode } from 'react';
 import { forwardRef } from 'react';
-import type { PressableProps } from 'react-native';
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
 import { cn } from '../../utils/cn';
@@ -43,6 +44,39 @@ const ICON_SIZE: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 20 };
 
 const BASE_CLASSES = 'inline-flex flex-row items-center justify-center gap-2 rounded-md select-none';
 
+// Inline fallback styles mirror the NativeWind classes above. They ship so
+// the component renders correctly when NativeWind is NOT active (e.g. Expo
+// Snack's sandbox, or apps that don't configure NativeWind). When NativeWind
+// IS active, its compiled className styles merge with and (where intended)
+// override these defaults.
+const VARIANT_STYLES: Record<ButtonVariant, ViewStyle> = {
+    primary: { backgroundColor: theme.color.primary['600'] },
+    secondary: { backgroundColor: theme.color.neutral['100'] },
+    ghost: { backgroundColor: 'transparent' },
+    destructive: { backgroundColor: theme.color.danger },
+};
+
+const VARIANT_TEXT_COLOR: Record<ButtonVariant, string> = {
+    primary: '#ffffff',
+    secondary: theme.color.neutral['900'],
+    ghost: theme.color.neutral['900'],
+    destructive: '#ffffff',
+};
+
+const SIZE_STYLES: Record<ButtonSize, { container: ViewStyle; text: { fontSize: number } }> = {
+    sm: { container: { height: 32, paddingHorizontal: 12 }, text: { fontSize: 14 } },
+    md: { container: { height: 40, paddingHorizontal: 16 }, text: { fontSize: 16 } },
+    lg: { container: { height: 48, paddingHorizontal: 20 }, text: { fontSize: 18 } },
+};
+
+const BASE_STYLE: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 6,
+};
+
 export const Button = forwardRef<unknown, ButtonProps>(function Button(
     {
         children,
@@ -56,6 +90,7 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         className,
         onPress,
         testID,
+        style,
         ...rest
     },
     forwardedRef
@@ -69,6 +104,19 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         className
     );
 
+    const baseInlineStyle: StyleProp<ViewStyle> = [
+        BASE_STYLE,
+        VARIANT_STYLES[variant],
+        SIZE_STYLES[size].container,
+        isInoperative ? { opacity: 0.6 } : null,
+    ];
+    const pressableStyle: PressableProps['style'] =
+        typeof style === 'function' ? (state) => [baseInlineStyle, style(state)] : [baseInlineStyle, style];
+    const slotStyle: StyleProp<ViewStyle> = [baseInlineStyle, typeof style === 'function' ? null : style];
+
+    const textColor = VARIANT_TEXT_COLOR[variant];
+    const textStyle = { color: textColor, fontSize: SIZE_STYLES[size].text.fontSize, fontWeight: '500' as const };
+
     const handlePress: NonNullable<PressableProps['onPress']> = (ev) => {
         if (isInoperative) return;
         onPress?.(ev);
@@ -78,6 +126,7 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         const slotProps: Record<string, unknown> = {
             ref: forwardedRef,
             className: classes,
+            style: slotStyle,
             onClick: handlePress as unknown as (...args: unknown[]) => unknown,
             ...rest,
         };
@@ -101,18 +150,22 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
             disabled={isInoperative}
             onPress={handlePress}
             className={classes}
+            style={pressableStyle}
             {...pressableExtra}
             {...rest}
         >
             {loading ? (
-                <Spinner size={ICON_SIZE[size]} label="Loading" />
+                <Spinner size={ICON_SIZE[size]} label="Loading" color={textColor} />
             ) : LeadingIcon ? (
-                <LeadingIcon size={ICON_SIZE[size]} />
+                <LeadingIcon size={ICON_SIZE[size]} color={textColor} />
             ) : null}
-            <RNText className={cn('font-medium', SIZE_CLASSES[size].includes('text-') ? undefined : 'text-md')}>
+            <RNText
+                className={cn('font-medium', SIZE_CLASSES[size].includes('text-') ? undefined : 'text-md')}
+                style={textStyle}
+            >
                 {children}
             </RNText>
-            {TrailingIcon ? <TrailingIcon size={ICON_SIZE[size]} /> : null}
+            {TrailingIcon ? <TrailingIcon size={ICON_SIZE[size]} color={textColor} /> : null}
         </Pressable>
     );
 });

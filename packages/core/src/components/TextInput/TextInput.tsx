@@ -1,6 +1,7 @@
+import { theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { useId } from 'react';
-import type { TextInputProps as RNTextInputProps } from 'react-native';
+import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
 import { Text as RNText, TextInput as RNTextInput, View } from 'react-native';
 import { cn } from '../../utils/cn';
 
@@ -21,6 +22,24 @@ export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
     multiline?: boolean;
     numberOfLines?: number;
 };
+
+const CONTAINER_STYLE: ViewStyle = { flexDirection: 'column', gap: 4 };
+const LABEL_STYLE: TextStyle = { fontSize: 14, fontWeight: '500', color: theme.color.neutral['900'] };
+const FIELD_BASE_STYLE: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+};
+const INPUT_STYLE: TextStyle = {
+    flex: 1,
+    paddingVertical: 8,
+    fontSize: 16,
+    color: theme.color.neutral['900'],
+};
+const HELPER_STYLE: TextStyle = { fontSize: 14, color: theme.color.neutral['500'] };
+const ERROR_STYLE: TextStyle = { fontSize: 14, color: theme.color.danger };
 
 /**
  * Single-line text input with label, helper, error, and leading/trailing slots.
@@ -61,10 +80,20 @@ export function TextInput({
     if (numberOfLines !== undefined) inputExtras.numberOfLines = numberOfLines;
     if (onChangeText !== undefined) inputExtras.onChangeText = onChangeText;
 
+    const fieldStyle = [
+        FIELD_BASE_STYLE,
+        { borderColor: hasError ? theme.color.danger : theme.color.neutral['200'] },
+        disabled ? { opacity: 0.6 } : null,
+    ];
+
     return (
-        <View className={cn('flex flex-col gap-1', containerClassName)}>
+        <View className={cn('flex flex-col gap-1', containerClassName)} style={CONTAINER_STYLE}>
             {label !== undefined ? (
-                <label htmlFor={inputId} className="text-sm font-medium text-semantic-text-default">
+                <label
+                    htmlFor={inputId}
+                    className="text-sm font-medium text-semantic-text-default"
+                    style={LABEL_STYLE as object}
+                >
                     {label}
                 </label>
             ) : null}
@@ -74,23 +103,38 @@ export function TextInput({
                     hasError ? 'border-semantic-interactive-destructive' : 'border-semantic-border-default',
                     disabled ? 'opacity-60' : undefined
                 )}
+                style={fieldStyle}
             >
-                {leading ? <View className="mr-2">{leading}</View> : null}
+                {leading ? (
+                    <View className="mr-2" style={{ marginRight: 8 }}>
+                        {leading}
+                    </View>
+                ) : null}
                 <RNTextInput
                     nativeID={inputId}
                     editable={!disabled}
                     className={cn('flex-1 py-2 text-md text-semantic-text-default outline-none', className)}
+                    style={INPUT_STYLE}
+                    placeholderTextColor={theme.color.neutral['400']}
                     {...inputExtras}
                     {...rest}
                 />
-                {trailing ? <View className="ml-2">{trailing}</View> : null}
+                {trailing ? (
+                    <View className="ml-2" style={{ marginLeft: 8 }}>
+                        {trailing}
+                    </View>
+                ) : null}
             </View>
             {error ? (
-                <RNText nativeID={describeId} className="text-sm text-semantic-interactive-destructive">
+                <RNText
+                    nativeID={describeId}
+                    className="text-sm text-semantic-interactive-destructive"
+                    style={ERROR_STYLE}
+                >
                     {error}
                 </RNText>
             ) : helperText ? (
-                <RNText nativeID={describeId} className="text-sm text-semantic-text-muted">
+                <RNText nativeID={describeId} className="text-sm text-semantic-text-muted" style={HELPER_STYLE}>
                     {helperText}
                 </RNText>
             ) : null}
