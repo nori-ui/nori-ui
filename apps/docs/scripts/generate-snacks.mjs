@@ -165,10 +165,12 @@ async function createSnack(name, code) {
             'react-native-reanimated': '4.2.1',
             'react-native-safe-area-context': '~5.6.2',
             'react-native-svg': '15.15.3',
-            // tailwindcss is nominally a build-time tool but Snack validates
-            // NativeWind's peer requirement. 3.3.3 is in Snack's cache; 3.4.x
-            // was returning 'Failed to fetch' from Snack's sandbox.
-            tailwindcss: '3.3.3',
+            // tailwindcss is a strict peer of nativewind, but Snackager's
+            // webpack can't bundle real tailwindcss (it uses Node crypto). So
+            // we alias the dep name to our crypto-free stub — NativeWind's
+            // peer check sees tailwindcss@3.3.3 installed and the Snack builds.
+            // See packages/tailwindcss-stub/README.md.
+            tailwindcss: 'npm:@nori-ui/tailwindcss-stub@3.3.3',
         },
         // Snack rejects subpath imports (e.g. nativewind/preset,
         // nativewind/metro, expo/metro-config) in config files because its

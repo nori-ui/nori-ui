@@ -1,0 +1,23 @@
+{
+  "name": "@nori-ui/tailwindcss-stub",
+  "version": "3.3.3",
+  "license": "MIT",
+  "description": "Crypto-free stub of tailwindcss@3.3.3 — satisfies NativeWind's peer dep inside Expo Snack (Snack's webpack rejects Node built-ins like crypto that real tailwindcss requires). NOT intended for general use outside Snack.",
+  "main": "./index.js",
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "plugin.js",
+    "loadConfig.js",
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nori-ui/nori-ui.git",
+    "directory": "packages/tailwindcss-stub"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

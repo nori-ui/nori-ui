@@ -4498,6 +4498,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nori-ui/tailwindcss-stub@workspace:packages/tailwindcss-stub":
+  version: 0.0.0-use.local
+  resolution: "@nori-ui/tailwindcss-stub@workspace:packages/tailwindcss-stub"
+  languageName: unknown
+  linkType: soft
+
 "@nori-ui/tokens@workspace:*, @nori-ui/tokens@workspace:packages/tokens":
   version: 0.0.0-use.local
   resolution: "@nori-ui/tokens@workspace:packages/tokens"
