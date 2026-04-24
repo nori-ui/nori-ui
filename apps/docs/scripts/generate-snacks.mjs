@@ -163,7 +163,6 @@ async function createSnack(name, code) {
             'react-native-reanimated': '4.2.1',
             'react-native-safe-area-context': '~5.6.2',
             'react-native-svg': '15.15.3',
-            tailwindcss: '3.4.14',
         },
         // Snack rejects subpath imports (e.g. nativewind/preset,
         // nativewind/metro, expo/metro-config) in config files because its
