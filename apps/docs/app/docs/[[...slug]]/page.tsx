@@ -10,7 +10,16 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
 
     const MDX = page.data.body;
     return (
-        <DocsPage toc={page.data.toc} {...(page.data.full ? { full: true } : {})}>
+        <DocsPage
+            toc={page.data.toc}
+            editOnGithub={{
+                owner: 'nori-ui',
+                repo: 'nori-ui',
+                sha: 'main',
+                path: `apps/docs/content/docs/${page.file.path}`,
+            }}
+            {...(page.data.full ? { full: true } : {})}
+        >
             <DocsTitle>{page.data.title}</DocsTitle>
             {page.data.description ? <DocsDescription>{page.data.description}</DocsDescription> : null}
             <DocsBody>
