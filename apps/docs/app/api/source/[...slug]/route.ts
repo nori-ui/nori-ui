@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { source } from '@/lib/source';
+import { resolveSourceFormat } from '@/lib/source-format';
 
 /**
  * Single endpoint that serves any docs page in a non-HTML form. The middleware
@@ -23,9 +24,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     // API route is hit directly. Middleware can't pass query strings —
     // Next.js leaves `req.url` set to the original client URL after a
     // rewrite, so a query set on the rewrite target never reaches here.
-    const headerFormat = req.headers.get('x-source-format');
-    const queryFormat = new URL(req.url).searchParams.get('format');
-    const format = (headerFormat ?? queryFormat) === 'json' ? 'json' : 'md';
+    const format = resolveSourceFormat({
+        headerFormat: req.headers.get('x-source-format'),
+        queryFormat: new URL(req.url).searchParams.get('format'),
+    });
 
     // The catch-all captures the full docs path including the leading
     // "docs" segment, e.g. ["docs", "controls", "button"]. We hand the

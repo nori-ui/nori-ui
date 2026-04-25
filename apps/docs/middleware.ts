@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-
-const PRETTY_SUFFIX = /^\/docs\/(.+)\.(md|json)$/;
+import { parsePrettyDocsUrl } from '@/lib/source-format';
 
 /**
  * Rewrite pretty per-page source URLs onto the single `/api/source/`
@@ -9,10 +8,9 @@ const PRETTY_SUFFIX = /^\/docs\/(.+)\.(md|json)$/;
  * extension segments on a catch-all route.
  */
 export function middleware(req: NextRequest) {
-    const match = req.nextUrl.pathname.match(PRETTY_SUFFIX);
-    if (!match) return NextResponse.next();
-    const [, slug, format] = match;
-    if (!slug || !format) return NextResponse.next();
+    const parsed = parsePrettyDocsUrl(req.nextUrl.pathname);
+    if (!parsed) return NextResponse.next();
+    const { slug, format } = parsed;
     // Pass the format through a request header rather than a query string:
     // Next.js leaves `req.url` set to the original client URL, so the route
     // handler can't read `?format=` from a middleware rewrite.

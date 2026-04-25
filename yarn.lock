@@ -4467,17 +4467,21 @@ __metadata:
     "@nori-ui/core": "workspace:*"
     "@nori-ui/tokens": "workspace:*"
     "@tailwindcss/typography": "npm:^0.5"
+    "@types/jest": "npm:^29"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
     autoprefixer: "npm:^10"
+    esbuild: "npm:^0.25"
     fumadocs-core: "npm:14.0.0"
     fumadocs-mdx: "npm:^11"
     fumadocs-ui: "patch:fumadocs-ui@npm%3A14.0.0#~/.yarn/patches/fumadocs-ui-npm-14.0.0-557c7c2e7a.patch"
+    jest: "npm:^29"
     nativewind: "npm:^4"
     next: "npm:^15"
     postcss: "npm:^8"
     react: "npm:^19"
+    react-docgen-typescript: "npm:^2.2"
     react-dom: "npm:^19"
     react-markdown: "npm:^9"
     react-native-css-interop: "npm:^0.2.3"
@@ -4485,6 +4489,7 @@ __metadata:
     remark-gfm: "npm:^4"
     shiki: "npm:^1.29"
     tailwindcss: "npm:^3.4"
+    ts-jest: "npm:^29"
     typescript: "npm:^5.6"
     zod: "npm:^3.23"
   languageName: unknown
@@ -7161,6 +7166,16 @@ __metadata:
   dependencies:
     "@types/istanbul-lib-report": "npm:*"
   checksum: 10c0/1647fd402aced5b6edac87274af14ebd6b3a85447ef9ad11853a70fd92a98d35f81a5d3ea9fcb5dbb5834e800c6e35b64475e33fcae6bfa9acc70d61497c54ee
+  languageName: node
+  linkType: hard
+
+"@types/jest@npm:^29":
+  version: 29.5.14
+  resolution: "@types/jest@npm:29.5.14"
+  dependencies:
+    expect: "npm:^29.0.0"
+    pretty-format: "npm:^29.0.0"
+  checksum: 10c0/18e0712d818890db8a8dab3d91e9ea9f7f19e3f83c2e50b312f557017dc81466207a71f3ed79cf4428e813ba939954fa26ffa0a9a7f153181ba174581b1c2aed
   languageName: node
   linkType: hard
 
@@ -10123,7 +10138,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.18.0 || ^0.19.0 || ^0.20.0 || ^0.21.0 || ^0.22.0 || ^0.23.0 || ^0.24.0 || ^0.25.0, esbuild@npm:^0.25.9":
+"esbuild@npm:^0.18.0 || ^0.19.0 || ^0.20.0 || ^0.21.0 || ^0.22.0 || ^0.23.0 || ^0.24.0 || ^0.25.0, esbuild@npm:^0.25, esbuild@npm:^0.25.9":
   version: 0.25.12
   resolution: "esbuild@npm:0.25.12"
   dependencies:
@@ -10884,7 +10899,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expect@npm:^29.7.0":
+"expect@npm:^29.0.0, expect@npm:^29.7.0":
   version: 29.7.0
   resolution: "expect@npm:29.7.0"
   dependencies:
@@ -18080,7 +18095,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:^29.7.0":
+"pretty-format@npm:^29.0.0, pretty-format@npm:^29.7.0":
   version: 29.7.0
   resolution: "pretty-format@npm:29.7.0"
   dependencies:
@@ -18355,7 +18370,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-docgen-typescript@npm:^2.2.2":
+"react-docgen-typescript@npm:^2.2, react-docgen-typescript@npm:^2.2.2":
   version: 2.4.0
   resolution: "react-docgen-typescript@npm:2.4.0"
   peerDependencies:
