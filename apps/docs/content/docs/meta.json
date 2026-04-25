@@ -18,6 +18,8 @@
     "inputs/text-input",
     "inputs/text-area",
     "---Misc---",
-    "misc/icon"
+    "misc/icon",
+    "---Project---",
+    "changelog"
   ]
 }

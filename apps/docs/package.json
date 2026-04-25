@@ -24,8 +24,10 @@
     "next": "^15",
     "react": "^19",
     "react-dom": "^19",
+    "react-markdown": "^9",
     "react-native-css-interop": "^0.2.3",
     "react-native-web": "^0.21",
+    "remark-gfm": "^4",
     "shiki": "^1.29",
     "zod": "^3.23"
   },
