@@ -4481,6 +4481,7 @@ __metadata:
     react-dom: "npm:^19"
     react-native-css-interop: "npm:^0.2.3"
     react-native-web: "npm:^0.21"
+    shiki: "npm:^1.29"
     tailwindcss: "npm:^3.4"
     typescript: "npm:^5.6"
     zod: "npm:^3.23"
@@ -19634,7 +19635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shiki@npm:1.29.2, shiki@npm:^1.22.0":
+"shiki@npm:1.29.2, shiki@npm:^1.22.0, shiki@npm:^1.29":
   version: 1.29.2
   resolution: "shiki@npm:1.29.2"
   dependencies:

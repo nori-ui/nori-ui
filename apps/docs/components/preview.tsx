@@ -1,9 +1,10 @@
 'use client';
 
 import { NoriProvider } from '@nori-ui/core/client';
-import { CodeBlock, Pre } from 'fumadocs-ui/components/codeblock';
+import { CodeBlock } from 'fumadocs-ui/components/codeblock';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { useEffect, useState } from 'react';
+import { HighlightedCode } from '@/lib/highlight';
 import { type PreviewName, previews } from './preview-registry';
 
 export type PreviewProps = {
@@ -43,7 +44,7 @@ export function Preview({ name, padding = 24 }: PreviewProps) {
         );
     }
 
-    const { Component, source } = entry;
+    const { Component, tokens, rootStyle } = entry;
 
     return (
         <Tabs items={[...TABS]} defaultIndex={0}>
@@ -58,9 +59,11 @@ export function Preview({ name, padding = 24 }: PreviewProps) {
             </Tab>
             <Tab value="Code">
                 <CodeBlock>
-                    <Pre>
-                        <code>{source}</code>
-                    </Pre>
+                    <HighlightedCode
+                        tokens={tokens}
+                        rootStyle={rootStyle}
+                        className="overflow-x-auto p-4 text-[13px]"
+                    />
                 </CodeBlock>
             </Tab>
         </Tabs>
