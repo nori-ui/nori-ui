@@ -8,6 +8,7 @@ platform: both
 
 import { ExpoSnack } from '@/components/expo-snack';
 import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
@@ -26,9 +27,4 @@ The example below uses the library's built-in `defaultSemanticIcons`. Drop in yo
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `as` | `ComponentType<{ size?: number; color?: string }>` | — | Icon component reference |
-| `size` | `'sm' \| 'md' \| 'lg' \| number` | `'md'` | Numeric or token size |
-| `color` | `string` | — | Icon color; inherits currentColor when omitted |
-| `label` | `string` | — | Accessible label — required when icon is meaningful |
+<PropsTable component="Icon" />

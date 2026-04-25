@@ -8,6 +8,7 @@ platform: both
 
 import { ExpoSnack } from '@/components/expo-snack';
 import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
@@ -24,9 +25,4 @@ import { Preview } from '@/components/preview';
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `gap` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Space between children |
-| `align` | `'start' \| 'center' \| 'end' \| 'stretch'` | `'stretch'` | Cross-axis alignment |
-| `justify` | `'start' \| 'center' \| 'end' \| 'between' \| 'around'` | `'start'` | Main-axis justification |
-| `className` | `string` | — | NativeWind class overrides |
+<PropsTable component="VStack" />

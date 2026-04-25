@@ -8,6 +8,7 @@ platform: both
 
 import { ExpoSnack } from '@/components/expo-snack';
 import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
@@ -24,13 +25,4 @@ import { Preview } from '@/components/preview';
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `label` | `string` | — | Visible label tied via aria |
-| `helperText` | `string` | — | Helper / error text below the input |
-| `variant` | `'default' \| 'error' \| 'success'` | `'default'` | Validation state |
-| `rows` | `number` | `3` | Visible rows — controls min-height |
-| `value` | `string` | — | Controlled value |
-| `defaultValue` | `string` | — | Uncontrolled initial value |
-| `onChangeText` | `(text: string) => void` | — | Change handler |
-| `disabled` | `boolean` | `false` | Disables interaction |
+<PropsTable component="TextArea" />

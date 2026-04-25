@@ -8,6 +8,7 @@ platform: both
 
 import { ExpoSnack } from '@/components/expo-snack';
 import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
@@ -26,14 +27,7 @@ import { Preview } from '@/components/preview';
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `variant` | `'primary' \| 'secondary' \| 'ghost' \| 'destructive'` | `'primary'` | Visual intent |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Control height + text size |
-| `loading` | `boolean` | `false` | Replaces leading icon with Spinner; blocks press |
-| `disabled` | `boolean` | `false` | Visually muted + non-interactive |
-| `leadingIcon` / `trailingIcon` | `ComponentType<{ size?: number; color?: string }>` | — | Icon component reference |
-| `asChild` | `boolean` | `false` | Renders the single child as the interactive root |
+<PropsTable component="Button" />
 
 ## asChild
 

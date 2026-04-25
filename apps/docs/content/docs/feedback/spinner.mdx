@@ -8,6 +8,7 @@ platform: both
 
 import { ExpoSnack } from '@/components/expo-snack';
 import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
@@ -24,8 +25,4 @@ import { Preview } from '@/components/preview';
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Visual size |
-| `label` | `string` | — | Accessible label (falls back to default for a11y) |
-| `color` | `string` | — | Spinner color; defaults to current text color |
+<PropsTable component="Spinner" />

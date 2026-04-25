@@ -8,6 +8,7 @@ platform: both
 
 import { ExpoSnack } from '@/components/expo-snack';
 import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
@@ -24,11 +25,4 @@ import { Preview } from '@/components/preview';
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `checked` | `boolean` | — | Controlled value |
-| `defaultChecked` | `boolean` | `false` | Uncontrolled initial value |
-| `onCheckedChange` | `(checked: boolean) => void` | — | Change handler |
-| `disabled` | `boolean` | `false` | Disables interaction |
-| `label` | `string` | — | Visible label tied via aria |
-| `asChild` | `boolean` | `false` | Renders the supplied child as root |
+<PropsTable component="Switch" />
