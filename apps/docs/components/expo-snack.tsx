@@ -1,5 +1,12 @@
 import snacks from '../snacks.json';
 
+// Temporarily disabled — Snacks render fine in the web preview but the iOS
+// bundle on Expo Go is currently unreliable (long "Downloading…" hangs that
+// don't always recover). Flip this back to false once we revisit native
+// previews. The Snack pipeline + snacks.json + generator script all stay
+// live; only the UI surface is hidden.
+const SNACKS_DISABLED = true;
+
 export type ExpoSnackProps = {
     /**
      * Component name — looks up the Snack ID from apps/docs/snacks.json,
@@ -28,6 +35,8 @@ export function ExpoSnack({
     theme = 'light',
     height = 500,
 }: ExpoSnackProps) {
+    if (SNACKS_DISABLED) return null;
+
     const snackId = component ? snacks[component] : id;
     if (!snackId) {
         return (
