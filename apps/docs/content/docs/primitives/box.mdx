@@ -6,22 +6,17 @@ tags: [primitive, layout]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Box, Text } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Thin wrapper over RN `<View>` / web `<div>` with className pass-through.
 - Use for ad-hoc containers; reach for `HStack` / `VStack` for aligned rows/columns.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <Box className="rounded-md bg-neutral-100 p-4">
-        <Text>Inside a Box</Text>
-    </Box>
-</LivePreview>
+<Preview name="box-basic" />
 
 ## Native preview
 

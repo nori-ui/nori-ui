@@ -6,20 +6,17 @@ tags: [feedback, loading]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Spinner } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Wraps RN `<ActivityIndicator>` on native; CSS animation on web.
 - Three sizes and optional `label` for a11y.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <Spinner size="md" label="Loading" />
-</LivePreview>
+<Preview name="spinner-basic" />
 
 ## Native preview
 

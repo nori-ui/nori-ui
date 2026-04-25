@@ -6,23 +6,17 @@ tags: [primitive, layout]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Text, VStack } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Flex column with configurable `gap`, `align`, `justify`.
 - Mirror of [HStack](/docs/primitives/hstack) for vertical layouts.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <VStack gap="sm">
-        <Text variant="heading2">Section</Text>
-        <Text>Stacked content below the heading.</Text>
-    </VStack>
-</LivePreview>
+<Preview name="vstack-basic" />
 
 ## Native preview
 

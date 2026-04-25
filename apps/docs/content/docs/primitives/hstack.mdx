@@ -6,23 +6,17 @@ tags: [primitive, layout]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Button, HStack } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Flex row with configurable `gap`, `align`, `justify`.
 - Maps to `flex-row` on web, flex direction row on native.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <HStack gap="md" align="center">
-        <Button>Save</Button>
-        <Button variant="ghost">Cancel</Button>
-    </HStack>
-</LivePreview>
+<Preview name="hstack-basic" />
 
 ## Native preview
 

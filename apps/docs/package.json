@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "fumadocs-mdx",
-    "prebuild": "fumadocs-mdx",
-    "pretypecheck": "fumadocs-mdx",
+    "predev": "fumadocs-mdx && node scripts/generate-preview-sources.mjs",
+    "prebuild": "fumadocs-mdx && node scripts/generate-preview-sources.mjs",
+    "pretypecheck": "fumadocs-mdx && node scripts/generate-preview-sources.mjs",
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",

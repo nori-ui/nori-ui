@@ -6,23 +6,19 @@ tags: [misc]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Icon } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Icon-library-agnostic — pass any component matching `{ size?: number; color?: string }`.
 - Pair with `SemanticIconsProvider` to alias semantic keys (`checkmark`, `close`, `spinner`) to your chosen icons.
 
-## Web preview
+## Preview
 
-```tsx
-import { Star } from 'lucide-react';
-import { Icon } from '@nori-ui/core';
+The example below uses the library's built-in `defaultSemanticIcons`. Drop in your own component (e.g. `lucide-react`'s `Star`) by passing it to `as`.
 
-<Icon as={Star} size="md" />;
-```
+<Preview name="icon-basic" />
 
 ## Native preview
 

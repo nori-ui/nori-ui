@@ -19,6 +19,9 @@ build/
 coverage/
 *.tsbuildinfo
 
+# generated registries — produced by predev/prebuild hooks
+**/*.generated.ts
+
 # design tokens: build outputs ARE committed
 !packages/tokens/build/
 
@@ -48,6 +51,7 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/launch.json
+.claude/
 
 # storybook
 storybook-static/

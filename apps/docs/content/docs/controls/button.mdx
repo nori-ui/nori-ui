@@ -6,9 +6,8 @@ tags: [control, action]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Button } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
@@ -17,25 +16,12 @@ import { Button } from '@/components/ui-client';
 - **States:** default, pressed, disabled, loading
 - **Composition:** `asChild` renders a supplied element (e.g. `<Link>`) as the interactive root.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <Button>Click me</Button>
-</LivePreview>
-
-## Variants
-
-<LivePreview>
-    <Button variant="secondary">Secondary</Button>
-</LivePreview>
-
-<LivePreview>
-    <Button variant="destructive">Delete</Button>
-</LivePreview>
+<Preview name="button-basic" />
 
 ## Native preview (Expo Snack)
 
-{/* Replace id with a real Snack when authoring. Plan 06 ships the infrastructure. */}
 <ExpoSnack component="Button" height={400} />
 
 ## Props

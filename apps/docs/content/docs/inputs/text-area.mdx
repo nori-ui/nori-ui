@@ -6,20 +6,17 @@ tags: [input, form]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { TextArea } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Multi-line variant of [TextInput](/docs/inputs/text-input) with matching API.
 - Configure minimum height via `rows`.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <TextArea label="Description" rows={4} placeholder="Tell us more…" />
-</LivePreview>
+<Preview name="text-area-basic" />
 
 ## Native preview
 

@@ -6,13 +6,15 @@ tags: [install, setup]
 platform: both
 ---
 
+import { Install } from '@/components/install';
+
 ## Install
 
-```bash
-yarn add @nori-ui/core
-# optional — any icon library works; Lucide is recommended:
-yarn add lucide-react lucide-react-native
-```
+<Install packages="@nori-ui/core" />
+
+Optional — any icon library works; Lucide is recommended:
+
+<Install packages={['lucide-react', 'lucide-react-native']} />
 
 ## Tailwind preset
 

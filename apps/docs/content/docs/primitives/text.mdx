@@ -6,9 +6,8 @@ tags: [primitive, typography]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Text } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
@@ -16,15 +15,9 @@ import { Text } from '@/components/ui-client';
 - Maps to RN `<Text>` on native and `<span>` / heading elements on web.
 - Accepts `className` for NativeWind-driven overrides.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <Text variant="heading1">Heading</Text>
-</LivePreview>
-
-<LivePreview>
-    <Text variant="body">The quick brown fox jumps over the lazy dog.</Text>
-</LivePreview>
+<Preview name="text-basic" />
 
 ## Native preview
 

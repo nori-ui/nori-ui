@@ -6,24 +6,17 @@ tags: [input, form]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { TextInput } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Wraps RN `<TextInput>` / web `<input>` with a unified label + helper text layout.
 - Supports `variant: 'default' | 'error' | 'success'` for validation feedback.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <TextInput label="Email" placeholder="you@example.com" />
-</LivePreview>
-
-<LivePreview>
-    <TextInput label="Password" variant="error" helperText="Required" />
-</LivePreview>
+<Preview name="text-input-basic" />
 
 ## Native preview
 

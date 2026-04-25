@@ -6,20 +6,17 @@ tags: [control, form]
 platform: both
 ---
 
-import { LivePreview } from '@/components/live-preview';
 import { ExpoSnack } from '@/components/expo-snack';
-import { Switch } from '@/components/ui-client';
+import { Preview } from '@/components/preview';
 
 ## At a glance
 
 - Renders with `role="switch"` on web; maps to RN `<Switch>` on native.
 - Controlled via `checked` or uncontrolled via `defaultChecked`.
 
-## Web preview
+## Preview
 
-<LivePreview>
-    <Switch label="Enable notifications" defaultChecked />
-</LivePreview>
+<Preview name="switch-basic" />
 
 ## Native preview
 
