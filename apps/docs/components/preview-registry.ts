@@ -7,6 +7,7 @@ import CheckboxBasic from './demos/checkbox-basic';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
+import SeparatorBasic from './demos/separator-basic';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
 import TextAreaBasic from './demos/text-area-basic';
@@ -44,6 +45,7 @@ export const previews = {
     'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'] },
     'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'] },
     'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'] },
+    'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'] },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },
     'text-input-basic': { Component: TextInputBasic, ...previewSources['text-input-basic'] },

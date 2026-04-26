@@ -2,6 +2,7 @@ export * from './Box';
 export * from './Button';
 export * from './Checkbox';
 export * from './HStack';
+export * from './Separator';
 export * from './Spinner';
 export * from './Switch';
 export * from './Text';

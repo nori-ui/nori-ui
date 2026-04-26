@@ -8,6 +8,7 @@
     "primitives/box",
     "primitives/hstack",
     "primitives/vstack",
+    "primitives/separator",
     "---Feedback---",
     "feedback/spinner",
     "---Controls---",
