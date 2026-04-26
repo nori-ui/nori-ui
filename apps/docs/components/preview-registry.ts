@@ -13,6 +13,7 @@ import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
 import RadioGroupBasic from './demos/radio-group-basic';
+import SegmentedControlBasic from './demos/segmented-control-basic';
 import SeparatorBasic from './demos/separator-basic';
 import SkeletonBasic from './demos/skeleton-basic';
 import SpinnerBasic from './demos/spinner-basic';
@@ -54,6 +55,7 @@ export const previews = {
     'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'] },
     'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'] },
     'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'] },
+    'segmented-control-basic': { Component: SegmentedControlBasic, ...previewSources['segmented-control-basic'] },
     'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'] },
     'skeleton-basic': { Component: SkeletonBasic, ...previewSources['skeleton-basic'] },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },

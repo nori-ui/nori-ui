@@ -8,6 +8,7 @@ export * from './Checkbox';
 export * from './Dialog';
 export * from './HStack';
 export * from './RadioGroup';
+export * from './SegmentedControl';
 export * from './Separator';
 export * from './Skeleton';
 export * from './Spinner';

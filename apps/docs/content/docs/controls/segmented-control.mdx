@@ -1,0 +1,27 @@
+---
+title: SegmentedControl
+description: Single-select switcher styled as a row of segments inside a single rounded container.
+since: 0.2.0
+tags: [control, form]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="SegmentedControl" />
+
+## At a glance
+
+- Compact "iOS UISegmentedControl" pattern — a row of segments inside a single rounded container, only one selected.
+- Use for binary or small (3–5) inline choices that sit next to their content. Reach for [Tabs](/docs/navigation/tabs) when each option owns a distinct content region.
+- Keyboard nav follows the WAI-ARIA radiogroup pattern: arrow keys move between segments (selection follows focus), `Home` / `End` jump to first / last, with wrap-around. Disabled segments are skipped.
+
+## Preview
+
+<Preview name="segmented-control-basic" />
+
+## Props
+
+<PropsTable component="SegmentedControl" />

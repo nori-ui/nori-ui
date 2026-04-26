@@ -24,6 +24,7 @@ const CLIENT_ALLOWED = [
     'components/Checkbox/Checkbox.tsx',
     'components/Dialog/Dialog.tsx',
     'components/RadioGroup/RadioGroup.tsx',
+    'components/SegmentedControl/SegmentedControl.tsx',
     'components/Skeleton/Skeleton.tsx',
     'components/Switch/Switch.tsx',
     'components/Tabs/Tabs.tsx',

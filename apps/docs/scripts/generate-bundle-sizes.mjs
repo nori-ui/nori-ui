@@ -36,6 +36,7 @@ const TARGETS = [
     'HStack',
     'Icon',
     'RadioGroup',
+    'SegmentedControl',
     'Separator',
     'Skeleton',
     'Spinner',
