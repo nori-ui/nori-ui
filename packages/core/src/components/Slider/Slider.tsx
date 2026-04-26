@@ -288,7 +288,7 @@ export function Slider({
 
     // Visual layout. The thumb sits on top of the track at its value's
     // position; the range fills from the lowest thumb to the highest.
-    const pctSig = (n: number) => `${n}%` as unknown as number;
+    const pctSig = (n: number) => `${Math.round(n * 10000) / 10000}%` as unknown as number;
     const thumbPositionStyle = (val: number): ViewStyle => {
         const ratio = (val - min) / (max - min || 1);
         const offset = pctSig((reversed ? 1 - ratio : ratio) * 100);
@@ -313,14 +313,22 @@ export function Slider({
     };
 
     const sortedValues = useMemo(() => current.slice().sort((a, b) => a - b), [current]);
-    const fillStart = sortedValues[0] ?? min;
-    const fillEnd = sortedValues[sortedValues.length - 1] ?? min;
+    // Fill behavior:
+    //   - Single thumb: fill from min → value (matches Radix / shadcn).
+    //     Without this, a single-thumb slider has no visible fill at all
+    //     because the start and end of the range are the same value.
+    //   - Multi thumb: fill from lowest thumb → highest thumb (range region).
+    const isSingle = sortedValues.length <= 1;
+    const fillStart = isSingle ? min : (sortedValues[0] ?? min);
+    const fillEnd = isSingle ? (sortedValues[0] ?? min) : (sortedValues[sortedValues.length - 1] ?? min);
     const startRatio = (fillStart - min) / (max - min || 1);
     const endRatio = (fillEnd - min) / (max - min || 1);
 
     // Casts: RN-Web accepts percentage strings for inset properties, but
     // RN's TS surface (DimensionValue) is narrower. Cast at the boundary.
-    const pct = (n: number) => `${n}%` as unknown as number;
+    // Round to 4 decimals so floating-point noise (`19.999999%`) doesn't
+    // bleed into rendered styles.
+    const pct = (n: number) => `${Math.round(n * 10000) / 10000}%` as unknown as number;
     const rangeStyle: ViewStyle = isVertical
         ? {
               position: 'absolute',

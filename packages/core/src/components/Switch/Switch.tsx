@@ -33,10 +33,10 @@ const THUMB_STYLE: ViewStyle = {
     height: 20,
     borderRadius: 10,
     backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
+    // Web: boxShadow (the modern CSS-style replacement for the legacy RN
+    // `shadow*` props that react-native-web has deprecated).
+    // Native: elevation (Android) — RN ignores boxShadow there.
+    ...({ boxShadow: '0 1px 2px rgba(0, 0, 0, 0.15)' } as ViewStyle),
     elevation: 2,
 };
 

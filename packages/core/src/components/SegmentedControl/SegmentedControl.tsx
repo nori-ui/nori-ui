@@ -62,11 +62,10 @@ const SEGMENT_SIZE: Record<SegmentedControlSize, { paddingV: number; paddingH: n
 const SEGMENT_SELECTED: ViewStyle = {
     backgroundColor: theme.semantic.background.elevated,
     // Subtle elevation that says "this one is on" without overshadowing
-    // the unselected segments next to it.
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
+    // the unselected segments next to it. Web uses boxShadow (CSS-style);
+    // native uses elevation. The legacy RN `shadow*` props were deprecated
+    // by react-native-web in favor of `boxShadow`.
+    ...({ boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)' } as ViewStyle),
     elevation: 1,
 };
 

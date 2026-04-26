@@ -109,4 +109,37 @@ describe('<Slider>', () => {
         fireEvent.keyDown(thumb, { key: 'ArrowRight' });
         expect(thumb.getAttribute('aria-valuenow')).toBe('35');
     });
+
+    it('single-thumb fills from min to value (so the filled track is visible)', () => {
+        // Regression: previously a single-thumb slider had fillStart === fillEnd
+        // === value, which is an empty range — the filled portion never showed.
+        // For one thumb, the fill should be min → value (Radix / shadcn behavior).
+        const { container } = render(<Slider defaultValue={[40]} min={0} max={100} aria-label="Volume" />);
+        // Find the range fill — it's a positioned absolute View inside the track.
+        // It should NOT be a zero-width region.
+        const allInsets = Array.from(container.querySelectorAll<HTMLElement>('div[style*="position: absolute"]'));
+        const fill = allInsets.find((el) => {
+            const left = el.style.left ?? '';
+            const right = el.style.right ?? '';
+            return left.endsWith('%') && right.endsWith('%');
+        });
+        expect(fill).toBeDefined();
+        // Fill should start at 0% (min) and end at 60% from the right (= 40% from
+        // left edge → corresponds to value=40 of [0..100]).
+        expect(fill?.style.left).toBe('0%');
+        expect(fill?.style.right).toBe('60%');
+    });
+
+    it('multi-thumb fills BETWEEN the lowest and highest thumb (range region)', () => {
+        const { container } = render(<Slider defaultValue={[20, 80]} aria-label="Range" />);
+        const allInsets = Array.from(container.querySelectorAll<HTMLElement>('div[style*="position: absolute"]'));
+        const fill = allInsets.find((el) => {
+            const left = el.style.left ?? '';
+            const right = el.style.right ?? '';
+            return left.endsWith('%') && right.endsWith('%');
+        });
+        expect(fill).toBeDefined();
+        expect(fill?.style.left).toBe('20%');
+        expect(fill?.style.right).toBe('20%');
+    });
 });

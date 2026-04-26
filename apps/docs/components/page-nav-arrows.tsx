@@ -9,12 +9,12 @@ export type PageNavArrowsProps = {
 
 const Arrow = ({ direction }: { direction: 'prev' | 'next' }) => (
     <svg
-        width={16}
-        height={16}
+        width={14}
+        height={14}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth={2}
+        strokeWidth={2.25}
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
@@ -28,46 +28,38 @@ const Arrow = ({ direction }: { direction: 'prev' | 'next' }) => (
  * the shadcn / RNR pattern. Lets a reader walk the docs in order
  * without scrolling to the bottom for the full footer card.
  *
- * Renders nothing if neither neighbour exists (single-page section).
+ * Design choice: when a neighbour doesn't exist (first / last page in a
+ * section), we omit that arrow entirely instead of rendering a dashed
+ * placeholder — the placeholder reads as "broken button" rather than
+ * "intentional decoration." If neither neighbour exists this renders
+ * nothing at all.
  */
 export function PageNavArrows({ previous, next }: PageNavArrowsProps) {
     if (!previous && !next) return null;
     return (
-        <nav aria-label="Page navigation" className="not-prose mb-6 flex items-center gap-1">
+        <nav aria-label="Page navigation" className="not-prose mb-6 flex items-center gap-1.5">
             {previous ? (
                 <Link
                     href={previous.url}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-fd-border bg-fd-card text-fd-muted-foreground hover:bg-fd-accent hover:text-fd-foreground"
+                    className="group inline-flex items-center gap-1 rounded-md border border-fd-border bg-fd-card px-2 py-1 text-xs text-fd-muted-foreground transition-colors hover:border-fd-primary/40 hover:bg-fd-accent hover:text-fd-foreground"
                     title={`Previous: ${previous.name}`}
                     aria-label={`Previous: ${previous.name}`}
                 >
                     <Arrow direction="prev" />
+                    <span className="hidden sm:inline">Prev</span>
                 </Link>
-            ) : (
-                <span
-                    aria-hidden="true"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-dashed border-fd-border text-fd-muted-foreground/40"
-                >
-                    <Arrow direction="prev" />
-                </span>
-            )}
+            ) : null}
             {next ? (
                 <Link
                     href={next.url}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-fd-border bg-fd-card text-fd-muted-foreground hover:bg-fd-accent hover:text-fd-foreground"
+                    className="group inline-flex items-center gap-1 rounded-md border border-fd-border bg-fd-card px-2 py-1 text-xs text-fd-muted-foreground transition-colors hover:border-fd-primary/40 hover:bg-fd-accent hover:text-fd-foreground"
                     title={`Next: ${next.name}`}
                     aria-label={`Next: ${next.name}`}
                 >
+                    <span className="hidden sm:inline">Next</span>
                     <Arrow direction="next" />
                 </Link>
-            ) : (
-                <span
-                    aria-hidden="true"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-dashed border-fd-border text-fd-muted-foreground/40"
-                >
-                    <Arrow direction="next" />
-                </span>
-            )}
+            ) : null}
         </nav>
     );
 }

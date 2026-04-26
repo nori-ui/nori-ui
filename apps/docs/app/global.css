@@ -2,47 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal Fumadocs-compatible CSS variables so the default Fumadocs layout
-   components have meaningful fallbacks when the createPreset() integration is
-   shimmed (see tailwind.config.ts for the shim reason).
-   Values match Fumadocs' neutral theme approximately. */
+/* Fumadocs theme variables, tuned to nori-ui's brand:
+   - Primary: deep ocean teal (matches @nori-ui/tokens primary scale).
+   - Background: a soft warm-paper tint in light mode; the body panel
+     stays slightly off-white so the white component surfaces have a
+     subtle contrast lift.
+   The values are HSL because fumadocs's downstream utilities (e.g.
+   `text-fd-primary/40` opacity) compose with `hsl(var(--fd-primary) / X)`. */
 @layer base {
     :root {
-        --fd-background: 0 0% 100%;
-        --fd-foreground: 240 10% 3.9%;
-        --fd-muted: 240 4.8% 95.9%;
-        --fd-muted-foreground: 240 3.8% 45%;
+        --fd-background: 36 33% 97%; /* #fafaf6-ish warm paper */
+        --fd-foreground: 220 13% 13%;
+        --fd-muted: 36 20% 94%;
+        --fd-muted-foreground: 220 9% 38%;
         --fd-popover: 0 0% 100%;
-        --fd-popover-foreground: 240 10% 3.9%;
+        --fd-popover-foreground: 220 13% 13%;
         --fd-card: 0 0% 100%;
-        --fd-card-foreground: 240 10% 3.9%;
-        --fd-border: 240 5.9% 90%;
-        --fd-primary: 240 5.9% 10%;
-        --fd-primary-foreground: 0 0% 98%;
-        --fd-secondary: 240 4.8% 95.9%;
-        --fd-secondary-foreground: 240 5.9% 10%;
-        --fd-accent: 240 4.8% 95.9%;
-        --fd-accent-foreground: 240 5.9% 10%;
-        --fd-ring: 240 5% 64.9%;
+        --fd-card-foreground: 220 13% 13%;
+        --fd-border: 30 14% 88%; /* warmer than pure neutral */
+        --fd-primary: 173 80% 32%; /* teal-600 #0d9488 */
+        --fd-primary-foreground: 173 100% 96%;
+        --fd-secondary: 36 20% 94%;
+        --fd-secondary-foreground: 220 13% 13%;
+        --fd-accent: 173 50% 92%;
+        --fd-accent-foreground: 173 80% 24%;
+        --fd-ring: 173 80% 40%;
     }
 
     .dark,
     [data-theme="dark"] {
-        --fd-background: 240 10% 3.9%;
-        --fd-foreground: 0 0% 98%;
-        --fd-muted: 240 3.7% 15.9%;
-        --fd-muted-foreground: 240 5% 64.9%;
-        --fd-popover: 240 10% 3.9%;
-        --fd-popover-foreground: 0 0% 98%;
-        --fd-card: 240 10% 3.9%;
-        --fd-card-foreground: 0 0% 98%;
-        --fd-border: 240 3.7% 15.9%;
-        --fd-primary: 0 0% 98%;
-        --fd-primary-foreground: 240 5.9% 10%;
-        --fd-secondary: 240 3.7% 15.9%;
-        --fd-secondary-foreground: 0 0% 98%;
-        --fd-accent: 240 3.7% 15.9%;
-        --fd-accent-foreground: 0 0% 98%;
-        --fd-ring: 240 4.9% 83.9%;
+        --fd-background: 200 12% 7%; /* deep, slightly cool */
+        --fd-foreground: 36 20% 95%;
+        --fd-muted: 200 10% 14%;
+        --fd-muted-foreground: 200 6% 60%;
+        --fd-popover: 200 12% 9%;
+        --fd-popover-foreground: 36 20% 95%;
+        --fd-card: 200 10% 10%;
+        --fd-card-foreground: 36 20% 95%;
+        --fd-border: 200 10% 18%;
+        --fd-primary: 172 70% 50%; /* teal-400 in dark for contrast */
+        --fd-primary-foreground: 173 100% 12%;
+        --fd-secondary: 200 10% 14%;
+        --fd-secondary-foreground: 36 20% 95%;
+        --fd-accent: 173 40% 18%;
+        --fd-accent-foreground: 172 70% 80%;
+        --fd-ring: 172 70% 50%;
+    }
+
+    /* Display font for headings. Fraunces gives the docs site a
+       distinctive editorial voice that sets it apart from the standard
+       Inter-everywhere component-library look. Body type stays Inter for
+       readability on long-form docs. */
+    article h1,
+    article h2,
+    article h3 {
+        font-family: var(--font-fraunces, "Fraunces"), Georgia, serif;
+        letter-spacing: -0.015em;
+    }
+    article h1 {
+        font-weight: 540;
+        font-variation-settings:
+            "opsz" 144,
+            "SOFT" 30;
+    }
+    article h2 {
+        font-weight: 580;
+        font-variation-settings:
+            "opsz" 90,
+            "SOFT" 25;
+    }
+    article h3 {
+        font-weight: 600;
+        font-variation-settings: "opsz" 56;
     }
 }

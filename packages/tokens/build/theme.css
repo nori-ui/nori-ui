@@ -6,16 +6,16 @@
  */
 
 :root {
-  --color-primary-50: #f0f7ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
   --color-neutral-50: #fafafa;
   --color-neutral-100: #f4f4f5;
   --color-neutral-200: #e4e4e7;
@@ -76,9 +76,9 @@
   --semantic-text-inverted: #fafafa;
   --semantic-border-default: #e4e4e7;
   --semantic-border-strong: #d4d4d8;
-  --semantic-interactive-primary: #2563eb;
-  --semantic-interactive-primary-hover: #1d4ed8;
-  --semantic-interactive-primary-pressed: #1e40af;
+  --semantic-interactive-primary: #0d9488;
+  --semantic-interactive-primary-hover: #0f766e;
+  --semantic-interactive-primary-pressed: #115e59;
   --semantic-interactive-destructive: #ef4444;
 }
 
@@ -87,16 +87,16 @@
  */
 
 [data-theme="dark"] {
-  --color-primary-50: #f0f7ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
   --color-neutral-50: #fafafa;
   --color-neutral-100: #f4f4f5;
   --color-neutral-200: #e4e4e7;
@@ -157,8 +157,8 @@
   --semantic-text-inverted: #18181b;
   --semantic-border-default: #3f3f46;
   --semantic-border-strong: #52525b;
-  --semantic-interactive-primary: #60a5fa;
-  --semantic-interactive-primary-hover: #93c5fd;
-  --semantic-interactive-primary-pressed: #bfdbfe;
+  --semantic-interactive-primary: #2dd4bf;
+  --semantic-interactive-primary-hover: #5eead4;
+  --semantic-interactive-primary-pressed: #99f6e4;
   --semantic-interactive-destructive: #ef4444;
 }

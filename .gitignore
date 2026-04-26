@@ -59,3 +59,8 @@ storybook-static/
 # playwright
 e2e/web/playwright-report/
 e2e/web/test-results/
+.playwright-mcp/
+
+# transient QA screenshots from interactive sessions
+qa-*.png
+findings.md

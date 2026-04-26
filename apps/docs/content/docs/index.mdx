@@ -1,18 +1,36 @@
 ---
 title: Introduction
-description: nori-ui is a React Native + Web component library with Figma-driven tokens.
+description: A React Native + Web component library, designed for humans and AI coding agents alike.
 since: 0.1.0
 tags: [intro]
 platform: both
 ---
 
-## What is nori-ui?
+import { Preview } from '@/components/preview';
 
-A set of primitives and controls that work identically on iOS, Android, and web. Styled with NativeWind and themed via design tokens exported from Figma (Tokens Studio). AI-queryable via `/mcp`.
+## At a glance
 
+**nori-ui** is a set of primitives and controls that render identically on iOS, Android, and the web. Styled with NativeWind, themed via design tokens piped out of Figma, and indexed for AI tooling via `/mcp` and `/llms.txt` so a coding agent can answer "how do I use the Button?" without scraping HTML.
 
+## Try it
+
+<Preview name="button-basic" />
+
+## What's in the box
+
+- **24 components** across primitives, layout, controls, inputs, overlays, feedback, and navigation. Each ships with a copy-paste demo, an auto-generated prop table, and a per-component bundle-size badge.
+- **Universal RN + Web** — one codebase, two platforms. Every component renders through React Native primitives so `<Button>` is the same component in your Expo app and your Next.js site.
+- **Strict TypeScript** — `exactOptionalPropertyTypes`, no `any`, fully typed prop tables that auto-extract from the source.
+- **Accessibility-first defaults** — every interactive component ships with the right roles, labels, focus management, and keyboard navigation. Doors are open by default.
+- **Agent-friendly docs** — every page is queryable via `/mcp`, downloadable as `<page>.md` or `<page>.json`, and indexed in `/llms.txt`. The MDX is what an LLM gets when you say "show me the Button docs."
 
 ## Start here
 
-- [Getting started](/docs/getting-started) — install and render your first component.
-- [Button](/docs/controls/button) — the flagship component; exercises every architectural axis.
+- [**Getting started**](/docs/getting-started) — install and render your first component in under five minutes.
+- [**Button**](/docs/controls/button) — the flagship component; exercises every architectural axis (variants, sizes, slots, asChild, RSC-safety).
+- [**Select**](/docs/inputs/select) — the most ambitious primitive: search, async pagination, virtualization, locale-aware sort, OptGroups.
+- [**Dialog**](/docs/overlays/dialog) — focus trap, scroll lock, click-outside, escape close, RN Modal underneath.
+
+## Why "nori"?
+
+Nori (海苔) is the dark, deeply-flavored seaweed that wraps sushi. The name nods to the brand's deep ocean-teal accent and the philosophy: thin layer, strong character, holds the rest together.
