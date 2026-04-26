@@ -3,6 +3,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
 import { PageActions } from '@/components/page-actions';
+import { PageNavArrows } from '@/components/page-nav-arrows';
 import { source } from '@/lib/source';
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
@@ -35,6 +36,10 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
             <DocsTitle>{page.data.title}</DocsTitle>
             {page.data.description ? <DocsDescription>{page.data.description}</DocsDescription> : null}
             <DocsBody>
+                <PageNavArrows
+                    {...(previous ? { previous: { name: previous.name as string, url: previous.url } } : {})}
+                    {...(next ? { next: { name: next.name as string, url: next.url } } : {})}
+                />
                 <PageActions pagePath={page.url} />
                 <MDX
                     components={{
