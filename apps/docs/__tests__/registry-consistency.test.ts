@@ -12,6 +12,7 @@ import { componentProps } from '../components/props.generated';
 const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string]> = [
     ['Box', 'box'],
     ['Button', 'button'],
+    ['Card', 'card'],
     ['Checkbox', 'checkbox'],
     ['HStack', 'hstack'],
     ['Icon', 'icon'],
@@ -28,11 +29,18 @@ const expectedPascal = EXPECTED_COMPONENTS.map(([p]) => p).sort();
 const expectedBasicDemoKeys = EXPECTED_COMPONENTS.map(([, k]) => `${k}-basic`);
 
 describe('component registries stay aligned', () => {
-    test('props.generated.ts covers every expected component (no extras, no gaps)', () => {
-        expect(Object.keys(componentProps).sort()).toEqual(expectedPascal);
+    test('props.generated.ts has an entry for every expected top-level component', () => {
+        // Subcomponents like CardHeader / CardTitle are extracted too (each
+        // is an exported function); we only require the top-level component
+        // is present. The full props.generated set is allowed to be larger.
+        const present = new Set(Object.keys(componentProps));
+        const missing = expectedPascal.filter((name) => !present.has(name));
+        expect(missing).toEqual([]);
     });
 
-    test('bundle-sizes.generated.ts covers every expected component', () => {
+    test('bundle-sizes.generated.ts covers exactly the expected top-level components', () => {
+        // Bundle sizes are first-import cost; subcomponents share their
+        // parent's runtime so they don't get separate entries.
         expect(Object.keys(bundleSizes).sort()).toEqual(expectedPascal);
     });
 

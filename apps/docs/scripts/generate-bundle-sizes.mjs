@@ -27,6 +27,7 @@ const OUT_FILE = join(HERE, '..', 'components', 'bundle-sizes.generated.ts');
 const TARGETS = [
     'Box',
     'Button',
+    'Card',
     'Checkbox',
     'HStack',
     'Icon',

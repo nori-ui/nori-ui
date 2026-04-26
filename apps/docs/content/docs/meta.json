@@ -9,6 +9,8 @@
     "primitives/hstack",
     "primitives/vstack",
     "primitives/separator",
+    "---Display---",
+    "display/card",
     "---Feedback---",
     "feedback/spinner",
     "---Controls---",

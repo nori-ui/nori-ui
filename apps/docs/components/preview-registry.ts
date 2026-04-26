@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import type { Highlighted } from '@/lib/highlight';
 import BoxBasic from './demos/box-basic';
 import ButtonBasic from './demos/button-basic';
+import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
@@ -48,6 +49,7 @@ export const previews = {
     'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'] },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },
+    'card-basic': { Component: CardBasic, ...previewSources['card-basic'] },
     'text-input-basic': { Component: TextInputBasic, ...previewSources['text-input-basic'] },
     'text-area-basic': { Component: TextAreaBasic, ...previewSources['text-area-basic'] },
     'checkbox-basic': { Component: CheckboxBasic, ...previewSources['checkbox-basic'] },
