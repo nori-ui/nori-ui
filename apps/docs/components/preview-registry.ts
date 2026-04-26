@@ -16,6 +16,7 @@ import RadioGroupBasic from './demos/radio-group-basic';
 import SegmentedControlBasic from './demos/segmented-control-basic';
 import SeparatorBasic from './demos/separator-basic';
 import SkeletonBasic from './demos/skeleton-basic';
+import SliderBasic from './demos/slider-basic';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
 import TabsBasic from './demos/tabs-basic';
@@ -58,6 +59,7 @@ export const previews = {
     'segmented-control-basic': { Component: SegmentedControlBasic, ...previewSources['segmented-control-basic'] },
     'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'] },
     'skeleton-basic': { Component: SkeletonBasic, ...previewSources['skeleton-basic'] },
+    'slider-basic': { Component: SliderBasic, ...previewSources['slider-basic'] },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },
     'card-basic': { Component: CardBasic, ...previewSources['card-basic'] },

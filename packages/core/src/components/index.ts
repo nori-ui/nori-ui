@@ -11,6 +11,7 @@ export * from './RadioGroup';
 export * from './SegmentedControl';
 export * from './Separator';
 export * from './Skeleton';
+export * from './Slider';
 export * from './Spinner';
 export * from './Switch';
 export * from './Tabs';

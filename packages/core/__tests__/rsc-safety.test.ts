@@ -26,6 +26,7 @@ const CLIENT_ALLOWED = [
     'components/RadioGroup/RadioGroup.tsx',
     'components/SegmentedControl/SegmentedControl.tsx',
     'components/Skeleton/Skeleton.tsx',
+    'components/Slider/Slider.tsx',
     'components/Switch/Switch.tsx',
     'components/Tabs/Tabs.tsx',
     'components/Toast/Toast.tsx',

@@ -39,6 +39,7 @@ const TARGETS = [
     'SegmentedControl',
     'Separator',
     'Skeleton',
+    'Slider',
     'Spinner',
     'Switch',
     'Tabs',

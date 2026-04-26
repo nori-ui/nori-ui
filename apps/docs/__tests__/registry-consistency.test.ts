@@ -24,6 +24,7 @@ const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string
     ['SegmentedControl', 'segmented-control'],
     ['Separator', 'separator'],
     ['Skeleton', 'skeleton'],
+    ['Slider', 'slider'],
     ['Spinner', 'spinner'],
     ['Switch', 'switch'],
     ['Tabs', 'tabs'],
