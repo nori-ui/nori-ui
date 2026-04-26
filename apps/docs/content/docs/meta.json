@@ -14,6 +14,7 @@
     "display/avatar",
     "display/badge",
     "---Feedback---",
+    "feedback/alert",
     "feedback/spinner",
     "---Controls---",
     "controls/button",
