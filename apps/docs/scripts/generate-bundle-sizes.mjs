@@ -26,6 +26,7 @@ const OUT_FILE = join(HERE, '..', 'components', 'bundle-sizes.generated.ts');
 // (props.generated.ts) — both should cover every public component.
 const TARGETS = [
     'Avatar',
+    'Badge',
     'Box',
     'Button',
     'Card',

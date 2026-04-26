@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 
 import type { Highlighted } from '@/lib/highlight';
 import AvatarBasic from './demos/avatar-basic';
+import BadgeBasic from './demos/badge-basic';
 import BoxBasic from './demos/box-basic';
 import ButtonBasic from './demos/button-basic';
 import CardBasic from './demos/card-basic';
@@ -57,6 +58,7 @@ export const previews = {
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'] },
     'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'] },
+    'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'] },
 } as const satisfies Record<string, PreviewEntry>;
 
 export type PreviewName = keyof typeof previews;

@@ -11,6 +11,7 @@ import { componentProps } from '../components/props.generated';
 // through naive kebab conversion.
 const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string]> = [
     ['Avatar', 'avatar'],
+    ['Badge', 'badge'],
     ['Box', 'box'],
     ['Button', 'button'],
     ['Card', 'card'],

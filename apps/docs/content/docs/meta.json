@@ -12,6 +12,7 @@
     "---Display---",
     "display/card",
     "display/avatar",
+    "display/badge",
     "---Feedback---",
     "feedback/spinner",
     "---Controls---",
