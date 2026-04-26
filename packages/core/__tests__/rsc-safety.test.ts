@@ -26,6 +26,7 @@ const CLIENT_ALLOWED = [
     'components/RadioGroup/RadioGroup.tsx',
     'components/Switch/Switch.tsx',
     'components/Tabs/Tabs.tsx',
+    'components/Toast/Toast.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {

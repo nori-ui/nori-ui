@@ -20,6 +20,7 @@ import TabsBasic from './demos/tabs-basic';
 import TextAreaBasic from './demos/text-area-basic';
 import TextBasic from './demos/text-basic';
 import TextInputBasic from './demos/text-input-basic';
+import ToastBasic from './demos/toast-basic';
 import VStackBasic from './demos/vstack-basic';
 import { previewSources } from './preview-sources.generated';
 
@@ -63,6 +64,7 @@ export const previews = {
     'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
     'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'] },
+    'toast-basic': { Component: ToastBasic, ...previewSources['toast-basic'] },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'] },
     'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'] },
     'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'] },

@@ -28,6 +28,7 @@ const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string
     ['Text', 'text'],
     ['TextArea', 'text-area'],
     ['TextInput', 'text-input'],
+    ['ToastProvider', 'toast'],
     ['VStack', 'vstack'],
 ];
 

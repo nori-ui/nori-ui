@@ -16,6 +16,7 @@
     "---Feedback---",
     "feedback/alert",
     "feedback/spinner",
+    "feedback/toast",
     "---Controls---",
     "controls/button",
     "controls/checkbox",

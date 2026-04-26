@@ -43,6 +43,7 @@ const TARGETS = [
     'Text',
     'TextArea',
     'TextInput',
+    'ToastProvider',
     'VStack',
 ];
 
