@@ -8,6 +8,7 @@ import BoxBasic from './demos/box-basic';
 import ButtonBasic from './demos/button-basic';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
+import DialogBasic from './demos/dialog-basic';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
@@ -59,6 +60,7 @@ export const previews = {
     'text-area-basic': { Component: TextAreaBasic, ...previewSources['text-area-basic'] },
     'checkbox-basic': { Component: CheckboxBasic, ...previewSources['checkbox-basic'] },
     'radio-group-basic': { Component: RadioGroupBasic, ...previewSources['radio-group-basic'] },
+    'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
     'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'] },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'] },

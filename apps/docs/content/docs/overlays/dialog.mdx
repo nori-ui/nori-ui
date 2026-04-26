@@ -1,0 +1,53 @@
+---
+title: Dialog
+description: Modal dialog with focus trap, scroll lock, escape-to-close, and click-outside.
+since: 0.2.0
+tags: [overlay]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Dialog" />
+
+## At a glance
+
+- Compose: `Dialog`, `DialogTrigger`, `DialogContent`, `DialogTitle`, `DialogDescription`, `DialogClose`, `DialogFooter`. Triggers and closes use `asChild` by default — wrap any element (Button, Link, custom Pressable) and it becomes the activator.
+- Cross-platform: uses RN `<Modal>` as the visibility primitive on every target. On web, additional effects layer on: focus trap, body scroll lock, Escape-to-close, click-outside-to-close, and focus restored to the trigger on close.
+- Accessibility: `role="dialog"` with `aria-modal`, `aria-labelledby` on the title, `aria-describedby` on the description.
+
+## Preview
+
+<Preview name="dialog-basic" />
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `Dialog` | Root — owns open state (controlled or uncontrolled). |
+| `DialogTrigger` | Element that opens the dialog. `asChild` by default. |
+| `DialogContent` | The visible surface. Renders only while open. |
+| `DialogTitle` | Heading. Wires `aria-labelledby`. |
+| `DialogDescription` | Body subtitle. Wires `aria-describedby`. |
+| `DialogClose` | Element that closes the dialog. `asChild` by default; without children renders the canonical top-right ✕. |
+| `DialogFooter` | Right-aligned row for action buttons. |
+
+## Props
+
+### Dialog
+
+<PropsTable component="Dialog" />
+
+### DialogTrigger
+
+<PropsTable component="DialogTrigger" />
+
+### DialogContent
+
+<PropsTable component="DialogContent" />
+
+### DialogClose
+
+<PropsTable component="DialogClose" />

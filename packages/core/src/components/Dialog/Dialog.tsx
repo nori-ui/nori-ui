@@ -1,0 +1,432 @@
+'use client';
+
+import { theme } from '@nori-ui/tokens';
+import {
+    createContext,
+    isValidElement,
+    type ReactElement,
+    type ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useId,
+    useRef,
+    useState,
+} from 'react';
+import type { ViewStyle } from 'react-native';
+import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
+import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { Slot } from '../../slot';
+import { cn } from '../../utils/cn';
+
+type DialogContextValue = {
+    open: boolean;
+    setOpen: (next: boolean) => void;
+    titleId: string;
+    descriptionId: string;
+    triggerRef: { current: HTMLElement | null };
+};
+
+const DialogContext = createContext<DialogContextValue | null>(null);
+
+const useDialogContext = (label: string): DialogContextValue => {
+    const ctx = useContext(DialogContext);
+    if (!ctx) {
+        throw new Error(`<${label}> must be rendered inside a <Dialog>.`);
+    }
+    return ctx;
+};
+
+export type DialogProps = {
+    /** Controlled open state. */
+    open?: boolean;
+    /** Uncontrolled initial open state. @defaultValue false */
+    defaultOpen?: boolean;
+    /** Fires with the new open state. */
+    onOpenChange?: (open: boolean) => void;
+    children?: ReactNode;
+};
+
+/**
+ * Modal dialog. Owns open state and provides context for `DialogTrigger`,
+ * `DialogContent`, `DialogTitle`, `DialogDescription`, and `DialogClose`.
+ *
+ * Behavior:
+ *   - Click the trigger to open. Click outside the content, press Escape,
+ *     or click an explicit close to dismiss.
+ *   - Focus is trapped inside the content while open (web). On close, focus
+ *     returns to whatever opened the dialog.
+ *   - Background scrolling is locked while open (web).
+ *
+ * Cross-platform: uses RN `<Modal>` as the visibility/portal primitive. On
+ * web, additional focus-trap / scroll-lock / Escape-key effects layer on
+ * top via the platform check inside `DialogContent`.
+ */
+export function Dialog({ open, defaultOpen = false, onOpenChange, children }: DialogProps) {
+    const [inner, setInner] = useState<boolean>(defaultOpen);
+    const isControlled = open !== undefined;
+    const current = isControlled ? open : inner;
+
+    const setOpen = useCallback(
+        (next: boolean) => {
+            if (!isControlled) setInner(next);
+            onOpenChange?.(next);
+        },
+        [isControlled, onOpenChange]
+    );
+
+    const baseId = useId();
+    const triggerRef = useRef<HTMLElement | null>(null);
+
+    const ctxValue: DialogContextValue = {
+        open: current,
+        setOpen,
+        titleId: `${baseId}-title`,
+        descriptionId: `${baseId}-description`,
+        triggerRef,
+    };
+
+    return <DialogContext.Provider value={ctxValue}>{children}</DialogContext.Provider>;
+}
+
+export type DialogTriggerProps = {
+    /** Render the child as the trigger (Slot pattern). Default true — pass `false` for an inline button. */
+    asChild?: boolean;
+    children?: ReactNode;
+    className?: string;
+    testID?: string;
+};
+
+/**
+ * Element that opens the dialog when activated. Uses `asChild` by default so
+ * any element (Button, Link, custom Pressable) becomes the trigger.
+ */
+export function DialogTrigger({ asChild = true, children, className, testID }: DialogTriggerProps) {
+    const ctx = useDialogContext('DialogTrigger');
+    const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
+
+    if (asChild && isValidElement(children)) {
+        const child = children as ReactElement<Record<string, unknown>>;
+        const onClick = (event: unknown) => {
+            const existing = child.props.onClick as ((e: unknown) => void) | undefined;
+            existing?.(event);
+            ctx.setOpen(true);
+        };
+        return (
+            <Slot
+                ref={(node: HTMLElement | null) => {
+                    ctx.triggerRef.current = node;
+                }}
+                onClick={onClick}
+                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...(className !== undefined ? { className } : {})}
+            >
+                {child}
+            </Slot>
+        );
+    }
+
+    return (
+        <Pressable
+            ref={(node) => {
+                ctx.triggerRef.current = node as unknown as HTMLElement | null;
+            }}
+            onPress={onPress}
+            {...(testID !== undefined ? { testID } : {})}
+            {...(className !== undefined ? { className } : {})}
+        >
+            {children}
+        </Pressable>
+    );
+}
+
+const OVERLAY_STYLE: ViewStyle = {
+    position: Platform.OS === 'web' ? ('fixed' as unknown as 'absolute') : 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : {}),
+};
+
+const CONTENT_STYLE: ViewStyle = {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: theme.semantic.background.elevated,
+    borderRadius: 12,
+    padding: 24,
+    gap: 12,
+    ...(Platform.OS === 'web'
+        ? ({
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          } as ViewStyle)
+        : { elevation: 24 }),
+};
+
+const FOCUSABLE_SELECTOR =
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+export type DialogContentProps = {
+    children?: ReactNode;
+    className?: string;
+    testID?: string;
+};
+
+/**
+ * The visible dialog surface — overlay + centered card. Renders only when
+ * the parent `Dialog` is open. On web: traps focus inside, locks body
+ * scroll, and dismisses on Escape or overlay click.
+ */
+export function DialogContent({ children, className, testID }: DialogContentProps) {
+    const ctx = useDialogContext('DialogContent');
+    const contentRef = useRef<HTMLDivElement | null>(null);
+
+    // Web-only side effects: focus trap, scroll lock, Escape close,
+    // initial focus on the first focusable inside the dialog. RN Modal
+    // handles its own focus model on native, so the platform check keeps
+    // these out of the native render path.
+    useEffect(() => {
+        if (!ctx.open) return;
+        if (Platform.OS !== 'web') return;
+        if (typeof document === 'undefined') return;
+
+        const previouslyFocused = document.activeElement as HTMLElement | null;
+
+        // Lock body scroll. Preserve any previously set inline style so
+        // we don't accidentally clobber a consumer's lock from elsewhere.
+        const prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        // Move focus into the dialog. Prefer the first focusable element;
+        // if there isn't one, focus the dialog container itself so it
+        // receives the keydown events.
+        const focusFirst = () => {
+            const node = contentRef.current;
+            if (!node) return;
+            const focusable = node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+            const first = focusable[0];
+            if (first) {
+                first.focus();
+            } else {
+                node.setAttribute('tabindex', '-1');
+                node.focus();
+            }
+        };
+        focusFirst();
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                ctx.setOpen(false);
+                return;
+            }
+            if (event.key !== 'Tab') return;
+            const node = contentRef.current;
+            if (!node) return;
+            const focusable = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+                (el) => el.offsetParent !== null || el === document.activeElement
+            );
+            if (focusable.length === 0) {
+                event.preventDefault();
+                return;
+            }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (!first || !last) return;
+            if (event.shiftKey) {
+                if (document.activeElement === first || !node.contains(document.activeElement)) {
+                    event.preventDefault();
+                    last.focus();
+                }
+            } else if (document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', onKeyDown);
+            document.body.style.overflow = prevBodyOverflow;
+            // Restore focus to whatever opened the dialog (the trigger),
+            // falling back to the previously focused node if the trigger
+            // is gone.
+            const restoreTo = ctx.triggerRef.current ?? previouslyFocused;
+            restoreTo?.focus?.();
+        };
+    }, [ctx.open, ctx.setOpen, ctx.triggerRef]);
+
+    const onOverlayPress = useCallback(() => ctx.setOpen(false), [ctx]);
+
+    return (
+        <Modal visible={ctx.open} transparent animationType="fade" onRequestClose={() => ctx.setOpen(false)}>
+            <Pressable accessibilityRole="none" aria-hidden={true} style={OVERLAY_STYLE} onPress={onOverlayPress}>
+                <Pressable
+                    onPress={(event) => event.stopPropagation?.()}
+                    ref={(node) => {
+                        contentRef.current = node as unknown as HTMLDivElement | null;
+                    }}
+                    role="dialog"
+                    accessibilityRole="none"
+                    aria-modal={true}
+                    aria-labelledby={ctx.titleId}
+                    aria-describedby={ctx.descriptionId}
+                    {...(testID !== undefined ? { testID } : {})}
+                    className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
+                    style={CONTENT_STYLE}
+                >
+                    <View className="flex-col gap-1.5" style={{ flexDirection: 'column', gap: 6 }}>
+                        {children}
+                    </View>
+                </Pressable>
+            </Pressable>
+        </Modal>
+    );
+}
+
+export type DialogTextProps = {
+    children?: ReactNode;
+    className?: string;
+};
+
+/** Heading inside DialogContent. Wires `aria-labelledby`. */
+export function DialogTitle({ children, className }: DialogTextProps) {
+    const ctx = useDialogContext('DialogTitle');
+    return (
+        <RNText
+            nativeID={ctx.titleId}
+            id={ctx.titleId}
+            role="heading"
+            aria-level={2}
+            className={cn('text-lg font-semibold text-semantic-text-default', className)}
+            style={{ color: theme.semantic.text.default, fontSize: 18, fontWeight: '600' }}
+        >
+            {children}
+        </RNText>
+    );
+}
+
+/** Subtitle / description inside DialogContent. Wires `aria-describedby`. */
+export function DialogDescription({ children, className }: DialogTextProps) {
+    const ctx = useDialogContext('DialogDescription');
+    return (
+        <RNText
+            nativeID={ctx.descriptionId}
+            id={ctx.descriptionId}
+            className={cn('text-sm text-semantic-text-muted', className)}
+            style={{ color: theme.semantic.text.muted, fontSize: 14, lineHeight: 20 }}
+        >
+            {children}
+        </RNText>
+    );
+}
+
+export type DialogCloseProps = {
+    /** Render the child as the close button (Slot pattern). Default true. */
+    asChild?: boolean;
+    children?: ReactNode;
+    className?: string;
+    testID?: string;
+    accessibilityLabel?: string;
+};
+
+/**
+ * Element that closes the dialog when activated. With `asChild` (default),
+ * wraps the child. Without `asChild`, renders a default ✕ button — useful
+ * for the canonical top-right corner close.
+ */
+export function DialogClose({
+    asChild = true,
+    children,
+    className,
+    testID,
+    accessibilityLabel = 'Close',
+}: DialogCloseProps) {
+    const ctx = useDialogContext('DialogClose');
+    const onPress = useCallback(() => ctx.setOpen(false), [ctx]);
+
+    if (asChild && isValidElement(children)) {
+        const child = children as ReactElement<Record<string, unknown>>;
+        const onClick = (event: unknown) => {
+            const existing = child.props.onClick as ((e: unknown) => void) | undefined;
+            existing?.(event);
+            ctx.setOpen(false);
+        };
+        return (
+            <Slot
+                onClick={onClick}
+                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...(className !== undefined ? { className } : {})}
+            >
+                {child}
+            </Slot>
+        );
+    }
+
+    if (children !== undefined) {
+        return (
+            <Pressable
+                onPress={onPress}
+                role="button"
+                accessibilityRole="button"
+                accessibilityLabel={accessibilityLabel}
+                aria-label={accessibilityLabel}
+                {...(testID !== undefined ? { testID } : {})}
+                {...(className !== undefined ? { className } : {})}
+            >
+                {children}
+            </Pressable>
+        );
+    }
+
+    return (
+        <Pressable
+            onPress={onPress}
+            role="button"
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
+            aria-label={accessibilityLabel}
+            {...(testID !== undefined ? { testID } : {})}
+            className={cn('absolute right-3 top-3 w-8 h-8 items-center justify-center rounded-md', className)}
+            style={{
+                position: 'absolute',
+                right: 12,
+                top: 12,
+                width: 32,
+                height: 32,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 6,
+            }}
+        >
+            <defaultSemanticIcons.close size={18} color={theme.semantic.text.muted} />
+        </Pressable>
+    );
+}
+
+export type DialogFooterProps = {
+    children?: ReactNode;
+    className?: string;
+};
+
+/** Convenience row for dialog action buttons (right-aligned). */
+export function DialogFooter({ children, className }: DialogFooterProps) {
+    return (
+        <View
+            className={cn('mt-4 flex-row items-center justify-end gap-2', className)}
+            style={{
+                marginTop: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 8,
+            }}
+        >
+            {children}
+        </View>
+    );
+}

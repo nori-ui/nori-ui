@@ -23,6 +23,8 @@
     "controls/switch",
     "---Navigation---",
     "navigation/tabs",
+    "---Overlays---",
+    "overlays/dialog",
     "---Inputs---",
     "inputs/text-input",
     "inputs/text-area",

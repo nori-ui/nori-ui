@@ -32,6 +32,7 @@ const TARGETS = [
     'Button',
     'Card',
     'Checkbox',
+    'Dialog',
     'HStack',
     'Icon',
     'RadioGroup',

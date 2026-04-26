@@ -22,6 +22,7 @@ const CLIENT_ALLOWED = [
     'icons/use-semantic-icon.ts',
     'components/Avatar/Avatar.tsx',
     'components/Checkbox/Checkbox.tsx',
+    'components/Dialog/Dialog.tsx',
     'components/RadioGroup/RadioGroup.tsx',
     'components/Switch/Switch.tsx',
     'components/Tabs/Tabs.tsx',

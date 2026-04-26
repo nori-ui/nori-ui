@@ -223,6 +223,26 @@ jest.mock('react-native', () => {
         return React.createElement('img', domProps);
     };
 
+    type ModalProps = Props & {
+        visible?: boolean;
+        onRequestClose?: () => void;
+        animationType?: string;
+        transparent?: boolean;
+    };
+    const Modal = (props: ModalProps) => {
+        const { visible, onRequestClose, animationType, transparent, children, ...rest } = props;
+        if (!visible) return null;
+        // Mirror what react-native-web's Modal does: render the children
+        // in-place inside a fixed-position overlay div. Tests can query
+        // the modal content directly without portal traversal.
+        const domProps: Record<string, unknown> = { ...rest, 'data-modal': 'true' };
+        if (rest.testID !== undefined) {
+            domProps['data-testid'] = rest.testID;
+            delete (domProps as { testID?: unknown }).testID;
+        }
+        return React.createElement('div', domProps, children);
+    };
+
     return {
         __esModule: true,
         View,
@@ -234,6 +254,7 @@ jest.mock('react-native', () => {
         TextInput,
         ActivityIndicator,
         Image,
+        Modal,
         StyleSheet: {
             create: <T extends Record<string, unknown>>(styles: T) => styles,
             flatten: (style: unknown) => style,
