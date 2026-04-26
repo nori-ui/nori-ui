@@ -22,7 +22,7 @@ export default function DialogBasic() {
                 </DialogDescription>
                 <DialogFooter>
                     <DialogClose>
-                        <Button variant="ghost">Cancel</Button>
+                        <Button variant="secondary">Cancel</Button>
                     </DialogClose>
                     <DialogClose>
                         <Button variant="destructive">Delete project</Button>
