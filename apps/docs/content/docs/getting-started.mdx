@@ -18,25 +18,31 @@ Optional — any icon library works; Lucide is recommended:
 
 ## Tailwind preset
 
-Add the `@nori-ui/tokens` preset to your consumer `tailwind.config.ts`:
+Add the `@nori-ui/tokens` preset to your `tailwind.config.ts`. The example below targets a Next.js App Router project; adjust the `content` globs to match your file layout.
 
 ```ts
+import type { Config } from 'tailwindcss';
 import noriPreset from '@nori-ui/tokens/tailwind-preset';
-export default { presets: [noriPreset], content: [/* your globs */] };
+
+export default {
+    presets: [noriPreset],
+    content: ['./app/**/*.{ts,tsx,mdx}', './components/**/*.{ts,tsx}'],
+} satisfies Config;
 ```
 
 ## Provider
 
-Wrap your app once. The library works without a provider too — provider only customizes theme / i18n / semantic icons.
+The library renders with sensible defaults out of the box, so the provider is optional. Wrap your app once if you want to customize theme, i18n, or semantic icons.
 
 ```tsx
 'use client';
+import { Button } from '@nori-ui/core';
 import { NoriProvider } from '@nori-ui/core/client';
 
 export default function App() {
     return (
         <NoriProvider>
-            <YourApp />
+            <Button>Hello from nori-ui</Button>
         </NoriProvider>
     );
 }
@@ -45,7 +51,14 @@ export default function App() {
 ## First component
 
 ```tsx
-import { Button } from '@nori-ui/core';
+import { Button, VStack } from '@nori-ui/core';
 
-<Button variant="primary">Click me</Button>
+export default function Demo() {
+    return (
+        <VStack gap={3}>
+            <Button>Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+        </VStack>
+    );
+}
 ```
