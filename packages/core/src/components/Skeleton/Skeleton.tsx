@@ -1,8 +1,8 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, type ViewStyle } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type SkeletonProps = {
@@ -43,6 +43,7 @@ export function Skeleton({
     style,
     testID,
 }: SkeletonProps) {
+    const colors = useThemeColors();
     const opacity = useRef(new Animated.Value(PULSE_MAX)).current;
 
     useEffect(() => {
@@ -73,7 +74,7 @@ export function Skeleton({
         width,
         height,
         borderRadius: radius === 'full' ? 9999 : radius,
-        backgroundColor: theme.color.neutral['200'],
+        backgroundColor: colors.semantic.background.subtle,
     };
 
     return (
@@ -82,7 +83,7 @@ export function Skeleton({
             aria-hidden={true}
             accessibilityElementsHidden
             importantForAccessibility="no"
-            className={cn('bg-neutral-200', className)}
+            className={cn('bg-neutral-200 dark:bg-neutral-800', className)}
             style={[baseStyle, isStatic ? null : { opacity }, style]}
         />
     );

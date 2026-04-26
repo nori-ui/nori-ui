@@ -1,6 +1,5 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import {
     createContext,
     isValidElement,
@@ -17,6 +16,7 @@ import type { ViewStyle } from 'react-native';
 import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { Slot } from '../../slot';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 type DialogContextValue = {
@@ -157,10 +157,9 @@ const OVERLAY_STYLE: ViewStyle = {
     ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : {}),
 };
 
-const CONTENT_STYLE: ViewStyle = {
+const CONTENT_BASE_STYLE: ViewStyle = {
     width: '100%',
     maxWidth: 480,
-    backgroundColor: theme.semantic.background.elevated,
     borderRadius: 12,
     padding: 24,
     gap: 12,
@@ -187,6 +186,7 @@ export type DialogContentProps = {
  */
 export function DialogContent({ children, className, testID }: DialogContentProps) {
     const ctx = useDialogContext('DialogContent');
+    const colors = useThemeColors();
     const contentRef = useRef<HTMLDivElement | null>(null);
 
     // Web-only side effects: focus trap, scroll lock, Escape close,
@@ -281,7 +281,7 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                     aria-describedby={ctx.descriptionId}
                     {...(testID !== undefined ? { testID } : {})}
                     className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
-                    style={CONTENT_STYLE}
+                    style={[CONTENT_BASE_STYLE, { backgroundColor: colors.semantic.background.elevated }]}
                 >
                     <View className="flex-col gap-1.5" style={{ flexDirection: 'column', gap: 6 }}>
                         {children}
@@ -300,6 +300,7 @@ export type DialogTextProps = {
 /** Heading inside DialogContent. Wires `aria-labelledby`. */
 export function DialogTitle({ children, className }: DialogTextProps) {
     const ctx = useDialogContext('DialogTitle');
+    const colors = useThemeColors();
     return (
         <RNText
             nativeID={ctx.titleId}
@@ -307,7 +308,7 @@ export function DialogTitle({ children, className }: DialogTextProps) {
             role="heading"
             aria-level={2}
             className={cn('text-lg font-semibold text-semantic-text-default', className)}
-            style={{ color: theme.semantic.text.default, fontSize: 18, fontWeight: '600' }}
+            style={{ color: colors.semantic.text.default, fontSize: 18, fontWeight: '600' }}
         >
             {children}
         </RNText>
@@ -317,12 +318,13 @@ export function DialogTitle({ children, className }: DialogTextProps) {
 /** Subtitle / description inside DialogContent. Wires `aria-describedby`. */
 export function DialogDescription({ children, className }: DialogTextProps) {
     const ctx = useDialogContext('DialogDescription');
+    const colors = useThemeColors();
     return (
         <RNText
             nativeID={ctx.descriptionId}
             id={ctx.descriptionId}
             className={cn('text-sm text-semantic-text-muted', className)}
-            style={{ color: theme.semantic.text.muted, fontSize: 14, lineHeight: 20 }}
+            style={{ color: colors.semantic.text.muted, fontSize: 14, lineHeight: 20 }}
         >
             {children}
         </RNText>
@@ -351,6 +353,7 @@ export function DialogClose({
     accessibilityLabel = 'Close',
 }: DialogCloseProps) {
     const ctx = useDialogContext('DialogClose');
+    const colors = useThemeColors();
     const onPress = useCallback(() => ctx.setOpen(false), [ctx]);
 
     if (asChild && isValidElement(children)) {
@@ -410,7 +413,7 @@ export function DialogClose({
                 borderRadius: 6,
             }}
         >
-            <defaultSemanticIcons.close size={18} color={theme.semantic.text.muted} />
+            <defaultSemanticIcons.close size={18} color={colors.semantic.text.muted} />
         </Pressable>
     );
 }

@@ -1,8 +1,11 @@
-import { theme } from '@nori-ui/tokens';
+'use client';
+
 import type { ComponentType, ReactNode } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { useColorScheme } from '../../theme/use-color-scheme';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type AlertTone = 'info' | 'success' | 'warning' | 'danger';
@@ -35,40 +38,82 @@ export type AlertProps = {
 };
 
 type IconType = ComponentType<{ size?: number; color?: string }>;
+type TonePalette = { bg: string; border: string; fg: string; iconBg: string; defaultIcon: IconType };
 
-const TONE_PALETTE: Record<
-    AlertTone,
-    { bg: string; border: string; fg: string; iconBg: string; defaultIcon: IconType }
-> = {
-    info: {
-        bg: theme.color.primary['50'],
-        border: theme.color.primary['200'],
-        fg: theme.color.primary['800'],
-        iconBg: theme.color.primary['600'],
-        defaultIcon: defaultSemanticIcons.info,
-    },
-    success: {
-        bg: '#f0fdf4',
-        border: '#bbf7d0',
-        fg: '#166534',
-        iconBg: theme.color.success,
-        defaultIcon: defaultSemanticIcons.checkmark,
-    },
-    warning: {
-        bg: '#fefce8',
-        border: '#fde68a',
-        fg: '#92400e',
-        iconBg: theme.color.warning,
-        defaultIcon: defaultSemanticIcons.alertTriangle,
-    },
-    danger: {
-        bg: '#fef2f2',
-        border: '#fecaca',
-        fg: '#991b1b',
-        iconBg: theme.color.danger,
-        defaultIcon: defaultSemanticIcons.alertTriangle,
-    },
-};
+// Light/dark soft palettes per tone. Light variants use the familiar
+// pastel scale (Tailwind 50/200/800); dark variants use the deep 950/700/100
+// scale so the alert reads as a calm, on-tone surface against either
+// background — never a harsh white card on a dark page.
+function tonePalettes(
+    scheme: 'light' | 'dark',
+    primary: { '50': string; '200': string; '700': string; '800': string; '900': string; '100': string },
+    success: string,
+    warning: string,
+    danger: string
+): Record<AlertTone, TonePalette> {
+    if (scheme === 'dark') {
+        return {
+            info: {
+                bg: primary['900'],
+                border: primary['700'],
+                fg: primary['100'],
+                iconBg: primary['200'],
+                defaultIcon: defaultSemanticIcons.info,
+            },
+            success: {
+                bg: '#052e16',
+                border: '#14532d',
+                fg: '#bbf7d0',
+                iconBg: success,
+                defaultIcon: defaultSemanticIcons.checkmark,
+            },
+            warning: {
+                bg: '#422006',
+                border: '#78350f',
+                fg: '#fef3c7',
+                iconBg: warning,
+                defaultIcon: defaultSemanticIcons.alertTriangle,
+            },
+            danger: {
+                bg: '#450a0a',
+                border: '#7f1d1d',
+                fg: '#fecaca',
+                iconBg: danger,
+                defaultIcon: defaultSemanticIcons.alertTriangle,
+            },
+        };
+    }
+    return {
+        info: {
+            bg: primary['50'],
+            border: primary['200'],
+            fg: primary['800'],
+            iconBg: primary['700'],
+            defaultIcon: defaultSemanticIcons.info,
+        },
+        success: {
+            bg: '#f0fdf4',
+            border: '#bbf7d0',
+            fg: '#166534',
+            iconBg: success,
+            defaultIcon: defaultSemanticIcons.checkmark,
+        },
+        warning: {
+            bg: '#fefce8',
+            border: '#fde68a',
+            fg: '#92400e',
+            iconBg: warning,
+            defaultIcon: defaultSemanticIcons.alertTriangle,
+        },
+        danger: {
+            bg: '#fef2f2',
+            border: '#fecaca',
+            fg: '#991b1b',
+            iconBg: danger,
+            defaultIcon: defaultSemanticIcons.alertTriangle,
+        },
+    };
+}
 
 const CONTAINER_STYLE: ViewStyle = {
     flexDirection: 'row',
@@ -84,11 +129,19 @@ const CONTAINER_STYLE: ViewStyle = {
  * Use for inline messages that the reader should notice but doesn't need to
  * action immediately (use a Dialog when you need a forced acknowledgement).
  *
- * RSC-safe: pure render. The dismiss button is a Pressable; it passes
- * through to a client boundary at use-time.
+ * Color tone flips automatically with the active color scheme — light
+ * pastel surface in light mode, deep on-tone surface in dark.
  */
 export function Alert({ tone = 'info', title, description, onDismiss, icon, children, className, testID }: AlertProps) {
-    const palette = TONE_PALETTE[tone];
+    const colors = useThemeColors();
+    const scheme = useColorScheme();
+    const palette = tonePalettes(
+        scheme,
+        colors.color.primary,
+        colors.color.success,
+        colors.color.warning,
+        colors.color.danger
+    )[tone];
     const IconComponent = palette.defaultIcon;
     const containerStyle: ViewStyle = {
         ...CONTAINER_STYLE,

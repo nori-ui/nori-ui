@@ -5,3 +5,7 @@
 // Consumers should import `Theme` from '@nori-ui/core', not from '@nori-ui/tokens'.
 
 export { type Theme, theme, themeDark } from '@nori-ui/tokens';
+export { ThemeProvider, type ThemeProviderProps } from './context';
+export { type ColorScheme, useColorScheme } from './use-color-scheme';
+export { useTheme } from './use-theme';
+export { useThemeColors } from './use-theme-colors';

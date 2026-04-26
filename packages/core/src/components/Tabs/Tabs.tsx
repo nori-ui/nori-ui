@@ -1,6 +1,5 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import {
     createContext,
     type KeyboardEvent,
@@ -16,6 +15,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type TabsOrientation = 'horizontal' | 'vertical';
@@ -191,25 +191,28 @@ export type TabsListProps = {
     testID?: string;
 };
 
-const LIST_STYLE: ViewStyle = {
+const LIST_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     borderBottomWidth: 1,
-    borderBottomColor: theme.semantic.border.default,
 };
 
-const LIST_VERTICAL_STYLE: ViewStyle = {
+const LIST_VERTICAL_BASE: ViewStyle = {
     flexDirection: 'column',
     alignItems: 'stretch',
     gap: 4,
     borderRightWidth: 1,
-    borderRightColor: theme.semantic.border.default,
 };
 
 /** Container for `TabsTrigger`s. Renders the underline rule on the appropriate edge. */
 export function TabsList({ children, className, testID }: TabsListProps) {
     const ctx = useTabsContext('TabsList');
+    const colors = useThemeColors();
+    const listStyle: ViewStyle =
+        ctx.orientation === 'vertical'
+            ? { ...LIST_VERTICAL_BASE, borderRightColor: colors.semantic.border.default }
+            : { ...LIST_BASE, borderBottomColor: colors.semantic.border.default };
     return (
         <View
             {...(testID !== undefined ? { testID } : {})}
@@ -222,7 +225,7 @@ export function TabsList({ children, className, testID }: TabsListProps) {
                     : 'flex-row items-center gap-1 border-b border-semantic-border-default',
                 className
             )}
-            style={ctx.orientation === 'vertical' ? LIST_VERTICAL_STYLE : LIST_STYLE}
+            style={listStyle}
         >
             {children}
         </View>
@@ -258,6 +261,7 @@ const TRIGGER_BASE_VERTICAL: ViewStyle = {
 /** Clickable tab. Activating it shows the matching `TabsContent`. */
 export function TabsTrigger({ value, disabled, children, className, testID }: TabsTriggerProps) {
     const ctx = useTabsContext('TabsTrigger');
+    const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
     const selected = ctx.value === value;
     const isVertical = ctx.orientation === 'vertical';
@@ -308,8 +312,8 @@ export function TabsTrigger({ value, disabled, children, className, testID }: Ta
 
     const accentStyle = selected
         ? isVertical
-            ? { borderRightColor: theme.color.primary['600'] }
-            : { borderBottomColor: theme.color.primary['600'] }
+            ? { borderRightColor: colors.semantic.interactive.primary }
+            : { borderBottomColor: colors.semantic.interactive.primary }
         : null;
 
     const triggerProps: Record<string, unknown> = {
@@ -344,7 +348,7 @@ export function TabsTrigger({ value, disabled, children, className, testID }: Ta
             {typeof children === 'string' ? (
                 <RNText
                     style={{
-                        color: selected ? theme.color.primary['700'] : theme.color.neutral['600'],
+                        color: selected ? colors.semantic.interactive.primary : colors.semantic.text.muted,
                         fontSize: 14,
                         fontWeight: selected ? '600' : '500',
                     }}

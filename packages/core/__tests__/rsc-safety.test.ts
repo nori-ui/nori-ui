@@ -11,25 +11,37 @@ import { join } from 'node:path';
 const SRC = join(__dirname, '../src');
 
 // Files / directories allowed to be client-only. Everything else must be RSC-safe.
+//
+// Components that read color tokens via the `useThemeColors()` hook (so dark
+// mode flips them at runtime) all need 'use client'. The hook itself lives
+// in theme/use-color-scheme.ts and theme/use-theme-colors.ts.
 const CLIENT_ALLOWED = [
     'client.ts',
     'provider/',
     'theme/context.tsx',
     'theme/use-theme.ts',
+    'theme/use-color-scheme.ts',
+    'theme/use-theme-colors.ts',
     'i18n/context.tsx',
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
+    'components/Alert/Alert.tsx',
     'components/Avatar/Avatar.tsx',
+    'components/Badge/Badge.tsx',
+    'components/Button/Button.tsx',
+    'components/Card/Card.tsx',
     'components/Checkbox/Checkbox.tsx',
     'components/Dialog/Dialog.tsx',
     'components/RadioGroup/RadioGroup.tsx',
     'components/SegmentedControl/SegmentedControl.tsx',
     'components/Select/Select.tsx',
+    'components/Separator/Separator.tsx',
     'components/Skeleton/Skeleton.tsx',
     'components/Slider/Slider.tsx',
     'components/Switch/Switch.tsx',
     'components/Tabs/Tabs.tsx',
+    'components/TextInput/TextInput.tsx',
     'components/Toast/Toast.tsx',
 ];
 

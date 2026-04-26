@@ -1,12 +1,12 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useSemanticIcon } from '../../icons/use-semantic-icon';
 import { Slot } from '../../slot';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type CheckboxProps = {
@@ -24,19 +24,13 @@ export type CheckboxProps = {
 
 // Inline defaults so the checkbox renders correctly without NativeWind.
 const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
-const BOX_STYLE: ViewStyle = {
+const BOX_BASE_STYLE: ViewStyle = {
     width: 20,
     height: 20,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: theme.color.neutral['300'],
-    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
-};
-const BOX_STYLE_CHECKED: ViewStyle = {
-    backgroundColor: theme.color.primary['600'],
-    borderColor: theme.color.primary['600'],
 };
 
 /**
@@ -55,6 +49,7 @@ export function Checkbox({
     asChild,
     children,
 }: CheckboxProps) {
+    const colors = useThemeColors();
     const [inner, setInner] = useState<boolean>(defaultChecked);
     const isControlled = checked !== undefined;
     const value = isControlled ? Boolean(checked) : inner;
@@ -97,7 +92,22 @@ export function Checkbox({
         return <Slot {...slotProps}>{children}</Slot>;
     }
 
-    const boxClasses = cn('w-5 h-5 rounded-sm border border-semantic-border-strong items-center justify-center');
+    const boxClasses = cn(
+        'w-5 h-5 rounded-sm border items-center justify-center',
+        isMarked && !disabled
+            ? 'bg-semantic-interactive-primary border-semantic-interactive-primary'
+            : 'bg-semantic-background-elevated border-semantic-border-strong'
+    );
+    const boxFill: ViewStyle =
+        isMarked && !disabled
+            ? {
+                  backgroundColor: colors.semantic.interactive.primary,
+                  borderColor: colors.semantic.interactive.primary,
+              }
+            : {
+                  backgroundColor: colors.semantic.background.elevated,
+                  borderColor: colors.semantic.border.strong,
+              };
 
     // The whole row is the interactive element so clicking the label text
     // toggles the checkbox. The visual box is a non-interactive View — one
@@ -109,12 +119,12 @@ export function Checkbox({
             className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}
             style={[ROW_STYLE, disabled ? { opacity: 0.6 } : null]}
         >
-            <View className={boxClasses} style={[BOX_STYLE, isMarked && !disabled ? BOX_STYLE_CHECKED : null]}>
-                {isMarked && !disabled ? <Check size={14} color="#ffffff" /> : null}
+            <View className={boxClasses} style={[BOX_BASE_STYLE, boxFill]}>
+                {isMarked && !disabled ? <Check size={14} color={colors.semantic.text.inverted} /> : null}
             </View>
             {children ??
                 (label !== undefined ? (
-                    <RNText style={{ color: theme.color.neutral['900'], fontSize: 16 }}>{label}</RNText>
+                    <RNText style={{ color: colors.semantic.text.default, fontSize: 16 }}>{label}</RNText>
                 ) : null)}
         </Pressable>
     );

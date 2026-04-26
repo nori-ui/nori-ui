@@ -1,10 +1,10 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { ImageStyle, ViewStyle } from 'react-native';
 import { Image as RNImage, Text as RNText, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -68,6 +68,7 @@ const initialsFromName = (name: string | undefined): string => {
  * decision is internal state, not consumer-driven layout.
  */
 export function Avatar({ src, name, size = 'md', fallback, className, testID }: AvatarProps) {
+    const colors = useThemeColors();
     const [imageFailed, setImageFailed] = useState(false);
     const dim = SIZE_PX[size];
     const showImage = src !== undefined && src.length > 0 && !imageFailed;
@@ -76,7 +77,7 @@ export function Avatar({ src, name, size = 'md', fallback, className, testID }: 
         width: dim,
         height: dim,
         borderRadius: dim / 2,
-        backgroundColor: theme.color.neutral['200'],
+        backgroundColor: colors.semantic.background.subtle,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -111,7 +112,7 @@ export function Avatar({ src, name, size = 'md', fallback, className, testID }: 
             ) : initials.length > 0 ? (
                 <RNText
                     style={{
-                        color: theme.color.neutral['700'],
+                        color: colors.semantic.text.muted,
                         fontSize: FALLBACK_FONT_SIZE[size],
                         fontWeight: '500',
                     }}
@@ -124,7 +125,7 @@ export function Avatar({ src, name, size = 'md', fallback, className, testID }: 
                         width: dim * 0.45,
                         height: dim * 0.45,
                         borderRadius: dim,
-                        backgroundColor: theme.color.neutral['400'],
+                        backgroundColor: colors.semantic.text.muted,
                     }}
                 />
             )}

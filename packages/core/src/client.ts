@@ -15,4 +15,6 @@ export { useSemanticIcon } from './icons/use-semantic-icon';
 export * from './index';
 export { NoriProvider, type NoriProviderProps } from './provider';
 export { ThemeProvider, type ThemeProviderProps } from './theme/context';
+export { type ColorScheme, useColorScheme } from './theme/use-color-scheme';
 export { useTheme } from './theme/use-theme';
+export { useThemeColors } from './theme/use-theme-colors';

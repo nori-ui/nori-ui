@@ -1,6 +1,5 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import {
     createContext,
     type KeyboardEvent,
@@ -15,6 +14,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type RadioGroupOrientation = 'horizontal' | 'vertical';
@@ -78,24 +78,18 @@ export type RadioProps = {
 };
 
 const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
-const DOT_OUTER: ViewStyle = {
+const DOT_OUTER_BASE: ViewStyle = {
     width: 18,
     height: 18,
     borderRadius: 9,
     borderWidth: 1.5,
-    borderColor: theme.color.neutral['400'],
-    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
 };
-const DOT_INNER: ViewStyle = {
+const DOT_INNER_BASE: ViewStyle = {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: theme.color.primary['600'],
-};
-const DOT_OUTER_SELECTED: ViewStyle = {
-    borderColor: theme.color.primary['600'],
 };
 
 /**
@@ -252,6 +246,7 @@ export function RadioGroup({
  */
 export function Radio({ value, label, disabled, children, className, testID }: RadioProps) {
     const ctx = useRadioGroupContext();
+    const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
     const selected = ctx.value === value;
     const isDisabled = disabled || ctx.disabled;
@@ -289,18 +284,23 @@ export function Radio({ value, label, disabled, children, className, testID }: R
         ...(ctx.name ? { name: ctx.name } : {}),
     };
 
+    const dotOuterStyle: ViewStyle = {
+        ...DOT_OUTER_BASE,
+        backgroundColor: colors.semantic.background.elevated,
+        borderColor: selected ? colors.semantic.interactive.primary : colors.color.neutral['400'],
+    };
+    const dotInnerStyle: ViewStyle = { ...DOT_INNER_BASE, backgroundColor: colors.semantic.interactive.primary };
+
     return (
         <Pressable
             {...radioProps}
             className={cn('flex-row items-center gap-2', isDisabled ? 'opacity-60' : undefined, className)}
             style={[ROW_STYLE, isDisabled ? { opacity: 0.6 } : null]}
         >
-            <View style={[DOT_OUTER, selected ? DOT_OUTER_SELECTED : null]}>
-                {selected ? <View style={DOT_INNER} /> : null}
-            </View>
+            <View style={dotOuterStyle}>{selected ? <View style={dotInnerStyle} /> : null}</View>
             {children ??
                 (label !== undefined ? (
-                    <RNText style={{ color: theme.color.neutral['900'], fontSize: 16 }}>{label}</RNText>
+                    <RNText style={{ color: colors.semantic.text.default, fontSize: 16 }}>{label}</RNText>
                 ) : null)}
         </Pressable>
     );

@@ -26,6 +26,10 @@ const HEADING_VARIANTS: Readonly<Set<TextVariant>> = new Set(['heading-1', 'head
  * Typography primitive. Renders a react-native <Text>; on web via RN-Web
  * it becomes a <div role="..."> with the appropriate className.
  *
+ * Default color is `text-semantic-text-default` so the component flips
+ * with dark mode without the consumer needing to re-set color. Override
+ * via `className` when a different tone is wanted.
+ *
  * RSC-safe: pure render, no hooks.
  */
 export function Text({ variant = 'body-md', className, testID, children, ...rest }: TextProps) {
@@ -36,7 +40,11 @@ export function Text({ variant = 'body-md', className, testID, children, ...rest
             testID={testID}
             {...rest}
             {...(role !== undefined ? { accessibilityRole: role } : {})}
-            className={cn(VARIANT_CLASSES[variant], className)}
+            className={cn(
+                'text-semantic-text-default dark:text-dark-semantic-text-default',
+                VARIANT_CLASSES[variant],
+                className
+            )}
         >
             {children}
         </RNText>

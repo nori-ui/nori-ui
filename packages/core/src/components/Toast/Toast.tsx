@@ -1,10 +1,11 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { useColorScheme } from '../../theme/use-color-scheme';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type ToastTone = 'info' | 'success' | 'warning' | 'danger';
@@ -160,39 +161,62 @@ function ToastViewport({ toasts, dismiss }: ViewportProps) {
     );
 }
 
-const TONE_PALETTE: Record<
-    ToastTone,
-    { bg: string; border: string; fg: string; iconColor: string; defaultIcon: typeof defaultSemanticIcons.info }
-> = {
-    info: {
-        bg: theme.semantic.background.elevated,
-        border: theme.color.primary['200'],
-        fg: theme.semantic.text.default,
-        iconColor: theme.color.primary['600'],
-        defaultIcon: defaultSemanticIcons.info,
-    },
-    success: {
-        bg: theme.semantic.background.elevated,
-        border: '#bbf7d0',
-        fg: theme.semantic.text.default,
-        iconColor: theme.color.success,
-        defaultIcon: defaultSemanticIcons.checkmark,
-    },
-    warning: {
-        bg: theme.semantic.background.elevated,
-        border: '#fde68a',
-        fg: theme.semantic.text.default,
-        iconColor: theme.color.warning,
-        defaultIcon: defaultSemanticIcons.alertTriangle,
-    },
-    danger: {
-        bg: theme.semantic.background.elevated,
-        border: '#fecaca',
-        fg: theme.semantic.text.default,
-        iconColor: theme.color.danger,
-        defaultIcon: defaultSemanticIcons.alertTriangle,
-    },
+type TonePaletteEntry = {
+    bg: string;
+    border: string;
+    fg: string;
+    iconColor: string;
+    defaultIcon: typeof defaultSemanticIcons.info;
 };
+
+// The toast surface always uses the elevated semantic background — it sits
+// over the app like a card. Only the border tinges on tone (success →
+// green-200/700, danger → red-200/700, etc.). Reading from the active
+// palette + scheme makes both the surface AND the tonal border flip with
+// dark mode, so a danger toast doesn't keep a red-200 border on a #18181b
+// card.
+function tonePalettes(
+    scheme: 'light' | 'dark',
+    elevatedBg: string,
+    fg: string,
+    primary200: string,
+    primary600: string,
+    success: string,
+    warning: string,
+    danger: string
+): Record<ToastTone, TonePaletteEntry> {
+    const isDark = scheme === 'dark';
+    return {
+        info: {
+            bg: elevatedBg,
+            border: isDark ? '#0f766e' : primary200,
+            fg,
+            iconColor: primary600,
+            defaultIcon: defaultSemanticIcons.info,
+        },
+        success: {
+            bg: elevatedBg,
+            border: isDark ? '#14532d' : '#bbf7d0',
+            fg,
+            iconColor: success,
+            defaultIcon: defaultSemanticIcons.checkmark,
+        },
+        warning: {
+            bg: elevatedBg,
+            border: isDark ? '#78350f' : '#fde68a',
+            fg,
+            iconColor: warning,
+            defaultIcon: defaultSemanticIcons.alertTriangle,
+        },
+        danger: {
+            bg: elevatedBg,
+            border: isDark ? '#7f1d1d' : '#fecaca',
+            fg,
+            iconColor: danger,
+            defaultIcon: defaultSemanticIcons.alertTriangle,
+        },
+    };
+}
 
 const TOAST_STYLE: ViewStyle = {
     minWidth: 320,
@@ -216,8 +240,20 @@ type ItemProps = {
 };
 
 function ToastItem({ toast, onDismiss }: ItemProps) {
-    const palette = TONE_PALETTE[toast.tone ?? 'info'];
+    const colors = useThemeColors();
+    const scheme = useColorScheme();
+    const palette = tonePalettes(
+        scheme,
+        colors.semantic.background.elevated,
+        colors.semantic.text.default,
+        colors.color.primary['200'],
+        colors.color.primary['600'],
+        colors.color.success,
+        colors.color.warning,
+        colors.color.danger
+    )[toast.tone ?? 'info'];
     const IconComponent = palette.defaultIcon;
+    const actionColor = scheme === 'dark' ? colors.color.primary['300'] : colors.color.primary['700'];
     return (
         <View
             role="status"
@@ -238,7 +274,7 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
                     {toast.title}
                 </RNText>
                 {toast.description !== undefined ? (
-                    <RNText style={{ color: theme.semantic.text.muted, fontSize: 14, lineHeight: 20 }}>
+                    <RNText style={{ color: colors.semantic.text.muted, fontSize: 14, lineHeight: 20 }}>
                         {toast.description}
                     </RNText>
                 ) : null}
@@ -253,7 +289,7 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
                         accessibilityLabel={toast.action.label}
                         style={{ marginTop: 6, alignSelf: 'flex-start' }}
                     >
-                        <RNText style={{ color: theme.color.primary['700'], fontSize: 14, fontWeight: '600' }}>
+                        <RNText style={{ color: actionColor, fontSize: 14, fontWeight: '600' }}>
                             {toast.action.label}
                         </RNText>
                     </Pressable>
@@ -274,7 +310,7 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
                     marginTop: -2,
                 }}
             >
-                <defaultSemanticIcons.close size={16} color={theme.semantic.text.muted} />
+                <defaultSemanticIcons.close size={16} color={colors.semantic.text.muted} />
             </Pressable>
         </View>
     );

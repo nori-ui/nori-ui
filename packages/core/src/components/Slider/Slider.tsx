@@ -1,6 +1,5 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import {
     type KeyboardEvent,
     type PointerEvent as ReactPointerEvent,
@@ -12,6 +11,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Platform, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type SliderOrientation = 'horizontal' | 'vertical';
@@ -120,6 +120,7 @@ export function Slider({
     testID,
     ...rest
 }: SliderProps) {
+    const colors = useThemeColors();
     const ariaLabel = rest['aria-label'];
     const isVertical = orientation === 'vertical';
     const reversed = isVertical ? !inverted : dir === 'rtl' ? !inverted : inverted;
@@ -336,7 +337,7 @@ export function Slider({
               right: 0,
               bottom: pct((reversed ? 1 - endRatio : startRatio) * 100),
               top: pct((reversed ? startRatio : 1 - endRatio) * 100),
-              backgroundColor: disabled ? theme.color.neutral['400'] : theme.color.primary['600'],
+              backgroundColor: disabled ? colors.color.neutral['400'] : colors.semantic.interactive.primary,
           }
         : {
               position: 'absolute',
@@ -344,14 +345,14 @@ export function Slider({
               bottom: 0,
               left: pct((reversed ? 1 - endRatio : startRatio) * 100),
               right: pct((reversed ? startRatio : 1 - endRatio) * 100),
-              backgroundColor: disabled ? theme.color.neutral['400'] : theme.color.primary['600'],
+              backgroundColor: disabled ? colors.color.neutral['400'] : colors.semantic.interactive.primary,
           };
 
     const trackStyle: ViewStyle = isVertical
         ? {
               width: TRACK_THICKNESS,
               height: length,
-              backgroundColor: theme.color.neutral['200'],
+              backgroundColor: colors.semantic.background.subtle,
               borderRadius: TRACK_THICKNESS / 2,
               position: 'relative',
               overflow: 'hidden',
@@ -359,7 +360,7 @@ export function Slider({
         : {
               height: TRACK_THICKNESS,
               width: '100%',
-              backgroundColor: theme.color.neutral['200'],
+              backgroundColor: colors.semantic.background.subtle,
               borderRadius: TRACK_THICKNESS / 2,
               position: 'relative',
               overflow: 'hidden',
@@ -443,9 +444,11 @@ export function Slider({
                                     width: THUMB_SIZE,
                                     height: THUMB_SIZE,
                                     borderRadius: THUMB_SIZE / 2,
-                                    backgroundColor: '#ffffff',
+                                    backgroundColor: colors.semantic.background.elevated,
                                     borderWidth: 2,
-                                    borderColor: disabled ? theme.color.neutral['400'] : theme.color.primary['600'],
+                                    borderColor: disabled
+                                        ? colors.color.neutral['400']
+                                        : colors.semantic.interactive.primary,
                                     ...(Platform.OS === 'web'
                                         ? ({ boxShadow: '0 1px 2px rgba(0,0,0,0.1)' } as ViewStyle)
                                         : {}),

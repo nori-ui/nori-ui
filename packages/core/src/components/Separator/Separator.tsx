@@ -1,6 +1,8 @@
-import { theme } from '@nori-ui/tokens';
+'use client';
+
 import type { ViewProps, ViewStyle } from 'react-native';
 import { View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type SeparatorOrientation = 'horizontal' | 'vertical';
@@ -22,25 +24,13 @@ export type SeparatorProps = Omit<ViewProps, 'children'> & {
     testID?: string;
 };
 
-const HORIZONTAL_STYLE: ViewStyle = {
-    height: 1,
-    width: '100%',
-    backgroundColor: theme.semantic.border.default,
-};
-
-const VERTICAL_STYLE: ViewStyle = {
-    width: 1,
-    height: '100%',
-    backgroundColor: theme.semantic.border.default,
-    alignSelf: 'stretch',
-};
+const HORIZONTAL_BASE: ViewStyle = { height: 1, width: '100%' };
+const VERTICAL_BASE: ViewStyle = { width: 1, height: '100%', alignSelf: 'stretch' };
 
 /**
  * Visual rule between groups of content. Mirrors Radix's Separator API:
  * `orientation` controls the axis, `decorative` controls whether the rule
  * is announced to screen readers.
- *
- * RSC-safe: pure render, no hooks.
  */
 export function Separator({
     orientation = 'horizontal',
@@ -50,7 +40,8 @@ export function Separator({
     testID,
     ...rest
 }: SeparatorProps) {
-    const baseStyle = orientation === 'horizontal' ? HORIZONTAL_STYLE : VERTICAL_STYLE;
+    const colors = useThemeColors();
+    const baseStyle = orientation === 'horizontal' ? HORIZONTAL_BASE : VERTICAL_BASE;
     const a11yProps: Record<string, unknown> = decorative
         ? { role: 'none', accessibilityRole: 'none' as const }
         : {
@@ -64,7 +55,7 @@ export function Separator({
             {...a11yProps}
             {...(testID !== undefined ? { testID } : {})}
             className={cn(orientation === 'horizontal' ? 'h-px w-full' : 'w-px h-full self-stretch', className)}
-            style={[baseStyle, style]}
+            style={[baseStyle, { backgroundColor: colors.semantic.border.default }, style]}
         />
     );
 }

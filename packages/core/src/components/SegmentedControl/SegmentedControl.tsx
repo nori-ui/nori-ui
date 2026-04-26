@@ -1,9 +1,9 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import { type KeyboardEvent, type ReactNode, useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type SegmentedControlSize = 'sm' | 'md';
@@ -38,10 +38,9 @@ export type SegmentedControlProps<T extends string = string> = {
     testID?: string;
 };
 
-const CONTAINER_STYLE: ViewStyle = {
+const CONTAINER_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'stretch',
-    backgroundColor: theme.color.neutral['100'],
     borderRadius: 8,
     padding: 4,
     gap: 4,
@@ -59,8 +58,7 @@ const SEGMENT_SIZE: Record<SegmentedControlSize, { paddingV: number; paddingH: n
     md: { paddingV: 6, paddingH: 12, fontSize: 14 },
 };
 
-const SEGMENT_SELECTED: ViewStyle = {
-    backgroundColor: theme.semantic.background.elevated,
+const SEGMENT_SELECTED_BASE: ViewStyle = {
     // Subtle elevation that says "this one is on" without overshadowing
     // the unselected segments next to it. Web uses boxShadow (CSS-style);
     // native uses elevation. The legacy RN `shadow*` props were deprecated
@@ -90,6 +88,7 @@ export function SegmentedControl<T extends string>({
     className,
     testID,
 }: SegmentedControlProps<T>) {
+    const colors = useThemeColors();
     const [inner, setInner] = useState<T | undefined>(defaultValue);
     const isControlled = value !== undefined;
     const current = isControlled ? value : inner;
@@ -145,15 +144,24 @@ export function SegmentedControl<T extends string>({
         ...(testID !== undefined ? { testID } : {}),
     };
 
+    const containerStyle: ViewStyle = {
+        ...CONTAINER_BASE,
+        backgroundColor: colors.semantic.background.subtle,
+    };
+    const segmentSelectedStyle: ViewStyle = {
+        ...SEGMENT_SELECTED_BASE,
+        backgroundColor: colors.semantic.background.elevated,
+    };
+
     return (
         <View
             {...groupProps}
             className={cn(
-                'inline-flex flex-row items-stretch rounded-lg bg-neutral-100 p-1 gap-1',
+                'inline-flex flex-row items-stretch rounded-lg bg-neutral-100 dark:bg-neutral-800 p-1 gap-1',
                 disabled ? 'opacity-60' : undefined,
                 className
             )}
-            style={[CONTAINER_STYLE, disabled ? { opacity: 0.6 } : null]}
+            style={[containerStyle, disabled ? { opacity: 0.6 } : null]}
         >
             {options.map((option) => {
                 const selected = option.value === current;
@@ -178,14 +186,14 @@ export function SegmentedControl<T extends string>({
                         style={[
                             SEGMENT_BASE,
                             { paddingVertical: sizeTokens.paddingV, paddingHorizontal: sizeTokens.paddingH },
-                            selected ? SEGMENT_SELECTED : null,
+                            selected ? segmentSelectedStyle : null,
                             isOptDisabled ? { opacity: 0.5 } : null,
                         ]}
                     >
                         {typeof option.label === 'string' ? (
                             <RNText
                                 style={{
-                                    color: selected ? theme.semantic.text.default : theme.semantic.text.muted,
+                                    color: selected ? colors.semantic.text.default : colors.semantic.text.muted,
                                     fontSize: sizeTokens.fontSize,
                                     fontWeight: selected ? '600' : '500',
                                 }}

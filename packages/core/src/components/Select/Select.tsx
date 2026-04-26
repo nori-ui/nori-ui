@@ -1,6 +1,5 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import {
     type ChangeEvent,
     type KeyboardEvent,
@@ -16,6 +15,7 @@ import {
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type SelectOption<T = unknown> = {
@@ -173,6 +173,7 @@ export function Select<T = unknown>({
 }: SelectProps<T>) {
     const ariaLabel = rest['aria-label'];
     const baseId = useId();
+    const colors = useThemeColors();
     const [open, setOpen] = useState(false);
     const [inner, setInner] = useState<string | undefined>(defaultValue);
     const isControlled = value !== undefined;
@@ -410,9 +411,9 @@ export function Select<T = unknown>({
         paddingVertical: 8,
         minHeight: 36,
         borderWidth: 1,
-        borderColor: theme.semantic.border.default,
+        borderColor: colors.semantic.border.default,
         borderRadius: 6,
-        backgroundColor: theme.semantic.background.elevated,
+        backgroundColor: colors.semantic.background.elevated,
         opacity: disabled ? 0.6 : 1,
     };
 
@@ -430,10 +431,10 @@ export function Select<T = unknown>({
                       ? window.innerWidth - (triggerRect.left + triggerRect.width)
                       : undefined,
               minWidth: Math.max(200, triggerRect.width),
-              backgroundColor: theme.semantic.background.elevated,
+              backgroundColor: colors.semantic.background.elevated,
               borderRadius: 8,
               borderWidth: 1,
-              borderColor: theme.semantic.border.default,
+              borderColor: colors.semantic.border.default,
               zIndex: 50,
               ...({ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)' } as ViewStyle),
           }
@@ -479,7 +480,7 @@ export function Select<T = unknown>({
             >
                 <RNText
                     style={{
-                        color: selectedOption ? theme.semantic.text.default : theme.color.neutral['400'],
+                        color: selectedOption ? colors.semantic.text.default : colors.semantic.text.muted,
                         fontSize: 14,
                         flex: 1,
                     }}
@@ -487,7 +488,7 @@ export function Select<T = unknown>({
                 >
                     {selectedOption?.label ?? placeholder}
                 </RNText>
-                <defaultSemanticIcons.chevronDown size={16} color={theme.color.neutral['500']} />
+                <defaultSemanticIcons.chevronDown size={16} color={colors.semantic.text.muted} />
             </Pressable>
 
             {open ? (
@@ -540,6 +541,7 @@ type SearchInputProps = {
 };
 
 function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInputProps) {
+    const colors = useThemeColors();
     const inputRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
         // Auto-focus when the popup opens so the user can start typing.
@@ -551,7 +553,7 @@ function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInp
                 paddingHorizontal: 8,
                 paddingVertical: 8,
                 borderBottomWidth: 1,
-                borderBottomColor: theme.semantic.border.default,
+                borderBottomColor: colors.semantic.border.default,
             }}
         >
             <input
@@ -567,7 +569,9 @@ function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInp
                     width: '100%',
                     padding: '6px 8px',
                     fontSize: 14,
-                    border: `1px solid ${theme.semantic.border.default}`,
+                    color: colors.semantic.text.default,
+                    backgroundColor: colors.semantic.background.elevated,
+                    border: `1px solid ${colors.semantic.border.default}`,
                     borderRadius: 4,
                     outline: 'none',
                 }}
@@ -611,6 +615,7 @@ function SelectList<T>({
     listboxId,
     onScroll,
 }: SelectListProps<T>) {
+    const colors = useThemeColors();
     const [scrollTop, setScrollTop] = useState(0);
 
     const totalHeight = options.length * itemHeight;
@@ -627,14 +632,14 @@ function SelectList<T>({
     if (loading && options.length === 0) {
         return (
             <View style={{ padding: 16, alignItems: 'center' }}>
-                <RNText style={{ color: theme.semantic.text.muted, fontSize: 14 }}>{loadingMessage}</RNText>
+                <RNText style={{ color: colors.semantic.text.muted, fontSize: 14 }}>{loadingMessage}</RNText>
             </View>
         );
     }
     if (options.length === 0) {
         return (
             <View style={{ padding: 16, alignItems: 'center' }}>
-                <RNText style={{ color: theme.semantic.text.muted, fontSize: 14 }}>{noOptionsMessage}</RNText>
+                <RNText style={{ color: colors.semantic.text.muted, fontSize: 14 }}>{noOptionsMessage}</RNText>
             </View>
         );
     }
@@ -664,7 +669,7 @@ function SelectList<T>({
                 >
                     <RNText
                         style={{
-                            color: theme.semantic.text.muted,
+                            color: colors.semantic.text.muted,
                             fontSize: 11,
                             fontWeight: '600',
                             textTransform: 'uppercase',
@@ -705,7 +710,7 @@ function SelectList<T>({
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 12,
-                    backgroundColor: active ? theme.color.primary['50'] : 'transparent',
+                    backgroundColor: active ? colors.semantic.background.subtle : 'transparent',
                     opacity: opt.disabled ? 0.5 : 1,
                 }}
             >
@@ -738,11 +743,12 @@ function DefaultOptionRow<T>({
     selected: boolean;
     active: boolean;
 }) {
+    const colors = useThemeColors();
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
             <RNText
                 style={{
-                    color: theme.semantic.text.default,
+                    color: colors.semantic.text.default,
                     fontSize: 14,
                     fontWeight: selected ? '600' : '400',
                     flex: 1,
@@ -751,7 +757,7 @@ function DefaultOptionRow<T>({
             >
                 {option.label}
             </RNText>
-            {selected ? <defaultSemanticIcons.check size={16} color={theme.color.primary['600']} /> : null}
+            {selected ? <defaultSemanticIcons.check size={16} color={colors.semantic.interactive.primary} /> : null}
             {/* keep `active` referenced — it's part of the public API consumers see via renderOption */}
             {active ? null : null}
         </View>

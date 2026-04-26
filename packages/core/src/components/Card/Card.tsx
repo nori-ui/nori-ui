@@ -1,18 +1,18 @@
-import { theme } from '@nori-ui/tokens';
+'use client';
+
 import type { ReactNode } from 'react';
 import type { ViewProps, ViewStyle } from 'react-native';
 import { Text as RNText, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
-// Surface: white card on a neutral page, subtle 1px border, sm shadow,
-// 12px radius. The shadow is intentionally restrained — Cards are content
-// containers, not floating overlays. Overlays (Dialog, Toast) get the
-// heavier shadow scale.
-const SURFACE_STYLE: ViewStyle = {
-    backgroundColor: theme.semantic.background.elevated,
+// Surface: elevated background on a neutral page, subtle 1px border, sm
+// shadow, 12px radius. The shadow is intentionally restrained — Cards are
+// content containers, not floating overlays. Overlays (Dialog, Toast) get
+// the heavier shadow scale.
+const SURFACE_BASE: ViewStyle = {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: theme.semantic.border.default,
     overflow: 'hidden',
 };
 
@@ -27,7 +27,7 @@ const CONTENT_STYLE: ViewStyle = {
     paddingHorizontal: 24,
     paddingVertical: 16,
 };
-const FOOTER_STYLE: ViewStyle = {
+const FOOTER_BASE: ViewStyle = {
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 20,
@@ -35,7 +35,6 @@ const FOOTER_STYLE: ViewStyle = {
     alignItems: 'center',
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: theme.semantic.border.default,
 };
 
 export type CardProps = Omit<ViewProps, 'children'> & {
@@ -48,10 +47,9 @@ export type CardProps = Omit<ViewProps, 'children'> & {
  * Container surface for grouping related content. Pair with `CardHeader`,
  * `CardTitle`, `CardDescription`, `CardContent`, and `CardFooter` for the
  * conventional layout, or use any children directly.
- *
- * RSC-safe: pure render, no hooks.
  */
 export function Card({ children, className, style, ...rest }: CardProps) {
+    const colors = useThemeColors();
     return (
         <View
             {...rest}
@@ -59,7 +57,14 @@ export function Card({ children, className, style, ...rest }: CardProps) {
                 'rounded-xl border border-semantic-border-default bg-semantic-background-elevated',
                 className
             )}
-            style={[SURFACE_STYLE, style]}
+            style={[
+                SURFACE_BASE,
+                {
+                    backgroundColor: colors.semantic.background.elevated,
+                    borderColor: colors.semantic.border.default,
+                },
+                style,
+            ]}
         >
             {children}
         </View>
@@ -91,6 +96,7 @@ export function CardContent({ children, className, style, ...rest }: CardSection
 
 /** Footer with a top border and a row of actions (typically Buttons). */
 export function CardFooter({ children, className, style, ...rest }: CardSectionProps) {
+    const colors = useThemeColors();
     return (
         <View
             {...rest}
@@ -98,7 +104,7 @@ export function CardFooter({ children, className, style, ...rest }: CardSectionP
                 'flex-row items-center gap-2 px-6 pt-3 pb-5 border-t border-semantic-border-default',
                 className
             )}
-            style={[FOOTER_STYLE, style]}
+            style={[FOOTER_BASE, { borderTopColor: colors.semantic.border.default }, style]}
         >
             {children}
         </View>
@@ -113,6 +119,7 @@ export type CardTextProps = {
 
 /** Card title — heading-weight text. Renders as a heading on web. */
 export function CardTitle({ children, className, testID }: CardTextProps) {
+    const colors = useThemeColors();
     return (
         <RNText
             {...(testID !== undefined ? { testID } : {})}
@@ -120,7 +127,7 @@ export function CardTitle({ children, className, testID }: CardTextProps) {
             role="heading"
             aria-level={3}
             className={cn('text-lg font-semibold text-semantic-text-default', className)}
-            style={{ color: theme.semantic.text.default, fontSize: 18, fontWeight: '600' }}
+            style={{ color: colors.semantic.text.default, fontSize: 18, fontWeight: '600' }}
         >
             {children}
         </RNText>
@@ -129,11 +136,12 @@ export function CardTitle({ children, className, testID }: CardTextProps) {
 
 /** Muted subtitle that pairs with CardTitle. */
 export function CardDescription({ children, className, testID }: CardTextProps) {
+    const colors = useThemeColors();
     return (
         <RNText
             {...(testID !== undefined ? { testID } : {})}
             className={cn('text-sm text-semantic-text-muted', className)}
-            style={{ color: theme.semantic.text.muted, fontSize: 14 }}
+            style={{ color: colors.semantic.text.muted, fontSize: 14 }}
         >
             {children}
         </RNText>

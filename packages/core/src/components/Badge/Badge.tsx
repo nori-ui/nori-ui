@@ -1,7 +1,10 @@
-import { theme } from '@nori-ui/tokens';
+'use client';
+
 import type { ReactNode } from 'react';
 import type { TextStyle, ViewStyle } from 'react-native';
 import { Text as RNText, View } from 'react-native';
+import { useColorScheme } from '../../theme/use-color-scheme';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
@@ -26,40 +29,6 @@ export type BadgeProps = {
     testID?: string;
 };
 
-// Token-derived palette per tone. Soft = light shade of the tone for the
-// background, dark shade for the text. Solid = saturated bg + white text.
-// Outline = transparent bg + saturated border + tone text.
-const TONE_PALETTE: Record<
-    BadgeTone,
-    { soft: { bg: string; fg: string }; solid: { bg: string; fg: string }; outline: { border: string; fg: string } }
-> = {
-    neutral: {
-        soft: { bg: theme.color.neutral['100'], fg: theme.color.neutral['700'] },
-        solid: { bg: theme.color.neutral['700'], fg: '#ffffff' },
-        outline: { border: theme.color.neutral['300'], fg: theme.color.neutral['700'] },
-    },
-    primary: {
-        soft: { bg: theme.color.primary['100'], fg: theme.color.primary['800'] },
-        solid: { bg: theme.color.primary['600'], fg: '#ffffff' },
-        outline: { border: theme.color.primary['300'], fg: theme.color.primary['700'] },
-    },
-    success: {
-        soft: { bg: '#dcfce7', fg: '#166534' },
-        solid: { bg: theme.color.success, fg: '#ffffff' },
-        outline: { border: theme.color.success, fg: '#166534' },
-    },
-    warning: {
-        soft: { bg: '#fef3c7', fg: '#92400e' },
-        solid: { bg: theme.color.warning, fg: '#ffffff' },
-        outline: { border: theme.color.warning, fg: '#92400e' },
-    },
-    danger: {
-        soft: { bg: '#fee2e2', fg: '#991b1b' },
-        solid: { bg: theme.color.danger, fg: '#ffffff' },
-        outline: { border: theme.color.danger, fg: '#991b1b' },
-    },
-};
-
 const BASE_CONTAINER: ViewStyle = {
     alignSelf: 'flex-start',
     flexDirection: 'row',
@@ -82,10 +51,69 @@ const BASE_TEXT: TextStyle = {
  * Compact pill for status, counts, or labels. Use sparingly — every badge
  * draws the eye, so a row of five is no longer a row of badges.
  *
- * RSC-safe: pure render, no hooks.
+ * Tone palettes flip with the active color scheme — light mode uses the
+ * familiar pastel scale (Tailwind 50/200/800), dark mode uses the deep
+ * 950/700/100 scale so a soft success badge reads as a calm tinted chip
+ * on either surface, never as a glaring pastel on a dark page.
  */
 export function Badge({ tone = 'neutral', appearance = 'soft', children, className, testID }: BadgeProps) {
-    const palette = TONE_PALETTE[tone];
+    const colors = useThemeColors();
+    const isDark = useColorScheme() === 'dark';
+    const invertedText = colors.semantic.text.inverted;
+
+    let palette: {
+        soft: { bg: string; fg: string };
+        solid: { bg: string; fg: string };
+        outline: { border: string; fg: string };
+    };
+    if (tone === 'neutral') {
+        palette = {
+            soft: isDark
+                ? { bg: colors.color.neutral['800'], fg: colors.color.neutral['100'] }
+                : { bg: colors.color.neutral['100'], fg: colors.color.neutral['700'] },
+            solid: {
+                bg: isDark ? colors.color.neutral['200'] : colors.color.neutral['700'],
+                fg: isDark ? colors.color.neutral['900'] : invertedText,
+            },
+            outline: {
+                border: isDark ? colors.color.neutral['600'] : colors.color.neutral['300'],
+                fg: isDark ? colors.color.neutral['100'] : colors.color.neutral['700'],
+            },
+        };
+    } else if (tone === 'primary') {
+        palette = {
+            soft: isDark
+                ? { bg: colors.color.primary['900'], fg: colors.color.primary['200'] }
+                : { bg: colors.color.primary['100'], fg: colors.color.primary['800'] },
+            solid: {
+                bg: isDark ? colors.color.primary['400'] : colors.color.primary['600'],
+                fg: isDark ? colors.color.primary['900'] : invertedText,
+            },
+            outline: {
+                border: isDark ? colors.color.primary['400'] : colors.color.primary['300'],
+                fg: isDark ? colors.color.primary['200'] : colors.color.primary['700'],
+            },
+        };
+    } else if (tone === 'success') {
+        palette = {
+            soft: isDark ? { bg: '#14532d', fg: '#bbf7d0' } : { bg: '#dcfce7', fg: '#166534' },
+            solid: { bg: colors.color.success, fg: invertedText },
+            outline: { border: colors.color.success, fg: isDark ? '#bbf7d0' : '#166534' },
+        };
+    } else if (tone === 'warning') {
+        palette = {
+            soft: isDark ? { bg: '#78350f', fg: '#fde68a' } : { bg: '#fef3c7', fg: '#92400e' },
+            solid: { bg: colors.color.warning, fg: invertedText },
+            outline: { border: colors.color.warning, fg: isDark ? '#fde68a' : '#92400e' },
+        };
+    } else {
+        palette = {
+            soft: isDark ? { bg: '#7f1d1d', fg: '#fecaca' } : { bg: '#fee2e2', fg: '#991b1b' },
+            solid: { bg: colors.color.danger, fg: invertedText },
+            outline: { border: colors.color.danger, fg: isDark ? '#fecaca' : '#991b1b' },
+        };
+    }
+
     const containerStyle: ViewStyle = (() => {
         if (appearance === 'solid') {
             return { ...BASE_CONTAINER, backgroundColor: palette.solid.bg };

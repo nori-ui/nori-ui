@@ -1,11 +1,11 @@
 'use client';
 
-import { theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type SwitchProps = {
@@ -28,11 +28,10 @@ const TRACK_BASE: ViewStyle = {
     justifyContent: 'center',
     paddingHorizontal: 2,
 };
-const THUMB_STYLE: ViewStyle = {
+const THUMB_BASE_STYLE: ViewStyle = {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#ffffff',
     // Web: boxShadow (the modern CSS-style replacement for the legacy RN
     // `shadow*` props that react-native-web has deprecated).
     // Native: elevation (Android) — RN ignores boxShadow there.
@@ -56,6 +55,7 @@ export function Switch({
     asChild,
     children,
 }: SwitchProps) {
+    const colors = useThemeColors();
     const [inner, setInner] = useState<boolean>(defaultChecked);
     const isControlled = checked !== undefined;
     const value = isControlled ? Boolean(checked) : inner;
@@ -97,17 +97,27 @@ export function Switch({
 
     const trackClasses = cn(
         'w-10 h-6 rounded-full justify-center px-0.5 transition-colors',
-        value ? 'bg-semantic-interactive-primary' : 'bg-neutral-300',
+        value ? 'bg-semantic-interactive-primary' : 'bg-neutral-300 dark:bg-neutral-700',
         disabled ? 'opacity-60' : undefined
     );
-    const thumbClasses = cn('w-5 h-5 rounded-full bg-white shadow-sm', value ? 'self-end' : 'self-start');
+    const thumbClasses = cn(
+        'w-5 h-5 rounded-full bg-white dark:bg-neutral-100 shadow-sm',
+        value ? 'self-end' : 'self-start'
+    );
 
     const trackStyle = [
         TRACK_BASE,
-        { backgroundColor: value ? theme.color.primary['600'] : theme.color.neutral['300'] },
+        { backgroundColor: value ? colors.semantic.interactive.primary : colors.color.neutral['600'] },
         disabled ? { opacity: 0.6 } : null,
     ];
-    const thumbStyle = [THUMB_STYLE, { alignSelf: value ? 'flex-end' : 'flex-start' } as ViewStyle];
+    // Thumb stays a near-white disc — we deliberately don't go to a dark
+    // grey on dark mode because the thumb needs to read as the "moveable
+    // puck" against the track in both schemes. Using neutral.50 instead of
+    // pure white softens it slightly on dark to match other elevated chrome.
+    const thumbStyle = [
+        THUMB_BASE_STYLE,
+        { backgroundColor: colors.color.neutral['50'], alignSelf: value ? 'flex-end' : 'flex-start' } as ViewStyle,
+    ];
 
     // Whole-row Pressable so clicking the label toggles the switch. The
     // visible track is a non-interactive View — one role="switch" per
@@ -125,7 +135,7 @@ export function Switch({
             {label ? (
                 <RNText
                     className="text-md text-semantic-text-default"
-                    style={{ color: theme.color.neutral['900'], fontSize: 16 }}
+                    style={{ color: colors.semantic.text.default, fontSize: 16 }}
                 >
                     {label}
                 </RNText>

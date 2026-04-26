@@ -13,6 +13,14 @@ const { createPreset } = require('fumadocs-ui/tailwind-plugin');
 
 const config: Config = {
     presets: [createPreset(), noriPreset, nativewindPreset],
+    // Toggle dark mode via either `.dark` on <html> (next-themes / Fumadocs
+    // convention) or `[data-theme="dark"]` (some legacy theme switchers).
+    // The Fumadocs preset defaults to `'media'`; we explicitly switch to a
+    // combined selector so the in-page theme toggle, our token CSS variables
+    // in global.css, and Tailwind's `dark:` variant all key off the same
+    // signal. The `.dark, .dark *` part is what makes inline elements
+    // (and react-native-web mounted Text) inherit dark variants.
+    darkMode: ['selector', ':is(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)'],
     content: [
         './app/**/*.{ts,tsx,mdx}',
         './components/**/*.{ts,tsx}',

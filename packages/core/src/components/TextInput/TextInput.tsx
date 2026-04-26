@@ -1,8 +1,10 @@
-import { theme } from '@nori-ui/tokens';
+'use client';
+
 import type { ReactNode } from 'react';
 import { useId } from 'react';
 import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
 import { Text as RNText, TextInput as RNTextInput, View } from 'react-native';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
@@ -24,7 +26,6 @@ export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
 };
 
 const CONTAINER_STYLE: ViewStyle = { flexDirection: 'column', gap: 4 };
-const LABEL_STYLE: TextStyle = { fontSize: 14, fontWeight: '500', color: theme.color.neutral['900'] };
 const FIELD_BASE_STYLE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -36,14 +37,6 @@ const FIELD_BASE_STYLE: ViewStyle = {
     // it belongs to the page, not the input.
     overflow: 'hidden',
 };
-const INPUT_STYLE: TextStyle = {
-    flex: 1,
-    paddingVertical: 8,
-    fontSize: 16,
-    color: theme.color.neutral['900'],
-};
-const HELPER_STYLE: TextStyle = { fontSize: 14, color: theme.color.neutral['500'] };
-const ERROR_STYLE: TextStyle = { fontSize: 14, color: theme.color.danger };
 
 /**
  * Single-line text input with label, helper, error, and leading/trailing slots.
@@ -51,8 +44,8 @@ const ERROR_STYLE: TextStyle = { fontSize: 14, color: theme.color.danger };
  * a11y: label is a <label for={id}>; the input is `aria-invalid=true` + labelled
  * by the error/helper text via aria-describedby when present.
  *
- * Notionally RSC-safe — uses only useId() which React 19 guarantees is safe on
- * the server. No "use client" required.
+ * Color flips with the active scheme — the field surface, border, label, and
+ * placeholder all read from the resolved palette via `useThemeColors`.
  */
 export function TextInput({
     label,
@@ -69,6 +62,7 @@ export function TextInput({
     numberOfLines,
     ...rest
 }: TextInputProps) {
+    const colors = useThemeColors();
     const reactId = useId();
     const inputId = testID ?? `nori-ui-input-${reactId}`;
     const describeId = `${inputId}-describe`;
@@ -84,9 +78,21 @@ export function TextInput({
     if (numberOfLines !== undefined) inputExtras.numberOfLines = numberOfLines;
     if (onChangeText !== undefined) inputExtras.onChangeText = onChangeText;
 
+    const labelStyle: TextStyle = { fontSize: 14, fontWeight: '500', color: colors.semantic.text.default };
+    const inputStyle: TextStyle = {
+        flex: 1,
+        paddingVertical: 8,
+        fontSize: 16,
+        color: colors.semantic.text.default,
+    };
+    const helperStyle: TextStyle = { fontSize: 14, color: colors.semantic.text.muted };
+    const errorStyle: TextStyle = { fontSize: 14, color: colors.color.danger };
     const fieldStyle = [
         FIELD_BASE_STYLE,
-        { borderColor: hasError ? theme.color.danger : theme.color.neutral['200'] },
+        {
+            backgroundColor: colors.semantic.background.elevated,
+            borderColor: hasError ? colors.color.danger : colors.semantic.border.default,
+        },
         disabled ? { opacity: 0.6 } : null,
     ];
 
@@ -96,7 +102,7 @@ export function TextInput({
                 <label
                     htmlFor={inputId}
                     className="text-sm font-medium text-semantic-text-default"
-                    style={LABEL_STYLE as object}
+                    style={labelStyle as object}
                 >
                     {label}
                 </label>
@@ -118,12 +124,12 @@ export function TextInput({
                     nativeID={inputId}
                     editable={!disabled}
                     className={cn('flex-1 py-2 text-md text-semantic-text-default outline-none', className)}
-                    placeholderTextColor={theme.color.neutral['400']}
+                    placeholderTextColor={colors.semantic.text.muted}
                     {...inputExtras}
                     {...rest}
                     // Spread `rest` first so callers can extend the input style without
-                    // losing INPUT_STYLE — RN merges array styles in order, last wins.
-                    style={[INPUT_STYLE, rest.style]}
+                    // losing inputStyle — RN merges array styles in order, last wins.
+                    style={[inputStyle, rest.style]}
                 />
                 {trailing ? (
                     <View className="ml-2" style={{ marginLeft: 8 }}>
@@ -135,12 +141,12 @@ export function TextInput({
                 <RNText
                     nativeID={describeId}
                     className="text-sm text-semantic-interactive-destructive"
-                    style={ERROR_STYLE}
+                    style={errorStyle}
                 >
                     {error}
                 </RNText>
             ) : helperText ? (
-                <RNText nativeID={describeId} className="text-sm text-semantic-text-muted" style={HELPER_STYLE}>
+                <RNText nativeID={describeId} className="text-sm text-semantic-text-muted" style={helperStyle}>
                     {helperText}
                 </RNText>
             ) : null}

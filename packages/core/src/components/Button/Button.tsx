@@ -1,9 +1,11 @@
-import { theme } from '@nori-ui/tokens';
+'use client';
+
 import type { ComponentType, ReactNode } from 'react';
 import { forwardRef } from 'react';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 import { Spinner } from '../Spinner';
 
@@ -26,11 +28,14 @@ export type ButtonProps = Omit<PressableProps, 'disabled' | 'children'> & {
     testID?: string;
 };
 
+// NativeWind classes — the `dark:` variants flip colors when <html> carries
+// the `dark` class (or `data-theme="dark"`); see the tokens Tailwind preset.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     primary:
         'bg-semantic-interactive-primary hover:bg-semantic-interactive-primaryHover active:bg-semantic-interactive-primaryPressed',
-    secondary: 'bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300',
-    ghost: 'bg-transparent hover:bg-neutral-100 active:bg-neutral-200',
+    secondary:
+        'bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:active:bg-neutral-600',
+    ghost: 'bg-transparent hover:bg-neutral-100 active:bg-neutral-200 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
     destructive: 'bg-semantic-interactive-destructive hover:opacity-90 active:opacity-80',
 };
 
@@ -43,25 +48,6 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 const ICON_SIZE: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 20 };
 
 const BASE_CLASSES = 'inline-flex flex-row items-center justify-center gap-2 rounded-md select-none';
-
-// Inline fallback styles mirror the NativeWind classes above. They ship so
-// the component renders correctly when NativeWind is NOT active (e.g. Expo
-// Snack's sandbox, or apps that don't configure NativeWind). When NativeWind
-// IS active, its compiled className styles merge with and (where intended)
-// override these defaults.
-const VARIANT_STYLES: Record<ButtonVariant, ViewStyle> = {
-    primary: { backgroundColor: theme.color.primary['600'] },
-    secondary: { backgroundColor: theme.color.neutral['100'] },
-    ghost: { backgroundColor: 'transparent' },
-    destructive: { backgroundColor: theme.color.danger },
-};
-
-const VARIANT_TEXT_COLOR: Record<ButtonVariant, string> = {
-    primary: '#ffffff',
-    secondary: theme.color.neutral['900'],
-    ghost: theme.color.neutral['900'],
-    destructive: '#ffffff',
-};
 
 const SIZE_STYLES: Record<ButtonSize, { container: ViewStyle; text: { fontSize: number } }> = {
     sm: { container: { height: 32, paddingHorizontal: 12 }, text: { fontSize: 14 } },
@@ -95,6 +81,7 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
     },
     forwardedRef
 ) {
+    const colors = useThemeColors();
     const isInoperative = Boolean(disabled) || Boolean(loading);
     const classes = cn(
         BASE_CLASSES,
@@ -104,9 +91,26 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         className
     );
 
+    // Inline fallback styles mirror the NativeWind classes above so the
+    // component renders correctly when NativeWind isn't compiling
+    // (e.g. Expo Snack) AND on native where Tailwind classes aren't applied.
+    // Reading from the resolved palette means dark mode flips both layers.
+    const variantStyles: Record<ButtonVariant, ViewStyle> = {
+        primary: { backgroundColor: colors.semantic.interactive.primary },
+        secondary: { backgroundColor: colors.semantic.background.subtle },
+        ghost: { backgroundColor: 'transparent' },
+        destructive: { backgroundColor: colors.semantic.interactive.destructive },
+    };
+    const variantTextColor: Record<ButtonVariant, string> = {
+        primary: colors.semantic.text.inverted,
+        secondary: colors.semantic.text.default,
+        ghost: colors.semantic.text.default,
+        destructive: colors.semantic.text.inverted,
+    };
+
     const baseInlineStyle: StyleProp<ViewStyle> = [
         BASE_STYLE,
-        VARIANT_STYLES[variant],
+        variantStyles[variant],
         SIZE_STYLES[size].container,
         isInoperative ? { opacity: 0.6 } : null,
     ];
@@ -114,7 +118,7 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         typeof style === 'function' ? (state) => [baseInlineStyle, style(state)] : [baseInlineStyle, style];
     const slotStyle: StyleProp<ViewStyle> = [baseInlineStyle, typeof style === 'function' ? null : style];
 
-    const textColor = VARIANT_TEXT_COLOR[variant];
+    const textColor = variantTextColor[variant];
     const textStyle = { color: textColor, fontSize: SIZE_STYLES[size].text.fontSize, fontWeight: '500' as const };
 
     const handlePress: NonNullable<PressableProps['onPress']> = (ev) => {
