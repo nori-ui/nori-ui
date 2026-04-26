@@ -341,19 +341,53 @@ export function Select<T = unknown>({
         }
     }, []);
 
-    // Close when clicking outside (web only).
+    // Close when clicking outside (web only). The outside check considers
+    // BOTH the container (trigger area) and the popup ref because the popup
+    // portals out of the container's DOM subtree (position: fixed escapes
+    // any overflow:hidden ancestor, but still belongs to the same logical
+    // widget).
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const triggerRef = useRef<HTMLElement | null>(null);
+    const popupRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
         if (typeof document === 'undefined') return;
         if (!open) return;
         const onDocClick = (event: MouseEvent) => {
             const node = containerRef.current;
-            if (!node) return;
-            if (!node.contains(event.target as Node)) setOpen(false);
+            const popup = popupRef.current;
+            const target = event.target as Node;
+            if (node?.contains(target)) return;
+            if (popup?.contains(target)) return;
+            setOpen(false);
         };
         document.addEventListener('mousedown', onDocClick);
         return () => document.removeEventListener('mousedown', onDocClick);
     }, [open]);
+
+    // Measure the trigger so the popup can render with `position: fixed` +
+    // computed coords. position:fixed escapes any ancestor's overflow:hidden
+    // (e.g. fumadocs Tabs panes, our Preview frame), which is the
+    // single biggest source of "the dropdown got cut off" bugs.
+    const [triggerRect, setTriggerRect] = useState<{ top: number; left: number; width: number; height: number } | null>(
+        null
+    );
+    const measureTrigger = useCallback(() => {
+        const node = triggerRef.current;
+        if (!node || typeof node.getBoundingClientRect !== 'function') return;
+        const rect = node.getBoundingClientRect();
+        setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+    }, []);
+    useEffect(() => {
+        if (!open) return;
+        if (typeof window === 'undefined') return;
+        measureTrigger();
+        window.addEventListener('scroll', measureTrigger, true);
+        window.addEventListener('resize', measureTrigger);
+        return () => {
+            window.removeEventListener('scroll', measureTrigger, true);
+            window.removeEventListener('resize', measureTrigger);
+        };
+    }, [open, measureTrigger]);
 
     // Scroll handler for async pagination.
     const onListScroll = useCallback(
@@ -382,21 +416,34 @@ export function Select<T = unknown>({
         opacity: disabled ? 0.6 : 1,
     };
 
-    const popupStyle: ViewStyle = {
-        position: 'absolute',
-        top: '100%' as unknown as number,
-        left: dir === 'rtl' ? undefined : 0,
-        right: dir === 'rtl' ? 0 : undefined,
-        marginTop: 4,
-        minWidth: 200,
-        backgroundColor: theme.semantic.background.elevated,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: theme.semantic.border.default,
-        zIndex: 50,
-        // rn-web maps `boxShadow` to the DOM div via inline style.
-        ...({ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)' } as ViewStyle),
-    };
+    // position: fixed + computed coords from the trigger so the popup can
+    // escape any ancestor with `overflow: hidden`. Width matches the
+    // trigger so the dropdown lines up; if the trigger is narrower than
+    // 200px we widen to the minimum readable width.
+    const popupStyle: ViewStyle = triggerRect
+        ? {
+              position: 'fixed' as unknown as 'absolute',
+              top: triggerRect.top + triggerRect.height + 4,
+              left: dir === 'rtl' ? undefined : triggerRect.left,
+              right:
+                  dir === 'rtl' && typeof window !== 'undefined'
+                      ? window.innerWidth - (triggerRect.left + triggerRect.width)
+                      : undefined,
+              minWidth: Math.max(200, triggerRect.width),
+              backgroundColor: theme.semantic.background.elevated,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: theme.semantic.border.default,
+              zIndex: 50,
+              ...({ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)' } as ViewStyle),
+          }
+        : {
+              // Trigger not yet measured — render off-screen until the
+              // first measurement lands. Avoids a one-frame flash at (0,0).
+              position: 'fixed' as unknown as 'absolute',
+              top: -9999,
+              left: -9999,
+          };
 
     const containerProps: Record<string, unknown> = {
         ref: (node: HTMLDivElement | null) => {
@@ -410,6 +457,9 @@ export function Select<T = unknown>({
         <View {...containerProps} className={cn('relative', className)} style={{ position: 'relative' }}>
             {/* RN's Pressable TS surface doesn't model onKeyDown / aria-haspopup; rn-web forwards them. Spread at the boundary. */}
             <Pressable
+                ref={(node) => {
+                    triggerRef.current = node as unknown as HTMLElement | null;
+                }}
                 {...({
                     onKeyDown: handleTriggerKeyDown,
                     role: 'combobox',
@@ -441,7 +491,13 @@ export function Select<T = unknown>({
             </Pressable>
 
             {open ? (
-                <View {...({ role: 'listbox', id: `${baseId}-listbox` } as Record<string, unknown>)} style={popupStyle}>
+                <View
+                    ref={(node) => {
+                        popupRef.current = node as unknown as HTMLDivElement | null;
+                    }}
+                    {...({ role: 'listbox', id: `${baseId}-listbox` } as Record<string, unknown>)}
+                    style={popupStyle}
+                >
                     {searchable ? (
                         <SearchInput
                             value={searchInput}
