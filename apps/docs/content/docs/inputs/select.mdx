@@ -29,36 +29,35 @@ Other capabilities:
 - **RTL** — pass `dir="rtl"`; popup alignment + text direction flip.
 - **Keyboard nav** — Arrow Down/Up move highlight, Enter selects, Escape closes, Tab closes.
 
-## Preview
+## Static — with groups
+
+Items with the same `group` field cluster under a header. Searchable auto-on once the list reaches 10 items.
 
 <Preview name="select-basic" />
 
-## Async + paginated example
+## Async + paginated
 
-```tsx
-import { Select, type LoadOptionsResult } from '@nori-ui/core';
+`loadOptions` is called on every search change (debounced ~150ms) and on scroll near the bottom of the list. The component manages the loaded array and pagination cursor; consumers only return `{ items, total? }`.
 
-export default function CountryPicker({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
-    const loadOptions = async ({ search, offset, limit }: { search: string; offset: number; limit: number }): Promise<LoadOptionsResult> => {
-        const res = await fetch(`/api/countries?q=${encodeURIComponent(search)}&offset=${offset}&limit=${limit}`);
-        const json: { items: { code: string; name: string }[]; total: number } = await res.json();
-        return {
-            items: json.items.map((c) => ({ value: c.code, label: c.name })),
-            total: json.total,
-        };
-    };
-    return (
-        <Select
-            value={value}
-            onChange={onChange}
-            loadOptions={loadOptions}
-            pageSize={50}
-            placeholder="Select a country"
-            aria-label="Country"
-        />
-    );
-}
-```
+<Preview name="select-async" />
+
+## Virtualized
+
+Pass a thousand items in. Only the visible window is rendered (auto-on once the option count crosses 100).
+
+<Preview name="select-virtualized" />
+
+## Custom item renderer
+
+`renderOption(option, { selected, active })` returns the JSX for each row. The picker still owns selection state, keyboard nav, and group headers — the custom renderer only owns the row's content.
+
+<Preview name="select-custom-renderer" />
+
+## Locale-aware sort
+
+`locale="de"` (or any BCP 47) re-sorts the list via `Intl.Collator`. Switch the locale and the order updates so the alphabet matches the language a reader is in.
+
+<Preview name="select-locale" />
 
 ## Props
 

@@ -14,10 +14,18 @@ import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
 import RadioGroupBasic from './demos/radio-group-basic';
 import SegmentedControlBasic from './demos/segmented-control-basic';
+import SelectAsync from './demos/select-async';
 import SelectBasic from './demos/select-basic';
+import SelectCustomRenderer from './demos/select-custom-renderer';
+import SelectLocale from './demos/select-locale';
+import SelectVirtualized from './demos/select-virtualized';
 import SeparatorBasic from './demos/separator-basic';
 import SkeletonBasic from './demos/skeleton-basic';
 import SliderBasic from './demos/slider-basic';
+import SliderDisabled from './demos/slider-disabled';
+import SliderMulti from './demos/slider-multi';
+import SliderRtl from './demos/slider-rtl';
+import SliderVertical from './demos/slider-vertical';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
 import TabsBasic from './demos/tabs-basic';
@@ -59,9 +67,17 @@ export const previews = {
     'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'] },
     'segmented-control-basic': { Component: SegmentedControlBasic, ...previewSources['segmented-control-basic'] },
     'select-basic': { Component: SelectBasic, ...previewSources['select-basic'] },
+    'select-async': { Component: SelectAsync, ...previewSources['select-async'] },
+    'select-virtualized': { Component: SelectVirtualized, ...previewSources['select-virtualized'] },
+    'select-custom-renderer': { Component: SelectCustomRenderer, ...previewSources['select-custom-renderer'] },
+    'select-locale': { Component: SelectLocale, ...previewSources['select-locale'] },
     'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'] },
     'skeleton-basic': { Component: SkeletonBasic, ...previewSources['skeleton-basic'] },
     'slider-basic': { Component: SliderBasic, ...previewSources['slider-basic'] },
+    'slider-vertical': { Component: SliderVertical, ...previewSources['slider-vertical'] },
+    'slider-multi': { Component: SliderMulti, ...previewSources['slider-multi'] },
+    'slider-rtl': { Component: SliderRtl, ...previewSources['slider-rtl'] },
+    'slider-disabled': { Component: SliderDisabled, ...previewSources['slider-disabled'] },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },
     'card-basic': { Component: CardBasic, ...previewSources['card-basic'] },

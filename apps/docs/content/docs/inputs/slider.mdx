@@ -24,7 +24,31 @@ import { PropsTable } from '@/components/props-table';
 
 ## Preview
 
+Single thumb plus a two-thumb range. Drag, click the track, or tab to a thumb and use the arrow keys.
+
 <Preview name="slider-basic" />
+
+## Multi-thumb
+
+Three or more thumbs work the same way as range. `minStepsBetweenThumbs` enforces a gap so adjacent thumbs can't pass each other.
+
+<Preview name="slider-multi" />
+
+## Vertical
+
+Higher values sit at the top. Arrow Up / Arrow Down change the value (axis follows orientation).
+
+<Preview name="slider-vertical" />
+
+## RTL
+
+`dir="rtl"` flips the visual mapping so the higher value sits on the left. Arrow Right then *decreases* the value, matching how a reader expects "right" to behave in the opposite reading direction.
+
+<Preview name="slider-rtl" />
+
+## Disabled
+
+<Preview name="slider-disabled" />
 
 ## Props
 
