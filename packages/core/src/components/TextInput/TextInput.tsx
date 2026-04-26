@@ -31,6 +31,10 @@ const FIELD_BASE_STYLE: ViewStyle = {
     borderRadius: 6,
     borderWidth: 1,
     paddingHorizontal: 12,
+    // Clip the textarea's browser-drawn resize grippy inside the rounded
+    // border. Without this, the grippy escapes the corner and looks like
+    // it belongs to the page, not the input.
+    overflow: 'hidden',
 };
 const INPUT_STYLE: TextStyle = {
     flex: 1,
