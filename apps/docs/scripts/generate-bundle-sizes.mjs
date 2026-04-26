@@ -34,6 +34,7 @@ const TARGETS = [
     'Checkbox',
     'HStack',
     'Icon',
+    'RadioGroup',
     'Separator',
     'Spinner',
     'Switch',

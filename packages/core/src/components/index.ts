@@ -6,6 +6,7 @@ export * from './Button';
 export * from './Card';
 export * from './Checkbox';
 export * from './HStack';
+export * from './RadioGroup';
 export * from './Separator';
 export * from './Spinner';
 export * from './Switch';

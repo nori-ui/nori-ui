@@ -19,6 +19,7 @@
     "---Controls---",
     "controls/button",
     "controls/checkbox",
+    "controls/radio-group",
     "controls/switch",
     "---Inputs---",
     "inputs/text-input",

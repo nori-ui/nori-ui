@@ -11,6 +11,7 @@ import CheckboxBasic from './demos/checkbox-basic';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
+import RadioGroupBasic from './demos/radio-group-basic';
 import SeparatorBasic from './demos/separator-basic';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
@@ -56,6 +57,7 @@ export const previews = {
     'text-input-basic': { Component: TextInputBasic, ...previewSources['text-input-basic'] },
     'text-area-basic': { Component: TextAreaBasic, ...previewSources['text-area-basic'] },
     'checkbox-basic': { Component: CheckboxBasic, ...previewSources['checkbox-basic'] },
+    'radio-group-basic': { Component: RadioGroupBasic, ...previewSources['radio-group-basic'] },
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'] },
     'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'] },
