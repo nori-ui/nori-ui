@@ -1,3 +1,4 @@
+import { findNeighbour } from 'fumadocs-core/server';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
@@ -9,6 +10,10 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
     const page = source.getPage(params.slug);
     if (!page) notFound();
 
+    // Compute prev/next from the page tree so fumadocs's footer renders
+    // the conventional ← / → arrows at the bottom of every page.
+    const { previous, next } = findNeighbour(source.pageTree, page.url);
+
     const MDX = page.data.body;
     return (
         <DocsPage
@@ -18,6 +23,12 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
                 repo: 'nori-ui',
                 sha: 'main',
                 path: `apps/docs/content/docs/${page.file.path}`,
+            }}
+            footer={{
+                items: {
+                    ...(previous ? { previous: { name: previous.name as string, url: previous.url } } : {}),
+                    ...(next ? { next: { name: next.name as string, url: next.url } } : {}),
+                },
             }}
             {...(page.data.full ? { full: true } : {})}
         >
