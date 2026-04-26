@@ -107,8 +107,11 @@ export function DialogTrigger({ asChild = true, children, className, testID }: D
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const onClick = (event: unknown) => {
-            const existing = child.props.onClick as ((e: unknown) => void) | undefined;
+        // Pass both onClick (web HTML buttons) AND onPress (RN Pressable /
+        // our own Button) so the trigger fires regardless of which event
+        // model the wrapped child speaks. The child's existing handler
+        // runs first, then we open.
+        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
             existing?.(event);
             ctx.setOpen(true);
         };
@@ -117,7 +120,8 @@ export function DialogTrigger({ asChild = true, children, className, testID }: D
                 ref={(node: HTMLElement | null) => {
                     ctx.triggerRef.current = node;
                 }}
-                onClick={onClick}
+                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
+                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
                 {...(testID !== undefined ? { 'data-testid': testID } : {})}
                 {...(className !== undefined ? { className } : {})}
             >
@@ -351,14 +355,17 @@ export function DialogClose({
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const onClick = (event: unknown) => {
-            const existing = child.props.onClick as ((e: unknown) => void) | undefined;
+        // Same dual-event story as DialogTrigger: pass both onClick (web
+        // button) and onPress (RN Pressable / our own Button) so the
+        // wrapped element fires regardless of its event model.
+        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
             existing?.(event);
             ctx.setOpen(false);
         };
         return (
             <Slot
-                onClick={onClick}
+                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
+                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
                 {...(testID !== undefined ? { 'data-testid': testID } : {})}
                 {...(className !== undefined ? { className } : {})}
             >

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
+import { Button } from '../../Button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '../Dialog';
 
 describe('<Dialog>', () => {
@@ -28,6 +29,39 @@ describe('<Dialog>', () => {
         );
         fireEvent.click(screen.getByTestId('trigger'));
         expect(screen.getByTestId('dialog')).toBeInTheDocument();
+    });
+
+    it('asChild trigger forwards both onClick and onPress so a wrapped Button (Pressable) opens the dialog', () => {
+        // Regression: Button's underlying RN Pressable speaks `onPress`, not
+        // `onClick`. Forwarding only `onClick` from Slot silently failed to
+        // open the dialog when the trigger child was a <Button>.
+        render(
+            <Dialog>
+                <DialogTrigger>
+                    <Button testID="trigger">Open</Button>
+                </DialogTrigger>
+                <DialogContent testID="dialog">
+                    <DialogTitle>Hi</DialogTitle>
+                </DialogContent>
+            </Dialog>
+        );
+        fireEvent.click(screen.getByTestId('trigger'));
+        expect(screen.getByTestId('dialog')).toBeInTheDocument();
+    });
+
+    it('asChild close forwards both onClick and onPress so a wrapped Button (Pressable) dismisses', () => {
+        render(
+            <Dialog defaultOpen>
+                <DialogContent testID="dialog">
+                    <DialogTitle>Hi</DialogTitle>
+                    <DialogClose>
+                        <Button testID="close">Close</Button>
+                    </DialogClose>
+                </DialogContent>
+            </Dialog>
+        );
+        fireEvent.click(screen.getByTestId('close'));
+        expect(screen.queryByTestId('dialog')).toBeNull();
     });
 
     it('renders defaultOpen state immediately', () => {
