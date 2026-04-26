@@ -24,7 +24,7 @@ const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string
 ];
 
 const expectedPascal = EXPECTED_COMPONENTS.map(([p]) => p).sort();
-const expectedDemoKeys = EXPECTED_COMPONENTS.map(([, k]) => `${k}-basic`).sort();
+const expectedBasicDemoKeys = EXPECTED_COMPONENTS.map(([, k]) => `${k}-basic`);
 
 describe('component registries stay aligned', () => {
     test('props.generated.ts covers every expected component (no extras, no gaps)', () => {
@@ -35,8 +35,12 @@ describe('component registries stay aligned', () => {
         expect(Object.keys(bundleSizes).sort()).toEqual(expectedPascal);
     });
 
-    test('preview-sources.generated.ts covers every expected component as <kebab>-basic', () => {
-        expect(Object.keys(previewSources).sort()).toEqual(expectedDemoKeys);
+    test('preview-sources.generated.ts has a <kebab>-basic demo for every expected component', () => {
+        // Extra demos beyond `-basic` are allowed (variations / patterns);
+        // missing the basic one for any component is not.
+        const present = new Set(Object.keys(previewSources));
+        const missing = expectedBasicDemoKeys.filter((key) => !present.has(key));
+        expect(missing).toEqual([]);
     });
 
     test('every bundle-size entry reports a non-zero gzipped cost', () => {

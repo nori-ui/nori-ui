@@ -114,10 +114,12 @@ export function TextInput({
                     nativeID={inputId}
                     editable={!disabled}
                     className={cn('flex-1 py-2 text-md text-semantic-text-default outline-none', className)}
-                    style={INPUT_STYLE}
                     placeholderTextColor={theme.color.neutral['400']}
                     {...inputExtras}
                     {...rest}
+                    // Spread `rest` first so callers can extend the input style without
+                    // losing INPUT_STYLE — RN merges array styles in order, last wins.
+                    style={[INPUT_STYLE, rest.style]}
                 />
                 {trailing ? (
                     <View className="ml-2" style={{ marginLeft: 8 }}>

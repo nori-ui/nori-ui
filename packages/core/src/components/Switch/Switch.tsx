@@ -109,11 +109,19 @@ export function Switch({
     ];
     const thumbStyle = [THUMB_STYLE, { alignSelf: value ? 'flex-end' : 'flex-start' } as ViewStyle];
 
+    // Whole-row Pressable so clicking the label toggles the switch. The
+    // visible track is a non-interactive View — one role="switch" per
+    // logical control, not two competing hit-areas.
     return (
-        <View className={cn('flex-row items-center gap-2', className)} style={ROW_STYLE}>
-            <Pressable onPress={toggle} {...commonProps} className={trackClasses} style={trackStyle}>
+        <Pressable
+            onPress={toggle}
+            {...commonProps}
+            className={cn('flex-row items-center gap-2', className)}
+            style={ROW_STYLE}
+        >
+            <View className={trackClasses} style={trackStyle}>
                 <View className={thumbClasses} style={thumbStyle} />
-            </Pressable>
+            </View>
             {label ? (
                 <RNText
                     className="text-md text-semantic-text-default"
@@ -123,6 +131,6 @@ export function Switch({
                 </RNText>
             ) : null}
             {children}
-        </View>
+        </Pressable>
     );
 }

@@ -22,6 +22,14 @@ import { PropsTable } from '@/components/props-table';
 
 <Preview name="hstack-basic" />
 
+## Proportional widths
+
+By default each child takes only the space its content needs. To split the row into proportional columns, give each child a `flex` value on `Box`. The numbers are ratios, not percentages — `flex={1}` + `flex={3}` + `flex={1}` produces a 20% / 60% / 20% split because `1 + 3 + 1 = 5`.
+
+For 33 / 33 / 33, give every child `flex={1}`.
+
+<Preview name="hstack-flex" />
+
 ## Native preview
 
 <ExpoSnack component="HStack" height={300} />

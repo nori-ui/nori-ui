@@ -5,6 +5,7 @@ import BoxBasic from './demos/box-basic';
 import ButtonBasic from './demos/button-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import HStackBasic from './demos/hstack-basic';
+import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
@@ -41,6 +42,7 @@ export const previews = {
     'text-basic': { Component: TextBasic, ...previewSources['text-basic'] },
     'box-basic': { Component: BoxBasic, ...previewSources['box-basic'] },
     'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'] },
+    'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'] },
     'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'] },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },

@@ -99,23 +99,23 @@ export function Checkbox({
 
     const boxClasses = cn('w-5 h-5 rounded-sm border border-semantic-border-strong items-center justify-center');
 
+    // The whole row is the interactive element so clicking the label text
+    // toggles the checkbox. The visual box is a non-interactive View — one
+    // role="checkbox" per logical control, not two competing hit-areas.
     return (
-        <View
+        <Pressable
+            onPress={toggle}
+            {...commonProps}
             className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}
             style={[ROW_STYLE, disabled ? { opacity: 0.6 } : null]}
         >
-            <Pressable
-                onPress={toggle}
-                {...commonProps}
-                className={boxClasses}
-                style={[BOX_STYLE, isMarked && !disabled ? BOX_STYLE_CHECKED : null]}
-            >
+            <View className={boxClasses} style={[BOX_STYLE, isMarked && !disabled ? BOX_STYLE_CHECKED : null]}>
                 {isMarked && !disabled ? <Check size={14} color="#ffffff" /> : null}
-            </Pressable>
+            </View>
             {children ??
                 (label !== undefined ? (
                     <RNText style={{ color: theme.color.neutral['900'], fontSize: 16 }}>{label}</RNText>
                 ) : null)}
-        </View>
+        </Pressable>
     );
 }
