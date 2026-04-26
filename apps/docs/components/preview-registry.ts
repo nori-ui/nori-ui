@@ -15,6 +15,7 @@ import RadioGroupBasic from './demos/radio-group-basic';
 import SeparatorBasic from './demos/separator-basic';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
+import TabsBasic from './demos/tabs-basic';
 import TextAreaBasic from './demos/text-area-basic';
 import TextBasic from './demos/text-basic';
 import TextInputBasic from './demos/text-input-basic';
@@ -59,6 +60,7 @@ export const previews = {
     'checkbox-basic': { Component: CheckboxBasic, ...previewSources['checkbox-basic'] },
     'radio-group-basic': { Component: RadioGroupBasic, ...previewSources['radio-group-basic'] },
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
+    'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'] },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'] },
     'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'] },
     'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'] },

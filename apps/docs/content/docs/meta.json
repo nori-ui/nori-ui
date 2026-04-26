@@ -21,6 +21,8 @@
     "controls/checkbox",
     "controls/radio-group",
     "controls/switch",
+    "---Navigation---",
+    "navigation/tabs",
     "---Inputs---",
     "inputs/text-input",
     "inputs/text-area",

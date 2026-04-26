@@ -38,6 +38,7 @@ const TARGETS = [
     'Separator',
     'Spinner',
     'Switch',
+    'Tabs',
     'Text',
     'TextArea',
     'TextInput',

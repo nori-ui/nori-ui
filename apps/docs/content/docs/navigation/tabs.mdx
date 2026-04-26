@@ -1,0 +1,46 @@
+---
+title: Tabs
+description: Tab pattern with keyboard nav, roving tabindex, and shared-value content/trigger pairing.
+since: 0.2.0
+tags: [navigation]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Tabs" />
+
+## At a glance
+
+- Compose `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`. The `value` prop on each trigger pairs it with the matching content panel.
+- Controlled (`value` + `onChange`) or uncontrolled (`defaultValue`).
+- **Keyboard nav** (WAI-ARIA tablist pattern):
+  - Arrow Right / Down → next tab
+  - Arrow Left / Up → previous tab
+  - Home / End → first / last
+  - Selection follows focus by default; pass `activation="manual"` to require Enter / Space to activate.
+- Tabs render in their own roving tabindex group: tabbing into the list lands on the active tab, and the active tab is the only one in the tab order.
+
+## Preview
+
+<Preview name="tabs-basic" />
+
+## Props
+
+### Tabs
+
+<PropsTable component="Tabs" />
+
+### TabsList
+
+<PropsTable component="TabsList" />
+
+### TabsTrigger
+
+<PropsTable component="TabsTrigger" />
+
+### TabsContent
+
+<PropsTable component="TabsContent" />
