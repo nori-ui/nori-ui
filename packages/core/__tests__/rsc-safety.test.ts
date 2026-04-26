@@ -20,6 +20,7 @@ const CLIENT_ALLOWED = [
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
+    'components/Avatar/Avatar.tsx',
     'components/Checkbox/Checkbox.tsx',
     'components/Switch/Switch.tsx',
 ];

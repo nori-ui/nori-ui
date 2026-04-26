@@ -10,6 +10,7 @@ import { componentProps } from '../components/props.generated';
 // We need both because component names like `HStack` don't round-trip
 // through naive kebab conversion.
 const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string]> = [
+    ['Avatar', 'avatar'],
     ['Box', 'box'],
     ['Button', 'button'],
     ['Card', 'card'],

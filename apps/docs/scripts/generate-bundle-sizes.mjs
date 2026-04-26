@@ -25,6 +25,7 @@ const OUT_FILE = join(HERE, '..', 'components', 'bundle-sizes.generated.ts');
 // One named export per docs page. Keep in sync with `componentProps`
 // (props.generated.ts) — both should cover every public component.
 const TARGETS = [
+    'Avatar',
     'Box',
     'Button',
     'Card',

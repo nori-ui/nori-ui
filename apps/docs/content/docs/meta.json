@@ -11,6 +11,7 @@
     "primitives/separator",
     "---Display---",
     "display/card",
+    "display/avatar",
     "---Feedback---",
     "feedback/spinner",
     "---Controls---",

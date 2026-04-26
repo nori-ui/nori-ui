@@ -198,6 +198,31 @@ jest.mock('react-native', () => {
         return buildDomProps(nextProps, 'div');
     };
 
+    type ImageProps = Props & {
+        source?: { uri?: string } | number;
+        onError?: (e: unknown) => void;
+        onLoad?: (e: unknown) => void;
+    };
+    const Image = (props: ImageProps) => {
+        const { source, onError, onLoad, accessibilityLabel, style, testID, ...rest } = props;
+        const uri = source && typeof source === 'object' ? source.uri : undefined;
+        const domProps: Record<string, unknown> = { ...rest };
+        if (uri !== undefined) domProps.src = uri;
+        if (testID !== undefined) domProps['data-testid'] = testID;
+        if (accessibilityLabel !== undefined) {
+            domProps['aria-label'] = accessibilityLabel;
+            domProps.alt = accessibilityLabel;
+        } else {
+            // <img> requires alt for valid HTML; default to empty (decorative).
+            domProps.alt = '';
+        }
+        if (onError !== undefined) domProps.onError = onError;
+        if (onLoad !== undefined) domProps.onLoad = onLoad;
+        const flatStyle = flattenStyle(style);
+        if (flatStyle !== undefined) domProps.style = flatStyle;
+        return React.createElement('img', domProps);
+    };
+
     return {
         __esModule: true,
         View,
@@ -208,6 +233,7 @@ jest.mock('react-native', () => {
         Pressable,
         TextInput,
         ActivityIndicator,
+        Image,
         StyleSheet: {
             create: <T extends Record<string, unknown>>(styles: T) => styles,
             flatten: (style: unknown) => style,
