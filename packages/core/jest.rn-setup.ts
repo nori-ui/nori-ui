@@ -243,11 +243,45 @@ jest.mock('react-native', () => {
         return React.createElement('div', domProps, children);
     };
 
+    // Minimal Animated mock — enough for Skeleton's opacity loop and
+    // anything else that calls Animated.timing / loop / sequence. The
+    // values are no-ops; tests don't assert animation timing.
+    const noopAnim = {
+        start: (cb?: (info: { finished: boolean }) => void) => cb?.({ finished: true }),
+        stop: () => undefined,
+        reset: () => undefined,
+    };
+    const AnimatedValue = function (this: { _value: number }, v: number) {
+        this._value = v;
+    } as unknown as new (
+        v: number
+    ) => { _value: number };
+    const Animated = {
+        Value: AnimatedValue,
+        View,
+        Text,
+        timing: () => noopAnim,
+        sequence: () => noopAnim,
+        loop: () => noopAnim,
+        parallel: () => noopAnim,
+        spring: () => noopAnim,
+    };
+    const Easing = {
+        inOut: (fn: unknown) => fn,
+        in: (fn: unknown) => fn,
+        out: (fn: unknown) => fn,
+        ease: (t: number) => t,
+        linear: (t: number) => t,
+        bezier: () => (t: number) => t,
+    };
+
     return {
         __esModule: true,
         View,
         Text,
         ScrollView,
+        Animated,
+        Easing,
         SafeAreaView,
         StatusBar,
         Pressable,

@@ -15,6 +15,7 @@
     "display/badge",
     "---Feedback---",
     "feedback/alert",
+    "feedback/skeleton",
     "feedback/spinner",
     "feedback/toast",
     "---Controls---",
