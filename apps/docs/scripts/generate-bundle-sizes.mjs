@@ -37,6 +37,7 @@ const TARGETS = [
     'Icon',
     'RadioGroup',
     'SegmentedControl',
+    'Select',
     'Separator',
     'Skeleton',
     'Slider',

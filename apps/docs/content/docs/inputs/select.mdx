@@ -1,0 +1,65 @@
+---
+title: Select
+description: Searchable, async-capable, optionally virtualized select with custom item renderers, RTL, locale-aware sort, and OptGroup support.
+since: 0.2.0
+tags: [input, form]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Select" />
+
+## At a glance
+
+Two operating modes:
+
+- **Static** — pass `options`. The picker filters in-memory by substring match on `label` (override via `filterOption`).
+- **Async** — pass `loadOptions(params)`. Called on search-input change (debounced ~150 ms) and when the list scrolls near the bottom for the next page. The component manages the loaded list and pagination cursor itself, so consumers don't have to.
+
+Other capabilities:
+
+- **Searchable** — auto-on for static lists ≥ 10 items and always on for async; override with `searchable`.
+- **Virtualized list** — auto-on for lists > 100 items; only the visible window of options is rendered.
+- **OptGroup support** — items with the same `group` field cluster under a group header.
+- **Locale-aware sort** — pass `locale="de"` (or any BCP 47) and the picker re-sorts via `Intl.Collator`. Switch the locale and the list re-orders alphabetically for the new language.
+- **Custom item renderer** — pass `renderOption` for arbitrary content per row.
+- **RTL** — pass `dir="rtl"`; popup alignment + text direction flip.
+- **Keyboard nav** — Arrow Down/Up move highlight, Enter selects, Escape closes, Tab closes.
+
+## Preview
+
+<Preview name="select-basic" />
+
+## Async + paginated example
+
+```tsx
+import { Select, type LoadOptionsResult } from '@nori-ui/core';
+
+export default function CountryPicker({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
+    const loadOptions = async ({ search, offset, limit }: { search: string; offset: number; limit: number }): Promise<LoadOptionsResult> => {
+        const res = await fetch(`/api/countries?q=${encodeURIComponent(search)}&offset=${offset}&limit=${limit}`);
+        const json: { items: { code: string; name: string }[]; total: number } = await res.json();
+        return {
+            items: json.items.map((c) => ({ value: c.code, label: c.name })),
+            total: json.total,
+        };
+    };
+    return (
+        <Select
+            value={value}
+            onChange={onChange}
+            loadOptions={loadOptions}
+            pageSize={50}
+            placeholder="Select a country"
+            aria-label="Country"
+        />
+    );
+}
+```
+
+## Props
+
+<PropsTable component="Select" />
