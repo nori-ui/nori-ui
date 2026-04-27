@@ -4469,6 +4469,7 @@ __metadata:
   dependencies:
     "@modelcontextprotocol/sdk": "npm:^1"
     "@nori-ui/core": "workspace:*"
+    "@nori-ui/mcp": "workspace:*"
     "@nori-ui/tokens": "workspace:*"
     "@tailwindcss/typography": "npm:^0.5"
     "@types/jest": "npm:^29"
@@ -4507,6 +4508,20 @@ __metadata:
     "@playwright/test": "npm:^1.48"
     playwright: "npm:^1.48"
     tsx: "npm:^4.21.0"
+  languageName: unknown
+  linkType: soft
+
+"@nori-ui/mcp@workspace:*, @nori-ui/mcp@workspace:packages/mcp":
+  version: 0.0.0-use.local
+  resolution: "@nori-ui/mcp@workspace:packages/mcp"
+  dependencies:
+    "@modelcontextprotocol/sdk": "npm:^1"
+    "@types/node": "npm:^20"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.6.0"
+    zod: "npm:^3.23"
+  bin:
+    nori-ui-mcp: ./dist/cli.js
   languageName: unknown
   linkType: soft
 

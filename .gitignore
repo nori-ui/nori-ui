@@ -21,6 +21,7 @@ coverage/
 
 # generated registries — produced by predev/prebuild hooks
 **/*.generated.ts
+**/*.generated.json
 
 # design tokens: build outputs ARE committed
 !packages/tokens/build/

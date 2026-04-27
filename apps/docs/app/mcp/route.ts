@@ -1,77 +1,16 @@
-// Next.js App Router MCP endpoint.
-// Uses the MCP SDK's Web Standards streamable HTTP transport so the server
-// can run in any runtime that speaks Request / Response — including Next.js
-// route handlers on Node.js 20.
+// Next.js App Router MCP endpoint — quiet HTTP fallback for browser-based
+// MCP clients that can't spawn a local process. Wraps the same `buildServer`
+// + corpus that the local `@nori-ui/mcp` CLI uses, so adding a tool in one
+// place reflects in both surfaces.
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
-import { z } from 'zod';
-import { getComponentDocs, getComponentProps, listExamples, searchComponents } from '@/lib/mcp-tools';
-
-function buildServer() {
-    const server = new McpServer({
-        name: 'nori-ui-docs',
-        version: '0.1.0',
-    });
-
-    server.registerTool(
-        'search_components',
-        {
-            description: 'Fuzzy search components by name, description, or tag.',
-            inputSchema: { query: z.string() },
-        },
-        async ({ query }) => {
-            const result = searchComponents(query);
-            return { content: [{ type: 'text', text: JSON.stringify(result) }] };
-        }
-    );
-
-    server.registerTool(
-        'get_component_docs',
-        {
-            description: 'Full docs body for a single component by name.',
-            inputSchema: { name: z.string() },
-        },
-        async ({ name }) => {
-            const result = getComponentDocs(name);
-            return { content: [{ type: 'text', text: JSON.stringify(result) }] };
-        }
-    );
-
-    server.registerTool(
-        'get_component_props',
-        {
-            description: 'Prop definitions for a component.',
-            inputSchema: { name: z.string() },
-        },
-        async ({ name }) => {
-            const result = getComponentProps(name);
-            return { content: [{ type: 'text', text: JSON.stringify(result) }] };
-        }
-    );
-
-    server.registerTool(
-        'list_examples',
-        {
-            description: 'List usage examples; filter by component name.',
-            inputSchema: { component: z.string().optional() },
-        },
-        async ({ component }) => {
-            const result = listExamples(component);
-            return { content: [{ type: 'text', text: JSON.stringify(result) }] };
-        }
-    );
-
-    return server;
-}
+import { buildServer, corpus } from '@nori-ui/mcp';
 
 async function handle(req: Request): Promise<Response> {
-    const server = buildServer();
-    // Stateless mode: no session tracking, plain JSON responses. Matches the
-    // v0.1 eval harness which issues single-shot tool calls.
-    const transport = new WebStandardStreamableHTTPServerTransport({
-        enableJsonResponse: true,
-    });
+    const server = buildServer(corpus);
+    // Stateless mode: plain JSON responses, no session tracking. Matches
+    // how the local stdio server runs (one client, one connection).
+    const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
     await server.connect(transport);
     return transport.handleRequest(req);
 }

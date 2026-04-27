@@ -1,38 +1,28 @@
 ---
 title: For AI agents
-description: MCP server, llms.txt, and llms-full.txt — everything an LLM or coding agent needs to use nori-ui correctly.
+description: Local MCP server, llms.txt, and llms-full.txt — everything an LLM or coding agent needs to use nori-ui correctly.
 since: 0.1.0
 tags: [meta]
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-The library was built with both human and machine readers in mind. Three endpoints make the docs first-class for LLMs and coding agents:
+The library was built with both human and machine readers in mind. Three surfaces make the docs first-class for LLMs and coding agents:
 
-## MCP server
+## Local MCP server (recommended)
 
-A live [Model Context Protocol](https://modelcontextprotocol.io) server exposing four tools to any MCP-aware client (Claude Desktop, Claude Code, Cursor, Windsurf, Zed):
-
-- `search_components(query)` — fuzzy search by name, description, or tag.
-- `get_component_docs(name)` — full docs body for one component.
-- `get_component_props(name)` — typed prop list with descriptions and defaults.
-- `list_examples(name)` — runnable code snippets keyed by component.
-
-**Server URL:**
-
-```
-https://nori-ui.com/mcp
-```
+Install [`@nori-ui/mcp`](https://www.npmjs.com/package/@nori-ui/mcp) and let your agent run it locally over stdio. The package bundles the entire docs corpus, so there's no network dependency and no rate limit.
 
 ### Claude Desktop / Claude Code
 
-Add to your MCP config (`~/.cursor/mcp.json`, `claude_desktop_config.json`, etc.):
+Add to your MCP config (`~/.claude.json`, `claude_desktop_config.json`, etc.):
 
 ```json
 {
   "mcpServers": {
     "nori-ui": {
-      "url": "https://nori-ui.com/mcp"
+      "command": "npx",
+      "args": ["-y", "@nori-ui/mcp"]
     }
   }
 }
@@ -40,11 +30,43 @@ Add to your MCP config (`~/.cursor/mcp.json`, `claude_desktop_config.json`, etc.
 
 ### Cursor
 
-Settings → MCP → Add new server → paste the URL above.
+`~/.cursor/mcp.json`:
 
-### Any MCP-compatible agent
+```json
+{
+  "mcpServers": {
+    "nori-ui": {
+      "command": "npx",
+      "args": ["-y", "@nori-ui/mcp"]
+    }
+  }
+}
+```
 
-The endpoint speaks the standard MCP streamable-HTTP transport. Drop the URL into your client's server config — no auth, no install, nothing to configure.
+### Any stdio-compatible agent
+
+The CLI speaks the standard MCP stdio transport. Point your client at `npx @nori-ui/mcp` (or install globally and use `nori-ui-mcp` directly).
+
+### Tools exposed
+
+- `search_components(query)` — fuzzy search by name, description, or tag.
+- `get_component_docs(name)` — full docs body for one component.
+- `get_component_props(name)` — typed prop list with descriptions and defaults.
+- `list_examples(name)` — runnable code snippets keyed by component.
+
+<Callout type="info">
+The data corpus is baked into the published `@nori-ui/mcp` package, so the version your agent installs matches the library version it queries — no silent drift between docs and answers.
+</Callout>
+
+## HTTP MCP endpoint (fallback)
+
+For browser-based clients that can't spawn a local process — Claude.ai web, ChatGPT custom GPTs, hosted MCP gateways — the same server is reachable over HTTP:
+
+```
+https://nori-ui.com/mcp
+```
+
+Same four tools, same data, same answers. Prefer the local server when you have the choice; the HTTP endpoint is a quiet fallback.
 
 ## llms.txt
 
@@ -54,8 +76,6 @@ A flat index of every doc page, optimised for token-efficient discovery. The con
 https://nori-ui.com/llms.txt
 ```
 
-Use this when you want an agent to *find* the right component before fetching its docs.
-
 ## llms-full.txt
 
 Every doc page concatenated into a single plain-text file — the entire library in one fetch.
@@ -64,8 +84,4 @@ Every doc page concatenated into a single plain-text file — the entire library
 https://nori-ui.com/llms-full.txt
 ```
 
-Use this when context is cheap and you want the agent to have the whole reference up front.
-
-<Callout type="info">
-For long-running agents, prefer the MCP server: it's targeted, structured, and avoids token bloat. Use `llms-full.txt` only for one-shot tasks where the model has a large context window to spare.
-</Callout>
+Use this when context is cheap and you want the agent to have the whole reference up front. For long-running sessions, prefer the MCP server (local or HTTP): targeted, structured, and avoids token bloat.
