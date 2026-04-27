@@ -278,20 +278,25 @@ const ToggleVisual = ({
             )}
             style={[baseStyle, surfaceStatic, disabled ? { opacity: 0.5 } : null]}
         >
-            {typeof children === 'string' ? (
-                <RNText
-                    style={{
-                        color: textColor,
-                        fontFamily: colors.fontFamily.body,
-                        fontSize,
-                        fontWeight: colors.fontWeight.medium as '500',
-                    }}
-                >
-                    {children}
-                </RNText>
-            ) : (
-                children
-            )}
+            {/* Always wrap children in an RNText so the dynamic
+             * `textColor` (inverted on the on-state surface, default
+             * otherwise) reaches both string children and arbitrary
+             * inline elements (B/I/U spans, lucide icons, etc.) via
+             * CSS color inheritance. Without this wrapper, non-string
+             * children render with their parent's color regardless of
+             * selected state — so an italic "I" stays dark on the
+             * dark filled-on background and disappears.
+             */}
+            <RNText
+                style={{
+                    color: textColor,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize,
+                    fontWeight: colors.fontWeight.medium as '500',
+                }}
+            >
+                {children}
+            </RNText>
         </Pressable>
     );
 };
