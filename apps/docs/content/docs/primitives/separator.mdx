@@ -18,9 +18,17 @@ import { PropsTable } from '@/components/props-table';
 - Decorative by default — use `decorative={false}` when the rule carries meaning a screen reader should announce.
 - One-pixel rule using the semantic border color, so it adapts to your theme.
 
-## Preview
+## Horizontal
 
 <Preview name="separator-basic" />
+
+## Vertical
+
+Pass `orientation="vertical"` and place inside an `HStack` (or any
+flex-row container). The separator stretches to its container's
+height via `align-self: stretch`.
+
+<Preview name="separator-vertical" />
 
 ## Props
 

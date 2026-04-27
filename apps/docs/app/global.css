@@ -28,11 +28,25 @@
         --fd-accent-foreground: 173 80% 24%;
         --fd-ring: 173 80% 40%;
 
-        /* Nori semantic.interactive.* — referenced by the docs Tailwind
-         * preset override (apps/docs/tailwind.config.ts) so the theme
-         * switcher can rewrite them at runtime via document.documentElement.
-         * Defaults to teal so the bare docs (without a switcher pick) match
-         * the @nori-ui/tokens defaults exactly. */
+        /* Nori brand colors — referenced by the docs Tailwind preset
+         * override (apps/docs/tailwind.config.ts) so the theme switcher
+         * can rewrite them at runtime via document.documentElement.
+         * Defaults are the teal palette so the bare docs (without a
+         * switcher pick) match the @nori-ui/tokens defaults exactly.
+         * Both the full primary 50-900 ramp AND the semantic
+         * interactive aliases are wired so any class that references
+         * them (`bg-primary-100`, `bg-semantic-interactive-primary`)
+         * flips together. */
+        --nori-primary-50: #f0fdfa;
+        --nori-primary-100: #ccfbf1;
+        --nori-primary-200: #99f6e4;
+        --nori-primary-300: #5eead4;
+        --nori-primary-400: #2dd4bf;
+        --nori-primary-500: #14b8a6;
+        --nori-primary-600: #0d9488;
+        --nori-primary-700: #0f766e;
+        --nori-primary-800: #115e59;
+        --nori-primary-900: #134e4a;
         --nori-primary: #0d9488;
         --nori-primary-hover: #0f766e;
         --nori-primary-pressed: #115e59;
@@ -57,10 +71,19 @@
         --fd-accent-foreground: 172 70% 80%;
         --fd-ring: 172 70% 50%;
 
-        /* Nori interactive.* in dark — matches @nori-ui/tokens defaults
-         * (teal-400 / 300 / 200). The docs theme switcher overrides
-         * these inline on document.documentElement when the user picks
-         * a non-default preset. */
+        /* Nori brand colors in dark — same teal ramp; the semantic
+         * primary/hover/pressed aliases pick up the brighter steps so
+         * they read against the deep-zinc background. */
+        --nori-primary-50: #f0fdfa;
+        --nori-primary-100: #ccfbf1;
+        --nori-primary-200: #99f6e4;
+        --nori-primary-300: #5eead4;
+        --nori-primary-400: #2dd4bf;
+        --nori-primary-500: #14b8a6;
+        --nori-primary-600: #0d9488;
+        --nori-primary-700: #0f766e;
+        --nori-primary-800: #115e59;
+        --nori-primary-900: #134e4a;
         --nori-primary: #2dd4bf;
         --nori-primary-hover: #5eead4;
         --nori-primary-pressed: #99f6e4;

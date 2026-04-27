@@ -32,6 +32,7 @@ import SelectCustomRenderer from './demos/select-custom-renderer';
 import SelectLocale from './demos/select-locale';
 import SelectVirtualized from './demos/select-virtualized';
 import SeparatorBasic from './demos/separator-basic';
+import SeparatorVertical from './demos/separator-vertical';
 import SkeletonBasic from './demos/skeleton-basic';
 import SliderBasic from './demos/slider-basic';
 import SliderDisabled from './demos/slider-disabled';
@@ -119,6 +120,7 @@ export const previews = {
     },
     'progress-tones': { Component: ProgressTones, ...previewSources['progress-tones'], ...NO_CHROME },
     'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'], ...NO_CHROME },
+    'separator-vertical': { Component: SeparatorVertical, ...previewSources['separator-vertical'], ...NO_CHROME },
     'skeleton-basic': { Component: SkeletonBasic, ...previewSources['skeleton-basic'], ...NO_CHROME },
     'slider-basic': { Component: SliderBasic, ...previewSources['slider-basic'], ...DIR_ONLY },
     'slider-vertical': { Component: SliderVertical, ...previewSources['slider-vertical'], ...NO_CHROME },

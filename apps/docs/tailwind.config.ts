@@ -28,6 +28,22 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
+                // Full primary ramp wired through CSS vars too — demos
+                // that paint Box surfaces with `bg-primary-100/200/...`
+                // (HStack, VStack, custom MDX) flip when the theme
+                // switcher writes these onto <html>.
+                primary: {
+                    '50': 'var(--nori-primary-50)',
+                    '100': 'var(--nori-primary-100)',
+                    '200': 'var(--nori-primary-200)',
+                    '300': 'var(--nori-primary-300)',
+                    '400': 'var(--nori-primary-400)',
+                    '500': 'var(--nori-primary-500)',
+                    '600': 'var(--nori-primary-600)',
+                    '700': 'var(--nori-primary-700)',
+                    '800': 'var(--nori-primary-800)',
+                    '900': 'var(--nori-primary-900)',
+                },
                 semantic: {
                     interactive: {
                         primary: 'var(--nori-primary)',
