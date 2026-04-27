@@ -1,6 +1,14 @@
 'use client';
 
-import { Button, defaultTheme, type NoriTheme, type Theme, ThemeProvider, VStack } from '@nori-ui/core/client';
+import {
+    Button,
+    defaultTheme,
+    type NoriTheme,
+    Separator,
+    type Theme,
+    ThemeProvider,
+    VStack,
+} from '@nori-ui/core/client';
 
 // Same teal palette as the default — the only thing that changes is the
 // dimensional + typographic tokens. Bigger radius, fatter padding,
@@ -43,14 +51,21 @@ const ROUNDED_THEME: NoriTheme = {
  * Nothing about the components changed; the theme did all the work.
  */
 export default function ThemingTokens() {
+    // VStack `gap={5}` was a no-op here because each ThemeProvider's
+    // inner VStack creates a fresh layout context (VStack uses display:
+    // contents-style flex children — when its own children are wrapped by
+    // a non-flex provider, the outer VStack's `gap` doesn't apply across
+    // siblings as expected). A Separator is also clearer visually for a
+    // "compare two themes" demo: it explicitly delimits the two regions.
     return (
-        <VStack gap={5}>
+        <VStack gap={4}>
             <ThemeProvider>
                 <VStack gap={2}>
                     <Button>Default theme</Button>
                     <Button variant="secondary">Default secondary</Button>
                 </VStack>
             </ThemeProvider>
+            <Separator />
             <ThemeProvider theme={ROUNDED_THEME}>
                 <VStack gap={2}>
                     <Button>Rounded · serif theme</Button>
