@@ -8,10 +8,9 @@ import { Toaster } from '@nori-ui/core/client';
  * single instance lives here in a client component the RSC layout can
  * embed without crossing the server/client boundary itself.
  *
- * `richColors` and `closeButton` are on so toast demos visibly use
- * those features without each demo having to ship its own (now
- * disallowed) Toaster.
+ * `richColors` is on so the tone-driven palettes are visible across
+ * the docs without per-demo configuration.
  */
 export function GlobalToaster() {
-    return <Toaster richColors closeButton />;
+    return <Toaster richColors />;
 }

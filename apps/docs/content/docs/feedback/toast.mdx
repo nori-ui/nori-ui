@@ -31,13 +31,13 @@ export default function Layout({ children }) {
   return (
     <>
       {children}
-      <Toaster richColors closeButton />
+      <Toaster richColors />
     </>
   );
 }
 ```
 
-The docs site mounts a single `<Toaster richColors closeButton />` at the root — that's why every demo on this page uses the saturated tone surface and an explicit × button. Both are flags on the `<Toaster>`, not per-call.
+The docs site mounts a single `<Toaster richColors />` at the root — that's why every demo on this page uses the saturated tone surface. `richColors` is a Toaster-level flag, not a per-call option.
 
 ## Tones, action, promise
 
