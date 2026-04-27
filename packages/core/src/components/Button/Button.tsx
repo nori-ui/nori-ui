@@ -30,26 +30,35 @@ export type ButtonProps = Omit<PressableProps, 'disabled' | 'children'> & {
     testID?: string;
 };
 
-// NativeWind classes — the `dark:` variants flip colors when <html> carries
-// the `dark` class (or `data-theme="dark"`); see the tokens Tailwind preset.
+// Empty — colors are driven entirely by the inline-style state machine
+// below so a custom <NoriProvider theme={...}> override actually wins.
+//
+// History: we used to ship Tailwind `bg-semantic-interactive-primary`
+// etc. here as a "no-NativeWind" fallback. The problem: Tailwind compiles
+// those utilities to CSS classes at BUILD time with the default palette
+// baked in, and rn-web's compiled inline-style class fights for the same
+// CSS specificity. Stylesheet order tilts the win to Tailwind, so theme
+// overrides never visibly land. Dropping the class wins this fight.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-    primary:
-        'bg-semantic-interactive-primary hover:bg-semantic-interactive-primaryHover active:bg-semantic-interactive-primaryPressed',
-    secondary:
-        'bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:active:bg-neutral-600',
-    ghost: 'bg-transparent hover:bg-neutral-100 active:bg-neutral-200 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
-    destructive: 'bg-semantic-interactive-destructive hover:opacity-90 active:opacity-80',
+    primary: '',
+    secondary: '',
+    ghost: '',
+    destructive: '',
 };
 
+// Same story for size: height / paddingHorizontal / fontSize all flow
+// through the theme below; the Tailwind utilities would fight inline.
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-4 text-md',
-    lg: 'h-12 px-5 text-lg',
+    sm: '',
+    md: '',
+    lg: '',
 };
 
 const ICON_SIZE: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 20 };
 
-const BASE_CLASSES = 'inline-flex flex-row items-center justify-center gap-2 rounded-md select-none';
+// Layout-only — no `rounded-md` or `gap-2` here; those would fight the
+// inline `borderRadius` / `gap` set from the active theme below.
+const BASE_CLASSES = 'inline-flex flex-row items-center justify-center select-none';
 
 // Heights are intentionally hardcoded — they're tightly coupled to the
 // button's overall density (a 48px target on lg, 32px on sm). Padding and
