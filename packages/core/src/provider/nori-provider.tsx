@@ -6,10 +6,18 @@ import { I18nProvider } from '../i18n/context';
 import type { I18nInput } from '../i18n/types';
 import type { SemanticIcons } from '../icons/default-semantic-icons';
 import { SemanticIconsProvider } from '../icons/semantic-context';
-import { ThemeProvider } from '../theme/context';
+import { type NoriTheme, ThemeProvider } from '../theme/context';
 
 export type NoriProviderProps = {
-    theme?: Theme;
+    /**
+     * Theme to apply to descendants. Pass:
+     *   - a `NoriTheme` (`{ light, dark }`) — covers both schemes
+     *   - a single `Theme` — used for both schemes (rare)
+     *   - one of the bundled presets: `tealTheme`, `blueTheme`, `roseTheme`,
+     *     `violetTheme`, `orangeTheme`, `slateTheme` (from `@nori-ui/core`)
+     *   - omit — falls back to the default Nori palette (teal)
+     */
+    theme?: NoriTheme | Theme;
     i18n?: I18nInput;
     icons?: Partial<SemanticIcons>;
     children?: ReactNode;

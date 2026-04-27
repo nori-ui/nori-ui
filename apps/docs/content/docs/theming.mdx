@@ -1,0 +1,163 @@
+---
+title: Theming
+description: Swap the brand color across every component by passing a NoriTheme to NoriProvider — choose a bundled preset or roll your own.
+since: 0.4.0
+tags: [theming, customisation]
+platform: both
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+
+## At a glance
+
+- A `NoriTheme` is a paired light/dark palette: `{ light: Theme, dark: Theme }`. The hook `useThemeColors()` resolves the right half based on the current color scheme.
+- Pass a theme to `<NoriProvider theme={...}>` (or `<ThemeProvider theme={...}>` directly) and every component below it picks it up — buttons, sliders, switches, toasts, the lot.
+- Six bundled presets — **teal** (default), **blue**, **rose**, **violet**, **orange**, **slate** — exported by name from `@nori-ui/core`.
+- Custom theme: spread `defaultTheme` and override the colors you care about. Most of the time you only need to touch the `primary` ramp.
+
+<Callout title="Limitation: className-only paths don't theme yet">
+    The Tailwind preset compiles colors at build time. Components that
+    style themselves *only* via class names (e.g. `bg-semantic-interactive-primary`)
+    won't follow `<ThemeProvider>` overrides — they keep the build-time palette.
+
+    In practice, every interactive component in `@nori-ui/core` *also* sets
+    its key colors inline via `useThemeColors()`. Inline styles win on CSS
+    specificity, so the visible color matches the active theme. Wholesale
+    re-skin via CSS variables is on the roadmap.
+</Callout>
+
+## Use a preset
+
+```tsx
+import { NoriProvider, blueTheme } from '@nori-ui/core/client';
+
+export default function Layout({ children }) {
+    return <NoriProvider theme={blueTheme}>{children}</NoriProvider>;
+}
+```
+
+Available presets:
+
+```tsx
+import {
+    tealTheme,    // default
+    blueTheme,
+    roseTheme,
+    violetTheme,
+    orangeTheme,
+    slateTheme,
+} from '@nori-ui/core/client';
+```
+
+`presetThemes` is also exported as an object keyed by name — handy for theme pickers:
+
+```tsx
+import { presetThemes, type PresetThemeName } from '@nori-ui/core/client';
+
+const [name, setName] = useState<PresetThemeName>('teal');
+return <NoriProvider theme={presetThemes[name]}>{children}</NoriProvider>;
+```
+
+## Build a custom theme
+
+The presets only swap the `primary` ramp; the neutral / semantic / status
+colors stay shared across all themes. Build your own by spreading the
+default and overriding what you need:
+
+```tsx
+import { type NoriTheme, defaultTheme, NoriProvider } from '@nori-ui/core/client';
+
+const myTheme: NoriTheme = {
+    light: {
+        ...defaultTheme.light,
+        color: {
+            ...defaultTheme.light.color,
+            primary: {
+                '50':  '#fff7ed',
+                '100': '#ffedd5',
+                '200': '#fed7aa',
+                '300': '#fdba74',
+                '400': '#fb923c',
+                '500': '#f97316',
+                '600': '#ea580c', // resting brand color
+                '700': '#c2410c', // hover
+                '800': '#9a3412', // pressed
+                '900': '#7c2d12',
+            },
+        },
+        semantic: {
+            ...defaultTheme.light.semantic,
+            interactive: {
+                ...defaultTheme.light.semantic.interactive,
+                primary: '#ea580c',
+                primaryHover: '#c2410c',
+                primaryPressed: '#9a3412',
+            },
+        },
+    },
+    dark: {
+        ...defaultTheme.dark,
+        // ... mirror with darker steps reading well against #18181b
+    },
+};
+
+export default function App() {
+    return <NoriProvider theme={myTheme}>{/* ... */}</NoriProvider>;
+}
+```
+
+## Switching themes at runtime
+
+Themes live in React context, so swapping the prop is enough — every
+descendant re-renders with the new palette. No CSS variable thrash, no
+flash on switch.
+
+```tsx
+'use client';
+import { NoriProvider, presetThemes, type PresetThemeName } from '@nori-ui/core/client';
+import { SegmentedControl } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function ThemedApp({ children }) {
+    const [name, setName] = useState<PresetThemeName>('teal');
+    return (
+        <NoriProvider theme={presetThemes[name]}>
+            <SegmentedControl
+                value={name}
+                onChange={setName}
+                options={[
+                    { value: 'teal',   label: 'Teal' },
+                    { value: 'blue',   label: 'Blue' },
+                    { value: 'rose',   label: 'Rose' },
+                    { value: 'violet', label: 'Violet' },
+                ]}
+            />
+            {children}
+        </NoriProvider>
+    );
+}
+```
+
+## Theming + color scheme
+
+Themes are independent from the light/dark color scheme. The same
+`NoriTheme` covers both — `useColorScheme()` picks which half is active.
+Toggle dark mode the way you already do (e.g. add `class="dark"` to
+`<html>`); the active theme follows.
+
+## Reading theme colors in your own components
+
+```tsx
+'use client';
+import { useThemeColors } from '@nori-ui/core/client';
+
+export function MyChip({ children }) {
+    const colors = useThemeColors();
+    return (
+        <View style={{ backgroundColor: colors.semantic.interactive.primary }}>
+            <Text style={{ color: colors.semantic.text.inverted }}>{children}</Text>
+        </View>
+    );
+}
+```

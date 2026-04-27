@@ -14,7 +14,17 @@ export { useSemanticIcon } from './icons/use-semantic-icon';
 // import from a single subpath when they're already in client code.
 export * from './index';
 export { NoriProvider, type NoriProviderProps } from './provider';
-export { ThemeProvider, type ThemeProviderProps } from './theme/context';
+export { defaultTheme, type NoriTheme, ThemeProvider, type ThemeProviderProps } from './theme/context';
+export {
+    blueTheme,
+    orangeTheme,
+    type PresetThemeName,
+    presetThemes,
+    roseTheme,
+    slateTheme,
+    tealTheme,
+    violetTheme,
+} from './theme/themes';
 export { type ColorScheme, useColorScheme } from './theme/use-color-scheme';
 export { useTheme } from './theme/use-theme';
 export { useThemeColors } from './theme/use-theme-colors';

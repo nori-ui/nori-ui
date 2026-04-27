@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "getting-started",
+    "theming",
     "---Components---",
     "display/accordion",
     "feedback/alert",
