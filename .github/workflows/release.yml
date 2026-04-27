@@ -36,11 +36,22 @@ jobs:
       - run: yarn build:tokens
       - run: yarn build:ui
 
+      # The MCP package's CLI bundle embeds the docs corpus snapshotted
+      # by this script. Run it before building the MCP package so the
+      # generated JSON exists in the workspace.
+      - name: Snapshot docs corpus for MCP package
+        run: node apps/docs/scripts/generate-mcp-data.mjs
+
+      - run: yarn workspace @nori-ui/mcp build
+
       - name: Verify build artifacts
         run: |
           test -f packages/core/dist/index.js
           test -f packages/core/dist/index.cjs
           test -f packages/core/dist/index.d.ts
+          test -f packages/mcp/dist/cli.js
+          test -f packages/mcp/dist/index.js
+          test -f packages/mcp/dist/index.d.ts
 
       # semantic-release handles version bump + publish + changelog + github release.
       # npm publish is invoked by @semantic-release/npm; we ensure provenance is on

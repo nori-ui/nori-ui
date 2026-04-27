@@ -25,11 +25,24 @@
         "npmPublish": true
       }
     ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/mcp",
+        "npmPublish": true
+      }
+    ],
     "@semantic-release/github",
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "packages/core/package.json", "package.json", "yarn.lock"],
+        "assets": [
+          "CHANGELOG.md",
+          "packages/core/package.json",
+          "packages/mcp/package.json",
+          "package.json",
+          "yarn.lock"
+        ],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ]
