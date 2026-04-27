@@ -65,6 +65,27 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    // Push the active preset's interactive.* colors onto <html> as CSS
+    // variables. The docs Tailwind config rewrites
+    // `bg-semantic-interactive-primary` (and friends) to `var(--nori-primary)`
+    // so this single mutation flips every Button on the page — including
+    // the buttons baked into the page at build time. Without this, the
+    // Tailwind class wins on CSS specificity and the theme switcher
+    // looks broken.
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const root = document.documentElement;
+        const active = PRESET_BY_NAME[presetName];
+        // Use the LIGHT half — dark-mode overrides come from the .dark
+        // block in global.css, but those are only the default-teal values.
+        // For now the picker swaps the light palette; dark-mode picker
+        // swap can come later.
+        const { primary, primaryHover, primaryPressed } = active.light.semantic.interactive;
+        root.style.setProperty('--nori-primary', primary);
+        root.style.setProperty('--nori-primary-hover', primaryHover);
+        root.style.setProperty('--nori-primary-pressed', primaryPressed);
+    }, [presetName]);
+
     const setPresetName = useCallback((next: PresetThemeName) => {
         setPresetNameState(next);
         try {

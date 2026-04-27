@@ -13,6 +13,31 @@ const { createPreset } = require('fumadocs-ui/tailwind-plugin');
 
 const config: Config = {
     presets: [createPreset(), noriPreset, nativewindPreset],
+    // Override the semantic.interactive.* colors so they resolve to CSS
+    // variables instead of compile-time hex literals. The variables are
+    // seeded in global.css with the default teal palette, and the docs
+    // theme switcher (apps/docs/components/docs-theme-provider.tsx) writes
+    // them onto <html> when the user picks a preset — flipping every
+    // .bg-semantic-interactive-primary class on the page in one move.
+    //
+    // Local-only override: this lives in the docs Tailwind config rather
+    // than in @nori-ui/tokens because library consumers should still get
+    // baked-in colors by default. Theming via CSS variables is opt-in:
+    // add the same color overrides + variable seeds to your own Tailwind
+    // setup if you want the same runtime swap behavior.
+    theme: {
+        extend: {
+            colors: {
+                semantic: {
+                    interactive: {
+                        primary: 'var(--nori-primary)',
+                        primaryHover: 'var(--nori-primary-hover)',
+                        primaryPressed: 'var(--nori-primary-pressed)',
+                    },
+                },
+            },
+        },
+    },
     // Toggle dark mode via either `.dark` on <html> (next-themes / Fumadocs
     // convention) or `[data-theme="dark"]` (some legacy theme switchers).
     // The Fumadocs preset defaults to `'media'`; we explicitly switch to a
