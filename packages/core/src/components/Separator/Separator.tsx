@@ -25,7 +25,18 @@ export type SeparatorProps = Omit<ViewProps, 'children'> & {
 };
 
 const HORIZONTAL_BASE: ViewStyle = { height: 1, width: '100%' };
-const VERTICAL_BASE: ViewStyle = { width: 1, height: '100%', alignSelf: 'stretch' };
+// Vertical: rely on flex `align-self: stretch` to fill the parent's
+// row height when the parent has explicit height, AND ship a non-zero
+// `min-height` so the rule stays visible inline with text when the
+// parent is content-sized. (The previous `height: '100%'` collapsed
+// to 0 in content-sized parents — height: 100% of nothing = 0px —
+// which made the separator invisible in real layouts like an inline
+// action row of Edit / Duplicate / Delete labels.)
+const VERTICAL_BASE: ViewStyle = {
+    width: 1,
+    minHeight: 16,
+    alignSelf: 'stretch',
+};
 
 /**
  * Visual rule between groups of content. Mirrors Radix's Separator API:
