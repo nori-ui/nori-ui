@@ -91,15 +91,43 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         className
     );
 
-    // Inline fallback styles mirror the NativeWind classes above so the
-    // component renders correctly when NativeWind isn't compiling
-    // (e.g. Expo Snack) AND on native where Tailwind classes aren't applied.
-    // Reading from the resolved palette means dark mode flips both layers.
-    const variantStyles: Record<ButtonVariant, ViewStyle> = {
-        primary: { backgroundColor: colors.semantic.interactive.primary },
-        secondary: { backgroundColor: colors.semantic.background.subtle },
-        ghost: { backgroundColor: 'transparent' },
-        destructive: { backgroundColor: colors.semantic.interactive.destructive },
+    // Inline-style palette per (variant × interaction state). The hook is the
+    // source of truth — dark mode and theme overrides flow through it.
+    //
+    // Why inline (not className): a class-based `:hover { background-color }`
+    // can never beat an inline `style={{ backgroundColor }}` — inline wins
+    // by CSS specificity. So if we want hover to actually flip the surface
+    // color, hover has to be applied inline too. We use Pressable's `style`
+    // callback (`{ hovered, pressed }`) which on web is wired up by
+    // react-native-web and on native exposes only `pressed`. The className
+    // path keeps the same Tailwind variants for the no-NativeWind fallback
+    // case (Expo Snack rendering raw JSX without compilation).
+    const variantStateColors: Record<ButtonVariant, { rest: string; hover: string; pressed: string }> = {
+        primary: {
+            rest: colors.semantic.interactive.primary,
+            hover: colors.semantic.interactive.primaryHover,
+            pressed: colors.semantic.interactive.primaryPressed,
+        },
+        secondary: {
+            rest: colors.semantic.background.subtle,
+            // semantic.background.elevated == subtle when applied on a hovered
+            // chip, so we step up the neutral scale by one for visible contrast.
+            hover: colors.color.neutral['200'],
+            pressed: colors.color.neutral['300'],
+        },
+        ghost: {
+            rest: 'transparent',
+            hover: colors.semantic.background.subtle,
+            pressed: colors.color.neutral['200'],
+        },
+        destructive: {
+            rest: colors.semantic.interactive.destructive,
+            // No darker tone token for destructive yet — fall back to a 90% /
+            // 80% opacity wash by mixing through rgba. Matches the className
+            // hover:opacity-90 / active:opacity-80 fallback.
+            hover: colors.semantic.interactive.destructive,
+            pressed: colors.semantic.interactive.destructive,
+        },
     };
     const variantTextColor: Record<ButtonVariant, string> = {
         primary: colors.semantic.text.inverted,
@@ -108,15 +136,36 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         destructive: colors.semantic.text.inverted,
     };
 
-    const baseInlineStyle: StyleProp<ViewStyle> = [
-        BASE_STYLE,
-        variantStyles[variant],
-        SIZE_STYLES[size].container,
-        isInoperative ? { opacity: 0.6 } : null,
-    ];
-    const pressableStyle: PressableProps['style'] =
-        typeof style === 'function' ? (state) => [baseInlineStyle, style(state)] : [baseInlineStyle, style];
-    const slotStyle: StyleProp<ViewStyle> = [baseInlineStyle, typeof style === 'function' ? null : style];
+    const stateColors = variantStateColors[variant];
+    const computeStateBg = (hovered: boolean, pressed: boolean): string => {
+        if (pressed) return stateColors.pressed;
+        if (hovered) return stateColors.hover;
+        return stateColors.rest;
+    };
+    // Destructive uses opacity dim instead of a separate color (matches
+    // existing className behavior; keeps the red recognisable on press).
+    const computeStateOpacity = (hovered: boolean, pressed: boolean): number => {
+        if (variant !== 'destructive') return 1;
+        if (pressed) return 0.8;
+        if (hovered) return 0.9;
+        return 1;
+    };
+
+    const buildInlineStyle = (state: { hovered?: boolean; pressed?: boolean }): ViewStyle[] => {
+        const hovered = Boolean(state.hovered);
+        const pressed = Boolean(state.pressed);
+        return [
+            BASE_STYLE,
+            { backgroundColor: computeStateBg(hovered, pressed) },
+            SIZE_STYLES[size].container,
+            { opacity: isInoperative ? 0.6 : computeStateOpacity(hovered, pressed) },
+        ];
+    };
+    const pressableStyle: PressableProps['style'] = (state) => {
+        const inline = buildInlineStyle(state);
+        return typeof style === 'function' ? [inline, style(state)] : [inline, style];
+    };
+    const slotStyle: StyleProp<ViewStyle> = [...buildInlineStyle({}), typeof style === 'function' ? null : style];
 
     const textColor = variantTextColor[variant];
     const textStyle = { color: textColor, fontSize: SIZE_STYLES[size].text.fontSize, fontWeight: '500' as const };

@@ -1,0 +1,113 @@
+---
+title: AlertDialog
+description: Confirmation modal that forces a user response — no escape, no click-outside.
+since: 0.3.0
+tags: [overlay, confirmation, destructive]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="AlertDialog" />
+
+## At a glance
+
+- Compose: `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogCancel`, `AlertDialogAction`, `AlertDialogFooter`. Triggers / Cancel / Action use `asChild` by default — wrap any element and it becomes the activator.
+- Forces a response: backdrop click does **not** close, Escape does **not** close. The user MUST press Cancel or Action.
+- Initial focus lands on Cancel — the least destructive default — so a stray Enter keypress can't fire the destructive action.
+- Accessibility: `role="alertdialog"` with `aria-modal`, `aria-labelledby` on the title, `aria-describedby` on the description.
+- Cross-platform: uses RN `<Modal>` as the visibility primitive. Web layers on focus trap, scroll lock, focus restore. Subtle scale-in animation (150ms) honors `prefers-reduced-motion`.
+
+<Callout type="warn" title="When to use AlertDialog vs Dialog">
+    Use **`AlertDialog`** for destructive or otherwise irreversible confirmations — "Delete project?", "Sign out
+    everyone?", "Discard unsaved changes?". The user has to make an explicit choice, which matches the weight of the
+    action.
+
+    Use **`Dialog`** for everything else — forms, info, settings, embedded flows. Dialog allows Escape and click-outside
+    to dismiss, which is the expected affordance for forgettable, low-stakes interactions.
+
+    Choosing the wrong one is a real accessibility / UX bug: if Dialog gates a destructive action, users will lose work
+    by tapping outside; if AlertDialog gates a form, users will feel trapped.
+</Callout>
+
+## Preview
+
+<Preview name="alert-dialog-destructive" />
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `AlertDialog` | Root — owns open state (controlled or uncontrolled). |
+| `AlertDialogTrigger` | Element that opens the dialog. `asChild` by default. |
+| `AlertDialogContent` | The visible surface. Renders only while open. Backdrop click and Escape do nothing. |
+| `AlertDialogTitle` | Heading. Wires `aria-labelledby`. |
+| `AlertDialogDescription` | Body description. Wires `aria-describedby`. |
+| `AlertDialogCancel` | Dismiss action. Receives initial focus. Forwards `onPress`, then closes. |
+| `AlertDialogAction` | Confirming / destructive action. Forwards `onPress`, then closes. |
+| `AlertDialogFooter` | Right-aligned row for the Cancel / Action buttons. |
+
+## Usage
+
+```tsx
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+    Button,
+} from '@nori-ui/core';
+
+export function DeleteProjectButton({ onDelete }: { onDelete: () => void }) {
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger>
+                <Button variant="destructive">Delete project</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This permanently removes the project and every record attached to it. This cannot be undone.
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>
+                        <Button variant="secondary">Cancel</Button>
+                    </AlertDialogCancel>
+                    <AlertDialogAction onPress={onDelete}>
+                        <Button variant="destructive">Delete project</Button>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+```
+
+## Props
+
+### AlertDialog
+
+<PropsTable component="AlertDialog" />
+
+### AlertDialogTrigger
+
+<PropsTable component="AlertDialogTrigger" />
+
+### AlertDialogContent
+
+<PropsTable component="AlertDialogContent" />
+
+### AlertDialogCancel
+
+<PropsTable component="AlertDialogCancel" />
+
+### AlertDialogAction
+
+<PropsTable component="AlertDialogAction" />

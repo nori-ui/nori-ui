@@ -26,13 +26,18 @@ const CLIENT_ALLOWED = [
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
+    'components/Accordion/Accordion.tsx',
     'components/Alert/Alert.tsx',
+    'components/AlertDialog/AlertDialog.tsx',
     'components/Avatar/Avatar.tsx',
     'components/Badge/Badge.tsx',
     'components/Button/Button.tsx',
     'components/Card/Card.tsx',
     'components/Checkbox/Checkbox.tsx',
     'components/Dialog/Dialog.tsx',
+    'components/InputGroup/InputGroup.tsx',
+    'components/Popover/Popover.tsx',
+    'components/Progress/Progress.tsx',
     'components/RadioGroup/RadioGroup.tsx',
     'components/SegmentedControl/SegmentedControl.tsx',
     'components/Select/Select.tsx',
@@ -43,6 +48,7 @@ const CLIENT_ALLOWED = [
     'components/Tabs/Tabs.tsx',
     'components/TextInput/TextInput.tsx',
     'components/Toast/Toast.tsx',
+    'components/Toggle/Toggle.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {

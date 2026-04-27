@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, type ViewStyle } from 'react-native';
+import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -44,6 +45,7 @@ export function Skeleton({
     testID,
 }: SkeletonProps) {
     const colors = useThemeColors();
+    const isDark = useColorScheme() === 'dark';
     const opacity = useRef(new Animated.Value(PULSE_MAX)).current;
 
     useEffect(() => {
@@ -70,11 +72,20 @@ export function Skeleton({
         };
     }, [isStatic, opacity]);
 
+    // Skeleton intentionally uses a stronger neutral than the generic
+    // semantic.background.subtle. The previous subtle-bg skeleton washed
+    // out against the warm-paper page background — barely a hint of a
+    // placeholder. A loading state must read as "something will appear
+    // here", not "page barely loading."
+    //
+    // On dark we step the other direction (neutral.700 ≈ #3f3f46) so the
+    // skeleton is clearly lighter than the page bg (#18181b) without being
+    // a glaring grey block.
     const baseStyle: ViewStyle = {
         width,
         height,
         borderRadius: radius === 'full' ? 9999 : radius,
-        backgroundColor: colors.semantic.background.subtle,
+        backgroundColor: isDark ? colors.color.neutral['700'] : colors.color.neutral['200'],
     };
 
     return (
@@ -83,7 +94,7 @@ export function Skeleton({
             aria-hidden={true}
             accessibilityElementsHidden
             importantForAccessibility="no"
-            className={cn('bg-neutral-200 dark:bg-neutral-800', className)}
+            className={cn('bg-neutral-200 dark:bg-neutral-700', className)}
             style={[baseStyle, isStatic ? null : { opacity }, style]}
         />
     );

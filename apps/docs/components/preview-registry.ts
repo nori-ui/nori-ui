@@ -1,17 +1,29 @@
 import type { ComponentType } from 'react';
 
 import type { Highlighted } from '@/lib/highlight';
+import AccordionMultiple from './demos/accordion-multiple';
+import AccordionSingle from './demos/accordion-single';
 import AlertBasic from './demos/alert-basic';
+import AlertDialogDestructive from './demos/alert-dialog-destructive';
 import AvatarBasic from './demos/avatar-basic';
 import BadgeBasic from './demos/badge-basic';
 import BoxBasic from './demos/box-basic';
 import ButtonBasic from './demos/button-basic';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
+import CheckboxIndeterminate from './demos/checkbox-indeterminate';
 import DialogBasic from './demos/dialog-basic';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
+import InputGroupBoth from './demos/input-group-both';
+import InputGroupPrefix from './demos/input-group-prefix';
+import InputGroupSuffix from './demos/input-group-suffix';
+import PopoverBasic from './demos/popover-basic';
+import PopoverForm from './demos/popover-form';
+import ProgressBasic from './demos/progress-basic';
+import ProgressIndeterminate from './demos/progress-indeterminate';
+import ProgressTones from './demos/progress-tones';
 import RadioGroupBasic from './demos/radio-group-basic';
 import SegmentedControlBasic from './demos/segmented-control-basic';
 import SelectAsync from './demos/select-async';
@@ -33,6 +45,9 @@ import TextAreaBasic from './demos/text-area-basic';
 import TextBasic from './demos/text-basic';
 import TextInputBasic from './demos/text-input-basic';
 import ToastBasic from './demos/toast-basic';
+import ToggleBasic from './demos/toggle-basic';
+import ToggleGroupMultiple from './demos/toggle-group-multiple';
+import ToggleGroupSingle from './demos/toggle-group-single';
 import VStackBasic from './demos/vstack-basic';
 import { previewSources } from './preview-sources.generated';
 
@@ -40,6 +55,14 @@ type PreviewEntry = Highlighted & {
     Component: ComponentType;
     /** Verbatim demo source — feeds the underlying `pre.textContent` so the copy button hands back the original file. */
     raw: string;
+    /**
+     * Per-demo controls visibility. Default: both shown.
+     * Set `dir: false` for components with no RTL behavior worth showing
+     * (Box, Skeleton, Spinner, etc.). Set `locale: false` for components
+     * that don't surface any localized strings — otherwise the picker
+     * looks broken because flipping it changes nothing visible.
+     */
+    controls?: { dir?: boolean; locale?: boolean };
 };
 
 /**
@@ -59,40 +82,84 @@ type PreviewEntry = Highlighted & {
  *
  * Sources regenerate automatically on `next dev`/`next build`.
  */
+// Convenience flag bundles. Pure layout / display primitives don't have
+// any RTL behavior or i18n strings worth previewing — hide both controls
+// so the picker doesn't look broken when flipping it changes nothing.
+const NO_CHROME = { controls: { dir: false, locale: false } } as const;
+// Components with text input or labels that are RTL-affected but emit no
+// i18n strings of their own.
+const DIR_ONLY = { controls: { dir: true, locale: false } } as const;
+
 export const previews = {
-    'text-basic': { Component: TextBasic, ...previewSources['text-basic'] },
-    'box-basic': { Component: BoxBasic, ...previewSources['box-basic'] },
-    'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'] },
-    'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'] },
-    'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'] },
-    'segmented-control-basic': { Component: SegmentedControlBasic, ...previewSources['segmented-control-basic'] },
+    'accordion-single': { Component: AccordionSingle, ...previewSources['accordion-single'], ...DIR_ONLY },
+    'accordion-multiple': { Component: AccordionMultiple, ...previewSources['accordion-multiple'], ...DIR_ONLY },
+    'text-basic': { Component: TextBasic, ...previewSources['text-basic'], ...NO_CHROME },
+    'box-basic': { Component: BoxBasic, ...previewSources['box-basic'], ...NO_CHROME },
+    'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'], ...NO_CHROME },
+    'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'], ...NO_CHROME },
+    'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'], ...NO_CHROME },
+    'segmented-control-basic': {
+        Component: SegmentedControlBasic,
+        ...previewSources['segmented-control-basic'],
+        ...DIR_ONLY,
+    },
     'select-basic': { Component: SelectBasic, ...previewSources['select-basic'] },
     'select-async': { Component: SelectAsync, ...previewSources['select-async'] },
     'select-virtualized': { Component: SelectVirtualized, ...previewSources['select-virtualized'] },
     'select-custom-renderer': { Component: SelectCustomRenderer, ...previewSources['select-custom-renderer'] },
     'select-locale': { Component: SelectLocale, ...previewSources['select-locale'] },
-    'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'] },
-    'skeleton-basic': { Component: SkeletonBasic, ...previewSources['skeleton-basic'] },
-    'slider-basic': { Component: SliderBasic, ...previewSources['slider-basic'] },
-    'slider-vertical': { Component: SliderVertical, ...previewSources['slider-vertical'] },
-    'slider-multi': { Component: SliderMulti, ...previewSources['slider-multi'] },
-    'slider-rtl': { Component: SliderRtl, ...previewSources['slider-rtl'] },
-    'slider-disabled': { Component: SliderDisabled, ...previewSources['slider-disabled'] },
-    'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'] },
+    'progress-basic': { Component: ProgressBasic, ...previewSources['progress-basic'], ...NO_CHROME },
+    'progress-indeterminate': {
+        Component: ProgressIndeterminate,
+        ...previewSources['progress-indeterminate'],
+        ...NO_CHROME,
+    },
+    'progress-tones': { Component: ProgressTones, ...previewSources['progress-tones'], ...NO_CHROME },
+    'separator-basic': { Component: SeparatorBasic, ...previewSources['separator-basic'], ...NO_CHROME },
+    'skeleton-basic': { Component: SkeletonBasic, ...previewSources['skeleton-basic'], ...NO_CHROME },
+    'slider-basic': { Component: SliderBasic, ...previewSources['slider-basic'], ...DIR_ONLY },
+    'slider-vertical': { Component: SliderVertical, ...previewSources['slider-vertical'], ...NO_CHROME },
+    'slider-multi': { Component: SliderMulti, ...previewSources['slider-multi'], ...DIR_ONLY },
+    'slider-rtl': { Component: SliderRtl, ...previewSources['slider-rtl'], ...DIR_ONLY },
+    'slider-disabled': { Component: SliderDisabled, ...previewSources['slider-disabled'], ...DIR_ONLY },
+    'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'], ...NO_CHROME },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },
-    'card-basic': { Component: CardBasic, ...previewSources['card-basic'] },
+    'card-basic': { Component: CardBasic, ...previewSources['card-basic'], ...DIR_ONLY },
     'text-input-basic': { Component: TextInputBasic, ...previewSources['text-input-basic'] },
     'text-area-basic': { Component: TextAreaBasic, ...previewSources['text-area-basic'] },
+    'input-group-prefix': { Component: InputGroupPrefix, ...previewSources['input-group-prefix'], ...DIR_ONLY },
+    'input-group-suffix': { Component: InputGroupSuffix, ...previewSources['input-group-suffix'], ...DIR_ONLY },
+    'input-group-both': { Component: InputGroupBoth, ...previewSources['input-group-both'], ...DIR_ONLY },
     'checkbox-basic': { Component: CheckboxBasic, ...previewSources['checkbox-basic'] },
+    'checkbox-indeterminate': {
+        Component: CheckboxIndeterminate,
+        ...previewSources['checkbox-indeterminate'],
+    },
     'radio-group-basic': { Component: RadioGroupBasic, ...previewSources['radio-group-basic'] },
     'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
-    'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'] },
+    'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'], ...DIR_ONLY },
     'toast-basic': { Component: ToastBasic, ...previewSources['toast-basic'] },
-    'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'] },
-    'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'] },
-    'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'] },
+    'toggle-basic': { Component: ToggleBasic, ...previewSources['toggle-basic'], ...DIR_ONLY },
+    'toggle-group-multiple': {
+        Component: ToggleGroupMultiple,
+        ...previewSources['toggle-group-multiple'],
+        ...DIR_ONLY,
+    },
+    'toggle-group-single': { Component: ToggleGroupSingle, ...previewSources['toggle-group-single'], ...DIR_ONLY },
+    'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'], ...NO_CHROME },
+    'popover-basic': { Component: PopoverBasic, ...previewSources['popover-basic'], ...DIR_ONLY },
+    'popover-form': { Component: PopoverForm, ...previewSources['popover-form'], ...DIR_ONLY },
+    'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'], ...NO_CHROME },
+    'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'], ...NO_CHROME },
     'alert-basic': { Component: AlertBasic, ...previewSources['alert-basic'] },
+    'alert-dialog-destructive': {
+        Component: AlertDialogDestructive,
+        ...previewSources['alert-dialog-destructive'],
+    },
+    // Wire new entries here. If unsure: omit `controls`. The picker
+    // only annoys when it changes nothing — so set `NO_CHROME` for
+    // pure visual primitives, and otherwise leave it on.
 } as const satisfies Record<string, PreviewEntry>;
 
 export type PreviewName = keyof typeof previews;

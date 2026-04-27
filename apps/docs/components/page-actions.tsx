@@ -62,12 +62,15 @@ export function PageActions({ pagePath }: PageActionsProps) {
         }
     }, [mdUrl]);
 
+    // No wrapper div: the parent toolbar in `app/docs/[[...slug]]/page.tsx`
+    // arranges this and `<PageNavArrows>` in a single flex row so the four
+    // pills (Prev / Next / Copy / JSON) read as one cluster.
     return (
-        <div className="not-prose mb-6 flex flex-wrap gap-2 text-sm">
+        <>
             <button
                 type="button"
                 onClick={onCopy}
-                className="inline-flex items-center gap-1.5 rounded-md border border-fd-border bg-fd-card px-3 py-1.5 text-fd-foreground hover:bg-fd-accent"
+                className="inline-flex items-center gap-1.5 rounded-md border border-fd-border bg-fd-card px-3 py-1.5 text-sm text-fd-foreground hover:bg-fd-accent transition-colors"
             >
                 <Glyph d={copied ? CHECK_PATH : COPY_PATH} />
                 {copied ? 'Copied' : 'Copy as Markdown'}
@@ -76,11 +79,11 @@ export function PageActions({ pagePath }: PageActionsProps) {
                 href={jsonUrl}
                 target="_blank"
                 rel="noopener"
-                className="inline-flex items-center gap-1.5 rounded-md border border-fd-border bg-fd-card px-3 py-1.5 text-fd-foreground hover:bg-fd-accent"
+                className="inline-flex items-center gap-1.5 rounded-md border border-fd-border bg-fd-card px-3 py-1.5 text-sm text-fd-foreground hover:bg-fd-accent transition-colors"
             >
                 <Glyph d={JSON_PATH} />
                 View as JSON
             </a>
-        </div>
+        </>
     );
 }

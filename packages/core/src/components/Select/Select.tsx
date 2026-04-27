@@ -12,8 +12,9 @@ import {
     useRef,
     useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import type { ViewStyle } from 'react-native';
-import { Pressable, Text as RNText, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -435,7 +436,12 @@ export function Select<T = unknown>({
               borderRadius: 8,
               borderWidth: 1,
               borderColor: colors.semantic.border.default,
-              zIndex: 50,
+              // 2147483646 (max int32 - 1) so we sit above any third-party
+              // chrome (toasts, modals, dev banners) without picking a fight
+              // for the very top slot. Combined with portaling to body below,
+              // this also dodges any ancestor stacking context that would
+              // otherwise trap our z-index inside a sibling preview frame.
+              zIndex: 2147483646,
               ...({ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)' } as ViewStyle),
           }
         : {
@@ -491,43 +497,59 @@ export function Select<T = unknown>({
                 <defaultSemanticIcons.chevronDown size={16} color={colors.semantic.text.muted} />
             </Pressable>
 
-            {open ? (
-                <View
-                    ref={(node) => {
-                        popupRef.current = node as unknown as HTMLDivElement | null;
-                    }}
-                    {...({ role: 'listbox', id: `${baseId}-listbox` } as Record<string, unknown>)}
-                    style={popupStyle}
-                >
-                    {searchable ? (
-                        <SearchInput
-                            value={searchInput}
-                            onChange={setSearchInput}
-                            onKeyDown={handleSearchKeyDown}
-                            placeholder={searchPlaceholder}
-                            dir={dir}
-                        />
-                    ) : null}
-                    <SelectList
-                        options={visibleOptions}
-                        activeIndex={activeIndex}
-                        currentValue={current}
-                        onSelect={onSelect}
-                        onActiveChange={setActiveIndex}
-                        {...(renderOption !== undefined ? { renderOption } : {})}
-                        itemHeight={itemHeight}
-                        maxHeight={maxMenuHeight}
-                        virtualized={virtualized}
-                        loading={isAsync && asyncLoading}
-                        loadingMessage={loadingMessage}
-                        noOptionsMessage={noOptionsMessage}
-                        listboxId={`${baseId}-listbox`}
-                        onScroll={onListScroll}
-                    />
-                </View>
-            ) : null}
+            {open ? renderPopup() : null}
         </View>
     );
+
+    // Local helper so we can portal to <body> on web. Why: even with
+    // position:fixed, an ancestor with `transform`, `filter`, or `will-change`
+    // creates a containing block that traps fixed positioning AND a stacking
+    // context that traps z-index. The docs preview frames trip both. Portaling
+    // to body removes all ambiguity — the popup is a top-level sibling of
+    // <body>'s other children. On native, RN doesn't have a portal here, so
+    // we render in place; native overflow is rarely a clipping problem
+    // because RN doesn't have stacking-context-creating CSS properties.
+    function renderPopup(): React.ReactNode {
+        const popup = (
+            <View
+                ref={(node) => {
+                    popupRef.current = node as unknown as HTMLDivElement | null;
+                }}
+                {...({ role: 'listbox', id: `${baseId}-listbox` } as Record<string, unknown>)}
+                style={popupStyle}
+            >
+                {searchable ? (
+                    <SearchInput
+                        value={searchInput}
+                        onChange={setSearchInput}
+                        onKeyDown={handleSearchKeyDown}
+                        placeholder={searchPlaceholder}
+                        dir={dir}
+                    />
+                ) : null}
+                <SelectList
+                    options={visibleOptions}
+                    activeIndex={activeIndex}
+                    currentValue={current}
+                    onSelect={onSelect}
+                    onActiveChange={setActiveIndex}
+                    {...(renderOption !== undefined ? { renderOption } : {})}
+                    itemHeight={itemHeight}
+                    maxHeight={maxMenuHeight}
+                    virtualized={virtualized}
+                    loading={isAsync && asyncLoading}
+                    loadingMessage={loadingMessage}
+                    noOptionsMessage={noOptionsMessage}
+                    listboxId={`${baseId}-listbox`}
+                    onScroll={onListScroll}
+                />
+            </View>
+        );
+        if (Platform.OS === 'web' && typeof document !== 'undefined') {
+            return createPortal(popup, document.body);
+        }
+        return popup;
+    }
 }
 
 // ---------- search input (web-native input wrapped in a pressable container) ----------

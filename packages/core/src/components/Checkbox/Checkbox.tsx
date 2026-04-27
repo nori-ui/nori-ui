@@ -112,6 +112,12 @@ export function Checkbox({
     // The whole row is the interactive element so clicking the label text
     // toggles the checkbox. The visual box is a non-interactive View — one
     // role="checkbox" per logical control, not two competing hit-areas.
+    // Indeterminate uses a horizontal dash (the W3C convention) rather than
+    // a checkmark, so the user can tell at a glance that the state is
+    // "partial / mixed", not "fully checked." Clicking still fires onChange
+    // — consumers typically toggle indeterminate off and set checked=true
+    // in their handler.
+    const inverted = colors.semantic.text.inverted;
     return (
         <Pressable
             onPress={toggle}
@@ -120,7 +126,11 @@ export function Checkbox({
             style={[ROW_STYLE, disabled ? { opacity: 0.6 } : null]}
         >
             <View className={boxClasses} style={[BOX_BASE_STYLE, boxFill]}>
-                {isMarked && !disabled ? <Check size={14} color={colors.semantic.text.inverted} /> : null}
+                {indeterminate && !disabled ? (
+                    <View style={{ width: 10, height: 2, borderRadius: 1, backgroundColor: inverted }} />
+                ) : value && !disabled ? (
+                    <Check size={14} color={inverted} />
+                ) : null}
             </View>
             {children ??
                 (label !== undefined ? (

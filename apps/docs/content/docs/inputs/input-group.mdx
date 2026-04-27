@@ -1,0 +1,94 @@
+---
+title: InputGroup
+description: Wrap a TextInput with fixed prefix and/or suffix slots that look visually integrated with the field — for things like @username, https:// addresses, or USD amounts.
+since: 0.3.0
+tags: [input, form]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="InputGroup" />
+
+## At a glance
+
+`InputGroup` is a compound component that fuses a text field with one or two **non-interactive decorator slots** into a single rounded box. Inspired by Chakra's `InputGroup` and shadcn's input addon pattern.
+
+- One border around the whole compound — addons are not separate boxes.
+- Addons accept any `ReactNode`, so strings (`@`, `.com`, `USD`) and icons both work.
+- Clicking an addon focuses the input.
+- The whole group's border lights up when the input has focus (`focus-within` on web).
+- `InputGroupInput` extends the full `TextInput` API (`label`, `helperText`, `error`, `disabled`, …) so you don't lose anything by reaching for the integrated layout.
+- `disabled` and `error` on the group cascade visually to the addons.
+
+## Prefix
+
+<Preview name="input-group-prefix" />
+
+## Suffix
+
+<Preview name="input-group-suffix" />
+
+## Prefix and suffix
+
+<Preview name="input-group-both" />
+
+## With label, helper text, and error
+
+`label`, `helperText`, and `error` belong on `<InputGroupInput>`. They render *outside* the bordered field row — label above, helper/error below — exactly like a normal `TextInput`. When `error` is set, the entire group's border turns red and `aria-invalid` is forwarded to the `<input>`.
+
+```tsx
+<InputGroup>
+    <InputGroupAddon>@</InputGroupAddon>
+    <InputGroupInput
+        label="Username"
+        helperText="3–20 characters, no spaces."
+        defaultValue="alice"
+    />
+</InputGroup>
+```
+
+## Icon addons
+
+Addons accept any `ReactNode`, so you can drop in an icon component:
+
+```tsx
+import { MailIcon } from 'lucide-react';
+
+<InputGroup>
+    <InputGroupAddon><MailIcon size={16} /></InputGroupAddon>
+    <InputGroupInput label="Email" placeholder="you@example.com" />
+</InputGroup>
+```
+
+## Disabled and error states
+
+Pass `disabled` or `error` on the group itself to dim/mark the whole compound, or pass `disabled` / `error` on `<InputGroupInput>` for input-only control. Either source flips the border + addon dim.
+
+```tsx
+<InputGroup disabled>
+    <InputGroupAddon>@</InputGroupAddon>
+    <InputGroupInput defaultValue="locked" />
+</InputGroup>
+
+<InputGroup>
+    <InputGroupAddon>@</InputGroupAddon>
+    <InputGroupInput error="Invalid format" defaultValue="not an email" />
+</InputGroup>
+```
+
+## API
+
+### `<InputGroup>`
+
+<PropsTable component="InputGroup" />
+
+### `<InputGroupAddon>`
+
+<PropsTable component="InputGroupAddon" />
+
+### `<InputGroupInput>`
+
+Inherits every prop from [`TextInput`](./text-input).

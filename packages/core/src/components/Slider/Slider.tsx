@@ -355,7 +355,11 @@ export function Slider({
               backgroundColor: colors.semantic.background.subtle,
               borderRadius: TRACK_THICKNESS / 2,
               position: 'relative',
-              overflow: 'hidden',
+              // No overflow: hidden here — the thumb is a child and we don't
+              // want it clipped at the track's edge. The fill below sits in
+              // its own absolutely-positioned slot inside the track and
+              // already paints within the track's rounded corners thanks to
+              // matching borderRadius, so we don't need to clip.
           }
         : {
               height: TRACK_THICKNESS,
@@ -363,7 +367,11 @@ export function Slider({
               backgroundColor: colors.semantic.background.subtle,
               borderRadius: TRACK_THICKNESS / 2,
               position: 'relative',
-              overflow: 'hidden',
+              // No overflow: hidden here — the thumb is a child and we don't
+              // want it clipped at the track's edge. The fill below sits in
+              // its own absolutely-positioned slot inside the track and
+              // already paints within the track's rounded corners thanks to
+              // matching borderRadius, so we don't need to clip.
           };
 
     const containerStyle: ViewStyle = isVertical
@@ -413,10 +421,27 @@ export function Slider({
                 ref={trackRef}
                 onLayout={measure}
                 {...trackPointerProps}
-                className={cn('relative bg-neutral-200 rounded-full overflow-hidden')}
+                className={cn('relative bg-neutral-200 rounded-full')}
                 style={trackStyle}
             >
-                <View style={rangeStyle} />
+                {/* Inner clipper holds the range fill so its left/right
+                 * edges round naturally against the track's borderRadius.
+                 * The thumbs live OUTSIDE this clipper as direct children
+                 * of the track, so they aren't truncated to track height. */}
+                <View
+                    pointerEvents="none"
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        borderRadius: TRACK_THICKNESS / 2,
+                        overflow: 'hidden',
+                    }}
+                >
+                    <View style={rangeStyle} />
+                </View>
                 {current.map((val, index) => {
                     const ratio = (val - min) / (max - min || 1);
                     const thumbProps: Record<string, unknown> = {

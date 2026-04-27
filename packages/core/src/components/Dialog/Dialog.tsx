@@ -150,11 +150,25 @@ const OVERLAY_STYLE: ViewStyle = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    // Slightly lighter scrim than before so the backdrop blur reads as
+    // "page is back there, slightly dimmed and out of focus" rather than
+    // "page is gone." 32% black + 8px gaussian blur is the shadcn recipe;
+    // also matches Apple's modal backdrop on iOS.
+    backgroundColor: 'rgba(0, 0, 0, 0.32)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : {}),
+    ...(Platform.OS === 'web'
+        ? ({
+              zIndex: 50,
+              // Web only — backdrop-filter is unsupported in RN's native style
+              // surface but rn-web passes it through as raw CSS. On iOS Safari
+              // and Chromium it Just Works; on Firefox <103 it falls back to
+              // the plain dim scrim, which is fine.
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+          } as ViewStyle)
+        : {}),
 };
 
 const CONTENT_BASE_STYLE: ViewStyle = {

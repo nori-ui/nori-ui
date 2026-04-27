@@ -11,6 +11,7 @@ import {
     PREVIEW_LOCALES,
     type PreviewDirection,
     type PreviewLocale,
+    RTL_LOCALES,
 } from '@/lib/preview-locales';
 import { type PreviewName, previews } from './preview-registry';
 
@@ -45,7 +46,7 @@ const TABS = ['Preview', 'Code'] as const;
 export function Preview({ name, padding = 24 }: PreviewProps) {
     const entry = previews[name];
     const [mounted, setMounted] = useState(false);
-    const [direction, setDirection] = useState<PreviewDirection>('ltr');
+    const [directionOverride, setDirectionOverride] = useState<PreviewDirection | null>(null);
     const [locale, setLocale] = useState<PreviewLocale>('en');
     useEffect(() => setMounted(true), []);
 
@@ -62,21 +63,52 @@ export function Preview({ name, padding = 24 }: PreviewProps) {
     }
 
     const { Component, tokens, rootStyle } = entry;
+    // `controls` is optional on a per-entry basis. Some entries omit the
+    // key entirely, so the discriminated union doesn't surface it as a
+    // shared property — read it via a widened lookup instead of destructure.
+    const controls = (entry as { controls?: { dir?: boolean; locale?: boolean } }).controls;
+    // Default both controls on. Per-demo overrides hide a control when
+    // flipping it would change nothing visible (pure layout primitives).
+    const showDir = controls?.dir !== false;
+    const showLocale = controls?.locale !== false;
+    // Reading right-to-left scripts (Arabic, Hebrew) implies RTL layout.
+    // Auto-flip the direction when one of those locales is picked unless
+    // the user has explicitly chosen a direction since — this lets a
+    // reader pick "ar" once and see the layout flip + Arabic strings
+    // together rather than fiddling with two controls.
+    const inferredDirection: PreviewDirection = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
+    const direction: PreviewDirection = directionOverride ?? inferredDirection;
     const dictionary = PREVIEW_LOCALES[locale];
 
     return (
         <Tabs items={[...TABS]} defaultIndex={0}>
             <Tab value="Preview">
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-fd-muted-foreground">
-                        <Pills
-                            label="Direction"
-                            value={direction}
-                            options={PREVIEW_DIRECTION_OPTIONS}
-                            onChange={setDirection}
-                        />
-                        <Pills label="Locale" value={locale} options={PREVIEW_LOCALE_OPTIONS} onChange={setLocale} />
-                    </div>
+                    {showDir || showLocale ? (
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-fd-muted-foreground">
+                            {showDir ? (
+                                <Pills
+                                    label="Direction"
+                                    value={direction}
+                                    options={PREVIEW_DIRECTION_OPTIONS}
+                                    onChange={setDirectionOverride}
+                                />
+                            ) : null}
+                            {showLocale ? (
+                                <Pills
+                                    label="Locale"
+                                    value={locale}
+                                    options={PREVIEW_LOCALE_OPTIONS}
+                                    onChange={(next) => {
+                                        setLocale(next);
+                                        // Clear any prior direction override so the new
+                                        // locale's natural reading direction wins.
+                                        setDirectionOverride(null);
+                                    }}
+                                />
+                            ) : null}
+                        </div>
+                    ) : null}
                     <div
                         className="rounded-lg border border-fd-border bg-fd-background"
                         style={{ padding }}

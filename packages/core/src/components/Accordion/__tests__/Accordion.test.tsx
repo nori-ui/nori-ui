@@ -1,0 +1,244 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
+
+describe('<Accordion>', () => {
+    it('renders all triggers; only the open item shows its content', () => {
+        render(
+            <Accordion type="single" defaultValue="b">
+                <AccordionItem value="a">
+                    <AccordionTrigger>A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger>B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        expect(screen.getByText('A')).toBeInTheDocument();
+        expect(screen.getByText('B')).toBeInTheDocument();
+        expect(screen.queryByText('A body')).toBeNull();
+        expect(screen.getByText('B body')).toBeInTheDocument();
+    });
+
+    it('single mode: clicking a closed trigger opens it and closes the previous one', () => {
+        render(
+            <Accordion type="single" defaultValue="a">
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        fireEvent.click(screen.getByTestId('trig-b'));
+        expect(screen.queryByText('A body')).toBeNull();
+        expect(screen.getByText('B body')).toBeInTheDocument();
+    });
+
+    it('single mode (default): clicking the open trigger does nothing — at least one item stays open', () => {
+        render(
+            <Accordion type="single" defaultValue="a">
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        fireEvent.click(screen.getByTestId('trig-a'));
+        expect(screen.getByText('A body')).toBeInTheDocument();
+    });
+
+    it('single + collapsible: clicking the open trigger closes it', () => {
+        render(
+            <Accordion type="single" collapsible defaultValue="a">
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        expect(screen.getByText('A body')).toBeInTheDocument();
+        fireEvent.click(screen.getByTestId('trig-a'));
+        expect(screen.queryByText('A body')).toBeNull();
+    });
+
+    it('multiple mode: clicking opens both items independently', () => {
+        render(
+            <Accordion type="multiple" defaultValue={[]}>
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        fireEvent.click(screen.getByTestId('trig-a'));
+        fireEvent.click(screen.getByTestId('trig-b'));
+        expect(screen.getByText('A body')).toBeInTheDocument();
+        expect(screen.getByText('B body')).toBeInTheDocument();
+        // Toggle one off again — the other stays.
+        fireEvent.click(screen.getByTestId('trig-a'));
+        expect(screen.queryByText('A body')).toBeNull();
+        expect(screen.getByText('B body')).toBeInTheDocument();
+    });
+
+    it('controlled single mode fires onValueChange with the new value', () => {
+        const onValueChange = jest.fn();
+        const Wrapper = () => {
+            const [v, setV] = useState<string | null>('a');
+            return (
+                <Accordion
+                    type="single"
+                    collapsible
+                    value={v}
+                    onValueChange={(next) => {
+                        onValueChange(next);
+                        setV(next);
+                    }}
+                >
+                    <AccordionItem value="a">
+                        <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                        <AccordionContent>A body</AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="b">
+                        <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                        <AccordionContent>B body</AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            );
+        };
+        render(<Wrapper />);
+        fireEvent.click(screen.getByTestId('trig-b'));
+        expect(onValueChange).toHaveBeenCalledWith('b');
+        expect(screen.getByText('B body')).toBeInTheDocument();
+        fireEvent.click(screen.getByTestId('trig-b'));
+        expect(onValueChange).toHaveBeenLastCalledWith(null);
+    });
+
+    it('controlled multiple mode fires onValueChange with the new array', () => {
+        const onValueChange = jest.fn();
+        render(
+            <Accordion type="multiple" value={['a']} onValueChange={onValueChange}>
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        fireEvent.click(screen.getByTestId('trig-b'));
+        expect(onValueChange).toHaveBeenCalledWith(['a', 'b']);
+    });
+
+    it('keyboard nav: ArrowDown moves focus to the next trigger; Enter toggles', () => {
+        render(
+            <Accordion type="single" collapsible>
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        const a = screen.getByTestId('trig-a');
+        const b = screen.getByTestId('trig-b');
+        a.focus();
+        fireEvent.keyDown(a, { key: 'ArrowDown' });
+        expect(document.activeElement).toBe(b);
+        fireEvent.keyDown(b, { key: 'Enter' });
+        expect(screen.getByText('B body')).toBeInTheDocument();
+    });
+
+    it('Home / End jump focus to the first / last trigger', () => {
+        render(
+            <Accordion type="single" collapsible>
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="c">
+                    <AccordionTrigger testID="trig-c">C</AccordionTrigger>
+                    <AccordionContent>C body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        const a = screen.getByTestId('trig-a');
+        const c = screen.getByTestId('trig-c');
+        a.focus();
+        fireEvent.keyDown(a, { key: 'End' });
+        expect(document.activeElement).toBe(c);
+        fireEvent.keyDown(c, { key: 'Home' });
+        expect(document.activeElement).toBe(a);
+    });
+
+    it('ARIA: triggers expose aria-expanded; content gets role="region" and aria-labelledby', () => {
+        render(
+            <Accordion type="single" defaultValue="a">
+                <AccordionItem value="a">
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent testID="content-a">A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        const trigA = screen.getByTestId('trig-a');
+        const trigB = screen.getByTestId('trig-b');
+        const contentA = screen.getByTestId('content-a');
+        expect(trigA.getAttribute('aria-expanded')).toBe('true');
+        expect(trigB.getAttribute('aria-expanded')).toBe('false');
+        expect(trigA.getAttribute('aria-controls')).toBe(contentA.getAttribute('id'));
+        expect(contentA.getAttribute('role')).toBe('region');
+        expect(contentA.getAttribute('aria-labelledby')).toBe(trigA.getAttribute('id'));
+    });
+
+    it('disabled item ignores clicks and never opens', () => {
+        render(
+            <Accordion type="single" collapsible>
+                <AccordionItem value="a" disabled>
+                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
+                    <AccordionContent>A body</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
+                    <AccordionContent>B body</AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        );
+        fireEvent.click(screen.getByTestId('trig-a'));
+        expect(screen.queryByText('A body')).toBeNull();
+        // The neighbor still works.
+        fireEvent.click(screen.getByTestId('trig-b'));
+        expect(screen.getByText('B body')).toBeInTheDocument();
+    });
+
+    it('throws a clear error when AccordionTrigger is rendered outside an Accordion', () => {
+        const original = console.error;
+        console.error = () => {};
+        try {
+            expect(() => render(<AccordionTrigger>x</AccordionTrigger>)).toThrow(/AccordionTrigger/);
+        } finally {
+            console.error = original;
+        }
+    });
+});

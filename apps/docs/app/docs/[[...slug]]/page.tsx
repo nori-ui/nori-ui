@@ -36,11 +36,17 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
             <DocsTitle>{page.data.title}</DocsTitle>
             {page.data.description ? <DocsDescription>{page.data.description}</DocsDescription> : null}
             <DocsBody>
-                <PageNavArrows
-                    {...(previous ? { previous: { name: previous.name as string, url: previous.url } } : {})}
-                    {...(next ? { next: { name: next.name as string, url: next.url } } : {})}
-                />
-                <PageActions pagePath={page.url} />
+                {/* Single toolbar row: prev / next live next to copy / json
+                 * so the four pills read as one cluster of page-level
+                 * actions. Both children render their own pills (no wrapper
+                 * div) and inherit the same visual style. */}
+                <div className="not-prose mb-6 flex flex-wrap items-center gap-2 text-sm">
+                    <PageNavArrows
+                        {...(previous ? { previous: { name: previous.name as string, url: previous.url } } : {})}
+                        {...(next ? { next: { name: next.name as string, url: next.url } } : {})}
+                    />
+                    <PageActions pagePath={page.url} />
+                </div>
                 <MDX
                     components={{
                         ...defaultMdxComponents,

@@ -1,0 +1,42 @@
+---
+title: Progress
+description: Linear progress bar — determinate when you know the percentage, indeterminate when you don't.
+since: 0.3.0
+tags: [feedback, loading]
+platform: both
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Progress" />
+
+## At a glance
+
+- **Determinate**: pass `value` (`0..max`, default `max=100`). The fill width is `(value / max) * 100%`.
+- **Indeterminate**: omit `value` to render a 30%-wide shuttle that loops across the track every ~1.5s. Use this when the operation has no measurable progress.
+- **Tones**: `primary` (default, theme interactive color), `info`, `success`, `warning`, `danger` map to semantic status colors.
+- **Sizes**: `sm` 4px, `md` 8px (default), `lg` 12px. The track is always pill-shaped.
+- **Label**: pass `label` to render text above the bar; the percentage is auto-rendered on the right for determinate progress (set `hidePercentage` to suppress).
+- Maps to `role="progressbar"` with `aria-valuemin`/`aria-valuemax`/`aria-valuenow`. Always pass `label`, `aria-label`, or `aria-labelledby` so the bar is named.
+
+## Preview
+
+<Preview name="progress-basic" />
+
+## Indeterminate
+
+Use the indeterminate form when you can't measure progress — an initial fetch, a streaming response, an upload before headers arrive.
+
+<Preview name="progress-indeterminate" />
+
+## Tones
+
+The fill color signals what kind of work is happening — `success` for confirmations, `warning` for risky operations, `danger` for failure recovery.
+
+<Preview name="progress-tones" />
+
+## Props
+
+<PropsTable component="Progress" />
