@@ -397,60 +397,125 @@ export type AccordionContentProps = {
     forceMount?: boolean;
 };
 
-const CONTENT_BASE: ViewStyle = {
+const CONTENT_INNER_BASE: ViewStyle = {
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 12,
-    overflow: 'hidden',
 };
 
 /**
- * The collapsible body. Hidden when the parent `AccordionItem` is closed.
- * On web, expanding uses a CSS max-height transition; on native, the body
- * mounts/unmounts.
+ * The collapsible body. On web it always mounts but slides open / closed
+ * via an animated max-height + opacity transition (200ms ease). On native
+ * we mount/unmount based on the open flag — RN doesn't have the CSS
+ * machinery for height transitions out of the box, and adding it would
+ * require react-native-reanimated which is currently optional.
+ *
+ * Implementation note: the height + transition styles are pushed onto the
+ * outer wrapper's DOM node via a ref + useEffect rather than through the
+ * View's `style` prop. Reason: rn-web's style filter drops keys it
+ * doesn't recognise as RN style props (`transition`, `maxHeight` shorthand,
+ * etc.), taking the whole fragment with them. Direct DOM mutation
+ * bypasses that filter — same trick used by Dialog's backdrop blur.
  */
 export function AccordionContent({ children, className, testID, forceMount = false }: AccordionContentProps) {
     const item = useAccordionItemContext('AccordionContent');
     const colors = useThemeColors();
+    const wrapperRef = useRef<HTMLElement | null>(null);
+    const innerRef = useRef<HTMLElement | null>(null);
 
-    if (!item.open && !forceMount) return null;
+    // Slide open/close on web. We measure the natural height of the inner
+    // content each time the open state flips, then animate the wrapper's
+    // maxHeight to/from 0. Setting maxHeight: 'none' after the transition
+    // would let the content grow if it later changes — but for the v0
+    // accordion we expect static content, so we leave maxHeight at the
+    // measured value (good enough; resize observer can come later).
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+        const wrapper = wrapperRef.current;
+        const inner = innerRef.current;
+        if (!wrapper || !inner) return;
 
-    const contentStyle: ViewStyle = {
-        ...CONTENT_BASE,
-        ...(Platform.OS === 'web' && forceMount
-            ? ({
-                  maxHeight: item.open ? 9999 : 0,
-                  transition: 'max-height 200ms ease',
-                  paddingTop: item.open ? 4 : 0,
-                  paddingBottom: item.open ? 12 : 0,
-              } as unknown as ViewStyle)
-            : {}),
-    };
+        // First-render shortcut: skip the animation when an item starts
+        // already open (avoids the "all items open then animate closed"
+        // flash on mount).
+        const isFirstPaint = wrapper.dataset.noriPainted !== '1';
+        wrapper.dataset.noriPainted = '1';
+
+        wrapper.style.overflow = 'hidden';
+        wrapper.style.transitionProperty = 'max-height, opacity';
+        wrapper.style.transitionDuration = '220ms';
+        wrapper.style.transitionTimingFunction = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+        if (item.open) {
+            const target = inner.scrollHeight;
+            if (isFirstPaint) {
+                wrapper.style.maxHeight = `${target}px`;
+                wrapper.style.opacity = '1';
+                return;
+            }
+            // Animate from current measured 0px to the target height.
+            wrapper.style.maxHeight = '0px';
+            wrapper.style.opacity = '0';
+            // Force a reflow so the start state actually applies before
+            // we set the end state — otherwise the browser collapses
+            // both into a single repaint and skips the animation.
+            void wrapper.offsetHeight;
+            requestAnimationFrame(() => {
+                wrapper.style.maxHeight = `${target}px`;
+                wrapper.style.opacity = '1';
+            });
+        } else {
+            // Going from open → closed. Set the explicit current height
+            // first so we have something to transition FROM (auto/none
+            // doesn't transition).
+            const current = inner.scrollHeight;
+            wrapper.style.maxHeight = `${current}px`;
+            wrapper.style.opacity = '1';
+            void wrapper.offsetHeight;
+            requestAnimationFrame(() => {
+                wrapper.style.maxHeight = '0px';
+                wrapper.style.opacity = '0';
+            });
+        }
+    }, [item.open]);
+
+    // Native: keep the conditional render — no animation in v0.
+    if (Platform.OS !== 'web' && !item.open && !forceMount) return null;
 
     return (
         <View
+            ref={(node: unknown) => {
+                wrapperRef.current = node as HTMLElement | null;
+            }}
             {...(testID !== undefined ? { testID } : {})}
             role="region"
             accessibilityRole="none"
             id={item.contentId}
             aria-labelledby={item.triggerId}
             aria-hidden={!item.open}
-            className={cn('px-4 pt-1 pb-3', className)}
-            style={contentStyle}
+            className={cn('overflow-hidden', className)}
         >
-            {typeof children === 'string' ? (
-                <RNText
-                    style={{
-                        color: colors.semantic.text.muted,
-                        fontSize: 14,
-                        lineHeight: 20,
-                    }}
-                >
-                    {children}
-                </RNText>
-            ) : (
-                children
-            )}
+            <View
+                ref={(node: unknown) => {
+                    innerRef.current = node as HTMLElement | null;
+                }}
+                className={cn('px-4 pt-1 pb-3')}
+                style={CONTENT_INNER_BASE}
+            >
+                {typeof children === 'string' ? (
+                    <RNText
+                        style={{
+                            color: colors.semantic.text.muted,
+                            fontSize: 14,
+                            lineHeight: 20,
+                        }}
+                    >
+                        {children}
+                    </RNText>
+                ) : (
+                    children
+                )}
+            </View>
         </View>
     );
 }

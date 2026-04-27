@@ -1,6 +1,6 @@
 ---
 title: Toggle
-description: Two-state button — both standalone and as a clustered ToggleGroup with single- or multi-select semantics.
+description: A single two-state button — like the bold or italic button in a toolbar.
 since: 0.3.0
 tags: [control, form, toolbar]
 platform: both
@@ -15,10 +15,12 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- `Toggle` is a single bistable button — think of the **B** / **I** / **U** buttons in a rich-text toolbar, where each one carries its own on/off visual.
-- `ToggleGroup` clusters several toggles with shared selection semantics: `type="multiple"` for any-of-N (formatting marks), `type="single"` for one-of-N (text alignment).
-- Roving-tabindex keyboard nav follows the WAI-ARIA radiogroup pattern: `Arrow` keys move focus between items, `Home` / `End` jump to the ends, `Space` / `Enter` toggles the focused item.
-- ARIA: every item exposes `role="button"` + `aria-pressed`. The group exposes `role="group"` (multiple) or `role="radiogroup"` (single).
+- A single bistable button — think of the **B** / **I** / **U** buttons in a rich-text toolbar, where each one carries its own on/off visual.
+- Controlled (`pressed` + `onPressedChange`) and uncontrolled (`defaultPressed`) usage.
+- Two visual variants: `default` (bordered chip with subtle resting bg) and `outline` (1px border, no fill).
+- Three sizes: `sm`, `md` (default), `lg`.
+- ARIA: `role="button"` + `aria-pressed`.
+- Need a clustered set of toggles instead? Use [`<ToggleGroup>`](/docs/controls/toggle-group).
 
 <Callout title="Toggle vs Switch vs Checkbox">
     These three controls look similar but ship different semantics — pick the one that matches the *meaning* of the choice, not the shape of the visual.
@@ -32,32 +34,8 @@ import { PropsTable } from '@/components/props-table';
 
 ## Standalone Toggle
 
-A single bistable button with controlled (`pressed` / `onPressedChange`) and uncontrolled (`defaultPressed`) modes.
-
 <Preview name="toggle-basic" />
-
-## Multiple selection (formatting toolbar)
-
-`type="multiple"` — `value` is `string[]`. Clicking adds or removes an item from the array.
-
-<Preview name="toggle-group-multiple" />
-
-## Single selection (alignment)
-
-`type="single"` — `value` is `string | undefined`. Clicking sets it; clicking the active item again clears it.
-
-<Preview name="toggle-group-single" />
 
 ## Props
 
-### `<Toggle>`
-
 <PropsTable component="Toggle" />
-
-### `<ToggleGroup>`
-
-<PropsTable component="ToggleGroup" />
-
-### `<ToggleGroupItem>`
-
-<PropsTable component="ToggleGroupItem" />

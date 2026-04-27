@@ -51,6 +51,7 @@ const CLIENT_ALLOWED = [
     'components/TextInput/TextInput.tsx',
     'components/Toast/Toast.tsx',
     'components/Toggle/Toggle.tsx',
+    'components/Tooltip/Tooltip.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {

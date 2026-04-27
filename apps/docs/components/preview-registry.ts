@@ -48,6 +48,8 @@ import ToastBasic from './demos/toast-basic';
 import ToggleBasic from './demos/toggle-basic';
 import ToggleGroupMultiple from './demos/toggle-group-multiple';
 import ToggleGroupSingle from './demos/toggle-group-single';
+import TooltipBasic from './demos/tooltip-basic';
+import TooltipSides from './demos/tooltip-sides';
 import VStackBasic from './demos/vstack-basic';
 import { previewSources } from './preview-sources.generated';
 
@@ -150,6 +152,8 @@ export const previews = {
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'], ...NO_CHROME },
     'popover-basic': { Component: PopoverBasic, ...previewSources['popover-basic'], ...DIR_ONLY },
     'popover-form': { Component: PopoverForm, ...previewSources['popover-form'], ...DIR_ONLY },
+    'tooltip-basic': { Component: TooltipBasic, ...previewSources['tooltip-basic'], ...NO_CHROME },
+    'tooltip-sides': { Component: TooltipSides, ...previewSources['tooltip-sides'], ...NO_CHROME },
     'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'], ...NO_CHROME },
     'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'], ...NO_CHROME },
     'alert-basic': { Component: AlertBasic, ...previewSources['alert-basic'] },

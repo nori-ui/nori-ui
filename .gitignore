@@ -64,3 +64,4 @@ e2e/web/test-results/
 # transient QA screenshots from interactive sessions
 qa-*.png
 findings.md
+snapshot-*.md

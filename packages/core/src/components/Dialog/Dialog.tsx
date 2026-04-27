@@ -148,8 +148,12 @@ export function DialogTrigger({ asChild = true, children, className, testID }: D
 // always on as a flat scrim on native (RN doesn't have backdrop-filter
 // and the native shim would be an extra peer dep for vanishingly little
 // visual gain on a v0 component).
-const SCRIM_COLOR = 'rgba(0, 0, 0, 0.32)';
-const BLUR_AMOUNT = 8;
+// 24% scrim + 4px blur — strong enough to push the page back but the
+// content underneath is still legible. Earlier 32%/8px felt like a frosted
+// glass slab that completely obscured the page; this lets the page show
+// through as "behind glass, slightly out of focus."
+const SCRIM_COLOR = 'rgba(0, 0, 0, 0.24)';
+const BLUR_AMOUNT = 4;
 
 // Static overlay layout — alignment, fixed positioning. The animatable
 // bits (scrim color, backdrop-filter blur) live in a useEffect inside

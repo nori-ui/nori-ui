@@ -2,6 +2,19 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
 
+// AccordionContent on web stays mounted (so the slide animation has
+// something to transition between), and is hidden via aria-hidden +
+// max-height: 0 on the wrapper. The "is this content visible to the
+// user?" test therefore has to walk up to the role="region" wrapper and
+// check aria-hidden, not just check whether the text is in the DOM.
+const isContentHidden = (text: string): boolean => {
+    const node = screen.queryByText(text);
+    if (!node) return true;
+    let el: HTMLElement | null = node;
+    while (el && el.getAttribute('role') !== 'region') el = el.parentElement;
+    return el?.getAttribute('aria-hidden') === 'true';
+};
+
 describe('<Accordion>', () => {
     it('renders all triggers; only the open item shows its content', () => {
         render(
@@ -18,7 +31,7 @@ describe('<Accordion>', () => {
         );
         expect(screen.getByText('A')).toBeInTheDocument();
         expect(screen.getByText('B')).toBeInTheDocument();
-        expect(screen.queryByText('A body')).toBeNull();
+        expect(isContentHidden('A body')).toBe(true);
         expect(screen.getByText('B body')).toBeInTheDocument();
     });
 
@@ -36,7 +49,7 @@ describe('<Accordion>', () => {
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-b'));
-        expect(screen.queryByText('A body')).toBeNull();
+        expect(isContentHidden('A body')).toBe(true);
         expect(screen.getByText('B body')).toBeInTheDocument();
     });
 
@@ -64,7 +77,7 @@ describe('<Accordion>', () => {
         );
         expect(screen.getByText('A body')).toBeInTheDocument();
         fireEvent.click(screen.getByTestId('trig-a'));
-        expect(screen.queryByText('A body')).toBeNull();
+        expect(isContentHidden('A body')).toBe(true);
     });
 
     it('multiple mode: clicking opens both items independently', () => {
@@ -86,7 +99,7 @@ describe('<Accordion>', () => {
         expect(screen.getByText('B body')).toBeInTheDocument();
         // Toggle one off again — the other stays.
         fireEvent.click(screen.getByTestId('trig-a'));
-        expect(screen.queryByText('A body')).toBeNull();
+        expect(isContentHidden('A body')).toBe(true);
         expect(screen.getByText('B body')).toBeInTheDocument();
     });
 
@@ -226,7 +239,7 @@ describe('<Accordion>', () => {
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-a'));
-        expect(screen.queryByText('A body')).toBeNull();
+        expect(isContentHidden('A body')).toBe(true);
         // The neighbor still works.
         fireEvent.click(screen.getByTestId('trig-b'));
         expect(screen.getByText('B body')).toBeInTheDocument();
