@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { defaultTheme, type NoriTheme, type Theme, ThemeProvider } from '../../../theme';
 import { Button } from '../Button';
 
 describe('<Button>', () => {
@@ -83,6 +84,69 @@ describe('<Button>', () => {
         }
         render(<Button leadingIcon={Arrow}>Go</Button>);
         expect(screen.getByTestId('arrow')).toBeInTheDocument();
+    });
+
+    // ------------------------------------------------------------------
+    // Theme-token flow regression. Earlier the Button passed `style` as
+    // a function callback to `Pressable`; rn-web silently dropped the
+    // returned values from the rendered DOM, leaving only the
+    // dimensional Tailwind utilities (rounded-md, h-10, px-4) — which
+    // never reflect a `<ThemeProvider>` override. The two assertions
+    // below pin the contract that custom theme tokens for `radius.md`,
+    // `spacing[*]`, `fontSize.md`, `fontFamily.body`, and
+    // `fontWeight.medium` reach the rendered button so a future refactor
+    // that re-introduces the rn-web silently-dropped-style bug fails
+    // here loudly.
+    // ------------------------------------------------------------------
+    it('flows ThemeProvider radius tokens through to the button container as inline style', () => {
+        // jsdom note: rn-web emits some props inline (`borderRadius`,
+        // `backgroundColor`, `height`, `gap`) and others (`paddingLeft`,
+        // `paddingRight`) through its atomic-CSS path, which jsdom's
+        // `getComputedStyle` doesn't resolve. The full padding/spacing
+        // contract is verified end-to-end in the docs e2e check; here
+        // we pin the inline-style path so the regression — Pressable's
+        // function-form `style` callback being silently dropped by
+        // rn-web — fails this test loudly.
+        const ROUNDED: NoriTheme = {
+            light: {
+                ...defaultTheme.light,
+                radius: { ...defaultTheme.light.radius, md: '14px' },
+            } as unknown as Theme,
+            dark: defaultTheme.dark,
+        };
+        render(
+            <ThemeProvider theme={ROUNDED}>
+                <Button testID="b">Themed</Button>
+            </ThemeProvider>
+        );
+        const btn = screen.getByTestId('b');
+        const inline = btn.getAttribute('style') ?? '';
+        expect(inline).toMatch(/border-radius:\s*14px/);
+    });
+
+    it('flows ThemeProvider typography tokens through to the button label', () => {
+        const SERIF: NoriTheme = {
+            light: {
+                ...defaultTheme.light,
+                fontSize: { ...defaultTheme.light.fontSize, md: '17px' },
+                fontWeight: { ...defaultTheme.light.fontWeight, medium: '600' },
+                fontFamily: {
+                    ...defaultTheme.light.fontFamily,
+                    body: 'Georgia, serif',
+                },
+            } as unknown as Theme,
+            dark: defaultTheme.dark,
+        };
+        render(
+            <ThemeProvider theme={SERIF}>
+                <Button testID="b">Themed</Button>
+            </ThemeProvider>
+        );
+        const label = screen.getByText('Themed');
+        const cs = getComputedStyle(label);
+        expect(cs.fontFamily).toContain('Georgia');
+        expect(cs.fontSize).toBe('17px');
+        expect(cs.fontWeight).toBe('600');
     });
 
     it('supports asChild — renders the child as the interactive element', () => {

@@ -2,7 +2,7 @@
 
 import type { Theme } from '@nori-ui/tokens';
 import type { ComponentType, ReactNode } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
@@ -33,14 +33,12 @@ export type ButtonProps = Omit<PressableProps, 'disabled' | 'children'> & {
 // NativeWind classes — the `dark:` variants flip colors when <html> carries
 // the `dark` class (or `data-theme="dark"`); see the tokens Tailwind preset.
 //
-// These ALSO act as the visible-button safety net: rn-web's `Pressable`
-// doesn't always invoke the `style` callback we pass below, which means
-// the inline-style state machine doesn't always reach the DOM. Without
-// these utilities the button renders with zero styling (transparent bg,
-// 0 padding, 19px height = just text). Keep them. The trade-off is that
-// a custom NoriProvider theme can't override the BASE color via inline
-// style — Tailwind's compile-time class wins on CSS specificity. Theme
-// overrides for color need to go through CSS variables (planned).
+// These act as the no-NativeWind fallback (e.g. raw JSX in Expo Snack
+// without a compile step) and the dark-mode bridge. The dimensional
+// utilities (`rounded-md`, `h-10`, `px-4`, `gap-2`, `text-*`) are kept
+// because the inline `style` array always overrides them — so when a
+// `<ThemeProvider>` widens spacing/radius/fontSize, the inline values
+// win on CSS specificity and the Tailwind class is harmless.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     primary:
         'bg-semantic-interactive-primary hover:bg-semantic-interactive-primaryHover active:bg-semantic-interactive-primaryPressed',
@@ -105,6 +103,22 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
 ) {
     const colors = useThemeColors();
     const isInoperative = Boolean(disabled) || Boolean(loading);
+    // rn-web's `Pressable` does not reliably apply a `style` callback's
+    // returned values to the rendered DOM (the static portions get
+    // dropped). We track hover/press via state and pass `style` as a
+    // plain array — that path produces an inline `style="…"` attribute
+    // on the button, which beats the dimensional Tailwind utilities on
+    // CSS specificity and lets a custom `<ThemeProvider>` flow padding,
+    // radius, fontSize, fontFamily, and fontWeight all the way through.
+    const [hovered, setHovered] = useState(false);
+    const [pressed, setPressed] = useState(false);
+    const handleHoverIn = useCallback(() => setHovered(true), []);
+    const handleHoverOut = useCallback(() => {
+        setHovered(false);
+        setPressed(false);
+    }, []);
+    const handlePressIn = useCallback(() => setPressed(true), []);
+    const handlePressOut = useCallback(() => setPressed(false), []);
     // When disabled, drop the variant's hover/active class fragments and
     // append `pointer-events-none cursor-not-allowed` so the className
     // path matches the inline-style path: no hover tint, no press tint,
@@ -175,23 +189,18 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
     // even though the OS still fires those events. Pressable also gets
     // `disabled={true}` on the Pressable below which blocks onPress, but
     // the visual treatment is owned here.
-    const computeStateBg = (hovered: boolean, pressed: boolean): string => {
-        if (isInoperative) return stateColors.rest;
-        if (pressed) return stateColors.pressed;
-        if (hovered) return stateColors.hover;
-        return stateColors.rest;
-    };
+    const stateBg = isInoperative
+        ? stateColors.rest
+        : pressed
+          ? stateColors.pressed
+          : hovered
+            ? stateColors.hover
+            : stateColors.rest;
     // Destructive uses opacity dim instead of a separate color (matches
     // existing className behavior; keeps the red recognisable on press).
     // Same disabled rule as bg: hover/press dim is suppressed when
     // disabled — the static 0.6 opacity below handles the disabled look.
-    const computeStateOpacity = (hovered: boolean, pressed: boolean): number => {
-        if (isInoperative) return 1;
-        if (variant !== 'destructive') return 1;
-        if (pressed) return 0.8;
-        if (hovered) return 0.9;
-        return 1;
-    };
+    const stateInteractionOpacity = isInoperative || variant !== 'destructive' ? 1 : pressed ? 0.8 : hovered ? 0.9 : 1;
 
     // Resolve all dimensional + typographic values from the active theme
     // so a custom theme that scales spacing / fontSize / radius / fontWeight
@@ -205,21 +214,22 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
     };
     const sizeFontSize = px(colors.fontSize[sizeKeys.font]);
 
-    const buildInlineStyle = (state: { hovered?: boolean; pressed?: boolean }): ViewStyle[] => {
-        const hovered = Boolean(state.hovered);
-        const pressed = Boolean(state.pressed);
-        return [
-            BASE_STYLE,
-            { backgroundColor: computeStateBg(hovered, pressed) },
-            sizeContainer,
-            { opacity: isInoperative ? 0.6 : computeStateOpacity(hovered, pressed) },
-        ];
-    };
-    const pressableStyle: PressableProps['style'] = (state) => {
-        const inline = buildInlineStyle(state);
-        return typeof style === 'function' ? [inline, style(state)] : [inline, style];
-    };
-    const slotStyle: StyleProp<ViewStyle> = [...buildInlineStyle({}), typeof style === 'function' ? null : style];
+    const inlineBase: ViewStyle[] = [
+        BASE_STYLE,
+        { backgroundColor: stateBg },
+        sizeContainer,
+        { opacity: isInoperative ? 0.6 : stateInteractionOpacity },
+    ];
+    // Resolve the consumer's `style` against the same hover/press state
+    // we just computed — this preserves the historical contract where a
+    // callback `style` receives the live interaction flags. The RN
+    // upstream type only declares `pressed`; rn-web also passes
+    // `hovered`. Cast through `unknown` to ship both without a type
+    // assertion battle.
+    const consumerStyle: StyleProp<ViewStyle> =
+        typeof style === 'function' ? style({ pressed, ...({ hovered } as Record<string, unknown>) } as never) : style;
+    const pressableStyle: StyleProp<ViewStyle> = [...inlineBase, consumerStyle];
+    const slotStyle: StyleProp<ViewStyle> = [...inlineBase, consumerStyle];
 
     const textColor = variantTextColor[variant];
     const textStyle = {
@@ -261,6 +271,10 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
             accessibilityState={{ disabled: isInoperative, busy: Boolean(loading) }}
             disabled={isInoperative}
             onPress={handlePress}
+            onHoverIn={handleHoverIn}
+            onHoverOut={handleHoverOut}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
             className={classes}
             style={pressableStyle}
             {...pressableExtra}
