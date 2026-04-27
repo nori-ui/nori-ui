@@ -242,12 +242,25 @@ export type TabsTriggerProps = {
     testID?: string;
 };
 
+// Subtle 200ms ease on border + text color so the active tab indicator
+// fades in/out (and the trigger label colors smoothly between selected
+// and idle) instead of snapping. Web only — RN ignores the transition*
+// keys silently. We don't ship a true sliding magic-pill on either
+// platform yet; that would need react-native-reanimated and per-trigger
+// rect measurement, which is more complexity than this earns right now.
+const TRIGGER_TRANSITION = {
+    transitionProperty: 'border-color, color',
+    transitionDuration: '200ms',
+    transitionTimingFunction: 'ease',
+} as ViewStyle;
+
 const TRIGGER_BASE: ViewStyle = {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
     marginBottom: -1,
+    ...TRIGGER_TRANSITION,
 };
 
 const TRIGGER_BASE_VERTICAL: ViewStyle = {
@@ -256,6 +269,7 @@ const TRIGGER_BASE_VERTICAL: ViewStyle = {
     borderRightWidth: 2,
     borderRightColor: 'transparent',
     marginRight: -1,
+    ...TRIGGER_TRANSITION,
 };
 
 /** Clickable tab. Activating it shows the matching `TabsContent`. */

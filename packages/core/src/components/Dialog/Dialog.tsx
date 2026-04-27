@@ -202,6 +202,32 @@ export function DialogContent({ children, className, testID }: DialogContentProp
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
     const contentRef = useRef<HTMLDivElement | null>(null);
+    // Scale-in: render at scale(0.96) + opacity 0 first, flip to 1 in a
+    // useEffect so the CSS transition has a frame to animate from. Web
+    // only; native uses `Modal animationType="fade"` which is enough.
+    const [entered, setEntered] = useState(false);
+    useEffect(() => {
+        if (Platform.OS !== 'web') {
+            setEntered(true);
+            return;
+        }
+        if (!ctx.open) {
+            setEntered(false);
+            return;
+        }
+        const id = requestAnimationFrame(() => setEntered(true));
+        return () => cancelAnimationFrame(id);
+    }, [ctx.open]);
+    const enterStyle: ViewStyle =
+        Platform.OS === 'web'
+            ? ({
+                  opacity: entered ? 1 : 0,
+                  transform: [{ scale: entered ? 1 : 0.96 }],
+                  transitionProperty: 'opacity, transform',
+                  transitionDuration: '150ms',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              } as ViewStyle)
+            : {};
 
     // Web-only side effects: focus trap, scroll lock, Escape close,
     // initial focus on the first focusable inside the dialog. RN Modal
@@ -295,7 +321,7 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                     aria-describedby={ctx.descriptionId}
                     {...(testID !== undefined ? { testID } : {})}
                     className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
-                    style={[CONTENT_BASE_STYLE, { backgroundColor: colors.semantic.background.elevated }]}
+                    style={[CONTENT_BASE_STYLE, { backgroundColor: colors.semantic.background.elevated }, enterStyle]}
                 >
                     <View className="flex-col gap-1.5" style={{ flexDirection: 'column', gap: 6 }}>
                         {children}

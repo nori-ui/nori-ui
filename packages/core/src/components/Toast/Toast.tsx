@@ -242,6 +242,27 @@ type ItemProps = {
 function ToastItem({ toast, onDismiss }: ItemProps) {
     const colors = useThemeColors();
     const scheme = useColorScheme();
+    // Slide-in: render at translateY(8px) + opacity 0 on the first paint,
+    // then flip to translateY(0) + opacity 1 in a useEffect so the CSS
+    // transition has a frame to interpolate. Web-only — RN's Animated
+    // would also work but adds complexity; the snap on native is fine
+    // because the platform's own transition primitives kick in there.
+    const [entered, setEntered] = useState(Platform.OS !== 'web');
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+        const id = requestAnimationFrame(() => setEntered(true));
+        return () => cancelAnimationFrame(id);
+    }, []);
+    const enterStyle: ViewStyle =
+        Platform.OS === 'web'
+            ? ({
+                  opacity: entered ? 1 : 0,
+                  transform: [{ translateY: entered ? 0 : 8 }],
+                  transitionProperty: 'opacity, transform',
+                  transitionDuration: '200ms',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              } as ViewStyle)
+            : {};
     const palette = tonePalettes(
         scheme,
         colors.semantic.background.elevated,
@@ -260,7 +281,7 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
             accessibilityRole="alert"
             aria-live="polite"
             className={cn('rounded-lg border bg-semantic-background-elevated p-3.5')}
-            style={[TOAST_STYLE, { backgroundColor: palette.bg, borderColor: palette.border }]}
+            style={[TOAST_STYLE, { backgroundColor: palette.bg, borderColor: palette.border }, enterStyle]}
             pointerEvents="auto"
         >
             <View
