@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { useAnimatedNumber } from '../../animation/use-animated-number';
 import { Slot } from '../../slot';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -61,6 +62,10 @@ export function Switch({
     const [inner, setInner] = useState<boolean>(defaultChecked);
     const isControlled = checked !== undefined;
     const value = isControlled ? Boolean(checked) : inner;
+    // Pulled up here (above the asChild early-return) so the hook is
+    // called on every render path, not conditionally. The slide isn't
+    // used in the asChild branch, but the wasted work is tiny.
+    const slide = useAnimatedNumber('left', value ? 18 : 2);
 
     const toggle = useCallback(() => {
         if (disabled) return;
@@ -118,23 +123,21 @@ export function Switch({
     ];
     // Thumb stays a near-white disc — we deliberately don't go to a dark
     // grey on dark mode because the thumb needs to read as the "moveable
-    // puck" against the track in both schemes. Using neutral.50 instead of
-    // pure white softens it slightly on dark to match other elevated chrome.
+    // puck" against the track in both schemes.
     //
-    // Animation: the thumb slides between left:2 (off) and left:18 (on)
-    // via a CSS `left` transition on web. (Track width 40 - padding 2 -
-    // thumb 20 = 18 px travel.) On native we don't animate position in v1;
-    // the user sees an instant jump, which is a deliberate constraint of
-    // staying off react-native-reanimated for now.
+    // Animation: thumb slides between left:2 (off) and left:18 (on) —
+    // track width 40 - padding 2 - thumb 20 = 18 px travel. The
+    // useAnimatedNumber hook picks the right engine per platform (web
+    // CSS transition / reanimated spring / RN Animated). The hook is
+    // called once at the top of the function — see the `slide` above.
     const thumbStyle = [
         THUMB_BASE_STYLE,
         {
             backgroundColor: colors.color.neutral['50'],
             position: 'absolute' as const,
             top: 2,
-            left: value ? 18 : 2,
-            ...({ transitionProperty: 'left', transitionDuration: '180ms' } as ViewStyle),
         } as ViewStyle,
+        slide as ViewStyle,
     ];
 
     // Whole-row Pressable so clicking the label toggles the switch. The

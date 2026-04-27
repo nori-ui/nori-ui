@@ -22,6 +22,8 @@ const CLIENT_ALLOWED = [
     'theme/use-theme.ts',
     'theme/use-color-scheme.ts',
     'theme/use-theme-colors.ts',
+    'animation/reanimated-adapter.ts',
+    'animation/use-animated-number.ts',
     'i18n/context.tsx',
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',

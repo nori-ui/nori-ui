@@ -103,7 +103,8 @@
     "react": "^19",
     "react-dom": "^19",
     "react-native": "^0.83",
-    "react-native-css-interop": ">=0.2.3"
+    "react-native-css-interop": ">=0.2.3",
+    "react-native-reanimated": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "nativewind": {
@@ -117,6 +118,9 @@
     },
     "react-native-css-interop": {
       "optional": false
+    },
+    "react-native-reanimated": {
+      "optional": true
     }
   }
 }

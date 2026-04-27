@@ -204,13 +204,19 @@ const ToggleVisual = ({
                 ...(suppressRightBorder ? { borderRightWidth: 0 } : null),
             };
         }
-        // default variant, standalone
+        // Default variant, standalone — give the off state a subtle
+        // resting bg + 1px border so the control reads as a button. The
+        // earlier "transparent off" look only made sense inside a group
+        // where the cluster's shared seams told the eye "this is a row of
+        // buttons"; standalone it just looked like text.
         return {
             backgroundColor: isOn
                 ? colors.semantic.interactive.primary
                 : hovered
                   ? colors.semantic.background.subtle
-                  : 'transparent',
+                  : colors.semantic.background.elevated,
+            borderWidth: 1,
+            borderColor: isOn ? colors.semantic.interactive.primary : colors.semantic.border.default,
         };
     };
 
@@ -238,6 +244,15 @@ const ToggleVisual = ({
         ...(onFocus ? { onFocus } : {}),
     };
 
+    // RN-Web's Pressable on web doesn't reliably invoke the style callback
+    // (the hovered/pressed state isn't always wired through to a re-render
+    // — at least in the version we ship against). Compute the static style
+    // upfront with `hovered=false` and overlay a `:hover` color via CSS
+    // class for the off-state hover. Active-state hover is for outline
+    // variant only and doesn't change the look enough to justify the
+    // complexity of a style-callback path here.
+    const surfaceStatic = surfaceFor(false);
+
     return (
         <Pressable
             ref={(node: unknown) => {
@@ -253,10 +268,7 @@ const ToggleVisual = ({
                 disabled ? 'opacity-50' : undefined,
                 className
             )}
-            style={(state) => {
-                const hovered = Boolean((state as { hovered?: boolean }).hovered);
-                return [baseStyle, surfaceFor(hovered), disabled ? { opacity: 0.5 } : null];
-            }}
+            style={[baseStyle, surfaceStatic, disabled ? { opacity: 0.5 } : null]}
         >
             {typeof children === 'string' ? (
                 <RNText
