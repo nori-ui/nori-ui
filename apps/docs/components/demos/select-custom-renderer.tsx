@@ -11,7 +11,7 @@ const MEMBERS: SelectOption<Member>[] = [
         label: 'Ada Lovelace',
         data: {
             name: 'Ada Lovelace',
-            email: 'ada@nori-ui.dev',
+            email: 'ada@nori-ui.com',
             role: 'Owner',
             avatar: 'https://i.pravatar.cc/64?img=47',
         },
@@ -21,7 +21,7 @@ const MEMBERS: SelectOption<Member>[] = [
         label: 'Grace Hopper',
         data: {
             name: 'Grace Hopper',
-            email: 'grace@nori-ui.dev',
+            email: 'grace@nori-ui.com',
             role: 'Admin',
             avatar: 'https://i.pravatar.cc/64?img=49',
         },
@@ -31,7 +31,7 @@ const MEMBERS: SelectOption<Member>[] = [
         label: 'Margaret Hamilton',
         data: {
             name: 'Margaret Hamilton',
-            email: 'margaret@nori-ui.dev',
+            email: 'margaret@nori-ui.com',
             role: 'Editor',
             avatar: 'https://i.pravatar.cc/64?img=44',
         },
@@ -41,7 +41,7 @@ const MEMBERS: SelectOption<Member>[] = [
         label: 'Katherine Johnson',
         data: {
             name: 'Katherine Johnson',
-            email: 'katherine@nori-ui.dev',
+            email: 'katherine@nori-ui.com',
             role: 'Editor',
             avatar: 'https://i.pravatar.cc/64?img=48',
         },
@@ -51,7 +51,7 @@ const MEMBERS: SelectOption<Member>[] = [
         label: 'Radia Perlman',
         data: {
             name: 'Radia Perlman',
-            email: 'radia@nori-ui.dev',
+            email: 'radia@nori-ui.com',
             role: 'Viewer',
             avatar: 'https://i.pravatar.cc/64?img=45',
         },

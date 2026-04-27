@@ -25,17 +25,30 @@ export type SeparatorProps = Omit<ViewProps, 'children'> & {
 };
 
 const HORIZONTAL_BASE: ViewStyle = { height: 1, width: '100%' };
-// Vertical: rely on flex `align-self: stretch` to fill the parent's
-// row height when the parent has explicit height, AND ship a non-zero
-// `min-height` so the rule stays visible inline with text when the
-// parent is content-sized. (The previous `height: '100%'` collapsed
-// to 0 in content-sized parents — height: 100% of nothing = 0px —
-// which made the separator invisible in real layouts like an inline
-// action row of Edit / Duplicate / Delete labels.)
+// Vertical: a delicate inline rule that sits centered against
+// surrounding text. Two design decisions worth recording:
+//
+//   1. `alignSelf: 'center'` — NOT 'stretch'. Stretch made the rule
+//      fill the parent's full row height, which exceeds the visible
+//      text glyph height (line-height includes leading padding above
+//      and below the glyphs) and made the separator look oversized
+//      and asymmetric. Centering it picks up the same visual
+//      alignment as the text glyphs.
+//
+//   2. `height: 16` — matches the body fontSize (1em of body text).
+//      In an inline row of body-md text (fontSize 16, lineHeight 1.4
+//      → 22.4px box), a 16px-tall rule sits perfectly across the
+//      visible glyph zone. Slightly shorter than the full row height
+//      gives the rule a refined, intentional look rather than a
+//      brutal floor-to-ceiling line.
+//
+// Consumers who need a separator that fills a taller parent (e.g.
+// inside a Card with explicit height) can pass `style={{ height,
+// alignSelf: 'stretch' }}` to override.
 const VERTICAL_BASE: ViewStyle = {
     width: 1,
-    minHeight: 16,
-    alignSelf: 'stretch',
+    height: 16,
+    alignSelf: 'center',
 };
 
 /**
