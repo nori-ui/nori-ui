@@ -36,16 +36,20 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
             <DocsTitle>{page.data.title}</DocsTitle>
             {page.data.description ? <DocsDescription>{page.data.description}</DocsDescription> : null}
             <DocsBody>
-                {/* Single toolbar row: prev / next live next to copy / json
-                 * so the four pills read as one cluster of page-level
-                 * actions. Both children render their own pills (no wrapper
-                 * div) and inherit the same visual style. */}
+                {/* Single toolbar row: copy / json on the left, prev /
+                 * next pinned to the right via `ml-auto` on the trailing
+                 * group so the row reads as page-level actions on one
+                 * side and navigation on the other. The arrows wrapper
+                 * also re-introduces `gap-2` so the two pills don't
+                 * collapse against each other. */}
                 <div className="not-prose mb-6 flex flex-wrap items-center gap-2 text-sm">
-                    <PageNavArrows
-                        {...(previous ? { previous: { name: previous.name as string, url: previous.url } } : {})}
-                        {...(next ? { next: { name: next.name as string, url: next.url } } : {})}
-                    />
                     <PageActions pagePath={page.url} />
+                    <div className="ml-auto flex flex-wrap items-center gap-2">
+                        <PageNavArrows
+                            {...(previous ? { previous: { name: previous.name as string, url: previous.url } } : {})}
+                            {...(next ? { next: { name: next.name as string, url: next.url } } : {})}
+                        />
+                    </div>
                 </div>
                 <MDX
                     components={{
