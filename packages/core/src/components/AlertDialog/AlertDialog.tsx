@@ -146,17 +146,28 @@ export function AlertDialogTrigger({ asChild = true, children, className, testID
     );
 }
 
-const OVERLAY_STYLE: ViewStyle = {
+// Same scrim + blur recipe as Dialog (see Dialog.tsx). 24% black + 4px
+// blur leaves the page text "almost readable" behind the dialog rather
+// than fully obscured. Native keeps a flat scrim — RN doesn't have
+// backdrop-filter and the native shim would be an extra peer dep.
+const SCRIM_COLOR = 'rgba(0, 0, 0, 0.24)';
+const BLUR_AMOUNT = 4;
+
+// Static overlay layout. The animatable scrim color + backdrop-filter
+// are pushed onto the overlay's DOM ref via useEffect inside the
+// component because rn-web's style filter drops keys it doesn't
+// recognise as RN style props (backdropFilter, transitionProperty).
+// See the Dialog backdrop-blur implementation for the same trick.
+const OVERLAY_BASE_STYLE: ViewStyle = {
     position: Platform.OS === 'web' ? ('fixed' as unknown as 'absolute') : 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : {}),
+    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
 };
 
 const CONTENT_BASE_STYLE: ViewStyle = {
@@ -233,6 +244,46 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
     const ctx = useAlertDialogContext('AlertDialogContent');
     const colors = useThemeColors();
     const contentRef = useRef<HTMLDivElement | null>(null);
+    const overlayDomRef = useRef<HTMLElement | null>(null);
+    // Two-phase mount: render overlay at scrim 0 / blur 0 first, then
+    // flip to target values on the next frame so CSS transitions have a
+    // start state to interpolate from. Same pattern as Dialog.
+    const [entered, setEntered] = useState(false);
+    useEffect(() => {
+        if (Platform.OS !== 'web') {
+            setEntered(true);
+            return;
+        }
+        if (!ctx.open) {
+            setEntered(false);
+            return;
+        }
+        const id = requestAnimationFrame(() => setEntered(true));
+        return () => cancelAnimationFrame(id);
+    }, [ctx.open]);
+
+    // Animated scrim + backdrop-filter — pushed onto the overlay's DOM
+    // node directly because rn-web's style filter drops the
+    // transition/backdrop-filter keys when passed via the View's `style`
+    // prop. Web only; native uses the flat scrim baked into
+    // OVERLAY_BASE_STYLE.
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+        const node = overlayDomRef.current;
+        if (!node) return;
+        node.style.transitionProperty = 'background-color, backdrop-filter, -webkit-backdrop-filter';
+        node.style.transitionDuration = '150ms, 200ms, 200ms';
+        node.style.transitionTimingFunction = 'ease-out';
+        if (entered) {
+            node.style.backgroundColor = SCRIM_COLOR;
+            node.style.backdropFilter = `blur(${BLUR_AMOUNT}px)`;
+            node.style.setProperty('-webkit-backdrop-filter', `blur(${BLUR_AMOUNT}px)`);
+        } else {
+            node.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            node.style.backdropFilter = 'blur(0px)';
+            node.style.setProperty('-webkit-backdrop-filter', 'blur(0px)');
+        }
+    }, [entered]);
 
     useEffect(() => {
         if (!ctx.open) return;
@@ -324,11 +375,24 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
     }, []);
 
     return (
-        <Modal visible={ctx.open} transparent animationType="fade" onRequestClose={onRequestClose}>
+        <Modal
+            visible={ctx.open}
+            transparent
+            // Web: 'none' so RN's built-in fade doesn't fight our own
+            // overlay/content transitions (its layer-level fade caused
+            // backdrop-filter to "snap in" at the end on Dialog — same
+            // failure mode applies here). Native keeps 'fade' since we
+            // have no CSS transition path there.
+            animationType={Platform.OS === 'web' ? 'none' : 'fade'}
+            onRequestClose={onRequestClose}
+        >
             <View
+                ref={(node) => {
+                    overlayDomRef.current = node as unknown as HTMLElement | null;
+                }}
                 accessibilityRole="none"
                 aria-hidden={true}
-                style={OVERLAY_STYLE}
+                style={OVERLAY_BASE_STYLE}
                 // Note: this is a <View>, not a <Pressable>. The overlay must NOT
                 // dismiss on click for an alert dialog.
             >
