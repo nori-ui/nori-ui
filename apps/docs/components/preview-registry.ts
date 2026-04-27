@@ -47,7 +47,10 @@ import TextBasic from './demos/text-basic';
 import TextInputBasic from './demos/text-input-basic';
 import ThemingTokens from './demos/theming-tokens';
 import ToastBasic from './demos/toast-basic';
+import ToastCloseButton from './demos/toast-close-button';
 import ToastPositions from './demos/toast-positions';
+import ToastRichColors from './demos/toast-rich-colors';
+import ToastUpdate from './demos/toast-update';
 import ToggleBasic from './demos/toggle-basic';
 import ToggleGroupMultiple from './demos/toggle-group-multiple';
 import ToggleGroupSingle from './demos/toggle-group-single';
@@ -146,7 +149,10 @@ export const previews = {
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
     'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'], ...DIR_ONLY },
     'toast-basic': { Component: ToastBasic, ...previewSources['toast-basic'] },
+    'toast-close-button': { Component: ToastCloseButton, ...previewSources['toast-close-button'] },
     'toast-positions': { Component: ToastPositions, ...previewSources['toast-positions'] },
+    'toast-rich-colors': { Component: ToastRichColors, ...previewSources['toast-rich-colors'] },
+    'toast-update': { Component: ToastUpdate, ...previewSources['toast-update'] },
     'toggle-basic': { Component: ToggleBasic, ...previewSources['toggle-basic'], ...DIR_ONLY },
     'toggle-group-multiple': {
         Component: ToggleGroupMultiple,

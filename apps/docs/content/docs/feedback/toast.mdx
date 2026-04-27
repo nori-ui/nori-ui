@@ -21,11 +21,33 @@ import { PropsTable } from '@/components/props-table';
 - Six positions: `top-left`, `top-center` (default), `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. Each toast may override the global anchor with its own `position`.
 - `duration` defaults to 4000ms. Pass `Infinity` to keep a toast open until dismissed manually.
 
-## Preview
+## Tones, action, promise
+
+All five tones plus an inline action button and `toast.promise` for async flows. Click "Promise" and watch the same card swap from the loading state to success after 1.5s.
 
 <Preview name="toast-basic" />
 
+## Rich colors
+
+`<Toaster richColors />` applies a saturated tone-colored surface per type — useful for moments where the toast needs to assert itself.
+
+<Preview name="toast-rich-colors" />
+
+## Sticky toasts + close button
+
+Pass `duration: Infinity` to keep a toast open until dismissed, and `<Toaster closeButton />` to render an explicit × on every card.
+
+<Preview name="toast-close-button" />
+
+## Update an existing toast in place
+
+Reuse the same `id` to swap a loading toast for a success/error one without spawning a second card. Useful when `toast.promise` doesn't fit the flow (chained calls, intermediate progress states).
+
+<Preview name="toast-update" />
+
 ## Six positions
+
+Each toast may override the global `<Toaster position>` with its own `position` option, but most apps just pick one anchor and stick with it.
 
 <Preview name="toast-positions" />
 
@@ -37,6 +59,7 @@ toast.success(title, options?)
 toast.error(title, options?)
 toast.warning(title, options?)
 toast.info(title, options?)
+toast.message(title, options?)  // alias for the default tone
 toast.dismiss(id?)              // dismiss specific or all
 toast.promise(p, { loading, success, error })
 ```
