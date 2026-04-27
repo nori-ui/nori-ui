@@ -9,6 +9,12 @@ platform: both
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Preview } from '@/components/preview';
 
+<Callout title="Try it now">
+    See the floating swatch picker in the bottom-right corner? Click any
+    color and every component on the page re-renders against that preset.
+    Your choice persists across reloads (stored in `localStorage`).
+</Callout>
+
 ## At a glance
 
 - A `NoriTheme` is a paired light/dark palette: `{ light: Theme, dark: Theme }`. The hook `useThemeColors()` resolves the right half based on the current color scheme.

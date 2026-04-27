@@ -13,6 +13,7 @@ import {
     type PreviewLocale,
     RTL_LOCALES,
 } from '@/lib/preview-locales';
+import { useDocsTheme } from './docs-theme-provider';
 import { type PreviewName, previews } from './preview-registry';
 
 export type PreviewProps = {
@@ -48,6 +49,9 @@ export function Preview({ name, padding = 24 }: PreviewProps) {
     const [mounted, setMounted] = useState(false);
     const [directionOverride, setDirectionOverride] = useState<PreviewDirection | null>(null);
     const [locale, setLocale] = useState<PreviewLocale>('en');
+    // Pull the docs-wide active theme up here (above the early-return) so
+    // the hook order stays stable when an unknown name is passed.
+    const { theme: docsTheme } = useDocsTheme();
     useEffect(() => setMounted(true), []);
 
     if (!entry) {
@@ -115,7 +119,7 @@ export function Preview({ name, padding = 24 }: PreviewProps) {
                         dir={direction}
                     >
                         {mounted ? (
-                            <NoriProvider {...(dictionary !== undefined ? { i18n: dictionary } : {})}>
+                            <NoriProvider theme={docsTheme} {...(dictionary !== undefined ? { i18n: dictionary } : {})}>
                                 <Component />
                             </NoriProvider>
                         ) : null}

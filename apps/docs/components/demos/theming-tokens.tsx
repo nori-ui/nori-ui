@@ -1,11 +1,16 @@
 'use client';
 
-import { Button, defaultTheme, type NoriTheme, ThemeProvider, VStack } from '@nori-ui/core/client';
+import { Button, defaultTheme, type NoriTheme, type Theme, ThemeProvider, VStack } from '@nori-ui/core/client';
 
 // Same teal palette as the default — the only thing that changes is the
 // dimensional + typographic tokens. Bigger radius, fatter padding,
 // different font ramp, heavier baseline weight. Demonstrates that a
 // theme isn't just a color skin — it can scale the whole system.
+//
+// `Theme` is generated from JSON and types each token value as the
+// specific string LITERAL it had at build time (e.g. radius.md is
+// `'6px'`, not `string`). Overriding to '14px' fails the literal check
+// even though it's the same shape at runtime — cast through unknown.
 const ROUNDED_THEME: NoriTheme = {
     light: {
         ...defaultTheme.light,
@@ -17,7 +22,7 @@ const ROUNDED_THEME: NoriTheme = {
             ...defaultTheme.light.fontFamily,
             body: 'Georgia, "Times New Roman", serif',
         },
-    },
+    } as unknown as Theme,
     dark: {
         ...defaultTheme.dark,
         radius: { ...defaultTheme.dark.radius, md: '14px', lg: '20px' },
@@ -28,7 +33,7 @@ const ROUNDED_THEME: NoriTheme = {
             ...defaultTheme.dark.fontFamily,
             body: 'Georgia, "Times New Roman", serif',
         },
-    },
+    } as unknown as Theme,
 };
 
 /**

@@ -1,6 +1,8 @@
 import { RootProvider } from 'fumadocs-ui/provider';
 import { Fraunces } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { DocsThemeProvider } from '@/components/docs-theme-provider';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 import './global.css';
 
 // Display face for headings — variable serif with optical sizing + a SOFT
@@ -22,7 +24,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning className={fraunces.variable}>
             <body className="flex min-h-screen flex-col bg-fd-background text-fd-foreground">
-                <RootProvider>{children}</RootProvider>
+                <RootProvider>
+                    <DocsThemeProvider>
+                        {children}
+                        <ThemeSwitcher />
+                    </DocsThemeProvider>
+                </RootProvider>
             </body>
         </html>
     );

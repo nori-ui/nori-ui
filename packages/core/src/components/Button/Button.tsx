@@ -96,11 +96,22 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
 ) {
     const colors = useThemeColors();
     const isInoperative = Boolean(disabled) || Boolean(loading);
+    // When disabled, drop the variant's hover/active class fragments and
+    // append `pointer-events-none cursor-not-allowed` so the className
+    // path matches the inline-style path: no hover tint, no press tint,
+    // and the cursor signals the control is inert. We still keep the
+    // base variant bg class so the resting color is right.
+    const variantClasses = isInoperative
+        ? VARIANT_CLASSES[variant]
+              .split(' ')
+              .filter((cls) => !cls.startsWith('hover:') && !cls.startsWith('active:'))
+              .join(' ')
+        : VARIANT_CLASSES[variant];
     const classes = cn(
         BASE_CLASSES,
-        VARIANT_CLASSES[variant],
+        variantClasses,
         SIZE_CLASSES[size],
-        isInoperative ? 'opacity-60' : undefined,
+        isInoperative ? 'opacity-60 pointer-events-none cursor-not-allowed' : undefined,
         className
     );
 
@@ -150,14 +161,23 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
     };
 
     const stateColors = variantStateColors[variant];
+    // When disabled (or loading), force the rest state — disabled means
+    // disabled. The control should NOT visually respond to hover/press,
+    // even though the OS still fires those events. Pressable also gets
+    // `disabled={true}` on the Pressable below which blocks onPress, but
+    // the visual treatment is owned here.
     const computeStateBg = (hovered: boolean, pressed: boolean): string => {
+        if (isInoperative) return stateColors.rest;
         if (pressed) return stateColors.pressed;
         if (hovered) return stateColors.hover;
         return stateColors.rest;
     };
     // Destructive uses opacity dim instead of a separate color (matches
     // existing className behavior; keeps the red recognisable on press).
+    // Same disabled rule as bg: hover/press dim is suppressed when
+    // disabled — the static 0.6 opacity below handles the disabled look.
     const computeStateOpacity = (hovered: boolean, pressed: boolean): number => {
+        if (isInoperative) return 1;
         if (variant !== 'destructive') return 1;
         if (pressed) return 0.8;
         if (hovered) return 0.9;
