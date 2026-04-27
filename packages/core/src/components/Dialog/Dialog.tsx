@@ -16,6 +16,7 @@ import type { ViewStyle } from 'react-native';
 import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -168,7 +169,7 @@ const BLUR_AMOUNT = 4;
 // without rendering backdrop-filter — so the blur appears to "snap in"
 // at the end of the fade. Animating blur explicitly via our own
 // transition (and disabling the Modal's fade on web) avoids the snap.
-const OVERLAY_BASE_STYLE: ViewStyle = {
+const OVERLAY_LAYOUT_BASE: ViewStyle = {
     position: Platform.OS === 'web' ? ('fixed' as unknown as 'absolute') : 'absolute',
     top: 0,
     left: 0,
@@ -176,16 +177,14 @@ const OVERLAY_BASE_STYLE: ViewStyle = {
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
     ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
 };
 
-const CONTENT_BASE_STYLE: ViewStyle = {
+// Layout / animation only — theme-driven dimensions are merged inside
+// DialogContent below.
+const CONTENT_LAYOUT_BASE: ViewStyle = {
     width: '100%',
-    maxWidth: 480,
-    borderRadius: 12,
-    padding: 24,
-    gap: 12,
+    maxWidth: 480, // component-density literal — not from theme
     ...(Platform.OS === 'web'
         ? ({
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
@@ -211,6 +210,16 @@ export function DialogContent({ children, className, testID }: DialogContentProp
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
     const contentRef = useRef<HTMLDivElement | null>(null);
+    const overlayStyle: ViewStyle = {
+        ...OVERLAY_LAYOUT_BASE,
+        padding: px(colors.spacing['4']),
+    };
+    const contentStyle: ViewStyle = {
+        ...CONTENT_LAYOUT_BASE,
+        borderRadius: px(colors.radius.xl),
+        padding: px(colors.spacing['6']),
+        gap: px(colors.spacing['3']),
+    };
     // Scale-in: render at scale(0.96) + opacity 0 first, flip to 1 in a
     // useEffect so the CSS transition has a frame to animate from. Web
     // only; native uses `Modal animationType="fade"` which is enough.
@@ -370,7 +379,7 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                 ref={(node) => {
                     overlayDomRef.current = node as unknown as HTMLElement | null;
                 }}
-                style={OVERLAY_BASE_STYLE}
+                style={overlayStyle}
                 onPress={onOverlayPress}
             >
                 <Pressable
@@ -385,9 +394,12 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                     aria-describedby={ctx.descriptionId}
                     {...(testID !== undefined ? { testID } : {})}
                     className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
-                    style={[CONTENT_BASE_STYLE, { backgroundColor: colors.semantic.background.elevated }, enterStyle]}
+                    style={[contentStyle, { backgroundColor: colors.semantic.background.elevated }, enterStyle]}
                 >
-                    <View className="flex-col gap-1.5" style={{ flexDirection: 'column', gap: 6 }}>
+                    <View
+                        className="flex-col gap-1.5"
+                        style={{ flexDirection: 'column', gap: px(colors.spacing['2']) - 2 }}
+                    >
                         {children}
                     </View>
                 </Pressable>
@@ -412,7 +424,12 @@ export function DialogTitle({ children, className }: DialogTextProps) {
             role="heading"
             aria-level={2}
             className={cn('text-lg font-semibold text-semantic-text-default', className)}
-            style={{ color: colors.semantic.text.default, fontSize: 18, fontWeight: '600' }}
+            style={{
+                color: colors.semantic.text.default,
+                fontFamily: colors.fontFamily.display,
+                fontSize: px(colors.fontSize.lg),
+                fontWeight: colors.fontWeight.semibold as '600',
+            }}
         >
             {children}
         </RNText>
@@ -428,7 +445,12 @@ export function DialogDescription({ children, className }: DialogTextProps) {
             nativeID={ctx.descriptionId}
             id={ctx.descriptionId}
             className={cn('text-sm text-semantic-text-muted', className)}
-            style={{ color: colors.semantic.text.muted, fontSize: 14, lineHeight: 20 }}
+            style={{
+                color: colors.semantic.text.muted,
+                fontFamily: colors.fontFamily.body,
+                fontSize: px(colors.fontSize.sm),
+                lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+            }}
         >
             {children}
         </RNText>
@@ -508,13 +530,14 @@ export function DialogClose({
             className={cn('absolute right-3 top-3 w-8 h-8 items-center justify-center rounded-md', className)}
             style={{
                 position: 'absolute',
-                right: 12,
-                top: 12,
+                right: px(colors.spacing['3']),
+                top: px(colors.spacing['3']),
+                // 32×32 close hit target — component-density literal — not from theme
                 width: 32,
                 height: 32,
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: 6,
+                borderRadius: px(colors.radius.md),
             }}
         >
             <defaultSemanticIcons.close size={18} color={colors.semantic.text.muted} />
@@ -529,15 +552,16 @@ export type DialogFooterProps = {
 
 /** Convenience row for dialog action buttons (right-aligned). */
 export function DialogFooter({ children, className }: DialogFooterProps) {
+    const colors = useThemeColors();
     return (
         <View
             className={cn('mt-4 flex-row items-center justify-end gap-2', className)}
             style={{
-                marginTop: 16,
+                marginTop: px(colors.spacing['4']),
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                gap: 8,
+                gap: px(colors.spacing['2']),
             }}
         >
             {children}

@@ -15,6 +15,7 @@ import {
 } from 'react';
 import type { TextInput as RNTextInputType, TextStyle, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, TextInput as RNTextInput, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 import type { TextInputProps } from '../TextInput/TextInput';
@@ -59,11 +60,12 @@ const isInput = (child: unknown): child is ReactElement<InputGroupInputProps> =>
 
 // ─── Container ────────────────────────────────────────────────────────────
 
-const CONTAINER_STYLE: ViewStyle = { flexDirection: 'column', gap: 4 };
-const FIELD_BASE_STYLE: ViewStyle = {
+// Layout-only bases; theme-driven dimensions are merged inside the
+// component below.
+const CONTAINER_LAYOUT_BASE: ViewStyle = { flexDirection: 'column' };
+const FIELD_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'stretch',
-    borderRadius: 6,
     borderWidth: 1,
     overflow: 'hidden',
 };
@@ -158,23 +160,38 @@ export function InputGroup({
           : colors.semantic.border.default;
 
     const fieldStyle = [
-        FIELD_BASE_STYLE,
+        FIELD_LAYOUT_BASE,
         {
+            borderRadius: px(colors.radius.md),
             backgroundColor: colors.semantic.background.elevated,
             borderColor,
         },
         disabled ? { opacity: 0.6 } : null,
     ];
 
-    const labelStyle: TextStyle = { fontSize: 14, fontWeight: '500', color: colors.semantic.text.default };
-    const helperStyle: TextStyle = { fontSize: 14, color: colors.semantic.text.muted };
-    const errorStyle: TextStyle = { fontSize: 14, color: colors.color.danger };
+    const labelStyle: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+        fontWeight: colors.fontWeight.medium as '500',
+        color: colors.semantic.text.default,
+    };
+    const helperStyle: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+        color: colors.semantic.text.muted,
+    };
+    const errorStyle: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+        color: colors.color.danger,
+    };
+    const containerStyle: ViewStyle = { ...CONTAINER_LAYOUT_BASE, gap: px(colors.spacing['1']) };
 
     return (
         <View
             {...(testID !== undefined ? { testID } : {})}
             className={cn('flex flex-col gap-1', containerClassName)}
-            style={CONTAINER_STYLE}
+            style={containerStyle}
         >
             {label !== undefined ? (
                 // RN web renders <RNText> as <div>; we use a real <label
@@ -246,7 +263,7 @@ function AddonSlot({ children, side }: { children: ReactNode; side: 'left' | 'ri
 
     const baseStyle: ViewStyle = {
         backgroundColor: colors.semantic.background.subtle,
-        paddingHorizontal: 12,
+        paddingHorizontal: px(colors.spacing['3']),
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -297,7 +314,11 @@ export type InputGroupAddonProps = {
  */
 export function InputGroupAddon({ children, className, testID }: InputGroupAddonProps) {
     const colors = useThemeColors();
-    const textStyle: TextStyle = { color: colors.semantic.text.muted, fontSize: 14 };
+    const textStyle: TextStyle = {
+        color: colors.semantic.text.muted,
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+    };
 
     // Wrap raw strings/numbers so consumers can pass `"@"` or `<MailIcon />`
     // and both render correctly without callers tripping over RN's "text
@@ -326,11 +347,9 @@ export function InputGroupAddon({ children, className, testID }: InputGroupAddon
 
 // ─── Input (public) ───────────────────────────────────────────────────────
 
-const INPUT_BASE_STYLE: TextStyle = {
+// Layout-only base; theme-driven dimensions are merged inside InputGroupInput.
+const INPUT_LAYOUT_BASE: TextStyle = {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
     // RN web honours `outlineStyle: 'none'` to suppress the default browser
     // focus ring — the group's own focus-within border replaces it.
     outlineStyle: 'none' as unknown as TextStyle['outlineStyle'],
@@ -382,7 +401,11 @@ export function InputGroupInput({
     if (onChangeText !== undefined) inputExtras.onChangeText = onChangeText;
 
     const inputStyle: TextStyle = {
-        ...INPUT_BASE_STYLE,
+        ...INPUT_LAYOUT_BASE,
+        paddingVertical: px(colors.spacing['2']),
+        paddingHorizontal: px(colors.spacing['3']),
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.md),
         color: colors.semantic.text.default,
     };
 

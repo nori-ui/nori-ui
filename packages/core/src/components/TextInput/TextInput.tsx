@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useId } from 'react';
 import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
 import { Text as RNText, TextInput as RNTextInput, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -25,13 +26,12 @@ export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
     numberOfLines?: number;
 };
 
-const CONTAINER_STYLE: ViewStyle = { flexDirection: 'column', gap: 4 };
-const FIELD_BASE_STYLE: ViewStyle = {
+// Layout-only bases; theme-driven dimensions are merged inside the component.
+const CONTAINER_LAYOUT_BASE: ViewStyle = { flexDirection: 'column' };
+const FIELD_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 6,
     borderWidth: 1,
-    paddingHorizontal: 12,
     // Clip the textarea's browser-drawn resize grippy inside the rounded
     // border. Without this, the grippy escapes the corner and looks like
     // it belongs to the page, not the input.
@@ -78,18 +78,35 @@ export function TextInput({
     if (numberOfLines !== undefined) inputExtras.numberOfLines = numberOfLines;
     if (onChangeText !== undefined) inputExtras.onChangeText = onChangeText;
 
-    const labelStyle: TextStyle = { fontSize: 14, fontWeight: '500', color: colors.semantic.text.default };
-    const inputStyle: TextStyle = {
-        flex: 1,
-        paddingVertical: 8,
-        fontSize: 16,
+    const labelStyle: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+        fontWeight: colors.fontWeight.medium as '500',
         color: colors.semantic.text.default,
     };
-    const helperStyle: TextStyle = { fontSize: 14, color: colors.semantic.text.muted };
-    const errorStyle: TextStyle = { fontSize: 14, color: colors.color.danger };
+    const inputStyle: TextStyle = {
+        flex: 1,
+        paddingVertical: px(colors.spacing['2']),
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.md),
+        color: colors.semantic.text.default,
+    };
+    const helperStyle: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+        color: colors.semantic.text.muted,
+    };
+    const errorStyle: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.sm),
+        color: colors.color.danger,
+    };
+    const containerStyle: ViewStyle = { ...CONTAINER_LAYOUT_BASE, gap: px(colors.spacing['1']) };
     const fieldStyle = [
-        FIELD_BASE_STYLE,
+        FIELD_LAYOUT_BASE,
         {
+            borderRadius: px(colors.radius.md),
+            paddingHorizontal: px(colors.spacing['3']),
             backgroundColor: colors.semantic.background.elevated,
             borderColor: hasError ? colors.color.danger : colors.semantic.border.default,
         },
@@ -97,7 +114,7 @@ export function TextInput({
     ];
 
     return (
-        <View className={cn('flex flex-col gap-1', containerClassName)} style={CONTAINER_STYLE}>
+        <View className={cn('flex flex-col gap-1', containerClassName)} style={containerStyle}>
             {label !== undefined ? (
                 <label
                     htmlFor={inputId}
@@ -116,7 +133,7 @@ export function TextInput({
                 style={fieldStyle}
             >
                 {leading ? (
-                    <View className="mr-2" style={{ marginRight: 8 }}>
+                    <View className="mr-2" style={{ marginRight: px(colors.spacing['2']) }}>
                         {leading}
                     </View>
                 ) : null}
@@ -132,7 +149,7 @@ export function TextInput({
                     style={[inputStyle, rest.style]}
                 />
                 {trailing ? (
-                    <View className="ml-2" style={{ marginLeft: 8 }}>
+                    <View className="ml-2" style={{ marginLeft: px(colors.spacing['2']) }}>
                         {trailing}
                     </View>
                 ) : null}

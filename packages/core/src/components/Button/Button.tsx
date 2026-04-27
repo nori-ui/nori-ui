@@ -1,10 +1,12 @@
 'use client';
 
+import type { Theme } from '@nori-ui/tokens';
 import type { ComponentType, ReactNode } from 'react';
 import { forwardRef } from 'react';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 import { Spinner } from '../Spinner';
@@ -49,18 +51,29 @@ const ICON_SIZE: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 20 };
 
 const BASE_CLASSES = 'inline-flex flex-row items-center justify-center gap-2 rounded-md select-none';
 
-const SIZE_STYLES: Record<ButtonSize, { container: ViewStyle; text: { fontSize: number } }> = {
-    sm: { container: { height: 32, paddingHorizontal: 12 }, text: { fontSize: 14 } },
-    md: { container: { height: 40, paddingHorizontal: 16 }, text: { fontSize: 16 } },
-    lg: { container: { height: 48, paddingHorizontal: 20 }, text: { fontSize: 18 } },
+// Heights are intentionally hardcoded — they're tightly coupled to the
+// button's overall density (a 48px target on lg, 32px on sm). Padding and
+// fontSize are pulled from the active theme so a custom theme that scales
+// the spacing/fontSize ramps also scales the button. If you want a
+// genuinely smaller / taller button, override `theme.spacing` /
+// `theme.fontSize` rather than reach for new size literals here.
+const HEIGHT_BY_SIZE: Record<ButtonSize, number> = {
+    sm: 32,
+    md: 40,
+    lg: 48,
+};
+type SizeKeys = { padX: keyof Theme['spacing']; font: keyof Theme['fontSize'] };
+const SIZE_KEYS: Record<ButtonSize, SizeKeys> = {
+    sm: { padX: '3', font: 'sm' },
+    md: { padX: '4', font: 'md' },
+    lg: { padX: '5', font: 'lg' },
 };
 
+// gap and borderRadius come from the theme inside the component.
 const BASE_STYLE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    borderRadius: 6,
 };
 
 export const Button = forwardRef<unknown, ButtonProps>(function Button(
@@ -151,13 +164,25 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         return 1;
     };
 
+    // Resolve all dimensional + typographic values from the active theme
+    // so a custom theme that scales spacing / fontSize / radius / fontWeight
+    // also reshapes every Button on the page.
+    const sizeKeys = SIZE_KEYS[size];
+    const sizeContainer: ViewStyle = {
+        height: HEIGHT_BY_SIZE[size],
+        paddingHorizontal: px(colors.spacing[sizeKeys.padX]),
+        gap: px(colors.spacing['2']),
+        borderRadius: px(colors.radius.md),
+    };
+    const sizeFontSize = px(colors.fontSize[sizeKeys.font]);
+
     const buildInlineStyle = (state: { hovered?: boolean; pressed?: boolean }): ViewStyle[] => {
         const hovered = Boolean(state.hovered);
         const pressed = Boolean(state.pressed);
         return [
             BASE_STYLE,
             { backgroundColor: computeStateBg(hovered, pressed) },
-            SIZE_STYLES[size].container,
+            sizeContainer,
             { opacity: isInoperative ? 0.6 : computeStateOpacity(hovered, pressed) },
         ];
     };
@@ -168,7 +193,12 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
     const slotStyle: StyleProp<ViewStyle> = [...buildInlineStyle({}), typeof style === 'function' ? null : style];
 
     const textColor = variantTextColor[variant];
-    const textStyle = { color: textColor, fontSize: SIZE_STYLES[size].text.fontSize, fontWeight: '500' as const };
+    const textStyle = {
+        color: textColor,
+        fontFamily: colors.fontFamily.body,
+        fontSize: sizeFontSize,
+        fontWeight: colors.fontWeight.medium as '500',
+    };
 
     const handlePress: NonNullable<PressableProps['onPress']> = (ev) => {
         if (isInoperative) return;

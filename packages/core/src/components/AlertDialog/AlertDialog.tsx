@@ -15,6 +15,7 @@ import {
 import type { ViewStyle } from 'react-native';
 import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -158,7 +159,7 @@ const BLUR_AMOUNT = 4;
 // component because rn-web's style filter drops keys it doesn't
 // recognise as RN style props (backdropFilter, transitionProperty).
 // See the Dialog backdrop-blur implementation for the same trick.
-const OVERLAY_BASE_STYLE: ViewStyle = {
+const OVERLAY_LAYOUT_BASE: ViewStyle = {
     position: Platform.OS === 'web' ? ('fixed' as unknown as 'absolute') : 'absolute',
     top: 0,
     left: 0,
@@ -166,16 +167,14 @@ const OVERLAY_BASE_STYLE: ViewStyle = {
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
     ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
 };
 
-const CONTENT_BASE_STYLE: ViewStyle = {
+// Layout / animation only; theme-driven dimensions are merged inside
+// AlertDialogContent.
+const CONTENT_LAYOUT_BASE: ViewStyle = {
     width: '100%',
-    maxWidth: 480,
-    borderRadius: 12,
-    padding: 24,
-    gap: 12,
+    maxWidth: 480, // component-density literal — not from theme
     ...(Platform.OS === 'web'
         ? ({
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
@@ -245,6 +244,16 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
     const colors = useThemeColors();
     const contentRef = useRef<HTMLDivElement | null>(null);
     const overlayDomRef = useRef<HTMLElement | null>(null);
+    const overlayStyle: ViewStyle = {
+        ...OVERLAY_LAYOUT_BASE,
+        padding: px(colors.spacing['4']),
+    };
+    const contentStyle: ViewStyle = {
+        ...CONTENT_LAYOUT_BASE,
+        borderRadius: px(colors.radius.xl),
+        padding: px(colors.spacing['6']),
+        gap: px(colors.spacing['3']),
+    };
     // Two-phase mount: render overlay at scrim 0 / blur 0 first, then
     // flip to target values on the next frame so CSS transitions have a
     // start state to interpolate from. Same pattern as Dialog.
@@ -392,7 +401,7 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
                 }}
                 accessibilityRole="none"
                 aria-hidden={true}
-                style={OVERLAY_BASE_STYLE}
+                style={overlayStyle}
                 // Note: this is a <View>, not a <Pressable>. The overlay must NOT
                 // dismiss on click for an alert dialog.
             >
@@ -408,9 +417,12 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
                     {...(testID !== undefined ? { testID } : {})}
                     {...({ 'data-nori-alert-dialog-content': 'true' } as Record<string, string>)}
                     className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
-                    style={[CONTENT_BASE_STYLE, { backgroundColor: colors.semantic.background.elevated }]}
+                    style={[contentStyle, { backgroundColor: colors.semantic.background.elevated }]}
                 >
-                    <View className="flex-col gap-1.5" style={{ flexDirection: 'column', gap: 6 }}>
+                    <View
+                        className="flex-col gap-1.5"
+                        style={{ flexDirection: 'column', gap: px(colors.spacing['2']) - 2 }}
+                    >
                         {children}
                     </View>
                 </View>
@@ -435,7 +447,12 @@ export function AlertDialogTitle({ children, className }: AlertDialogTextProps) 
             role="heading"
             aria-level={2}
             className={cn('text-lg font-semibold text-semantic-text-default', className)}
-            style={{ color: colors.semantic.text.default, fontSize: 18, fontWeight: '600' }}
+            style={{
+                color: colors.semantic.text.default,
+                fontFamily: colors.fontFamily.display,
+                fontSize: px(colors.fontSize.lg),
+                fontWeight: colors.fontWeight.semibold as '600',
+            }}
         >
             {children}
         </RNText>
@@ -451,7 +468,12 @@ export function AlertDialogDescription({ children, className }: AlertDialogTextP
             nativeID={ctx.descriptionId}
             id={ctx.descriptionId}
             className={cn('text-sm text-semantic-text-muted', className)}
-            style={{ color: colors.semantic.text.muted, fontSize: 14, lineHeight: 20 }}
+            style={{
+                color: colors.semantic.text.muted,
+                fontFamily: colors.fontFamily.body,
+                fontSize: px(colors.fontSize.sm),
+                lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+            }}
         >
             {children}
         </RNText>
@@ -586,15 +608,16 @@ export type AlertDialogFooterProps = {
 
 /** Convenience row for action buttons (right-aligned). */
 export function AlertDialogFooter({ children, className }: AlertDialogFooterProps) {
+    const colors = useThemeColors();
     return (
         <View
             className={cn('mt-4 flex-row items-center justify-end gap-2', className)}
             style={{
-                marginTop: 16,
+                marginTop: px(colors.spacing['4']),
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                gap: 8,
+                gap: px(colors.spacing['2']),
             }}
         >
             {children}

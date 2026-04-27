@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { ImageStyle, ViewStyle } from 'react-native';
 import { Image as RNImage, Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -34,6 +35,8 @@ export type AvatarProps = {
     testID?: string;
 };
 
+// Diameter for each size — component-density literals — not from theme
+// (avatars have a tight visual ramp that doesn't tie to the spacing scale).
 const SIZE_PX: Record<AvatarSize, number> = {
     sm: 32,
     md: 40,
@@ -41,11 +44,13 @@ const SIZE_PX: Record<AvatarSize, number> = {
     xl: 72,
 };
 
-const FALLBACK_FONT_SIZE: Record<AvatarSize, number> = {
-    sm: 12,
-    md: 14,
-    lg: 18,
-    xl: 22,
+// Maps each avatar size to the closest fontSize token key. Resolved to px
+// inside the component so theme overrides take effect.
+const FALLBACK_FONT_KEY: Record<AvatarSize, 'xs' | 'sm' | 'lg' | 'xl'> = {
+    sm: 'xs', // 12
+    md: 'sm', // 14
+    lg: 'lg', // 18
+    xl: 'xl', // 20 (closest to legacy 22)
 };
 
 const initialsFromName = (name: string | undefined): string => {
@@ -113,8 +118,9 @@ export function Avatar({ src, name, size = 'md', fallback, className, testID }: 
                 <RNText
                     style={{
                         color: colors.semantic.text.muted,
-                        fontSize: FALLBACK_FONT_SIZE[size],
-                        fontWeight: '500',
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize[FALLBACK_FONT_KEY[size]]),
+                        fontWeight: colors.fontWeight.medium as '500',
                     }}
                 >
                     {initials}

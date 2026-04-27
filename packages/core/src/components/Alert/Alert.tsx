@@ -4,6 +4,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -115,12 +116,11 @@ function tonePalettes(
     };
 }
 
-const CONTAINER_STYLE: ViewStyle = {
+// Layout-only base; theme-driven dimensions (gap/padding/radius) are merged
+// inside the component so a custom theme reshapes the alert.
+const CONTAINER_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
-    padding: 14,
-    borderRadius: 8,
     borderWidth: 1,
 };
 
@@ -144,7 +144,10 @@ export function Alert({ tone = 'info', title, description, onDismiss, icon, chil
     )[tone];
     const IconComponent = palette.defaultIcon;
     const containerStyle: ViewStyle = {
-        ...CONTAINER_STYLE,
+        ...CONTAINER_LAYOUT_BASE,
+        gap: px(colors.spacing['3']),
+        padding: px(colors.spacing['3']), // closest token to legacy 14px
+        borderRadius: px(colors.radius.lg),
         backgroundColor: palette.bg,
         borderColor: palette.border,
     };
@@ -162,6 +165,7 @@ export function Alert({ tone = 'info', title, description, onDismiss, icon, chil
                 <View
                     aria-hidden={true}
                     style={{
+                        // 20×20 icon hit area — component-density literal — not from theme
                         width: 20,
                         height: 20,
                         alignItems: 'center',
@@ -174,12 +178,28 @@ export function Alert({ tone = 'info', title, description, onDismiss, icon, chil
             )}
             <View style={{ flex: 1, gap: 2 }}>
                 {title !== undefined ? (
-                    <RNText style={{ color: palette.fg, fontSize: 14, fontWeight: '600', lineHeight: 20 }}>
+                    <RNText
+                        style={{
+                            color: palette.fg,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
+                            fontWeight: colors.fontWeight.semibold as '600',
+                            lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+                        }}
+                    >
                         {title}
                     </RNText>
                 ) : null}
                 {description !== undefined ? (
-                    <RNText style={{ color: palette.fg, fontSize: 14, lineHeight: 20, opacity: 0.85 }}>
+                    <RNText
+                        style={{
+                            color: palette.fg,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
+                            lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+                            opacity: 0.85,
+                        }}
+                    >
                         {description}
                     </RNText>
                 ) : null}
@@ -193,11 +213,12 @@ export function Alert({ tone = 'info', title, description, onDismiss, icon, chil
                     accessibilityLabel="Dismiss"
                     aria-label="Dismiss"
                     style={{
+                        // 24×24 close button hit area — component-density literal — not from theme
                         width: 24,
                         height: 24,
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: 4,
+                        borderRadius: px(colors.radius.sm),
                         marginTop: -2,
                     }}
                 >

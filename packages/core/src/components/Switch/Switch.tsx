@@ -6,6 +6,7 @@ import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useAnimatedNumber } from '../../animation/use-animated-number';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -21,7 +22,10 @@ export type SwitchProps = {
     children?: ReactNode;
 };
 
-const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
+// Layout-only base; row gap is theme-driven inside the component.
+const ROW_LAYOUT_BASE: ViewStyle = { flexDirection: 'row', alignItems: 'center' };
+// Switch track + thumb are tightly coupled — width 40, height 24, thumb
+// 20×20, travel 18px. Component-density literals — not from theme.
 const TRACK_BASE: ViewStyle = {
     width: 40,
     height: 24,
@@ -143,12 +147,14 @@ export function Switch({
     // Whole-row Pressable so clicking the label toggles the switch. The
     // visible track is a non-interactive View — one role="switch" per
     // logical control, not two competing hit-areas.
+    const rowStyle: ViewStyle = { ...ROW_LAYOUT_BASE, gap: px(colors.spacing['2']) };
+
     return (
         <Pressable
             onPress={toggle}
             {...commonProps}
             className={cn('flex-row items-center gap-2', className)}
-            style={ROW_STYLE}
+            style={rowStyle}
         >
             <View className={trackClasses} style={trackStyle}>
                 <View className={thumbClasses} style={thumbStyle} />
@@ -156,7 +162,11 @@ export function Switch({
             {label ? (
                 <RNText
                     className="text-md text-semantic-text-default"
-                    style={{ color: colors.semantic.text.default, fontSize: 16 }}
+                    style={{
+                        color: colors.semantic.text.default,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.md),
+                    }}
                 >
                     {label}
                 </RNText>

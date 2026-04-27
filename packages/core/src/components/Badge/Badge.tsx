@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import type { TextStyle, ViewStyle } from 'react-native';
 import { Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -29,22 +30,15 @@ export type BadgeProps = {
     testID?: string;
 };
 
-const BASE_CONTAINER: ViewStyle = {
+// Layout-only base; theme-driven dimensions are merged inside the
+// component so a custom theme reshapes the badge.
+const BASE_CONTAINER_LAYOUT: ViewStyle = {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 9999,
+    paddingVertical: 2, // component-density literal — not from theme (no 2px spacing token)
     borderWidth: 1,
     borderColor: 'transparent',
-};
-
-const BASE_TEXT: TextStyle = {
-    fontSize: 12,
-    fontWeight: '500',
-    lineHeight: 16,
 };
 
 /**
@@ -114,27 +108,39 @@ export function Badge({ tone = 'neutral', appearance = 'soft', children, classNa
         };
     }
 
+    const baseContainer: ViewStyle = {
+        ...BASE_CONTAINER_LAYOUT,
+        gap: px(colors.spacing['1']),
+        paddingHorizontal: px(colors.spacing['2']),
+        borderRadius: px(colors.radius.full),
+    };
     const containerStyle: ViewStyle = (() => {
         if (appearance === 'solid') {
-            return { ...BASE_CONTAINER, backgroundColor: palette.solid.bg };
+            return { ...baseContainer, backgroundColor: palette.solid.bg };
         }
         if (appearance === 'outline') {
-            return { ...BASE_CONTAINER, backgroundColor: 'transparent', borderColor: palette.outline.border };
+            return { ...baseContainer, backgroundColor: 'transparent', borderColor: palette.outline.border };
         }
-        return { ...BASE_CONTAINER, backgroundColor: palette.soft.bg };
+        return { ...baseContainer, backgroundColor: palette.soft.bg };
     })();
     const textColor = (() => {
         if (appearance === 'solid') return palette.solid.fg;
         if (appearance === 'outline') return palette.outline.fg;
         return palette.soft.fg;
     })();
+    const baseText: TextStyle = {
+        fontFamily: colors.fontFamily.body,
+        fontSize: px(colors.fontSize.xs),
+        fontWeight: colors.fontWeight.medium as '500',
+        lineHeight: px(colors.fontSize.xs) * Number(colors.lineHeight.normal),
+    };
     return (
         <View
             {...(testID !== undefined ? { testID } : {})}
             className={cn('inline-flex flex-row items-center gap-1 rounded-full px-2 py-0.5 border', className)}
             style={containerStyle}
         >
-            <RNText style={{ ...BASE_TEXT, color: textColor }}>{children}</RNText>
+            <RNText style={{ ...baseText, color: textColor }}>{children}</RNText>
         </View>
     );
 }

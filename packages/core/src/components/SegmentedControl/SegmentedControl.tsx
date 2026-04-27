@@ -1,8 +1,10 @@
 'use client';
 
+import type { Theme } from '@nori-ui/tokens';
 import { type KeyboardEvent, type ReactNode, useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -38,24 +40,28 @@ export type SegmentedControlProps<T extends string = string> = {
     testID?: string;
 };
 
-const CONTAINER_BASE: ViewStyle = {
+// Layout-only bases; theme-driven dimensions are merged inside the component.
+const CONTAINER_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'stretch',
-    borderRadius: 8,
-    padding: 4,
-    gap: 4,
 };
 
-const SEGMENT_BASE: ViewStyle = {
+const SEGMENT_LAYOUT_BASE: ViewStyle = {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 6,
 };
 
-const SEGMENT_SIZE: Record<SegmentedControlSize, { paddingV: number; paddingH: number; fontSize: number }> = {
-    sm: { paddingV: 4, paddingH: 10, fontSize: 13 },
-    md: { paddingV: 6, paddingH: 12, fontSize: 14 },
+// Token keys per size; resolved to px inside the component so theme
+// overrides take effect.
+type SegmentSizeKeys = {
+    paddingV: keyof Theme['spacing'];
+    paddingH: keyof Theme['spacing'];
+    font: keyof Theme['fontSize'];
+};
+const SEGMENT_SIZE_KEYS: Record<SegmentedControlSize, SegmentSizeKeys> = {
+    sm: { paddingV: '1', paddingH: '2', font: 'sm' }, // 4 / 8 / 14 — closest to legacy 4/10/13
+    md: { paddingV: '2', paddingH: '3', font: 'sm' }, // 8 / 12 / 14 — closest to legacy 6/12/14
 };
 
 const SEGMENT_SELECTED_BASE: ViewStyle = {
@@ -133,7 +139,10 @@ export function SegmentedControl<T extends string>({
         [current, options, select]
     );
 
-    const sizeTokens = SEGMENT_SIZE[size];
+    const sizeKeys = SEGMENT_SIZE_KEYS[size];
+    const segmentPadV = px(colors.spacing[sizeKeys.paddingV]);
+    const segmentPadH = px(colors.spacing[sizeKeys.paddingH]);
+    const segmentFontSize = px(colors.fontSize[sizeKeys.font]);
 
     const groupProps: Record<string, unknown> = {
         role: 'radiogroup',
@@ -145,8 +154,15 @@ export function SegmentedControl<T extends string>({
     };
 
     const containerStyle: ViewStyle = {
-        ...CONTAINER_BASE,
+        ...CONTAINER_LAYOUT_BASE,
+        borderRadius: px(colors.radius.lg),
+        padding: px(colors.spacing['1']),
+        gap: px(colors.spacing['1']),
         backgroundColor: colors.semantic.background.subtle,
+    };
+    const segmentBaseStyle: ViewStyle = {
+        ...SEGMENT_LAYOUT_BASE,
+        borderRadius: px(colors.radius.md),
     };
     const segmentSelectedStyle: ViewStyle = {
         ...SEGMENT_SELECTED_BASE,
@@ -184,8 +200,8 @@ export function SegmentedControl<T extends string>({
                             isOptDisabled ? 'opacity-50' : ''
                         )}
                         style={[
-                            SEGMENT_BASE,
-                            { paddingVertical: sizeTokens.paddingV, paddingHorizontal: sizeTokens.paddingH },
+                            segmentBaseStyle,
+                            { paddingVertical: segmentPadV, paddingHorizontal: segmentPadH },
                             selected ? segmentSelectedStyle : null,
                             isOptDisabled ? { opacity: 0.5 } : null,
                         ]}
@@ -194,8 +210,11 @@ export function SegmentedControl<T extends string>({
                             <RNText
                                 style={{
                                     color: selected ? colors.semantic.text.default : colors.semantic.text.muted,
-                                    fontSize: sizeTokens.fontSize,
-                                    fontWeight: selected ? '600' : '500',
+                                    fontFamily: colors.fontFamily.body,
+                                    fontSize: segmentFontSize,
+                                    fontWeight: selected
+                                        ? (colors.fontWeight.semibold as '600')
+                                        : (colors.fontWeight.medium as '500'),
                                 }}
                             >
                                 {option.label}

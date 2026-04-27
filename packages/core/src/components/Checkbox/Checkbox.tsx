@@ -6,6 +6,7 @@ import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useSemanticIcon } from '../../icons/use-semantic-icon';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -22,12 +23,12 @@ export type CheckboxProps = {
     children?: ReactNode;
 };
 
-// Inline defaults so the checkbox renders correctly without NativeWind.
-const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
-const BOX_BASE_STYLE: ViewStyle = {
+// Layout-only base; theme-driven dimensions are merged inside the component.
+const ROW_LAYOUT_BASE: ViewStyle = { flexDirection: 'row', alignItems: 'center' };
+const BOX_LAYOUT_BASE: ViewStyle = {
+    // 20×20 box — component-density literal — not from theme
     width: 20,
     height: 20,
-    borderRadius: 4,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -65,6 +66,9 @@ export function Checkbox({
     }, [disabled, value, isControlled, onChange]);
 
     const Check = useSemanticIcon('checkmark');
+
+    const rowStyle: ViewStyle = { ...ROW_LAYOUT_BASE, gap: px(colors.spacing['2']) };
+    const boxBaseStyle: ViewStyle = { ...BOX_LAYOUT_BASE, borderRadius: px(colors.radius.sm) };
 
     const commonProps: Record<string, unknown> = {
         role: 'checkbox',
@@ -123,9 +127,9 @@ export function Checkbox({
             onPress={toggle}
             {...commonProps}
             className={cn('flex-row items-center gap-2', disabled ? 'opacity-60' : undefined, className)}
-            style={[ROW_STYLE, disabled ? { opacity: 0.6 } : null]}
+            style={[rowStyle, disabled ? { opacity: 0.6 } : null]}
         >
-            <View className={boxClasses} style={[BOX_BASE_STYLE, boxFill]}>
+            <View className={boxClasses} style={[boxBaseStyle, boxFill]}>
                 {indeterminate && !disabled ? (
                     <View style={{ width: 10, height: 2, borderRadius: 1, backgroundColor: inverted }} />
                 ) : value && !disabled ? (
@@ -134,7 +138,15 @@ export function Checkbox({
             </View>
             {children ??
                 (label !== undefined ? (
-                    <RNText style={{ color: colors.semantic.text.default, fontSize: 16 }}>{label}</RNText>
+                    <RNText
+                        style={{
+                            color: colors.semantic.text.default,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.md),
+                        }}
+                    >
+                        {label}
+                    </RNText>
                 ) : null)}
         </Pressable>
     );

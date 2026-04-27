@@ -14,6 +14,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -77,19 +78,22 @@ export type RadioProps = {
     testID?: string;
 };
 
-const ROW_STYLE: ViewStyle = { flexDirection: 'row', alignItems: 'center', gap: 8 };
+// Layout-only base; theme-driven gap is merged inside Radio. The dot
+// dimensions are component-density literals — not from theme — because the
+// radio dot has a fixed visual ramp independent of the spacing scale.
+const ROW_LAYOUT_BASE: ViewStyle = { flexDirection: 'row', alignItems: 'center' };
 const DOT_OUTER_BASE: ViewStyle = {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 18, // component-density literal — not from theme
+    height: 18, // component-density literal — not from theme
+    borderRadius: 9, // perfect circle of dot diameter — not from theme
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
 };
 const DOT_INNER_BASE: ViewStyle = {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 8, // component-density literal — not from theme
+    height: 8, // component-density literal — not from theme
+    borderRadius: 4, // perfect circle — not from theme
 };
 
 /**
@@ -220,23 +224,51 @@ export function RadioGroup({
 
     return (
         <RadioGroupContext.Provider value={ctxValue}>
-            <View
-                {...groupProps}
-                className={cn(
-                    orientation === 'horizontal' ? 'flex-row gap-4' : 'flex-col gap-3',
-                    disabled ? 'opacity-60' : undefined,
-                    className
-                )}
-                style={[
-                    orientation === 'horizontal'
-                        ? { flexDirection: 'row', gap: 16 }
-                        : { flexDirection: 'column', gap: 12 },
-                    disabled ? { opacity: 0.6 } : null,
-                ]}
+            <RadioGroupViewport
+                groupProps={groupProps}
+                orientation={orientation}
+                disabled={disabled}
+                {...(className !== undefined ? { className } : {})}
             >
                 {children}
-            </View>
+            </RadioGroupViewport>
         </RadioGroupContext.Provider>
+    );
+}
+
+// Inner view so we can call useThemeColors() to source the orientation
+// gap from the spacing token scale (the parent owns hooks for state).
+function RadioGroupViewport({
+    groupProps,
+    orientation,
+    disabled,
+    className,
+    children,
+}: {
+    groupProps: Record<string, unknown>;
+    orientation: RadioGroupOrientation;
+    disabled: boolean;
+    className?: string;
+    children?: ReactNode;
+}) {
+    const colors = useThemeColors();
+    return (
+        <View
+            {...groupProps}
+            className={cn(
+                orientation === 'horizontal' ? 'flex-row gap-4' : 'flex-col gap-3',
+                disabled ? 'opacity-60' : undefined,
+                className
+            )}
+            style={[
+                orientation === 'horizontal'
+                    ? { flexDirection: 'row', gap: px(colors.spacing['4']) }
+                    : { flexDirection: 'column', gap: px(colors.spacing['3']) },
+                disabled ? { opacity: 0.6 } : null,
+            ]}
+        >
+            {children}
+        </View>
     );
 }
 
@@ -291,16 +323,26 @@ export function Radio({ value, label, disabled, children, className, testID }: R
     };
     const dotInnerStyle: ViewStyle = { ...DOT_INNER_BASE, backgroundColor: colors.semantic.interactive.primary };
 
+    const rowStyle: ViewStyle = { ...ROW_LAYOUT_BASE, gap: px(colors.spacing['2']) };
+
     return (
         <Pressable
             {...radioProps}
             className={cn('flex-row items-center gap-2', isDisabled ? 'opacity-60' : undefined, className)}
-            style={[ROW_STYLE, isDisabled ? { opacity: 0.6 } : null]}
+            style={[rowStyle, isDisabled ? { opacity: 0.6 } : null]}
         >
             <View style={dotOuterStyle}>{selected ? <View style={dotInnerStyle} /> : null}</View>
             {children ??
                 (label !== undefined ? (
-                    <RNText style={{ color: colors.semantic.text.default, fontSize: 16 }}>{label}</RNText>
+                    <RNText
+                        style={{
+                            color: colors.semantic.text.default,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.md),
+                        }}
+                    >
+                        {label}
+                    </RNText>
                 ) : null)}
         </Pressable>
     );

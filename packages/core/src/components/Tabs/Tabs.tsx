@@ -15,6 +15,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -170,18 +171,43 @@ export function Tabs({
 
     return (
         <TabsContext.Provider value={ctxValue}>
-            <View
+            <TabsViewport
+                orientation={orientation}
+                {...(className !== undefined ? { className } : {})}
                 {...(testID !== undefined ? { testID } : {})}
-                className={cn(orientation === 'vertical' ? 'flex-row gap-4' : 'flex-col gap-3', className)}
-                style={
-                    orientation === 'vertical'
-                        ? { flexDirection: 'row', gap: 16 }
-                        : { flexDirection: 'column', gap: 12 }
-                }
             >
                 {children}
-            </View>
+            </TabsViewport>
         </TabsContext.Provider>
+    );
+}
+
+// Inner view so we can call useThemeColors() to source the orientation
+// gap from the spacing token scale.
+function TabsViewport({
+    orientation,
+    className,
+    testID,
+    children,
+}: {
+    orientation: TabsOrientation;
+    className?: string;
+    testID?: string;
+    children?: ReactNode;
+}) {
+    const colors = useThemeColors();
+    return (
+        <View
+            {...(testID !== undefined ? { testID } : {})}
+            className={cn(orientation === 'vertical' ? 'flex-row gap-4' : 'flex-col gap-3', className)}
+            style={
+                orientation === 'vertical'
+                    ? { flexDirection: 'row', gap: px(colors.spacing['4']) }
+                    : { flexDirection: 'column', gap: px(colors.spacing['3']) }
+            }
+        >
+            {children}
+        </View>
     );
 }
 
@@ -191,17 +217,16 @@ export type TabsListProps = {
     testID?: string;
 };
 
-const LIST_BASE: ViewStyle = {
+// Layout-only bases; theme-driven gap is merged inside TabsList.
+const LIST_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     borderBottomWidth: 1,
 };
 
-const LIST_VERTICAL_BASE: ViewStyle = {
+const LIST_VERTICAL_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'column',
     alignItems: 'stretch',
-    gap: 4,
     borderRightWidth: 1,
 };
 
@@ -209,10 +234,11 @@ const LIST_VERTICAL_BASE: ViewStyle = {
 export function TabsList({ children, className, testID }: TabsListProps) {
     const ctx = useTabsContext('TabsList');
     const colors = useThemeColors();
+    const gap = px(colors.spacing['1']);
     const listStyle: ViewStyle =
         ctx.orientation === 'vertical'
-            ? { ...LIST_VERTICAL_BASE, borderRightColor: colors.semantic.border.default }
-            : { ...LIST_BASE, borderBottomColor: colors.semantic.border.default };
+            ? { ...LIST_VERTICAL_LAYOUT_BASE, gap, borderRightColor: colors.semantic.border.default }
+            : { ...LIST_LAYOUT_BASE, gap, borderBottomColor: colors.semantic.border.default };
     return (
         <View
             {...(testID !== undefined ? { testID } : {})}
@@ -254,18 +280,15 @@ const TRIGGER_TRANSITION = {
     transitionTimingFunction: 'ease',
 } as ViewStyle;
 
-const TRIGGER_BASE: ViewStyle = {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+// Layout / transition only; theme-driven padding is merged inside TabsTrigger.
+const TRIGGER_LAYOUT_BASE: ViewStyle = {
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
     marginBottom: -1,
     ...TRIGGER_TRANSITION,
 };
 
-const TRIGGER_BASE_VERTICAL: ViewStyle = {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+const TRIGGER_LAYOUT_BASE_VERTICAL: ViewStyle = {
     borderRightWidth: 2,
     borderRightColor: 'transparent',
     marginRight: -1,
@@ -346,6 +369,14 @@ export function TabsTrigger({ value, disabled, children, className, testID }: Ta
         ...(testID !== undefined ? { testID } : {}),
     };
 
+    const triggerPadding: ViewStyle = {
+        paddingHorizontal: px(colors.spacing['3']),
+        paddingVertical: px(colors.spacing['2']),
+    };
+    const triggerStyle: ViewStyle = isVertical
+        ? { ...TRIGGER_LAYOUT_BASE_VERTICAL, ...triggerPadding }
+        : { ...TRIGGER_LAYOUT_BASE, ...triggerPadding };
+
     return (
         <Pressable
             {...triggerProps}
@@ -357,14 +388,17 @@ export function TabsTrigger({ value, disabled, children, className, testID }: Ta
                 disabled ? 'opacity-50' : 'opacity-100',
                 className
             )}
-            style={[isVertical ? TRIGGER_BASE_VERTICAL : TRIGGER_BASE, accentStyle, disabled ? { opacity: 0.5 } : null]}
+            style={[triggerStyle, accentStyle, disabled ? { opacity: 0.5 } : null]}
         >
             {typeof children === 'string' ? (
                 <RNText
                     style={{
                         color: selected ? colors.semantic.interactive.primary : colors.semantic.text.muted,
-                        fontSize: 14,
-                        fontWeight: selected ? '600' : '500',
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        fontWeight: selected
+                            ? (colors.fontWeight.semibold as '600')
+                            : (colors.fontWeight.medium as '500'),
                     }}
                 >
                     {children}

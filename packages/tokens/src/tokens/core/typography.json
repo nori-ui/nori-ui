@@ -1,4 +1,18 @@
 {
+  "fontFamily": {
+    "display": {
+      "value": "ui-serif, Georgia, 'Times New Roman', serif",
+      "type": "fontFamilies"
+    },
+    "body": {
+      "value": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+      "type": "fontFamilies"
+    },
+    "mono": {
+      "value": "ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace",
+      "type": "fontFamilies"
+    }
+  },
   "fontSize": {
     "xs": { "value": "12px", "type": "fontSizes" },
     "sm": { "value": "14px", "type": "fontSizes" },

@@ -3,37 +3,24 @@
 import type { ReactNode } from 'react';
 import type { ViewProps, ViewStyle } from 'react-native';
 import { Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
-// Surface: elevated background on a neutral page, subtle 1px border, sm
-// shadow, 12px radius. The shadow is intentionally restrained — Cards are
-// content containers, not floating overlays. Overlays (Dialog, Toast) get
-// the heavier shadow scale.
-const SURFACE_BASE: ViewStyle = {
-    borderRadius: 12,
+// Layout-only bases; theme-driven dimensions are merged inside each
+// component below so a custom theme reshapes the card.
+const SURFACE_LAYOUT_BASE: ViewStyle = {
     borderWidth: 1,
     overflow: 'hidden',
 };
 
-const HEADER_STYLE: ViewStyle = {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 12,
+const HEADER_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'column',
-    gap: 4,
 };
-const CONTENT_STYLE: ViewStyle = {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-};
-const FOOTER_BASE: ViewStyle = {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 20,
+const CONTENT_LAYOUT_BASE: ViewStyle = {};
+const FOOTER_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     borderTopWidth: 1,
 };
 
@@ -58,8 +45,9 @@ export function Card({ children, className, style, ...rest }: CardProps) {
                 className
             )}
             style={[
-                SURFACE_BASE,
+                SURFACE_LAYOUT_BASE,
                 {
+                    borderRadius: px(colors.radius.xl),
                     backgroundColor: colors.semantic.background.elevated,
                     borderColor: colors.semantic.border.default,
                 },
@@ -78,8 +66,16 @@ export type CardSectionProps = Omit<ViewProps, 'children'> & {
 
 /** Header section — sits flush with the card top with comfortable padding. */
 export function CardHeader({ children, className, style, ...rest }: CardSectionProps) {
+    const colors = useThemeColors();
+    const headerStyle: ViewStyle = {
+        ...HEADER_LAYOUT_BASE,
+        paddingHorizontal: px(colors.spacing['6']),
+        paddingTop: px(colors.spacing['5']),
+        paddingBottom: px(colors.spacing['3']),
+        gap: px(colors.spacing['1']),
+    };
     return (
-        <View {...rest} className={cn('flex-col gap-1 px-6 pt-5 pb-3', className)} style={[HEADER_STYLE, style]}>
+        <View {...rest} className={cn('flex-col gap-1 px-6 pt-5 pb-3', className)} style={[headerStyle, style]}>
             {children}
         </View>
     );
@@ -87,8 +83,14 @@ export function CardHeader({ children, className, style, ...rest }: CardSectionP
 
 /** Body content — for arbitrary content between header and footer. */
 export function CardContent({ children, className, style, ...rest }: CardSectionProps) {
+    const colors = useThemeColors();
+    const contentStyle: ViewStyle = {
+        ...CONTENT_LAYOUT_BASE,
+        paddingHorizontal: px(colors.spacing['6']),
+        paddingVertical: px(colors.spacing['4']),
+    };
     return (
-        <View {...rest} className={cn('px-6 py-4', className)} style={[CONTENT_STYLE, style]}>
+        <View {...rest} className={cn('px-6 py-4', className)} style={[contentStyle, style]}>
             {children}
         </View>
     );
@@ -97,6 +99,13 @@ export function CardContent({ children, className, style, ...rest }: CardSection
 /** Footer with a top border and a row of actions (typically Buttons). */
 export function CardFooter({ children, className, style, ...rest }: CardSectionProps) {
     const colors = useThemeColors();
+    const footerStyle: ViewStyle = {
+        ...FOOTER_LAYOUT_BASE,
+        paddingHorizontal: px(colors.spacing['6']),
+        paddingTop: px(colors.spacing['3']),
+        paddingBottom: px(colors.spacing['5']),
+        gap: px(colors.spacing['2']),
+    };
     return (
         <View
             {...rest}
@@ -104,7 +113,7 @@ export function CardFooter({ children, className, style, ...rest }: CardSectionP
                 'flex-row items-center gap-2 px-6 pt-3 pb-5 border-t border-semantic-border-default',
                 className
             )}
-            style={[FOOTER_BASE, { borderTopColor: colors.semantic.border.default }, style]}
+            style={[footerStyle, { borderTopColor: colors.semantic.border.default }, style]}
         >
             {children}
         </View>
@@ -127,7 +136,12 @@ export function CardTitle({ children, className, testID }: CardTextProps) {
             role="heading"
             aria-level={3}
             className={cn('text-lg font-semibold text-semantic-text-default', className)}
-            style={{ color: colors.semantic.text.default, fontSize: 18, fontWeight: '600' }}
+            style={{
+                color: colors.semantic.text.default,
+                fontFamily: colors.fontFamily.display,
+                fontSize: px(colors.fontSize.lg),
+                fontWeight: colors.fontWeight.semibold as '600',
+            }}
         >
             {children}
         </RNText>
@@ -141,7 +155,11 @@ export function CardDescription({ children, className, testID }: CardTextProps) 
         <RNText
             {...(testID !== undefined ? { testID } : {})}
             className={cn('text-sm text-semantic-text-muted', className)}
-            style={{ color: colors.semantic.text.muted, fontSize: 14 }}
+            style={{
+                color: colors.semantic.text.muted,
+                fontFamily: colors.fontFamily.body,
+                fontSize: px(colors.fontSize.sm),
+            }}
         >
             {children}
         </RNText>

@@ -15,6 +15,7 @@ import {
 import type { ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -476,10 +477,10 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
     const position = ctx.triggerRect ? computePosition(ctx.triggerRect, side, align, contentSize) : null;
 
     const contentBaseStyle: ViewStyle = {
-        borderRadius: 6,
+        borderRadius: px(colors.radius.md),
         backgroundColor: colors.semantic.text.default,
-        paddingVertical: 6,
-        paddingHorizontal: 8,
+        paddingVertical: px(colors.spacing['2']) - 2, // closest theme-rooted approximation of legacy 6
+        paddingHorizontal: px(colors.spacing['2']),
         ...(Platform.OS === 'web'
             ? ({
                   boxShadow: '0 4px 6px -2px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06)',
@@ -544,8 +545,9 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
                 className="text-xs"
                 style={{
                     color: colors.semantic.text.inverted,
-                    fontSize: 13,
-                    lineHeight: 16,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
+                    lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.tight),
                 }}
             >
                 {children}

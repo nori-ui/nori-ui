@@ -15,6 +15,7 @@ import {
 import type { ViewStyle } from 'react-native';
 import { Modal, Platform, Pressable, View } from 'react-native';
 import { Slot } from '../../slot';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -335,11 +336,11 @@ export function PopoverContent({
 
     const contentBaseStyle: ViewStyle = {
         minWidth: MIN_WIDTH,
-        borderRadius: 8,
+        borderRadius: px(colors.radius.lg),
         borderWidth: 1,
         borderColor: colors.semantic.border.default,
         backgroundColor: colors.semantic.background.elevated,
-        padding: 16,
+        padding: px(colors.spacing['4']),
         ...(Platform.OS === 'web'
             ? ({
                   boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)',

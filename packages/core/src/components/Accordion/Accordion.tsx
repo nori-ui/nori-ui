@@ -16,6 +16,7 @@ import {
 import type { ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -225,6 +226,19 @@ const ITEM_BASE: ViewStyle = {
     flexDirection: 'column',
 };
 
+// Layout-only constants for the trigger / content; theme-driven sizes are
+// merged in inside the component below.
+const TRIGGER_LAYOUT_BASE: ViewStyle = {
+    minHeight: 44, // component-density literal — not from theme
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+};
+
+const CONTENT_INNER_LAYOUT_BASE: ViewStyle = {
+    // Padding values come from theme inside AccordionContent.
+};
+
 /** A single expandable section. Wraps an `AccordionTrigger` and `AccordionContent`. */
 export function AccordionItem({ value, disabled = false, children, className, testID }: AccordionItemProps) {
     const ctx = useAccordionContext('AccordionItem');
@@ -261,16 +275,6 @@ export type AccordionTriggerProps = {
     testID?: string;
 };
 
-const TRIGGER_BASE: ViewStyle = {
-    minHeight: 44,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-};
-
 /**
  * The clickable row that toggles its item open / closed. Renders a real
  * `<button>` (via Pressable) and wires `aria-expanded` + `aria-controls` to
@@ -281,6 +285,12 @@ export function AccordionTrigger({ children, className, testID }: AccordionTrigg
     const item = useAccordionItemContext('AccordionTrigger');
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
+    const triggerStyle: ViewStyle = {
+        ...TRIGGER_LAYOUT_BASE,
+        paddingHorizontal: px(colors.spacing['4']),
+        paddingVertical: px(colors.spacing['3']),
+        gap: px(colors.spacing['3']),
+    };
 
     useEffect(() => {
         ctx.register(item.value, ownRef);
@@ -362,14 +372,15 @@ export function AccordionTrigger({ children, className, testID }: AccordionTrigg
                 item.disabled ? 'opacity-50' : 'opacity-100',
                 className
             )}
-            style={[TRIGGER_BASE, item.disabled ? { opacity: 0.5 } : null]}
+            style={[triggerStyle, item.disabled ? { opacity: 0.5 } : null]}
         >
             {typeof children === 'string' ? (
                 <RNText
                     style={{
                         color: colors.semantic.text.default,
-                        fontSize: 15,
-                        fontWeight: '500',
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        fontWeight: colors.fontWeight.medium as '500',
                         flexShrink: 1,
                     }}
                 >
@@ -397,12 +408,6 @@ export type AccordionContentProps = {
     forceMount?: boolean;
 };
 
-const CONTENT_INNER_BASE: ViewStyle = {
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 12,
-};
-
 /**
  * The collapsible body. On web it always mounts but slides open / closed
  * via an animated max-height + opacity transition (200ms ease). On native
@@ -422,6 +427,12 @@ export function AccordionContent({ children, className, testID, forceMount = fal
     const colors = useThemeColors();
     const wrapperRef = useRef<HTMLElement | null>(null);
     const innerRef = useRef<HTMLElement | null>(null);
+    const innerStyle: ViewStyle = {
+        ...CONTENT_INNER_LAYOUT_BASE,
+        paddingHorizontal: px(colors.spacing['4']),
+        paddingTop: px(colors.spacing['1']),
+        paddingBottom: px(colors.spacing['3']),
+    };
 
     // Slide open/close on web. We measure the natural height of the inner
     // content each time the open state flips, then animate the wrapper's
@@ -500,14 +511,15 @@ export function AccordionContent({ children, className, testID, forceMount = fal
                     innerRef.current = node as HTMLElement | null;
                 }}
                 className={cn('px-4 pt-1 pb-3')}
-                style={CONTENT_INNER_BASE}
+                style={innerStyle}
             >
                 {typeof children === 'string' ? (
                     <RNText
                         style={{
                             color: colors.semantic.text.muted,
-                            fontSize: 14,
-                            lineHeight: 20,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
+                            lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
                         }}
                     >
                         {children}

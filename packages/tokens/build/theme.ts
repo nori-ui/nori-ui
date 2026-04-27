@@ -35,6 +35,11 @@ export const theme = {
         success: "#22c55e",
         warning: "#f59e0b",
     },
+    fontFamily: {
+        body: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        display: "ui-serif, Georgia, 'Times New Roman', serif",
+        mono: "ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace",
+    },
     fontSize: {
         "2xl": "24px",
         "3xl": "30px",
@@ -146,6 +151,11 @@ export const themeDark = {
         },
         success: "#22c55e",
         warning: "#f59e0b",
+    },
+    fontFamily: {
+        body: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        display: "ui-serif, Georgia, 'Times New Roman', serif",
+        mono: "ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace",
     },
     fontSize: {
         "2xl": "24px",

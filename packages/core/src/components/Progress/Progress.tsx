@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Text as RNText, View, type ViewStyle } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -212,12 +213,13 @@ export function Progress({
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        marginBottom: 6,
+                        marginBottom: px(colors.spacing['2']) - 2, // closest to legacy 6
                     }}
                 >
                     <RNText
                         style={{
-                            fontSize: 13,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
                             color: colors.semantic.text.muted,
                         }}
                     >
@@ -226,7 +228,8 @@ export function Progress({
                     {showPercentage ? (
                         <RNText
                             style={{
-                                fontSize: 13,
+                                fontFamily: colors.fontFamily.body,
+                                fontSize: px(colors.fontSize.sm),
                                 color: colors.semantic.text.muted,
                                 // Tabular numerals keep the percentage from
                                 // jittering as digits change width.

@@ -4,6 +4,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import type { ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -128,13 +129,11 @@ export function useToast(): {
     return { toast: ctx.toast, dismiss: ctx.dismiss, dismissAll: ctx.dismissAll };
 }
 
-const VIEWPORT_STYLE: ViewStyle = {
+// Layout-only base; theme-driven dimensions are merged inside ToastViewport.
+const VIEWPORT_LAYOUT_BASE: ViewStyle = {
     position: Platform.OS === 'web' ? ('fixed' as unknown as 'absolute') : 'absolute',
-    right: 16,
-    bottom: 16,
     flexDirection: 'column',
     alignItems: 'flex-end',
-    gap: 10,
     pointerEvents: 'box-none',
     ...(Platform.OS === 'web' ? ({ zIndex: 60 } as ViewStyle) : {}),
 };
@@ -145,13 +144,20 @@ type ViewportProps = {
 };
 
 function ToastViewport({ toasts, dismiss }: ViewportProps) {
+    const colors = useThemeColors();
     if (toasts.length === 0) return null;
+    const viewportStyle: ViewStyle = {
+        ...VIEWPORT_LAYOUT_BASE,
+        right: px(colors.spacing['4']),
+        bottom: px(colors.spacing['4']),
+        gap: px(colors.spacing['2']) + 2, // closest theme-rooted approximation of legacy 10
+    };
     return (
         <View
             role="region"
             aria-label="Notifications"
             className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2.5"
-            style={VIEWPORT_STYLE}
+            style={viewportStyle}
             pointerEvents="box-none"
         >
             {toasts.map((t) => (
@@ -218,14 +224,12 @@ function tonePalettes(
     };
 }
 
-const TOAST_STYLE: ViewStyle = {
-    minWidth: 320,
-    maxWidth: 420,
+// Layout / shadow only — theme-driven dimensions are merged inside ToastItem.
+const TOAST_LAYOUT_BASE: ViewStyle = {
+    minWidth: 320, // component-density literal — not from theme
+    maxWidth: 420, // component-density literal — not from theme
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
-    padding: 14,
-    borderRadius: 10,
     borderWidth: 1,
     ...(Platform.OS === 'web'
         ? ({
@@ -275,27 +279,49 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
     )[toast.tone ?? 'info'];
     const IconComponent = palette.defaultIcon;
     const actionColor = scheme === 'dark' ? colors.color.primary['300'] : colors.color.primary['700'];
+    const toastStyle: ViewStyle = {
+        ...TOAST_LAYOUT_BASE,
+        gap: px(colors.spacing['3']),
+        padding: px(colors.spacing['3']), // closest theme-rooted approximation of legacy 14
+        borderRadius: px(colors.radius.lg) + 2, // closest to legacy 10
+    };
     return (
         <View
             role="status"
             accessibilityRole="alert"
             aria-live="polite"
             className={cn('rounded-lg border bg-semantic-background-elevated p-3.5')}
-            style={[TOAST_STYLE, { backgroundColor: palette.bg, borderColor: palette.border }, enterStyle]}
+            style={[toastStyle, { backgroundColor: palette.bg, borderColor: palette.border }, enterStyle]}
             pointerEvents="auto"
         >
             <View
                 aria-hidden={true}
+                // 20px icon hit area — component-density literal — not from theme
                 style={{ width: 20, marginTop: 2, alignItems: 'center', justifyContent: 'center' }}
             >
                 <IconComponent size={20} color={palette.iconColor} />
             </View>
             <View style={{ flex: 1, gap: 2 }}>
-                <RNText style={{ color: palette.fg, fontSize: 14, fontWeight: '600', lineHeight: 20 }}>
+                <RNText
+                    style={{
+                        color: palette.fg,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        fontWeight: colors.fontWeight.semibold as '600',
+                        lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+                    }}
+                >
                     {toast.title}
                 </RNText>
                 {toast.description !== undefined ? (
-                    <RNText style={{ color: colors.semantic.text.muted, fontSize: 14, lineHeight: 20 }}>
+                    <RNText
+                        style={{
+                            color: colors.semantic.text.muted,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
+                            lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+                        }}
+                    >
                         {toast.description}
                     </RNText>
                 ) : null}
@@ -308,9 +334,16 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
                         role="button"
                         accessibilityRole="button"
                         accessibilityLabel={toast.action.label}
-                        style={{ marginTop: 6, alignSelf: 'flex-start' }}
+                        style={{ marginTop: px(colors.spacing['2']) - 2, alignSelf: 'flex-start' }}
                     >
-                        <RNText style={{ color: actionColor, fontSize: 14, fontWeight: '600' }}>
+                        <RNText
+                            style={{
+                                color: actionColor,
+                                fontFamily: colors.fontFamily.body,
+                                fontSize: px(colors.fontSize.sm),
+                                fontWeight: colors.fontWeight.semibold as '600',
+                            }}
+                        >
                             {toast.action.label}
                         </RNText>
                     </Pressable>
@@ -323,11 +356,12 @@ function ToastItem({ toast, onDismiss }: ItemProps) {
                 accessibilityLabel="Dismiss notification"
                 aria-label="Dismiss notification"
                 style={{
+                    // 24×24 close button hit area — component-density literal — not from theme
                     width: 24,
                     height: 24,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: 4,
+                    borderRadius: px(colors.radius.sm),
                     marginTop: -2,
                 }}
             >

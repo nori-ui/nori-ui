@@ -1,5 +1,6 @@
 'use client';
 
+import type { Theme } from '@nori-ui/tokens';
 import {
     createContext,
     type KeyboardEvent,
@@ -14,6 +15,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -21,16 +23,20 @@ export type ToggleVariant = 'default' | 'outline';
 export type ToggleSize = 'sm' | 'md' | 'lg';
 
 type SizeTokens = {
-    height: number;
-    paddingH: number;
-    fontSize: number;
-    iconSize: number;
+    height: number; // component-density literal — not from theme
+    paddingHKey: keyof Theme['spacing'];
+    fontKey: keyof Theme['fontSize'];
+    iconSize: number; // component-density literal — not from theme
 };
 
+// Heights and icon sizes are intentionally hardcoded — they're tightly
+// coupled to the toggle's overall density. PaddingH and fontSize are
+// pulled from the active theme so a custom theme that scales the
+// spacing / fontSize ramps also scales every Toggle on the page.
 const SIZE_TOKENS: Record<ToggleSize, SizeTokens> = {
-    sm: { height: 32, paddingH: 10, fontSize: 13, iconSize: 14 },
-    md: { height: 40, paddingH: 12, fontSize: 14, iconSize: 16 },
-    lg: { height: 48, paddingH: 16, fontSize: 16, iconSize: 20 },
+    sm: { height: 32, paddingHKey: '2', fontKey: 'sm', iconSize: 14 }, // 8px (closest to legacy 10) / fontSize sm 14
+    md: { height: 40, paddingHKey: '3', fontKey: 'sm', iconSize: 16 }, // 12px / fontSize sm 14
+    lg: { height: 48, paddingHKey: '4', fontKey: 'md', iconSize: 20 }, // 16px / fontSize md 16
 };
 
 // ---------- standalone <Toggle> -----------------------------------------------
@@ -161,17 +167,19 @@ const ToggleVisual = ({
 }: ToggleVisualProps) => {
     const colors = useThemeColors();
     const tokens = SIZE_TOKENS[size];
+    const paddingH = px(colors.spacing[tokens.paddingHKey]);
+    const fontSize = px(colors.fontSize[tokens.fontKey]);
 
     const radiusEach = borderRadius && typeof borderRadius !== 'number' ? borderRadius : undefined;
-    const radiusValue = typeof borderRadius === 'number' ? borderRadius : radiusEach ? undefined : 6;
+    const radiusValue = typeof borderRadius === 'number' ? borderRadius : radiusEach ? undefined : px(colors.radius.md);
 
     const baseStyle: ViewStyle = {
         height: tokens.height,
-        paddingHorizontal: tokens.paddingH,
+        paddingHorizontal: paddingH,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
+        gap: px(colors.spacing['2']) - 2, // closest theme-rooted approximation of legacy 6
         ...(radiusValue !== undefined ? { borderRadius: radiusValue } : null),
         ...(radiusEach
             ? {
@@ -274,8 +282,9 @@ const ToggleVisual = ({
                 <RNText
                     style={{
                         color: textColor,
-                        fontSize: tokens.fontSize,
-                        fontWeight: '500',
+                        fontFamily: colors.fontFamily.body,
+                        fontSize,
+                        fontWeight: colors.fontWeight.medium as '500',
                     }}
                 >
                     {children}
@@ -516,10 +525,11 @@ export function ToggleGroup(props: ToggleGroupProps) {
     // For the `default` variant we render items zero-gap so they share
     // borders, like a UISegmentedControl. For `outline` we keep a small
     // gap so the bordered cells don't double up their seams.
+    const colors = useThemeColors();
     const containerStyle: ViewStyle =
         variant === 'default'
             ? { flexDirection: 'row', alignItems: 'stretch', gap: 0 }
-            : { flexDirection: 'row', alignItems: 'stretch', gap: 4 };
+            : { flexDirection: 'row', alignItems: 'stretch', gap: px(colors.spacing['1']) };
 
     return (
         <ToggleGroupContext.Provider value={ctxValue}>
@@ -634,10 +644,11 @@ export function ToggleGroupItem({
 
     // Items inside a `default`-variant group share borders: only the first
     // rounds the left, the last rounds the right; everything else is square.
+    const colors = useThemeColors();
     const idx = ctx.order.indexOf(value);
     const isFirst = idx === 0;
     const isLast = idx === ctx.order.length - 1;
-    const sharedRadius = 6;
+    const sharedRadius = px(colors.radius.md);
     const isClustered = ctx.order.length > 1;
     const borderRadius = isClustered
         ? {

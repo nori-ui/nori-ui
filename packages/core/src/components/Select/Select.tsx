@@ -16,6 +16,7 @@ import { createPortal } from 'react-dom';
 import type { ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
+import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -407,13 +408,13 @@ export function Select<T = unknown>({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        minHeight: 36,
+        gap: px(colors.spacing['2']),
+        paddingHorizontal: px(colors.spacing['3']),
+        paddingVertical: px(colors.spacing['2']),
+        minHeight: 36, // component-density literal — not from theme
         borderWidth: 1,
         borderColor: colors.semantic.border.default,
-        borderRadius: 6,
+        borderRadius: px(colors.radius.md),
         backgroundColor: colors.semantic.background.elevated,
         opacity: disabled ? 0.6 : 1,
     };
@@ -425,7 +426,7 @@ export function Select<T = unknown>({
     const popupStyle: ViewStyle = triggerRect
         ? {
               position: 'fixed' as unknown as 'absolute',
-              top: triggerRect.top + triggerRect.height + 4,
+              top: triggerRect.top + triggerRect.height + px(colors.spacing['1']),
               left: dir === 'rtl' ? undefined : triggerRect.left,
               right:
                   dir === 'rtl' && typeof window !== 'undefined'
@@ -433,7 +434,7 @@ export function Select<T = unknown>({
                       : undefined,
               minWidth: Math.max(200, triggerRect.width),
               backgroundColor: colors.semantic.background.elevated,
-              borderRadius: 8,
+              borderRadius: px(colors.radius.lg),
               borderWidth: 1,
               borderColor: colors.semantic.border.default,
               // 2147483646 (max int32 - 1) so we sit above any third-party
@@ -487,7 +488,8 @@ export function Select<T = unknown>({
                 <RNText
                     style={{
                         color: selectedOption ? colors.semantic.text.default : colors.semantic.text.muted,
-                        fontSize: 14,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
                         flex: 1,
                     }}
                     numberOfLines={1}
@@ -572,8 +574,8 @@ function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInp
     return (
         <View
             style={{
-                paddingHorizontal: 8,
-                paddingVertical: 8,
+                paddingHorizontal: px(colors.spacing['2']),
+                paddingVertical: px(colors.spacing['2']),
                 borderBottomWidth: 1,
                 borderBottomColor: colors.semantic.border.default,
             }}
@@ -589,12 +591,15 @@ function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInp
                 aria-label="Search options"
                 style={{
                     width: '100%',
-                    padding: '6px 8px',
-                    fontSize: 14,
+                    // Inline `padding: '6px 8px'` shorthand intentionally kept as a
+                    // string for the native HTML <input> — it's not an RN style prop.
+                    padding: `${px(colors.spacing['2']) - 2}px ${px(colors.spacing['2'])}px`,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
                     color: colors.semantic.text.default,
                     backgroundColor: colors.semantic.background.elevated,
                     border: `1px solid ${colors.semantic.border.default}`,
-                    borderRadius: 4,
+                    borderRadius: px(colors.radius.sm),
                     outline: 'none',
                 }}
             />
@@ -653,15 +658,31 @@ function SelectList<T>({
 
     if (loading && options.length === 0) {
         return (
-            <View style={{ padding: 16, alignItems: 'center' }}>
-                <RNText style={{ color: colors.semantic.text.muted, fontSize: 14 }}>{loadingMessage}</RNText>
+            <View style={{ padding: px(colors.spacing['4']), alignItems: 'center' }}>
+                <RNText
+                    style={{
+                        color: colors.semantic.text.muted,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                    }}
+                >
+                    {loadingMessage}
+                </RNText>
             </View>
         );
     }
     if (options.length === 0) {
         return (
-            <View style={{ padding: 16, alignItems: 'center' }}>
-                <RNText style={{ color: colors.semantic.text.muted, fontSize: 14 }}>{noOptionsMessage}</RNText>
+            <View style={{ padding: px(colors.spacing['4']), alignItems: 'center' }}>
+                <RNText
+                    style={{
+                        color: colors.semantic.text.muted,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                    }}
+                >
+                    {noOptionsMessage}
+                </RNText>
             </View>
         );
     }
@@ -680,11 +701,11 @@ function SelectList<T>({
                     // biome-ignore lint/suspicious/noArrayIndexKey: group header position is stable for current visible window
                     key={`grp-${i}-${opt.group}`}
                     style={{
-                        paddingHorizontal: 12,
-                        paddingTop: 8,
-                        paddingBottom: 4,
+                        paddingHorizontal: px(colors.spacing['3']),
+                        paddingTop: px(colors.spacing['2']),
+                        paddingBottom: px(colors.spacing['1']),
                         position: virtualized ? 'absolute' : 'relative',
-                        top: virtualized ? i * itemHeight - 16 : undefined,
+                        top: virtualized ? i * itemHeight - px(colors.spacing['4']) : undefined,
                         left: 0,
                         right: 0,
                     }}
@@ -692,8 +713,9 @@ function SelectList<T>({
                     <RNText
                         style={{
                             color: colors.semantic.text.muted,
-                            fontSize: 11,
-                            fontWeight: '600',
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: 11, // group header — component-density literal — not from theme (smaller than xs)
+                            fontWeight: colors.fontWeight.semibold as '600',
                             textTransform: 'uppercase',
                             letterSpacing: 0.5,
                         }}
@@ -731,7 +753,7 @@ function SelectList<T>({
                     height: itemHeight,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    paddingHorizontal: 12,
+                    paddingHorizontal: px(colors.spacing['3']),
                     backgroundColor: active ? colors.semantic.background.subtle : 'transparent',
                     opacity: opt.disabled ? 0.5 : 1,
                 }}
@@ -767,12 +789,13 @@ function DefaultOptionRow<T>({
 }) {
     const colors = useThemeColors();
     return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: px(colors.spacing['2']) }}>
             <RNText
                 style={{
                     color: colors.semantic.text.default,
-                    fontSize: 14,
-                    fontWeight: selected ? '600' : '400',
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
+                    fontWeight: selected ? (colors.fontWeight.semibold as '600') : (colors.fontWeight.regular as '400'),
                     flex: 1,
                 }}
                 numberOfLines={1}

@@ -44,6 +44,7 @@ import TabsBasic from './demos/tabs-basic';
 import TextAreaBasic from './demos/text-area-basic';
 import TextBasic from './demos/text-basic';
 import TextInputBasic from './demos/text-input-basic';
+import ThemingTokens from './demos/theming-tokens';
 import ToastBasic from './demos/toast-basic';
 import ToggleBasic from './demos/toggle-basic';
 import ToggleGroupMultiple from './demos/toggle-group-multiple';
@@ -154,6 +155,7 @@ export const previews = {
     'popover-form': { Component: PopoverForm, ...previewSources['popover-form'], ...DIR_ONLY },
     'tooltip-basic': { Component: TooltipBasic, ...previewSources['tooltip-basic'], ...NO_CHROME },
     'tooltip-sides': { Component: TooltipSides, ...previewSources['tooltip-sides'], ...NO_CHROME },
+    'theming-tokens': { Component: ThemingTokens, ...previewSources['theming-tokens'], ...NO_CHROME },
     'avatar-basic': { Component: AvatarBasic, ...previewSources['avatar-basic'], ...NO_CHROME },
     'badge-basic': { Component: BadgeBasic, ...previewSources['badge-basic'], ...NO_CHROME },
     'alert-basic': { Component: AlertBasic, ...previewSources['alert-basic'] },
