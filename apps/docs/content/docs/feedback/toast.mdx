@@ -14,12 +14,30 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Mount `<Toaster />` once near your app root, then call the imperative `toast(...)` from anywhere.
+- Mount `<Toaster />` **exactly once** near your app root, then call the imperative `toast(...)` from anywhere.
 - Tone-specific shortcuts: `toast.success`, `toast.error`, `toast.warning`, `toast.info`, plus `toast.dismiss(id?)` and `toast.promise(...)`.
-- Web: powered by [sonner](https://sonner.emilkowal.ski) — full feature set including swipe-to-dismiss, `richColors`, `expand`, screen-reader live region.
+- Web: powered by [sonner](https://sonner.emilkowal.ski) — full feature set including swipe-to-dismiss, screen-reader live region, and rich colors.
 - Native: matched API surface with the same six positions, swipe-to-dismiss, auto-dismiss, and stacking. No `if (Platform.OS === 'web')` in your code.
-- Six positions: `top-left`, `top-center` (default), `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. Each toast may override the global anchor with its own `position`.
+- Six positions: `top-left`, `top-center` (default), `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. The global anchor lives on `<Toaster position>`; any individual call may override with `toast(msg, { position })`.
 - `duration` defaults to 4000ms. Pass `Infinity` to keep a toast open until dismissed manually.
+
+## Mount the Toaster once
+
+```tsx
+// app/layout.tsx (Next.js) — or your tree root
+import { Toaster } from '@nori-ui/core/client';
+
+export default function Layout({ children }) {
+  return (
+    <>
+      {children}
+      <Toaster richColors closeButton />
+    </>
+  );
+}
+```
+
+The docs site mounts a single `<Toaster richColors closeButton />` at the root — that's why every demo on this page uses the saturated tone surface and an explicit × button. Both are flags on the `<Toaster>`, not per-call.
 
 ## Tones, action, promise
 
@@ -27,29 +45,17 @@ All five tones plus an inline action button and `toast.promise` for async flows.
 
 <Preview name="toast-basic" />
 
-## Rich colors
+## Per-call position override
 
-`<Toaster richColors />` applies a saturated tone-colored surface per type — useful for moments where the toast needs to assert itself.
+The global `<Toaster position>` sets the default anchor; any single call can override it with `toast(msg, { position: 'bottom-right' })`. Useful for one-off toasts that belong somewhere different from the rest of your UI.
 
-<Preview name="toast-rich-colors" />
-
-## Sticky toasts + close button
-
-Pass `duration: Infinity` to keep a toast open until dismissed, and `<Toaster closeButton />` to render an explicit × on every card.
-
-<Preview name="toast-close-button" />
+<Preview name="toast-positions" />
 
 ## Update an existing toast in place
 
-Reuse the same `id` to swap a loading toast for a success/error one without spawning a second card. Useful when `toast.promise` doesn't fit the flow (chained calls, intermediate progress states).
+Reuse the same `id` to swap a loading toast for a success/error one without spawning a second card. Useful when `toast.promise` doesn't fit the flow — chained calls, intermediate progress states, or backend events that arrive asynchronously.
 
 <Preview name="toast-update" />
-
-## Six positions
-
-Each toast may override the global `<Toaster position>` with its own `position` option, but most apps just pick one anchor and stick with it.
-
-<Preview name="toast-positions" />
 
 ## API
 

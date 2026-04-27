@@ -1,7 +1,10 @@
 'use client';
 
-import { Button, HStack, Toaster, toast, VStack } from '@nori-ui/core';
+import { Button, HStack, toast, VStack } from '@nori-ui/core';
 
+// The docs site mounts one global `<Toaster />` in the root layout —
+// these demos only fire `toast(...)`. In your own app you mount
+// `<Toaster />` once at your tree root and call `toast` from anywhere.
 export default function ToastBasic() {
     return (
         <VStack gap={3}>
@@ -73,7 +76,6 @@ export default function ToastBasic() {
                     Dismiss all
                 </Button>
             </HStack>
-            <Toaster />
         </VStack>
     );
 }

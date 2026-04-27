@@ -2,6 +2,7 @@ import { RootProvider } from 'fumadocs-ui/provider';
 import { Fraunces } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { DocsThemeProvider } from '@/components/docs-theme-provider';
+import { GlobalToaster } from '@/components/global-toaster';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import './global.css';
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     <DocsThemeProvider>
                         {children}
                         <ThemeSwitcher />
+                        <GlobalToaster />
                     </DocsThemeProvider>
                 </RootProvider>
             </body>

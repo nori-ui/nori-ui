@@ -1,7 +1,6 @@
 'use client';
 
-import { Button, Toaster, type ToasterPosition, toast, VStack } from '@nori-ui/core';
-import { useState } from 'react';
+import { Button, type ToasterPosition, toast, VStack } from '@nori-ui/core';
 
 const POSITIONS: ToasterPosition[] = [
     'top-left',
@@ -12,25 +11,22 @@ const POSITIONS: ToasterPosition[] = [
     'bottom-right',
 ];
 
+// Per-call `position` option works the same on web (sonner) and native
+// (our viewport reads `toast.position ?? <Toaster position>`). The
+// global `<Toaster />` lives in the docs layout; clicking a button
+// here just fires a toast anchored to the chosen corner.
 export default function ToastPositions() {
-    const [position, setPosition] = useState<ToasterPosition>('bottom-right');
     return (
-        <VStack gap={3}>
-            <VStack gap={2}>
-                {POSITIONS.map((p) => (
-                    <Button
-                        key={p}
-                        variant={p === position ? 'primary' : 'secondary'}
-                        onPress={() => {
-                            setPosition(p);
-                            toast(`Anchored to ${p}`);
-                        }}
-                    >
-                        {p}
-                    </Button>
-                ))}
-            </VStack>
-            <Toaster position={position} />
+        <VStack gap={2}>
+            {POSITIONS.map((position) => (
+                <Button
+                    key={position}
+                    variant="secondary"
+                    onPress={() => toast(`Anchored to ${position}`, { position })}
+                >
+                    {position}
+                </Button>
+            ))}
         </VStack>
     );
 }
