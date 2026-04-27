@@ -1,6 +1,6 @@
 ---
 title: Toast
-description: Imperative notification system with auto-dismiss, stacking, and an action slot.
+description: Imperative notification system based on sonner — auto-dismiss, stacking, six positions, and a typed action slot.
 since: 0.2.0
 tags: [feedback]
 platform: both
@@ -10,19 +10,35 @@ import { BundleSize } from '@/components/bundle-size';
 import { Preview } from '@/components/preview';
 import { PropsTable } from '@/components/props-table';
 
-<BundleSize component="ToastProvider" />
+<BundleSize component="Toaster" />
 
 ## At a glance
 
-- Wrap your app (or the section that needs toasts) in `<ToastProvider>`. Then call `useToast().toast(...)` from any descendant.
-- Auto-dismisses after `duration` ms (default 5000). Pass `duration: Infinity` to keep the toast open until dismissed manually.
-- Each toast supports `tone` (info / success / warning / danger), `description`, and an optional `action` button (typically "Undo" or "View").
-- Viewport renders bottom-right by default; toasts stack newest at the bottom.
+- Mount `<Toaster />` once near your app root, then call the imperative `toast(...)` from anywhere.
+- Tone-specific shortcuts: `toast.success`, `toast.error`, `toast.warning`, `toast.info`, plus `toast.dismiss(id?)` and `toast.promise(...)`.
+- Web: powered by [sonner](https://sonner.emilkowal.ski) — full feature set including swipe-to-dismiss, `richColors`, `expand`, screen-reader live region.
+- Native: matched API surface with the same six positions, swipe-to-dismiss, auto-dismiss, and stacking. No `if (Platform.OS === 'web')` in your code.
+- Six positions: `top-left`, `top-center` (default), `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. Each toast may override the global anchor with its own `position`.
+- `duration` defaults to 4000ms. Pass `Infinity` to keep a toast open until dismissed manually.
 
 ## Preview
 
 <Preview name="toast-basic" />
 
+## Six positions
+
+<Preview name="toast-positions" />
+
 ## API
 
-`toast({ title, description?, tone?, duration?, action? })` returns the toast id. `dismiss(id)` removes a single toast; `dismissAll()` clears the queue.
+```ts
+toast(title, options?) // generic
+toast.success(title, options?)
+toast.error(title, options?)
+toast.warning(title, options?)
+toast.info(title, options?)
+toast.dismiss(id?)              // dismiss specific or all
+toast.promise(p, { loading, success, error })
+```
+
+`options` accepts `description`, `duration`, `action`, `cancel`, `tone`, `id`, `position`, `icon`, `className`. Each call returns the toast's id — pass it to `toast.dismiss(id)` later or to `toast(title, { id })` to update the existing entry.

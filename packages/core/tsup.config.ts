@@ -25,7 +25,12 @@ export default defineConfig({
     // peer deps. NativeWind + react-native-css-interop are also external —
     // they're peer deps that the consumer already has installed for their own
     // NativeWind setup.
-    external: ['react', 'react-dom', 'react-native', 'nativewind', 'react-native-css-interop'],
+    // `sonner` is a runtime dep but stays external so the consumer's
+    // bundler resolves it directly. Tsup's `__require("sonner")` polyfill
+    // doesn't survive webpack's ESM analysis (Next.js client bundles see
+    // it as an unresolved require), so the bridge module uses a static
+    // `import` and we keep sonner unbundled here.
+    external: ['react', 'react-dom', 'react-native', 'nativewind', 'react-native-css-interop', 'sonner'],
     // Route JSX through NativeWind's runtime so className on RN primitives
     // reaches react-native-css-interop → style instead of being swallowed by
     // react-native-web. Without this, consumers who configure NativeWind at

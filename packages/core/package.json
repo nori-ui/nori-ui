@@ -96,7 +96,8 @@
   },
   "dependencies": {
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "sonner": "^2.0.7"
   },
   "peerDependencies": {
     "nativewind": "^4.2.0",
