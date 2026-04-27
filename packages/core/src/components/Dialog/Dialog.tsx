@@ -144,31 +144,36 @@ export function DialogTrigger({ asChild = true, children, className, testID }: D
     );
 }
 
-const OVERLAY_STYLE: ViewStyle = {
+// Scrim + blur target values — applied at the entered state on web,
+// always on as a flat scrim on native (RN doesn't have backdrop-filter
+// and the native shim would be an extra peer dep for vanishingly little
+// visual gain on a v0 component).
+const SCRIM_COLOR = 'rgba(0, 0, 0, 0.32)';
+const BLUR_AMOUNT = 8;
+
+// Static overlay layout — alignment, fixed positioning. The animatable
+// bits (scrim color, backdrop-filter blur) live in a useEffect inside
+// the component that pokes them onto the DOM ref directly so rn-web's
+// style filter can't strip the non-RN keys (backdropFilter,
+// transitionProperty). On web the styles start at blur(0px) +
+// transparent and transition to the target values on the next frame.
+//
+// Why not put blur(8px) here as a constant: when blur is applied to a
+// layer that's mid-fade (e.g. RN Modal's animationType="fade" fades
+// opacity from 0 → 1), Safari and Chromium GPU-composite the layer
+// without rendering backdrop-filter — so the blur appears to "snap in"
+// at the end of the fade. Animating blur explicitly via our own
+// transition (and disabling the Modal's fade on web) avoids the snap.
+const OVERLAY_BASE_STYLE: ViewStyle = {
     position: Platform.OS === 'web' ? ('fixed' as unknown as 'absolute') : 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    // Slightly lighter scrim than before so the backdrop blur reads as
-    // "page is back there, slightly dimmed and out of focus" rather than
-    // "page is gone." 32% black + 8px gaussian blur is the shadcn recipe;
-    // also matches Apple's modal backdrop on iOS.
-    backgroundColor: 'rgba(0, 0, 0, 0.32)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    ...(Platform.OS === 'web'
-        ? ({
-              zIndex: 50,
-              // Web only — backdrop-filter is unsupported in RN's native style
-              // surface but rn-web passes it through as raw CSS. On iOS Safari
-              // and Chromium it Just Works; on Firefox <103 it falls back to
-              // the plain dim scrim, which is fine.
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-          } as ViewStyle)
-        : {}),
+    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
 };
 
 const CONTENT_BASE_STYLE: ViewStyle = {
@@ -228,6 +233,43 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
               } as ViewStyle)
             : {};
+
+    // Overlay's scrim + backdrop-filter share the same `entered` flag as
+    // the content card, so the blur starts at 0 and the scrim at 0% on
+    // the first paint, then both transition to their target values at the
+    // next frame — same 150ms curve as the card. The blur duration is
+    // bumped slightly (200ms) so it lands a hair AFTER the scrim instead
+    // of slamming to full strength immediately, which reads more natural.
+    //
+    // We reach for a direct DOM ref + .style assignments here rather than
+    // pass the styles through `<Pressable style={...}>`. Reason: rn-web's
+    // style filter drops keys it doesn't recognize as RN style props —
+    // and `backdropFilter`, `transitionProperty`, etc. fall through that
+    // filter, taking the whole style fragment with them. Native gets a
+    // flat scrim with no blur; RN doesn't have backdrop-filter and the
+    // native shim would be an extra peer dep for negligible gain.
+    const overlayDomRef = useRef<HTMLElement | null>(null);
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+        const node = overlayDomRef.current;
+        if (!node) return;
+        // First paint: kick off transparent + zero blur so the next
+        // assignment animates from 0 to target. We only need this on
+        // the very first frame — the inline style on second frame
+        // overwrites these.
+        node.style.transitionProperty = 'background-color, backdrop-filter, -webkit-backdrop-filter';
+        node.style.transitionDuration = '150ms, 200ms, 200ms';
+        node.style.transitionTimingFunction = 'ease-out';
+        if (entered) {
+            node.style.backgroundColor = SCRIM_COLOR;
+            node.style.backdropFilter = `blur(${BLUR_AMOUNT}px)`;
+            node.style.setProperty('-webkit-backdrop-filter', `blur(${BLUR_AMOUNT}px)`);
+        } else {
+            node.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            node.style.backdropFilter = 'blur(0px)';
+            node.style.setProperty('-webkit-backdrop-filter', 'blur(0px)');
+        }
+    }, [entered]);
 
     // Web-only side effects: focus trap, scroll lock, Escape close,
     // initial focus on the first focusable inside the dialog. RN Modal
@@ -307,8 +349,26 @@ export function DialogContent({ children, className, testID }: DialogContentProp
     const onOverlayPress = useCallback(() => ctx.setOpen(false), [ctx]);
 
     return (
-        <Modal visible={ctx.open} transparent animationType="fade" onRequestClose={() => ctx.setOpen(false)}>
-            <Pressable accessibilityRole="none" aria-hidden={true} style={OVERLAY_STYLE} onPress={onOverlayPress}>
+        <Modal
+            visible={ctx.open}
+            transparent
+            // Web: 'none' so RN's built-in fade doesn't fight our own
+            // overlay/content transitions (its layer-level fade caused
+            // backdrop-filter to "snap in" at the end). Native: 'fade'
+            // is what users expect on iOS/Android and we don't have a
+            // CSS transition path there anyway.
+            animationType={Platform.OS === 'web' ? 'none' : 'fade'}
+            onRequestClose={() => ctx.setOpen(false)}
+        >
+            <Pressable
+                accessibilityRole="none"
+                aria-hidden={true}
+                ref={(node) => {
+                    overlayDomRef.current = node as unknown as HTMLElement | null;
+                }}
+                style={OVERLAY_BASE_STYLE}
+                onPress={onOverlayPress}
+            >
                 <Pressable
                     onPress={(event) => event.stopPropagation?.()}
                     ref={(node) => {
