@@ -14,6 +14,12 @@ module.exports = {
             transform: {
                 '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/../../tooling/tsconfig.test.json' }],
             },
+            moduleNameMapper: {
+                // The real bundler module uses `import.meta` (Vite) and `require.context`
+                // (Metro), both unparseable under ts-jest's CJS target. Tests inject CSF
+                // fixtures via `__setCsfModules` instead, so the stub returns an empty map.
+                '^(.*)/csf-loader-bundler$': '<rootDir>/src/stories/__tests__/csf-loader-bundler.stub.ts',
+            },
         },
         {
             ...base,
@@ -23,6 +29,12 @@ module.exports = {
             setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/jest.rn-setup.ts'],
             transform: {
                 '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/../../tooling/tsconfig.test.json' }],
+            },
+            moduleNameMapper: {
+                // The real bundler module uses `import.meta` (Vite) and `require.context`
+                // (Metro), both unparseable under ts-jest's CJS target. Tests inject CSF
+                // fixtures via `__setCsfModules` instead, so the stub returns an empty map.
+                '^(.*)/csf-loader-bundler$': '<rootDir>/src/stories/__tests__/csf-loader-bundler.stub.ts',
             },
         },
     ],
