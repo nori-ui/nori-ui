@@ -1,9 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
-import { Text as RNText, TextInput as RNTextInput, View } from 'react-native';
+import { Pressable, Text as RNText, TextInput as RNTextInput, View } from 'react-native';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -65,6 +65,15 @@ export function TextInput({
     const colors = useThemeColors();
     const reactId = useId();
     const inputId = testID ?? `nori-ui-input-${reactId}`;
+    const inputRef = useRef<RNTextInput | null>(null);
+    // Tap on the label → focus the input. Cross-platform: Pressable's
+    // onPress fires on web (click) and native (tap), and RNTextInput's
+    // imperative `.focus()` works on both. This restores the
+    // `<label htmlFor>` UX without resurrecting the host-element crash
+    // we hit on native (see comment near the label render).
+    const focusInput = () => {
+        inputRef.current?.focus();
+    };
     const describeId = `${inputId}-describe`;
     const hasError = Boolean(error);
     const describedBy = error || helperText ? describeId : undefined;
@@ -140,14 +149,16 @@ export function TextInput({
              * `accessibilityLabel={label}` (above) for screen readers.
              */}
             {label !== undefined ? (
-                <RNText
-                    nativeID={`${inputId}-label`}
-                    accessibilityRole="text"
-                    className="text-sm font-medium text-semantic-text-default"
-                    style={labelStyle}
-                >
-                    {label}
-                </RNText>
+                <Pressable onPress={focusInput} accessibilityRole="none" disabled={disabled}>
+                    <RNText
+                        nativeID={`${inputId}-label`}
+                        accessibilityRole="text"
+                        className="text-sm font-medium text-semantic-text-default"
+                        style={labelStyle}
+                    >
+                        {label}
+                    </RNText>
+                </Pressable>
             ) : null}
             <View
                 className={cn(
@@ -163,6 +174,7 @@ export function TextInput({
                     </View>
                 ) : null}
                 <RNTextInput
+                    ref={inputRef}
                     nativeID={inputId}
                     editable={!disabled}
                     className={cn('flex-1 py-2 text-md text-semantic-text-default outline-none', className)}

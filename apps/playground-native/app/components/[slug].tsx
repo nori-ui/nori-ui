@@ -7,6 +7,7 @@
 // canvas matches the light/dark token half the components themselves
 // use — text always stays readable.
 
+import { SliderGestureProvider, useSliderInteractionActive } from '@nori-ui/core';
 import { useThemeColors } from '@nori-ui/core/client';
 import { components } from '@nori-ui/core/stories';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
@@ -46,7 +47,13 @@ export default function ComponentDetail() {
     }, [story, entrySlug]);
 
     const bg = colors.semantic.background.default;
-    const surface = colors.semantic.background.subtle;
+    // Use the *elevated* surface for the preview canvas. Many components
+    // (Avatar default fill, Button secondary, Switch off-track, etc.)
+    // paint themselves with `background.subtle` — if the canvas is also
+    // `subtle` they vanish. `elevated` is one step lighter (light mode)
+    // / one step lighter-than-subtle (dark mode), giving every component
+    // a visible chip to render against.
+    const surface = colors.semantic.background.elevated;
     const border = colors.semantic.border.default;
     const text = colors.semantic.text.default;
     const textMuted = colors.semantic.text.muted;
@@ -88,23 +95,68 @@ export default function ComponentDetail() {
                     headerShadowVisible: false,
                 }}
             />
-            <ScrollView ref={scrollRef} testID={`detail-${entry.slug}`} contentContainerStyle={styles.scrollContent}>
-                {entry.stories.map((s, idx) => (
-                    <View
-                        key={s.id}
-                        testID={`story-${entry.slug}-${s.id}`}
-                        onLayout={onStoryLayout(s.id)}
-                        style={styles.storyBlock}
-                    >
-                        <Text style={[styles.storyTitle, { color: textMuted }]}>{s.title}</Text>
-                        <View style={[styles.storyCanvas, { backgroundColor: surface, borderColor: border }]}>
-                            <s.render />
-                        </View>
-                        {idx < entry.stories.length - 1 ? <View style={styles.storyDivider} /> : null}
-                    </View>
-                ))}
-            </ScrollView>
+            <SliderGestureProvider>
+                <DetailScroll
+                    scrollRef={scrollRef}
+                    detailSlug={entry.slug}
+                    onStoryLayout={onStoryLayout}
+                    stories={entry.stories}
+                    surface={surface}
+                    border={border}
+                    textMuted={textMuted}
+                />
+            </SliderGestureProvider>
         </View>
+    );
+}
+
+type Story = { id: string; title: string; render: React.ComponentType };
+
+// Lives inside <SliderGestureProvider> so it can read the hook. When any
+// descendant Slider is mid-drag, the outer ScrollView locks — iOS's
+// UIScrollView pan recognizer wins over JS responder capture, so this
+// is the only reliable way to keep a vertical slider drag from being
+// hijacked by the surrounding scroll list.
+function DetailScroll({
+    scrollRef,
+    detailSlug,
+    onStoryLayout,
+    stories,
+    surface,
+    border,
+    textMuted,
+}: {
+    scrollRef: React.RefObject<ScrollView | null>;
+    detailSlug: string;
+    onStoryLayout: (id: string) => (event: { nativeEvent: { layout: { y: number } } }) => void;
+    stories: ReadonlyArray<Story>;
+    surface: string;
+    border: string;
+    textMuted: string;
+}) {
+    const sliderActive = useSliderInteractionActive();
+    return (
+        <ScrollView
+            ref={scrollRef}
+            testID={`detail-${detailSlug}`}
+            contentContainerStyle={styles.scrollContent}
+            scrollEnabled={!sliderActive}
+        >
+            {stories.map((s, idx) => (
+                <View
+                    key={s.id}
+                    testID={`story-${detailSlug}-${s.id}`}
+                    onLayout={onStoryLayout(s.id)}
+                    style={styles.storyBlock}
+                >
+                    <Text style={[styles.storyTitle, { color: textMuted }]}>{s.title}</Text>
+                    <View style={[styles.storyCanvas, { backgroundColor: surface, borderColor: border }]}>
+                        <s.render />
+                    </View>
+                    {idx < stories.length - 1 ? <View style={styles.storyDivider} /> : null}
+                </View>
+            ))}
+        </ScrollView>
     );
 }
 

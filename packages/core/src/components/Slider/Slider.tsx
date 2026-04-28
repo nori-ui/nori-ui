@@ -13,6 +13,7 @@ import type { GestureResponderEvent, ViewStyle } from 'react-native';
 import { Platform, View } from 'react-native';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useSliderGesturePublisher } from './slider-gesture-context';
 
 export type SliderOrientation = 'horizontal' | 'vertical';
 export type SliderDirection = 'ltr' | 'rtl';
@@ -26,6 +27,16 @@ export type SliderProps = {
     onValueChange?: (next: number[]) => void;
     /** Fires when interaction ends (pointer up, key release). */
     onValueCommit?: (next: number[]) => void;
+    /**
+     * Fires when a pointer/touch starts driving the slider. Pair with
+     * `onInteractionEnd` to toggle a parent ScrollView's `scrollEnabled`
+     * — RN's responder system can't preempt UIScrollView's native pan
+     * recognizer on iOS, so the canonical fix is for the consumer to
+     * disable scroll while the user is actively dragging.
+     */
+    onInteractionStart?: () => void;
+    /** Fires when a pointer/touch releases (pair with `onInteractionStart`). */
+    onInteractionEnd?: () => void;
     /** @defaultValue 0 */
     min?: number;
     /** @defaultValue 100 */
@@ -112,6 +123,8 @@ export function Slider({
     defaultValue,
     onValueChange,
     onValueCommit,
+    onInteractionStart,
+    onInteractionEnd,
     min = 0,
     max = 100,
     step = 1,
@@ -241,6 +254,10 @@ export function Slider({
     );
 
     const draggingRef = useRef<{ index: number; pointerId: number } | null>(null);
+    // Auto-publishes drag state to a `<SliderGestureProvider>` ancestor
+    // (no-op if none is mounted). Containers that need to disable scroll
+    // during a drag read the same context via `useSliderInteractionActive`.
+    const gesturePublisher = useSliderGesturePublisher();
 
     const onTrackPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
@@ -254,8 +271,20 @@ export function Slider({
             setValues(next);
             draggingRef.current = { index: idx, pointerId: event.pointerId };
             event.currentTarget.setPointerCapture?.(event.pointerId);
+            gesturePublisher.begin();
+            onInteractionStart?.();
         },
-        [disabled, measure, valueFromClient, closestThumbIndex, current, gap, setValues]
+        [
+            disabled,
+            measure,
+            valueFromClient,
+            closestThumbIndex,
+            current,
+            gap,
+            setValues,
+            gesturePublisher,
+            onInteractionStart,
+        ]
     );
 
     const onTrackPointerMove = useCallback(
@@ -279,8 +308,10 @@ export function Slider({
             }
             draggingRef.current = null;
             commitValues(current);
+            gesturePublisher.end();
+            onInteractionEnd?.();
         },
-        [commitValues, current]
+        [commitValues, current, gesturePublisher, onInteractionEnd]
     );
 
     const handleThumbKeyDown = useCallback(
@@ -456,8 +487,20 @@ export function Slider({
             const next = updateAt(current, idx, targetValue, gap);
             setValues(next);
             draggingRef.current = { index: idx, pointerId: 0 };
+            gesturePublisher.begin();
+            onInteractionStart?.();
         },
-        [disabled, measure, valueFromClient, closestThumbIndex, current, gap, setValues]
+        [
+            disabled,
+            measure,
+            valueFromClient,
+            closestThumbIndex,
+            current,
+            gap,
+            setValues,
+            gesturePublisher,
+            onInteractionStart,
+        ]
     );
     const onTrackResponderMove = useCallback(
         (event: GestureResponderEvent) => {
@@ -477,7 +520,9 @@ export function Slider({
         }
         draggingRef.current = null;
         commitValues(current);
-    }, [commitValues, current]);
+        gesturePublisher.end();
+        onInteractionEnd?.();
+    }, [commitValues, current, gesturePublisher, onInteractionEnd]);
 
     // RN's View doesn't model pointer events in its TS surface; rn-web
     // forwards them. Cast at the spread boundary. Native uses the

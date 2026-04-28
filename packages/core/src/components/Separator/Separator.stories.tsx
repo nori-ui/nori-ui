@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { HStack } from '../HStack';
 import { Text } from '../Text';
 import { VStack } from '../VStack';
 import { Separator } from './Separator';
@@ -19,5 +20,20 @@ export const Horizontal: Story = {
             <Separator />
             <Text>Danger zone</Text>
         </VStack>
+    ),
+};
+
+export const Vertical: Story = {
+    render: () => (
+        // Inline height so the vertical rule has something to occupy —
+        // `self-stretch` on Separator requires the parent to have a
+        // defined cross-axis size.
+        <HStack gap={3} style={{ alignItems: 'center', height: 24 }}>
+            <Text>Edit</Text>
+            <Separator orientation="vertical" />
+            <Text>Share</Text>
+            <Separator orientation="vertical" />
+            <Text>Delete</Text>
+        </HStack>
     ),
 };

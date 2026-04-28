@@ -45,6 +45,11 @@ function Range() {
 
 function VerticalFader() {
     const [v, setV] = useState<number[]>([40]);
+    // The component-detail screen wraps every story in a ScrollView, so
+    // a vertical slider inevitably nests inside one. Same scrollEnabled
+    // toggle pattern as InsideScrollView — without it, the outer scroll
+    // view eats the vertical drag on iOS.
+    const [, setScrollEnabled] = useState(true);
     return (
         <HStack gap={4}>
             <View>
@@ -53,6 +58,8 @@ function VerticalFader() {
                     length={200}
                     value={v}
                     onValueChange={setV}
+                    onInteractionStart={() => setScrollEnabled(false)}
+                    onInteractionEnd={() => setScrollEnabled(true)}
                     aria-label="Channel level"
                     min={0}
                     max={100}
@@ -69,11 +76,25 @@ function VerticalFader() {
 
 function InsideScrollView() {
     const [v, setV] = useState<number[]>([50]);
+    // iOS UIScrollView's native pan recognizer can't be preempted from JS
+    // alone — `onStartShouldSetResponderCapture` doesn't reach far enough
+    // into the native side. The canonical fix is to disable scroll while
+    // the user is actively dragging the slider, then re-enable on release.
+    const [scrollEnabled, setScrollEnabled] = useState(true);
     return (
-        <ScrollView style={{ maxHeight: 240 }}>
+        <ScrollView style={{ maxHeight: 240 }} scrollEnabled={scrollEnabled}>
             <VStack gap={3}>
                 <Text>Slider inside a vertical ScrollView — drag should not scroll the list.</Text>
-                <Slider value={v} onValueChange={setV} aria-label="Inside scroll" min={0} max={100} step={1} />
+                <Slider
+                    value={v}
+                    onValueChange={setV}
+                    onInteractionStart={() => setScrollEnabled(false)}
+                    onInteractionEnd={() => setScrollEnabled(true)}
+                    aria-label="Inside scroll"
+                    min={0}
+                    max={100}
+                    step={1}
+                />
                 <Text>Value: {v[0]}</Text>
                 <Text>Filler line 1</Text>
                 <Text>Filler line 2</Text>

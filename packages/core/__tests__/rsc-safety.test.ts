@@ -52,6 +52,7 @@ const CLIENT_ALLOWED = [
     'components/Separator/Separator.tsx',
     'components/Skeleton/Skeleton.tsx',
     'components/Slider/Slider.tsx',
+    'components/Slider/slider-gesture-context.tsx',
     'components/Switch/Switch.tsx',
     'components/Tabs/Tabs.tsx',
     'components/Text/Text.tsx',

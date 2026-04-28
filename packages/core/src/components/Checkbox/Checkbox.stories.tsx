@@ -26,6 +26,8 @@ export const Checked: Story = {
     },
 };
 
+export const Disabled: Story = { args: { disabled: true } };
+
 const PERMISSIONS = ['Read', 'Write', 'Admin'] as const;
 
 /**
@@ -33,6 +35,10 @@ const PERMISSIONS = ['Read', 'Write', 'Admin'] as const;
  * checkbox: the parent is indeterminate when some — but not all —
  * children are checked. A single solo `indeterminate={true}` checkbox
  * has nothing to mean. So the story is the actual interactive pattern.
+ *
+ * Listed last because it's the advanced/compound use case — Default,
+ * Checked and Disabled are the three core states a developer needs to
+ * see first.
  */
 export const Indeterminate: Story = {
     render: () => {
@@ -78,5 +84,3 @@ export const Indeterminate: Story = {
         );
     },
 };
-
-export const Disabled: Story = { args: { disabled: true } };
