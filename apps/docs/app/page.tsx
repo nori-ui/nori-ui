@@ -1,6 +1,9 @@
+import corePkg from '@nori-ui/core/package.json';
 import Image from 'next/image';
 import Link from 'next/link';
 import './landing.css';
+
+const coreVersion = corePkg.version;
 
 // Editorial landing — refined, asymmetric, brand-forward.
 //
@@ -13,7 +16,7 @@ import './landing.css';
 // Self-contained: no shared chrome, scoped CSS variables, page-level
 // CSS animations only. Doesn't touch fumadocs's global theme.
 
-const features = ['Expo-first', 'React Native + Web', 'AI-documented', 'Figma design tokens'];
+const features = ['React Native', 'React Web', 'AI-documented', 'Figma design tokens'];
 
 export default function Home() {
     return (
@@ -23,7 +26,7 @@ export default function Home() {
 
             <header className="nori-header">
                 <Image src="/logo-mark.png" alt="" width={56} height={56} priority className="nori-mark" />
-                <span className="nori-meta">v0.1 · open source</span>
+                <span className="nori-meta">v{coreVersion} · open source</span>
             </header>
 
             <section className="nori-hero">
@@ -46,7 +49,8 @@ export default function Home() {
 
                 <p className="nori-lede">
                     A component library for builders who care about the small things — typography that breathes, motion
-                    that whispers, primitives that work everywhere. Native and web, from the same source.
+                    that whispers, primitives that work everywhere. Designed in equal measure for the people who use it
+                    and the agents that read its docs. Native and web, from the same source.
                 </p>
 
                 <div className="nori-cta-row">
@@ -97,7 +101,6 @@ export default function Home() {
             <footer className="nori-footer">
                 <span>nori-ui · {new Date().getFullYear()}</span>
                 <span className="nori-rule" aria-hidden />
-                <span>Crafted with restraint.</span>
             </footer>
         </main>
     );
