@@ -4,15 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "fumadocs-mdx && node scripts/generate-preview-sources.mjs && node scripts/generate-props.mjs && node scripts/generate-bundle-sizes.mjs && node scripts/generate-mcp-data.mjs",
-    "prebuild": "fumadocs-mdx && node scripts/generate-preview-sources.mjs && node scripts/generate-props.mjs && node scripts/generate-bundle-sizes.mjs && node scripts/generate-mcp-data.mjs",
-    "pretypecheck": "fumadocs-mdx && node scripts/generate-preview-sources.mjs && node scripts/generate-props.mjs && node scripts/generate-bundle-sizes.mjs && node scripts/generate-mcp-data.mjs",
-    "dev": "next dev -p 3000",
-    "build": "next build",
+    "generate": "fumadocs-mdx && node scripts/generate-preview-sources.mjs && node scripts/generate-props.mjs && node scripts/generate-bundle-sizes.mjs && node scripts/generate-mcp-data.mjs",
+    "dev": "yarn generate && next dev -p 3000",
+    "build": "yarn generate && next build",
     "start": "next start -p 3000",
-    "typecheck": "tsc --noEmit",
-    "pretest": "fumadocs-mdx && node scripts/generate-preview-sources.mjs && node scripts/generate-props.mjs && node scripts/generate-bundle-sizes.mjs && node scripts/generate-mcp-data.mjs",
-    "test": "jest --passWithNoTests"
+    "typecheck": "yarn generate && tsc --noEmit",
+    "test": "yarn generate && jest --passWithNoTests"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1",
