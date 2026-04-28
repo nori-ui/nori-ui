@@ -40,7 +40,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "node ../../apps/docs/scripts/generate-mcp-data.mjs && tsup",
     "typecheck": "tsc --noEmit",
     "test": "echo 'no tests yet' && exit 0"
   },
