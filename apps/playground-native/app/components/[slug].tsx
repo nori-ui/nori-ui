@@ -1,24 +1,31 @@
-// Component detail — stacks every story for a component vertically.
-//
-// Reads the slug from the file-based route. If `?story=<id>` is present,
-// scrolls the matching story into view on mount. Unknown slug → small
-// "not found" view with a Link back home.
+// Component detail — stacks every story for a component vertically with
+// a category-tinted header. Reads the slug from the file-based route. If
+// `?story=<id>` is present, scrolls the matching story into view on mount.
+// Unknown slug → small "not found" view with a Link back home.
 
-import { Separator, Text } from '@nori-ui/core';
 import { components } from '@nori-ui/core/stories';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const palette = {
+    bg: '#0a0a0a',
+    surface: '#141414',
+    border: 'rgba(255,255,255,0.08)',
+    text: '#fafafa',
+    textMuted: '#a1a1aa',
+    textFaint: '#52525b',
+    accent: '#5eead4',
+} as const;
 
 export default function ComponentDetail() {
     const { slug, story } = useLocalSearchParams<{ slug: string; story?: string }>();
     const entry = useMemo(() => components.find((c) => c.slug === slug), [slug]);
 
     // Hooks must run unconditionally regardless of whether the slug
-    // resolves, so the "not found" branch below sits AFTER all hooks.
+    // resolves; the not-found branch is below all hooks.
     const scrollRef = useRef<ScrollView | null>(null);
-    // Map story id → y offset captured by each block's onLayout.
     const offsets = useRef<Record<string, number>>({});
 
     const onStoryLayout = useCallback(
@@ -28,9 +35,6 @@ export default function ComponentDetail() {
         []
     );
 
-    // Whenever the `story` param resolves to a known offset, scroll there.
-    // A short delay gives initial layout time to record y values before
-    // we read them.
     const entrySlug = entry?.slug;
     useEffect(() => {
         if (!story || !entrySlug) {
@@ -47,15 +51,20 @@ export default function ComponentDetail() {
 
     if (!entry) {
         return (
-            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-                <Stack.Screen options={{ title: 'Not found' }} />
-                <View style={{ padding: 24, gap: 12 }}>
-                    <Text variant="heading-2" testID="not-found-title">
-                        Component not found
-                    </Text>
-                    <Text variant="body-md">No component matches the slug "{slug}".</Text>
-                    <Link href="/" testID="not-found-back">
-                        <Text variant="body-md">Back to showcase</Text>
+            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+                <Stack.Screen
+                    options={{
+                        title: 'Not found',
+                        headerStyle: { backgroundColor: palette.bg },
+                        headerTitleStyle: { color: palette.text },
+                        headerTintColor: palette.accent,
+                    }}
+                />
+                <View style={styles.notFoundWrap}>
+                    <Text style={styles.notFoundTitle}>Component not found</Text>
+                    <Text style={styles.notFoundBody}>No component matches the slug "{slug}".</Text>
+                    <Link href="/" testID="not-found-back" style={{ color: palette.accent }}>
+                        Back to showcase
                     </Link>
                 </View>
             </SafeAreaView>
@@ -63,35 +72,76 @@ export default function ComponentDetail() {
     }
 
     return (
-        <View style={{ flex: 1 }}>
-            <Stack.Screen options={{ title: entry.name, headerBackTitle: 'Showcase' }} />
-            <ScrollView
-                ref={scrollRef}
-                testID={`detail-${entry.slug}`}
-                contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 48 }}
-            >
+        <View style={{ flex: 1, backgroundColor: palette.bg }}>
+            <Stack.Screen
+                options={{
+                    title: entry.name,
+                    headerBackTitle: 'Showcase',
+                    headerStyle: { backgroundColor: palette.bg },
+                    headerTitleStyle: { color: palette.text, fontWeight: '700' },
+                    headerTintColor: palette.accent,
+                    headerShadowVisible: false,
+                }}
+            />
+            <ScrollView ref={scrollRef} testID={`detail-${entry.slug}`} contentContainerStyle={styles.scrollContent}>
                 {entry.stories.map((s, idx) => (
-                    <View key={s.id} testID={`story-${entry.slug}-${s.id}`} onLayout={onStoryLayout(s.id)}>
-                        <Text variant="heading-3" style={{ marginBottom: 12 }}>
-                            {s.title}
-                        </Text>
-                        <View
-                            style={{
-                                padding: 16,
-                                borderRadius: 12,
-                                backgroundColor: 'rgba(0,0,0,0.03)',
-                            }}
-                        >
+                    <View
+                        key={s.id}
+                        testID={`story-${entry.slug}-${s.id}`}
+                        onLayout={onStoryLayout(s.id)}
+                        style={styles.storyBlock}
+                    >
+                        <Text style={styles.storyTitle}>{s.title}</Text>
+                        <View style={styles.storyCanvas}>
                             <s.render />
                         </View>
-                        {idx < entry.stories.length - 1 ? (
-                            <View style={{ marginTop: 24 }}>
-                                <Separator />
-                            </View>
-                        ) : null}
+                        {idx < entry.stories.length - 1 ? <View style={styles.storyDivider} /> : null}
                     </View>
                 ))}
             </ScrollView>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 64,
+    },
+    storyBlock: {
+        marginBottom: 8,
+    },
+    storyTitle: {
+        color: palette.textMuted,
+        fontSize: 11,
+        fontWeight: '600',
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+        marginBottom: 12,
+        paddingHorizontal: 4,
+    },
+    storyCanvas: {
+        backgroundColor: palette.surface,
+        borderRadius: 14,
+        padding: 20,
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: palette.border,
+    },
+    storyDivider: {
+        height: 32,
+    },
+    notFoundWrap: {
+        padding: 24,
+        gap: 12,
+    },
+    notFoundTitle: {
+        color: palette.text,
+        fontSize: 22,
+        fontWeight: '700',
+    },
+    notFoundBody: {
+        color: palette.textMuted,
+        fontSize: 15,
+    },
+});
