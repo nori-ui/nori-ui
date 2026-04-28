@@ -7,6 +7,14 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
+// expo-router + the CSF loader (`packages/core/src/stories/csf-loader.tsx`)
+// rely on Metro's `require.context` to enumerate routes and stories at
+// bundle time. Metro 0.72+ supports this only when explicitly opted in.
+config.transformer = {
+    ...config.transformer,
+    unstable_allowRequireContext: true,
+};
+
 // Watch the full monorepo so workspace packages update on change.
 config.watchFolders = [workspaceRoot];
 

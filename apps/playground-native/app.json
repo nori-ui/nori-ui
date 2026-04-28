@@ -5,9 +5,15 @@
     "version": "0.0.0",
     "orientation": "portrait",
     "newArchEnabled": true,
-    "ios": { "supportsTablet": true, "bundleIdentifier": "dev.noriui.playground" },
-    "android": { "package": "dev.noriui.playground" },
+    "scheme": "nori-ui",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nori-ui.playground"
+    },
+    "android": {
+      "package": "com.noriui.playground"
+    },
     "web": { "bundler": "metro" },
-    "plugins": []
+    "plugins": ["expo-router"]
   }
 }
