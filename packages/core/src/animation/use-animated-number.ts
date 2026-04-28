@@ -1,5 +1,13 @@
 'use client';
 
+// Native build (Metro picks this `.ts` over the `.web.ts` sibling
+// when present — for monorepo workspaces and any consumer that pre-
+// orders `.native.ts` / `.ts` / `.web.ts` resolution properly). Web
+// consumers (Next.js etc.) that don't honor the extension split
+// should alias `react-native-reanimated` to a noop in their bundler
+// config — the IS_WEB early-return below means we never call
+// reanimated APIs on web, so a stub satisfies the import.
+
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -7,10 +15,7 @@ import { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-nati
 export type AnimatedProperty = 'left' | 'top' | 'right' | 'bottom' | 'translateX' | 'translateY';
 
 export type AnimatedNumberOptions = {
-    /**
-     * Animation duration in ms. Drives both the web CSS transition and
-     * the native reanimated timing function. @defaultValue 180
-     */
+    /** Animation duration in ms. @defaultValue 180 */
     duration?: number;
 };
 
@@ -44,22 +49,20 @@ function webStyle(property: AnimatedProperty, target: number, duration: number):
     };
 }
 
-// `cubic-bezier(0.16, 1, 0.3, 1)` — a snappy ease-out curve that
-// matches the web CSS transition timing exactly. Lets a Switch thumb
-// (or any animated number) feel the same on both platforms.
-const SNAPPY_EASING = Easing.bezier(0.16, 1, 0.3, 1);
-
 // Reanimated worklets can't reliably serialize closures over computed
 // keys (`{ [property]: value }`). Static-key paths per property work
 // fine. Six tiny worklets — one per AnimatedProperty — give the plugin
 // the static AST it expects without losing the cross-platform API.
+// The bezier curve mirrors the web CSS transition exactly so a Switch
+// thumb feels identical on both platforms.
 function useReanimatedTiming(property: AnimatedProperty, target: number, duration: number): object {
-    // biome-ignore lint/correctness/useHookAtTopLevel: branch is module-init constant
+    const easing = Easing.bezier(0.16, 1, 0.3, 1);
+    // biome-ignore lint/correctness/useHookAtTopLevel: dispatcher branch is module-init constant; this function only runs when IS_WEB is false
     const shared = useSharedValue(target);
     // biome-ignore lint/correctness/useHookAtTopLevel: same
     useEffect(() => {
-        shared.value = withTiming(target, { duration, easing: SNAPPY_EASING });
-    }, [target, shared, duration]);
+        shared.value = withTiming(target, { duration, easing });
+    }, [target, shared, duration, easing]);
     // biome-ignore lint/correctness/useHookAtTopLevel: same
     const translateXStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: shared.value }],

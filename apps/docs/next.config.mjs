@@ -23,6 +23,13 @@ const nextConfig = {
                 './lib/codegen-noop.js',
                 import.meta.url
             ).pathname,
+            // react-native-reanimated 4 imports RN-internal native paths
+            // (e.g. the ReactFabric shim) at module load — webpack can't
+            // resolve them. The lib's web code path never invokes any
+            // reanimated API (Platform.OS === 'web' returns early before
+            // any call site), so a stub satisfies the static import
+            // without crashing the build.
+            'react-native-reanimated$': new URL('./lib/reanimated-noop.js', import.meta.url).pathname,
         };
         return config;
     },

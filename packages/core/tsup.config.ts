@@ -10,6 +10,15 @@ export default defineConfig({
         'slot/index': 'src/slot/index.ts',
         'utils/cn': 'src/utils/cn.ts',
         'stories/story-registry': 'src/stories/story-registry.tsx',
+        // Platform-split files. Each is its own entry so the `.web.js`
+        // suffix is preserved in dist and consumer bundlers (Metro picks
+        // the bare `.js`, webpack/Next picks the `.web.js`) can choose at
+        // resolve time. Without separate entries tsup chunk-merges them
+        // into the main bundle and the suffix is lost.
+        'animation/use-animated-number': 'src/animation/use-animated-number.ts',
+        'animation/use-animated-number.web': 'src/animation/use-animated-number.web.ts',
+        'animation/animated-view': 'src/animation/animated-view.ts',
+        'animation/animated-view.web': 'src/animation/animated-view.web.ts',
     },
     format: ['esm', 'cjs'],
     // Use a non-composite tsconfig for the dts build. The main tsconfig.json

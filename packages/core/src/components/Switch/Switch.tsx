@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { AnimatedView } from '../../animation/animated-view';
 import { useAnimatedNumber } from '../../animation/use-animated-number';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
@@ -166,7 +166,7 @@ export function Switch({
                  * CSS and `Animated.View` falls through to a regular
                  * div via react-native-web.
                  */}
-                <Animated.View className={thumbClasses} style={thumbStyle} />
+                <AnimatedView className={thumbClasses} style={thumbStyle} />
             </View>
             {label ? (
                 <RNText
