@@ -11426,6 +11426,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-splash-screen@npm:^55.0.19":
+  version: 55.0.19
+  resolution: "expo-splash-screen@npm:55.0.19"
+  dependencies:
+    "@expo/prebuild-config": "npm:^55.0.16"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/3b7a8ad3ec4288385e4282738f7c2fba804db6525422a00b1a1a3f4140c47238a37a09bb4a927c39f548523feb684a090c71bdf3ac01a2b32abdcc9ba53f3d33
+  languageName: node
+  linkType: hard
+
 "expo-status-bar@npm:~55.0.0":
   version: 55.0.5
   resolution: "expo-status-bar@npm:55.0.5"
@@ -18267,6 +18278,7 @@ __metadata:
     expo-constants: "npm:~18.0.0"
     expo-linking: "npm:~8.0.0"
     expo-router: "npm:~6.0.0"
+    expo-splash-screen: "npm:^55.0.19"
     expo-status-bar: "npm:~55.0.0"
     nativewind: "npm:^4"
     react: "npm:^19"

@@ -6,14 +6,44 @@
     "orientation": "portrait",
     "newArchEnabled": true,
     "scheme": "nori-ui",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nori-ui.playground"
+      "bundleIdentifier": "com.nori-ui.playground",
+      "icon": {
+        "light": "./assets/icon.png",
+        "dark": "./assets/icon.png"
+      }
     },
     "android": {
-      "package": "com.noriui.playground"
+      "package": "com.noriui.playground",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#EFE7D2"
+      }
     },
-    "web": { "bundler": "metro" },
-    "plugins": ["expo-router"]
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#EFE7D2",
+          "dark": {
+            "image": "./assets/splash.png",
+            "imageWidth": 200,
+            "resizeMode": "contain",
+            "backgroundColor": "#1F2D24"
+          }
+        }
+      ]
+    ]
   }
 }
