@@ -8,7 +8,9 @@ type PossibleRef<T> = Ref<T> | undefined;
 export function composeRefs<T>(...refs: Array<PossibleRef<T>>): RefCallback<T> {
     return (node: T | null) => {
         for (const ref of refs) {
-            if (ref == null) continue;
+            if (ref == null) {
+                continue;
+            }
             if (typeof ref === 'function') {
                 ref(node);
             } else {

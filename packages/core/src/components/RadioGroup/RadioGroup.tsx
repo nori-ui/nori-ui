@@ -129,7 +129,9 @@ export function RadioGroup({
 
     const register = useCallback((v: string, ref: RefObject<HTMLElement | null>) => {
         refs.current.set(v, ref);
-        if (!orderRef.current.includes(v)) orderRef.current.push(v);
+        if (!orderRef.current.includes(v)) {
+            orderRef.current.push(v);
+        }
     }, []);
 
     const unregister = useCallback((v: string) => {
@@ -139,8 +141,12 @@ export function RadioGroup({
 
     const select = useCallback(
         (next: string) => {
-            if (disabled) return;
-            if (!isControlled) setInner(next);
+            if (disabled) {
+                return;
+            }
+            if (!isControlled) {
+                setInner(next);
+            }
             onChange?.(next);
         },
         [disabled, isControlled, onChange]
@@ -154,12 +160,16 @@ export function RadioGroup({
     const moveBy = useCallback(
         (offset: 1 | -1) => {
             const order = orderRef.current;
-            if (order.length === 0) return;
+            if (order.length === 0) {
+                return;
+            }
             const idx = current ? order.indexOf(current) : -1;
             const start = idx === -1 ? (offset === 1 ? -1 : 0) : idx;
             const len = order.length;
             const next = order[(start + offset + len) % len];
-            if (!next) return;
+            if (!next) {
+                return;
+            }
             select(next);
             focusValue(next);
         },
@@ -169,7 +179,9 @@ export function RadioGroup({
     const handleKeyDown = useCallback(
         (event: KeyboardEvent<HTMLDivElement>) => {
             const order = orderRef.current;
-            if (order.length === 0) return;
+            if (order.length === 0) {
+                return;
+            }
             switch (event.key) {
                 case 'ArrowDown':
                 case 'ArrowRight': {
@@ -289,7 +301,9 @@ export function Radio({ value, label, disabled, children, className, testID }: R
     }, [ctx, value]);
 
     const onPress = useCallback(() => {
-        if (isDisabled) return;
+        if (isDisabled) {
+            return;
+        }
         ctx.select(value);
     }, [ctx, value, isDisabled]);
 

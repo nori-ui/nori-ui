@@ -33,7 +33,9 @@ type Sonner = {
 let cached: Sonner | null | undefined;
 
 function tryLoad(): Sonner | null {
-    if (cached !== undefined) return cached;
+    if (cached !== undefined) {
+        return cached;
+    }
     if (Platform.OS !== 'web') {
         cached = null;
         return null;

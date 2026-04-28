@@ -119,7 +119,9 @@ const SEARCH_DEBOUNCE_MS = 150;
 const VIRTUAL_OVERSCAN = 4;
 
 const defaultFilter = <T,>(option: SelectOption<T>, search: string): boolean => {
-    if (!search) return true;
+    if (!search) {
+        return true;
+    }
     return option.label.toLowerCase().includes(search.toLowerCase());
 };
 
@@ -203,14 +205,18 @@ export function Select<T = unknown>({
     // When the search changes in async mode, reset the loaded list and
     // refetch from offset 0. The request id guards against stale resolution.
     useEffect(() => {
-        if (!isAsync || !loadOptions || !open) return;
+        if (!isAsync || !loadOptions || !open) {
+            return;
+        }
         const requestId = ++asyncRequestId.current;
         setAsyncLoading(true);
         setAsyncItems([]);
         setAsyncTotal(undefined);
         loadOptions({ search: debouncedSearch, offset: 0, limit: pageSize })
             .then((result) => {
-                if (requestId !== asyncRequestId.current) return;
+                if (requestId !== asyncRequestId.current) {
+                    return;
+                }
                 setAsyncItems(result.items.slice());
                 setAsyncTotal(result.total);
             })
@@ -218,26 +224,38 @@ export function Select<T = unknown>({
                 // Swallow — consumers can wrap loadOptions to handle errors.
             })
             .finally(() => {
-                if (requestId === asyncRequestId.current) setAsyncLoading(false);
+                if (requestId === asyncRequestId.current) {
+                    setAsyncLoading(false);
+                }
             });
     }, [debouncedSearch, isAsync, loadOptions, pageSize, open]);
 
     // Helper to load the next page in async mode.
     const loadMore = useCallback(() => {
-        if (!isAsync || !loadOptions || asyncLoading) return;
+        if (!isAsync || !loadOptions || asyncLoading) {
+            return;
+        }
         const haveAll = asyncTotal !== undefined && asyncItems.length >= asyncTotal;
-        if (haveAll) return;
+        if (haveAll) {
+            return;
+        }
         const requestId = ++asyncRequestId.current;
         setAsyncLoading(true);
         loadOptions({ search: debouncedSearch, offset: asyncItems.length, limit: pageSize })
             .then((result) => {
-                if (requestId !== asyncRequestId.current) return;
+                if (requestId !== asyncRequestId.current) {
+                    return;
+                }
                 setAsyncItems((prev) => prev.concat(result.items));
-                if (result.total !== undefined) setAsyncTotal(result.total);
+                if (result.total !== undefined) {
+                    setAsyncTotal(result.total);
+                }
             })
             .catch(() => undefined)
             .finally(() => {
-                if (requestId === asyncRequestId.current) setAsyncLoading(false);
+                if (requestId === asyncRequestId.current) {
+                    setAsyncLoading(false);
+                }
             });
     }, [asyncItems.length, asyncLoading, asyncTotal, debouncedSearch, isAsync, loadOptions, pageSize]);
 
@@ -255,7 +273,9 @@ export function Select<T = unknown>({
                 const ga = a.group ?? '';
                 const gb = b.group ?? '';
                 const groupDelta = collator.compare(ga, gb);
-                if (groupDelta !== 0) return groupDelta;
+                if (groupDelta !== 0) {
+                    return groupDelta;
+                }
                 return collator.compare(a.label, b.label);
             });
         }
@@ -277,8 +297,12 @@ export function Select<T = unknown>({
 
     const onSelect = useCallback(
         (option: SelectOption<T>) => {
-            if (option.disabled) return;
-            if (!isControlled) setInner(option.value);
+            if (option.disabled) {
+                return;
+            }
+            if (!isControlled) {
+                setInner(option.value);
+            }
             onChange?.(option.value, option);
             setOpen(false);
             setSearchInput('');
@@ -289,11 +313,15 @@ export function Select<T = unknown>({
     const moveActive = useCallback(
         (delta: 1 | -1) => {
             setActiveIndex((idx) => {
-                if (visibleOptions.length === 0) return 0;
+                if (visibleOptions.length === 0) {
+                    return 0;
+                }
                 let next = (idx + delta + visibleOptions.length) % visibleOptions.length;
                 // Skip disabled options.
                 for (let attempts = 0; attempts < visibleOptions.length; attempts += 1) {
-                    if (!visibleOptions[next]?.disabled) return next;
+                    if (!visibleOptions[next]?.disabled) {
+                        return next;
+                    }
                     next = (next + delta + visibleOptions.length) % visibleOptions.length;
                 }
                 return idx;
@@ -353,14 +381,22 @@ export function Select<T = unknown>({
     const triggerRef = useRef<HTMLElement | null>(null);
     const popupRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        if (typeof document === 'undefined') return;
-        if (!open) return;
+        if (typeof document === 'undefined') {
+            return;
+        }
+        if (!open) {
+            return;
+        }
         const onDocClick = (event: MouseEvent) => {
             const node = containerRef.current;
             const popup = popupRef.current;
             const target = event.target as Node;
-            if (node?.contains(target)) return;
-            if (popup?.contains(target)) return;
+            if (node?.contains(target)) {
+                return;
+            }
+            if (popup?.contains(target)) {
+                return;
+            }
             setOpen(false);
         };
         document.addEventListener('mousedown', onDocClick);
@@ -376,13 +412,19 @@ export function Select<T = unknown>({
     );
     const measureTrigger = useCallback(() => {
         const node = triggerRef.current;
-        if (!node || typeof node.getBoundingClientRect !== 'function') return;
+        if (!node || typeof node.getBoundingClientRect !== 'function') {
+            return;
+        }
         const rect = node.getBoundingClientRect();
         setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
     }, []);
     useEffect(() => {
-        if (!open) return;
-        if (typeof window === 'undefined') return;
+        if (!open) {
+            return;
+        }
+        if (typeof window === 'undefined') {
+            return;
+        }
         measureTrigger();
         window.addEventListener('scroll', measureTrigger, true);
         window.addEventListener('resize', measureTrigger);
@@ -395,10 +437,14 @@ export function Select<T = unknown>({
     // Scroll handler for async pagination.
     const onListScroll = useCallback(
         (event: UIEvent<HTMLDivElement>) => {
-            if (!isAsync) return;
+            if (!isAsync) {
+                return;
+            }
             const node = event.currentTarget;
             const remaining = node.scrollHeight - node.scrollTop - node.clientHeight;
-            if (remaining < itemHeight * 4) loadMore();
+            if (remaining < itemHeight * 4) {
+                loadMore();
+            }
         },
         [isAsync, itemHeight, loadMore]
     );
@@ -480,7 +526,9 @@ export function Select<T = unknown>({
                     ...(disabled ? { 'aria-disabled': true, disabled: true } : {}),
                 } as Record<string, unknown>)}
                 onPress={() => {
-                    if (disabled) return;
+                    if (disabled) {
+                        return;
+                    }
                     setOpen((v) => !v);
                 }}
                 style={triggerStyle}
@@ -652,7 +700,9 @@ function SelectList<T>({
         : options.length;
 
     const handleScroll = (event: UIEvent<HTMLDivElement>) => {
-        if (virtualized) setScrollTop(event.currentTarget.scrollTop);
+        if (virtualized) {
+            setScrollTop(event.currentTarget.scrollTop);
+        }
         onScroll(event);
     };
 
@@ -694,7 +744,9 @@ function SelectList<T>({
     let lastGroup: string | undefined;
     for (let i = visibleStart; i < visibleEnd; i += 1) {
         const opt = options[i];
-        if (!opt) continue;
+        if (!opt) {
+            continue;
+        }
         if (opt.group !== lastGroup && opt.group !== undefined) {
             items.push(
                 <View

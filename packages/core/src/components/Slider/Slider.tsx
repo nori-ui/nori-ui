@@ -59,7 +59,9 @@ const THUMB_HIT_SLOP = 8;
 // Clamp + snap a raw value to [min, max] on the step grid.
 const snap = (raw: number, min: number, max: number, step: number): number => {
     const clamped = Math.min(max, Math.max(min, raw));
-    if (step <= 0) return clamped;
+    if (step <= 0) {
+        return clamped;
+    }
     const stepped = Math.round((clamped - min) / step) * step + min;
     return Math.min(max, Math.max(min, Number.parseFloat(stepped.toFixed(10))));
 };
@@ -74,8 +76,12 @@ const updateAt = (values: ReadonlyArray<number>, index: number, next: number, ga
     // bounded by its neighbors' positions.
     const left = index > 0 ? out[index - 1] : undefined;
     const right = index < out.length - 1 ? out[index + 1] : undefined;
-    if (left !== undefined && next < left + gap) out[index] = left + gap;
-    if (right !== undefined && next > right - gap) out[index] = right - gap;
+    if (left !== undefined && next < left + gap) {
+        out[index] = left + gap;
+    }
+    if (right !== undefined && next > right - gap) {
+        out[index] = right - gap;
+    }
     return out;
 };
 
@@ -138,13 +144,17 @@ export function Slider({
     // window resize, since onLayout doesn't fire for window-relative shifts.
     const measure = useCallback(() => {
         const node = trackRef.current as unknown as HTMLElement | null;
-        if (!node || typeof window === 'undefined' || typeof node.getBoundingClientRect !== 'function') return;
+        if (!node || typeof window === 'undefined' || typeof node.getBoundingClientRect !== 'function') {
+            return;
+        }
         const rect = node.getBoundingClientRect();
         trackRectRef.current = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
     }, []);
 
     useEffect(() => {
-        if (Platform.OS !== 'web') return;
+        if (Platform.OS !== 'web') {
+            return;
+        }
         measure();
         window.addEventListener('resize', measure);
         return () => window.removeEventListener('resize', measure);
@@ -152,7 +162,9 @@ export function Slider({
 
     const setValues = useCallback(
         (next: number[]) => {
-            if (!isControlled) setInner(next);
+            if (!isControlled) {
+                setInner(next);
+            }
             onValueChange?.(next);
         },
         [isControlled, onValueChange]
@@ -170,15 +182,23 @@ export function Slider({
     const valueFromClient = useCallback(
         (clientX: number, clientY: number): number => {
             const rect = trackRectRef.current;
-            if (!rect) return min;
+            if (!rect) {
+                return min;
+            }
             const len = isVertical ? rect.height : rect.width;
-            if (len <= 0) return min;
+            if (len <= 0) {
+                return min;
+            }
             const offset = isVertical ? clientY - rect.y : clientX - rect.x;
             let ratio = offset / len;
             ratio = Math.min(1, Math.max(0, ratio));
             // For vertical, the visual top is max (higher = up), so invert.
-            if (isVertical) ratio = 1 - ratio;
-            if (reversed) ratio = 1 - ratio;
+            if (isVertical) {
+                ratio = 1 - ratio;
+            }
+            if (reversed) {
+                ratio = 1 - ratio;
+            }
             const raw = min + ratio * (max - min);
             return snap(raw, min, max, step);
         },
@@ -192,7 +212,9 @@ export function Slider({
             let bestDelta = Number.POSITIVE_INFINITY;
             for (let i = 0; i < current.length; i += 1) {
                 const cv = current[i];
-                if (cv === undefined) continue;
+                if (cv === undefined) {
+                    continue;
+                }
                 const delta = Math.abs(cv - target);
                 if (delta < bestDelta) {
                     best = i;
@@ -208,7 +230,9 @@ export function Slider({
 
     const onTrackPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
-            if (disabled) return;
+            if (disabled) {
+                return;
+            }
             measure();
             const targetValue = valueFromClient(event.clientX, event.clientY);
             const idx = closestThumbIndex(targetValue);
@@ -223,7 +247,9 @@ export function Slider({
     const onTrackPointerMove = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
             const drag = draggingRef.current;
-            if (!drag || drag.pointerId !== event.pointerId) return;
+            if (!drag || drag.pointerId !== event.pointerId) {
+                return;
+            }
             const targetValue = valueFromClient(event.clientX, event.clientY);
             const next = updateAt(current, drag.index, targetValue, gap);
             setValues(next);
@@ -234,7 +260,9 @@ export function Slider({
     const onTrackPointerUp = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
             const drag = draggingRef.current;
-            if (!drag || drag.pointerId !== event.pointerId) return;
+            if (!drag || drag.pointerId !== event.pointerId) {
+                return;
+            }
             draggingRef.current = null;
             commitValues(current);
         },
@@ -243,9 +271,13 @@ export function Slider({
 
     const handleThumbKeyDown = useCallback(
         (index: number) => (event: KeyboardEvent<HTMLElement>) => {
-            if (disabled) return;
+            if (disabled) {
+                return;
+            }
             const cv = current[index];
-            if (cv === undefined) return;
+            if (cv === undefined) {
+                return;
+            }
             const range = max - min;
             const big = Math.max(step * 10, range / 10);
             const arrowSign = (key: 'inc' | 'dec') => {

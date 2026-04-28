@@ -101,8 +101,12 @@ export function SegmentedControl<T extends string>({
 
     const select = useCallback(
         (next: T) => {
-            if (disabled) return;
-            if (!isControlled) setInner(next);
+            if (disabled) {
+                return;
+            }
+            if (!isControlled) {
+                setInner(next);
+            }
             onChange?.(next);
         },
         [disabled, isControlled, onChange]
@@ -110,7 +114,9 @@ export function SegmentedControl<T extends string>({
 
     const handleKeyDown = useCallback(
         (event: KeyboardEvent<HTMLDivElement>) => {
-            if (options.length === 0) return;
+            if (options.length === 0) {
+                return;
+            }
             const idx = options.findIndex((o) => o.value === current);
             const start = idx === -1 ? 0 : idx;
             const offset =
@@ -119,12 +125,18 @@ export function SegmentedControl<T extends string>({
                     : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
                       ? -1
                       : 0;
-            if (offset === 0 && event.key !== 'Home' && event.key !== 'End') return;
+            if (offset === 0 && event.key !== 'Home' && event.key !== 'End') {
+                return;
+            }
             event.preventDefault();
             let nextIdx: number;
-            if (event.key === 'Home') nextIdx = 0;
-            else if (event.key === 'End') nextIdx = options.length - 1;
-            else nextIdx = (start + offset + options.length) % options.length;
+            if (event.key === 'Home') {
+                nextIdx = 0;
+            } else if (event.key === 'End') {
+                nextIdx = options.length - 1;
+            } else {
+                nextIdx = (start + offset + options.length) % options.length;
+            }
             // Skip past disabled options in the chosen direction.
             const direction = offset === 0 ? 1 : offset;
             for (let attempts = 0; attempts < options.length; attempts += 1) {
@@ -191,7 +203,9 @@ export function SegmentedControl<T extends string>({
                         accessibilityState={{ selected, disabled: Boolean(isOptDisabled) }}
                         tabIndex={selected || (current === undefined && options[0]?.value === option.value) ? 0 : -1}
                         onPress={() => {
-                            if (!isOptDisabled) select(option.value);
+                            if (!isOptDisabled) {
+                                select(option.value);
+                            }
                         }}
                         {...(isOptDisabled ? { 'aria-disabled': true, disabled: true } : {})}
                         className={cn(

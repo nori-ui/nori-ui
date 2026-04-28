@@ -49,7 +49,9 @@ export function Skeleton({
     const opacity = useRef(new Animated.Value(PULSE_MAX)).current;
 
     useEffect(() => {
-        if (isStatic) return;
+        if (isStatic) {
+            return;
+        }
         const loop = Animated.loop(
             Animated.sequence([
                 Animated.timing(opacity, {

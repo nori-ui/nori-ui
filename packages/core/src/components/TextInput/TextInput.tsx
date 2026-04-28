@@ -70,13 +70,27 @@ export function TextInput({
     const describedBy = error || helperText ? describeId : undefined;
 
     const inputExtras: Record<string, unknown> = {};
-    if (testID !== undefined) inputExtras.testID = testID;
-    if (label !== undefined) inputExtras.accessibilityLabel = label;
-    if (hasError) inputExtras['aria-invalid'] = true;
-    if (describedBy !== undefined) inputExtras['aria-describedby'] = describedBy;
-    if (multiline !== undefined) inputExtras.multiline = multiline;
-    if (numberOfLines !== undefined) inputExtras.numberOfLines = numberOfLines;
-    if (onChangeText !== undefined) inputExtras.onChangeText = onChangeText;
+    if (testID !== undefined) {
+        inputExtras.testID = testID;
+    }
+    if (label !== undefined) {
+        inputExtras.accessibilityLabel = label;
+    }
+    if (hasError) {
+        inputExtras['aria-invalid'] = true;
+    }
+    if (describedBy !== undefined) {
+        inputExtras['aria-describedby'] = describedBy;
+    }
+    if (multiline !== undefined) {
+        inputExtras.multiline = multiline;
+    }
+    if (numberOfLines !== undefined) {
+        inputExtras.numberOfLines = numberOfLines;
+    }
+    if (onChangeText !== undefined) {
+        inputExtras.onChangeText = onChangeText;
+    }
 
     const labelStyle: TextStyle = {
         fontFamily: colors.fontFamily.body,

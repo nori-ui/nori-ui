@@ -94,7 +94,9 @@ describe('RSC safety boundary', () => {
         const violations: string[] = [];
 
         for (const { abs, rel } of walk(SRC, SRC)) {
-            if (isClientAllowed(rel) || isTestFile(rel)) continue;
+            if (isClientAllowed(rel) || isTestFile(rel)) {
+                continue;
+            }
 
             const content = readFileSync(abs, 'utf8');
             if (/^\s*['"]use client['"]/m.test(content)) {
@@ -116,7 +118,9 @@ describe('RSC safety boundary', () => {
     it('all CLIENT_ALLOWED files actually contain "use client"', () => {
         const missing: string[] = [];
         for (const rel of CLIENT_ALLOWED) {
-            if (rel.endsWith('/')) continue; // directory entries are checked per-file via walk
+            if (rel.endsWith('/')) {
+                continue; // directory entries are checked per-file via walk
+            }
             const content = readFileSync(join(SRC, rel), 'utf8');
             if (!/^\s*['"]use client['"]/m.test(content)) {
                 missing.push(rel);

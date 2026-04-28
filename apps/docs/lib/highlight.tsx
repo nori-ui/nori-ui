@@ -21,13 +21,19 @@ export type Highlighted = { tokens: Token[][]; rootStyle: StyleMap };
 
 const parseStyleString = (s: string | undefined): StyleMap => {
     const obj: StyleMap = {};
-    if (!s) return obj;
+    if (!s) {
+        return obj;
+    }
     for (const decl of s.split(';')) {
         const i = decl.indexOf(':');
-        if (i === -1) continue;
+        if (i === -1) {
+            continue;
+        }
         const k = decl.slice(0, i).trim();
         const v = decl.slice(i + 1).trim();
-        if (k && v) obj[k] = v;
+        if (k && v) {
+            obj[k] = v;
+        }
     }
     return obj;
 };

@@ -28,7 +28,9 @@ function rebuildSnapshot(): void {
 }
 
 function notify(): void {
-    for (const l of listeners) l();
+    for (const l of listeners) {
+        l();
+    }
 }
 
 function nextId(): string {
@@ -52,7 +54,9 @@ export function add(title: ActiveToast['title'], options: ToastOptions = {}): st
 
 export function update(id: string | number, patch: Partial<ActiveToast>): void {
     const existing = toasts.get(id);
-    if (!existing) return;
+    if (!existing) {
+        return;
+    }
     toasts.set(id, { ...existing, ...patch, id });
     rebuildSnapshot();
     notify();
@@ -60,7 +64,9 @@ export function update(id: string | number, patch: Partial<ActiveToast>): void {
 
 export function dismiss(id?: string | number): void {
     if (id === undefined) {
-        if (toasts.size === 0) return;
+        if (toasts.size === 0) {
+            return;
+        }
         toasts.clear();
     } else if (!toasts.delete(id)) {
         return;

@@ -1,4 +1,4 @@
-function createUtilityPlugin(themeKey, utilityVariations, options) {
+function createUtilityPlugin(_themeKey, _utilityVariations, _options) {
     return { handler: () => {}, config: {} };
 }
 module.exports = createUtilityPlugin;

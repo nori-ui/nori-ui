@@ -124,8 +124,12 @@ export function Badge({ tone = 'neutral', appearance = 'soft', children, classNa
         return { ...baseContainer, backgroundColor: palette.soft.bg };
     })();
     const textColor = (() => {
-        if (appearance === 'solid') return palette.solid.fg;
-        if (appearance === 'outline') return palette.outline.fg;
+        if (appearance === 'solid') {
+            return palette.solid.fg;
+        }
+        if (appearance === 'outline') {
+            return palette.outline.fg;
+        }
         return palette.soft.fg;
     })();
     const baseText: TextStyle = {

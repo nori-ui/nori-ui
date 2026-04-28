@@ -84,7 +84,9 @@ export function Popover({ open, defaultOpen = false, onOpenChange, children }: P
 
     const setOpen = useCallback(
         (next: boolean) => {
-            if (!isControlled) setInner(next);
+            if (!isControlled) {
+                setInner(next);
+            }
             onOpenChange?.(next);
         },
         [isControlled, onOpenChange]
@@ -101,7 +103,9 @@ export function Popover({ open, defaultOpen = false, onOpenChange, children }: P
     const [triggerRect, setTriggerRect] = useState<TriggerRect | null>(null);
     const measureTrigger = useCallback(() => {
         const node = triggerRef.current;
-        if (!node || typeof node.getBoundingClientRect !== 'function') return;
+        if (!node || typeof node.getBoundingClientRect !== 'function') {
+            return;
+        }
         const rect = node.getBoundingClientRect();
         setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
     }, []);
@@ -289,9 +293,15 @@ export function PopoverContent({
     // on resize. RN Modal handles its own dismissal on native (tap-outside
     // is the transparent overlay's onPress).
     useEffect(() => {
-        if (!ctx.open) return;
-        if (Platform.OS !== 'web') return;
-        if (typeof document === 'undefined') return;
+        if (!ctx.open) {
+            return;
+        }
+        if (Platform.OS !== 'web') {
+            return;
+        }
+        if (typeof document === 'undefined') {
+            return;
+        }
 
         ctx.measureTrigger();
 
@@ -299,8 +309,12 @@ export function PopoverContent({
             const target = event.target as Node;
             const trigger = ctx.triggerRef.current;
             const content = ctx.contentRef.current;
-            if (trigger?.contains(target)) return;
-            if (content?.contains(target)) return;
+            if (trigger?.contains(target)) {
+                return;
+            }
+            if (content?.contains(target)) {
+                return;
+            }
             ctx.setOpen(false);
         };
         const onKeyDown = (event: KeyboardEvent) => {
@@ -327,10 +341,14 @@ export function PopoverContent({
 
     // Reset measured size when popover closes so reopening re-measures fresh.
     useEffect(() => {
-        if (!ctx.open) setContentSize(null);
+        if (!ctx.open) {
+            setContentSize(null);
+        }
     }, [ctx.open]);
 
-    if (!ctx.open) return null;
+    if (!ctx.open) {
+        return null;
+    }
 
     const position = ctx.triggerRect ? computePosition(ctx.triggerRect, side, align, contentSize) : null;
 
@@ -375,9 +393,15 @@ export function PopoverContent({
         <View
             ref={(node) => {
                 ctx.contentRef.current = node as unknown as HTMLDivElement | null;
-                if (Platform.OS !== 'web') return;
-                if (!node) return;
-                if (typeof (node as unknown as HTMLDivElement).getBoundingClientRect !== 'function') return;
+                if (Platform.OS !== 'web') {
+                    return;
+                }
+                if (!node) {
+                    return;
+                }
+                if (typeof (node as unknown as HTMLDivElement).getBoundingClientRect !== 'function') {
+                    return;
+                }
                 const rect = (node as unknown as HTMLDivElement).getBoundingClientRect();
                 if (!contentSize || contentSize.width !== rect.width || contentSize.height !== rect.height) {
                     setContentSize({ width: rect.width, height: rect.height });

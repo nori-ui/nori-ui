@@ -26,7 +26,9 @@ const TSCONFIG = join(REPO_ROOT, 'packages', 'core', 'tsconfig.json');
 const componentFiles = [];
 for (const dir of readdirSync(COMPONENTS_DIR)) {
     const entry = join(COMPONENTS_DIR, dir, `${dir}.tsx`);
-    if (existsSync(entry)) componentFiles.push(entry);
+    if (existsSync(entry)) {
+        componentFiles.push(entry);
+    }
 }
 componentFiles.push(ICON_FILE);
 
@@ -39,9 +41,15 @@ const parser = docgen.withCustomConfig(TSCONFIG, {
         // PressableProps that aren't part of the library's surface, etc.
         if (prop.parent) {
             const fileName = prop.parent.fileName ?? '';
-            if (fileName.includes('node_modules')) return false;
-            if (fileName.includes('@types/react')) return false;
-            if (fileName.includes('react-native')) return false;
+            if (fileName.includes('node_modules')) {
+                return false;
+            }
+            if (fileName.includes('@types/react')) {
+                return false;
+            }
+            if (fileName.includes('react-native')) {
+                return false;
+            }
         }
         return true;
     },
@@ -60,7 +68,9 @@ for (const c of docs) {
         deprecated: info.tags?.deprecated ?? null,
     }));
     rows.sort((a, b) => {
-        if (a.required !== b.required) return a.required ? -1 : 1;
+        if (a.required !== b.required) {
+            return a.required ? -1 : 1;
+        }
         return a.name.localeCompare(b.name);
     });
     props[c.displayName] = rows;

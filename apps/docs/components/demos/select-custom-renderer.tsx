@@ -85,7 +85,9 @@ export default function SelectCustomRenderer() {
                 itemHeight={64}
                 renderOption={(option, { selected }) => {
                     const member = option.data;
-                    if (!member) return null;
+                    if (!member) {
+                        return null;
+                    }
                     return (
                         <HStack gap={3} className="flex-1 items-center" style={{ paddingVertical: 4 }}>
                             <Avatar {...(member.avatar ? { src: member.avatar } : {})} name={member.name} size="md" />

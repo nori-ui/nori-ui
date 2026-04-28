@@ -51,7 +51,9 @@ export function PageActions({ pagePath }: PageActionsProps) {
     const onCopy = useCallback(async () => {
         try {
             const res = await fetch(mdUrl);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
             const text = await res.text();
             await navigator.clipboard.writeText(text);
             setCopied(true);

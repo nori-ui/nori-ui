@@ -72,8 +72,12 @@ function joinClass(outer: unknown, inner: unknown): string | undefined {
 type Fn = (...args: unknown[]) => unknown;
 
 function isEventHandler(key: string, outer: unknown, inner: unknown): boolean {
-    if (!key.startsWith('on') || key.length < 3) return false;
-    if (key[2] !== key[2]?.toUpperCase()) return false;
+    if (!key.startsWith('on') || key.length < 3) {
+        return false;
+    }
+    if (key[2] !== key[2]?.toUpperCase()) {
+        return false;
+    }
     return typeof outer === 'function' && typeof inner === 'function';
 }
 

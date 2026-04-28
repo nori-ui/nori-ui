@@ -7,12 +7,16 @@ export async function getLLMText(page: InferPageType<typeof source>): Promise<st
     const raw = (page.data as unknown as { content?: string }).content ?? '';
     const lines: string[] = [];
     lines.push(`# ${page.data.title}`);
-    if (page.data.description) lines.push(page.data.description);
+    if (page.data.description) {
+        lines.push(page.data.description);
+    }
     lines.push('');
     lines.push(`URL: ${page.url}`);
     lines.push(`Since: ${page.data.since ?? '0.1.0'}`);
     lines.push(`Platform: ${page.data.platform ?? 'both'}`);
-    if (page.data.tags?.length) lines.push(`Tags: ${page.data.tags.join(', ')}`);
+    if (page.data.tags?.length) {
+        lines.push(`Tags: ${page.data.tags.join(', ')}`);
+    }
     lines.push('');
     lines.push(raw);
     return lines.join('\n');

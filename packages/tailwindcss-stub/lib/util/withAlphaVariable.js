@@ -1,4 +1,4 @@
-function withAlphaValue(color, alphaValue) {
+function withAlphaValue(color, _alphaValue) {
     return color;
 }
 function withAlphaVariable({ color, property }) {

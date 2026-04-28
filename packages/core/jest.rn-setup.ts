@@ -31,26 +31,44 @@ jest.mock('react-native', () => {
     } & Record<string, unknown>;
 
     const mapA11yRole = (role?: string): string | undefined => {
-        if (!role) return undefined;
-        if (role === 'header') return 'heading';
-        if (role === 'button') return 'button';
-        if (role === 'image') return 'img';
-        if (role === 'link') return 'link';
-        if (role === 'none') return 'presentation';
+        if (!role) {
+            return undefined;
+        }
+        if (role === 'header') {
+            return 'heading';
+        }
+        if (role === 'button') {
+            return 'button';
+        }
+        if (role === 'image') {
+            return 'img';
+        }
+        if (role === 'link') {
+            return 'link';
+        }
+        if (role === 'none') {
+            return 'presentation';
+        }
         return role;
     };
 
     const flattenStyle = (style: unknown): React.CSSProperties | undefined => {
-        if (style === undefined || style === null || style === false) return undefined;
+        if (style === undefined || style === null || style === false) {
+            return undefined;
+        }
         if (Array.isArray(style)) {
             const out: Record<string, unknown> = {};
             for (const entry of style) {
                 const sub = flattenStyle(entry);
-                if (sub) Object.assign(out, sub);
+                if (sub) {
+                    Object.assign(out, sub);
+                }
             }
             return out as React.CSSProperties;
         }
-        if (typeof style === 'object') return style as React.CSSProperties;
+        if (typeof style === 'object') {
+            return style as React.CSSProperties;
+        }
         return undefined;
     };
 
@@ -68,12 +86,20 @@ jest.mock('react-native', () => {
         const { nativeID, ...domRest } = rest as Props & { nativeID?: string };
 
         const domProps: Record<string, unknown> = { ...domRest };
-        if (className !== undefined) domProps.className = className;
-        if (testID !== undefined) domProps['data-testid'] = testID;
-        if (nativeID !== undefined) domProps.id = nativeID;
+        if (className !== undefined) {
+            domProps.className = className;
+        }
+        if (testID !== undefined) {
+            domProps['data-testid'] = testID;
+        }
+        if (nativeID !== undefined) {
+            domProps.id = nativeID;
+        }
         const existingRole = domProps.role as string | undefined;
         const role = existingRole ?? mapA11yRole(accessibilityRole);
-        if (role !== undefined) domProps.role = role;
+        if (role !== undefined) {
+            domProps.role = role;
+        }
         if (accessibilityLabel !== undefined && domProps['aria-label'] === undefined) {
             domProps['aria-label'] = accessibilityLabel;
         }
@@ -91,7 +117,9 @@ jest.mock('react-native', () => {
             domProps['aria-busy'] = accessibilityState.busy;
         }
         const flatStyle = flattenStyle(style);
-        if (flatStyle !== undefined) domProps.style = flatStyle;
+        if (flatStyle !== undefined) {
+            domProps.style = flatStyle;
+        }
         return React.createElement(tag, domProps, children);
     };
 
@@ -105,7 +133,9 @@ jest.mock('react-native', () => {
         const nextProps: Props = { ...rest };
         if (onPress !== undefined) {
             (nextProps as { onClick?: (ev: unknown) => void }).onClick = (ev) => {
-                if (disabled) return;
+                if (disabled) {
+                    return;
+                }
                 onPress(ev);
             };
         }
@@ -160,26 +190,56 @@ jest.mock('react-native', () => {
 
         const tag = multiline ? 'textarea' : 'input';
         const domProps: Record<string, unknown> = { ...other };
-        if (className !== undefined) domProps.className = className;
-        if (testID !== undefined) domProps['data-testid'] = testID;
-        if (nativeID !== undefined) domProps.id = nativeID;
-        if (accessibilityLabel !== undefined) domProps['aria-label'] = accessibilityLabel;
+        if (className !== undefined) {
+            domProps.className = className;
+        }
+        if (testID !== undefined) {
+            domProps['data-testid'] = testID;
+        }
+        if (nativeID !== undefined) {
+            domProps.id = nativeID;
+        }
+        if (accessibilityLabel !== undefined) {
+            domProps['aria-label'] = accessibilityLabel;
+        }
         const role = mapA11yRole(accessibilityRole);
-        if (role !== undefined) domProps.role = role;
-        if (accessibilityState?.disabled !== undefined) domProps['aria-disabled'] = accessibilityState.disabled;
-        if (value !== undefined) domProps.value = value;
-        if (defaultValue !== undefined) domProps.defaultValue = defaultValue;
-        if (placeholder !== undefined) domProps.placeholder = placeholder;
-        if (editable === false) domProps.disabled = true;
-        if (multiline && numberOfLines !== undefined) domProps.rows = numberOfLines;
+        if (role !== undefined) {
+            domProps.role = role;
+        }
+        if (accessibilityState?.disabled !== undefined) {
+            domProps['aria-disabled'] = accessibilityState.disabled;
+        }
+        if (value !== undefined) {
+            domProps.value = value;
+        }
+        if (defaultValue !== undefined) {
+            domProps.defaultValue = defaultValue;
+        }
+        if (placeholder !== undefined) {
+            domProps.placeholder = placeholder;
+        }
+        if (editable === false) {
+            domProps.disabled = true;
+        }
+        if (multiline && numberOfLines !== undefined) {
+            domProps.rows = numberOfLines;
+        }
         const flatStyle = flattenStyle(style);
-        if (flatStyle !== undefined) domProps.style = flatStyle;
+        if (flatStyle !== undefined) {
+            domProps.style = flatStyle;
+        }
 
         domProps.onChange = (e: { target?: { value?: string } } & Record<string, unknown>) => {
-            if (editable === false) return;
+            if (editable === false) {
+                return;
+            }
             const next = e?.target?.value ?? '';
-            if (onChangeText) onChangeText(next);
-            if (onChange) onChange(e);
+            if (onChangeText) {
+                onChangeText(next);
+            }
+            if (onChange) {
+                onChange(e);
+            }
         };
 
         return React.createElement(tag, domProps);
@@ -207,8 +267,12 @@ jest.mock('react-native', () => {
         const { source, onError, onLoad, accessibilityLabel, style, testID, ...rest } = props;
         const uri = source && typeof source === 'object' ? source.uri : undefined;
         const domProps: Record<string, unknown> = { ...rest };
-        if (uri !== undefined) domProps.src = uri;
-        if (testID !== undefined) domProps['data-testid'] = testID;
+        if (uri !== undefined) {
+            domProps.src = uri;
+        }
+        if (testID !== undefined) {
+            domProps['data-testid'] = testID;
+        }
         if (accessibilityLabel !== undefined) {
             domProps['aria-label'] = accessibilityLabel;
             domProps.alt = accessibilityLabel;
@@ -216,10 +280,16 @@ jest.mock('react-native', () => {
             // <img> requires alt for valid HTML; default to empty (decorative).
             domProps.alt = '';
         }
-        if (onError !== undefined) domProps.onError = onError;
-        if (onLoad !== undefined) domProps.onLoad = onLoad;
+        if (onError !== undefined) {
+            domProps.onError = onError;
+        }
+        if (onLoad !== undefined) {
+            domProps.onLoad = onLoad;
+        }
         const flatStyle = flattenStyle(style);
-        if (flatStyle !== undefined) domProps.style = flatStyle;
+        if (flatStyle !== undefined) {
+            domProps.style = flatStyle;
+        }
         return React.createElement('img', domProps);
     };
 
@@ -231,7 +301,9 @@ jest.mock('react-native', () => {
     };
     const Modal = (props: ModalProps) => {
         const { visible, onRequestClose, animationType, transparent, children, ...rest } = props;
-        if (!visible) return null;
+        if (!visible) {
+            return null;
+        }
         // Mirror what react-native-web's Modal does: render the children
         // in-place inside a fixed-position overlay div. Tests can query
         // the modal content directly without portal traversal.
@@ -331,24 +403,36 @@ jest.mock('react-native-reanimated', () => {
                 style?: unknown;
             } & Record<string, unknown>;
             const domProps: Record<string, unknown> = { ...rest };
-            if (className !== undefined) domProps.className = className;
-            if (testID !== undefined) domProps['data-testid'] = testID;
+            if (className !== undefined) {
+                domProps.className = className;
+            }
+            if (testID !== undefined) {
+                domProps['data-testid'] = testID;
+            }
             if (style !== undefined) {
                 const flatten = (s: unknown): React.CSSProperties | undefined => {
-                    if (s === undefined || s === null || s === false) return undefined;
+                    if (s === undefined || s === null || s === false) {
+                        return undefined;
+                    }
                     if (Array.isArray(s)) {
                         const out: Record<string, unknown> = {};
                         for (const e of s) {
                             const sub = flatten(e);
-                            if (sub) Object.assign(out, sub);
+                            if (sub) {
+                                Object.assign(out, sub);
+                            }
                         }
                         return out as React.CSSProperties;
                     }
-                    if (typeof s === 'object') return s as React.CSSProperties;
+                    if (typeof s === 'object') {
+                        return s as React.CSSProperties;
+                    }
                     return undefined;
                 };
                 const flat = flatten(style);
-                if (flat) domProps.style = flat;
+                if (flat) {
+                    domProps.style = flat;
+                }
             }
             return React.createElement(tag, domProps, children);
         };

@@ -392,13 +392,27 @@ export function InputGroupInput({
     const hasError = Boolean(error) || ctx.hasError;
 
     const inputExtras: Record<string, unknown> = {};
-    if (testID !== undefined) inputExtras.testID = testID;
-    if (_label !== undefined) inputExtras.accessibilityLabel = _label;
-    if (hasError) inputExtras['aria-invalid'] = true;
-    if (error || _helperText) inputExtras['aria-describedby'] = describeId;
-    if (multiline !== undefined) inputExtras.multiline = multiline;
-    if (numberOfLines !== undefined) inputExtras.numberOfLines = numberOfLines;
-    if (onChangeText !== undefined) inputExtras.onChangeText = onChangeText;
+    if (testID !== undefined) {
+        inputExtras.testID = testID;
+    }
+    if (_label !== undefined) {
+        inputExtras.accessibilityLabel = _label;
+    }
+    if (hasError) {
+        inputExtras['aria-invalid'] = true;
+    }
+    if (error || _helperText) {
+        inputExtras['aria-describedby'] = describeId;
+    }
+    if (multiline !== undefined) {
+        inputExtras.multiline = multiline;
+    }
+    if (numberOfLines !== undefined) {
+        inputExtras.numberOfLines = numberOfLines;
+    }
+    if (onChangeText !== undefined) {
+        inputExtras.onChangeText = onChangeText;
+    }
 
     const inputStyle: TextStyle = {
         ...INPUT_LAYOUT_BASE,

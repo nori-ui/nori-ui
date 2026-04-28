@@ -106,7 +106,9 @@ export function Tabs({
 
     const setValue = useCallback(
         (next: string) => {
-            if (!isControlled) setInner(next);
+            if (!isControlled) {
+                setInner(next);
+            }
             onChange?.(next);
         },
         [isControlled, onChange]
@@ -114,7 +116,9 @@ export function Tabs({
 
     const register = useCallback((v: string, ref: RefObject<HTMLElement | null>) => {
         refs.current.set(v, ref);
-        if (!orderRef.current.includes(v)) orderRef.current.push(v);
+        if (!orderRef.current.includes(v)) {
+            orderRef.current.push(v);
+        }
     }, []);
 
     const unregister = useCallback((v: string) => {
@@ -126,7 +130,9 @@ export function Tabs({
         (next: string) => {
             const ref = refs.current.get(next);
             ref?.current?.focus?.();
-            if (activation === 'automatic') setValue(next);
+            if (activation === 'automatic') {
+                setValue(next);
+            }
         },
         [activation, setValue]
     );
@@ -134,12 +140,16 @@ export function Tabs({
     const moveFocus = useCallback(
         (offset: 1 | -1, fromValue: string) => {
             const order = orderRef.current;
-            if (order.length === 0) return;
+            if (order.length === 0) {
+                return;
+            }
             const idx = order.indexOf(fromValue);
             const start = idx === -1 ? 0 : idx;
             const len = order.length;
             const next = order[(start + offset + len) % len];
-            if (next) focusValue(next);
+            if (next) {
+                focusValue(next);
+            }
         },
         [focusValue]
     );
@@ -147,9 +157,13 @@ export function Tabs({
     const focusEdge = useCallback(
         (edge: 'first' | 'last') => {
             const order = orderRef.current;
-            if (order.length === 0) return;
+            if (order.length === 0) {
+                return;
+            }
             const target = edge === 'first' ? order[0] : order[order.length - 1];
-            if (target) focusValue(target);
+            if (target) {
+                focusValue(target);
+            }
         },
         [focusValue]
     );
@@ -309,7 +323,9 @@ export function TabsTrigger({ value, disabled, children, className, testID }: Ta
     }, [ctx, value]);
 
     const onPress = useCallback(() => {
-        if (disabled) return;
+        if (disabled) {
+            return;
+        }
         ctx.setValue(value);
     }, [ctx, value, disabled]);
 
@@ -338,7 +354,9 @@ export function TabsTrigger({ value, disabled, children, className, testID }: Ta
                 case ' ': {
                     if (ctx.activation === 'manual') {
                         event.preventDefault();
-                        if (!disabled) ctx.setValue(value);
+                        if (!disabled) {
+                            ctx.setValue(value);
+                        }
                     }
                     return;
                 }
@@ -422,7 +440,9 @@ export type TabsContentProps = {
 export function TabsContent({ value, children, className, testID }: TabsContentProps) {
     const ctx = useTabsContext('TabsContent');
     const active = ctx.value === value;
-    if (!active) return null;
+    if (!active) {
+        return null;
+    }
     return (
         <View
             {...(testID !== undefined ? { testID } : {})}

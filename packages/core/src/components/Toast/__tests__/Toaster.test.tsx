@@ -54,7 +54,9 @@ describe('<Toaster /> + toast()', () => {
         });
         expect(await screen.findByText('Sticky')).toBeInTheDocument();
         act(() => {
-            if (id !== undefined) toast.dismiss(id);
+            if (id !== undefined) {
+                toast.dismiss(id);
+            }
         });
         // sonner's exit animation takes a tick to complete; wait for the
         // node to actually leave the document.

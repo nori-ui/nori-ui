@@ -35,7 +35,9 @@ export function ExpoSnack({
     theme = 'light',
     height = 500,
 }: ExpoSnackProps) {
-    if (SNACKS_DISABLED) return null;
+    if (SNACKS_DISABLED) {
+        return null;
+    }
 
     const snackId = component ? snacks[component] : id;
     if (!snackId) {

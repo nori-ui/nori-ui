@@ -6,7 +6,9 @@ export type BundleSizeProps = {
 };
 
 const formatBytes = (n: number): string => {
-    if (n < 1024) return `${n} B`;
+    if (n < 1024) {
+        return `${n} B`;
+    }
     return `${(n / 1024).toFixed(1)} kB`;
 };
 
@@ -24,7 +26,9 @@ const formatBytes = (n: number): string => {
  */
 export function BundleSize({ component }: BundleSizeProps) {
     const size = bundleSizes[component];
-    if (!size) return null;
+    if (!size) {
+        return null;
+    }
     return (
         <span
             className="not-prose inline-flex items-center gap-2 rounded-full border border-fd-border bg-fd-card px-3 py-1 text-xs text-fd-muted-foreground"

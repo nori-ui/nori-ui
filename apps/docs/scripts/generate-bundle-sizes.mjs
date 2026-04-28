@@ -78,7 +78,9 @@ const measure = async (name) => {
         logLevel: 'silent',
     });
     const out = result.outputFiles[0];
-    if (!out) throw new Error(`esbuild produced no output for ${name}`);
+    if (!out) {
+        throw new Error(`esbuild produced no output for ${name}`);
+    }
     const raw = out.contents.byteLength;
     const gzipped = gzipSync(out.contents).byteLength;
     return { raw, gzipped };

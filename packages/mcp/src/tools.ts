@@ -45,7 +45,9 @@ export function createTools(data: McpData): Tools {
         },
         getComponentDocs(name) {
             const page = findPage(data, name);
-            if (!page) return null;
+            if (!page) {
+                return null;
+            }
             return { ...componentSummary(page), body: page.body };
         },
         // Prop extraction is deferred — the corpus only carries page
@@ -53,7 +55,9 @@ export function createTools(data: McpData): Tools {
         // without lying about what's available.
         getComponentProps(name) {
             const page = findPage(data, name);
-            if (!page) return null;
+            if (!page) {
+                return null;
+            }
             return {
                 note: 'Prop extraction is deferred to a later release. Read the docs body via get_component_docs, or visit:',
                 url: page.url,

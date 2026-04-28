@@ -15,9 +15,13 @@ const PRETTY_SUFFIX = /^\/docs\/(.+)\.(md|json)$/;
  */
 export function parsePrettyDocsUrl(pathname: string): { slug: string; format: SourceFormat } | null {
     const match = pathname.match(PRETTY_SUFFIX);
-    if (!match) return null;
+    if (!match) {
+        return null;
+    }
     const [, slug, format] = match;
-    if (!slug || !format) return null;
+    if (!slug || !format) {
+        return null;
+    }
     return { slug, format: format as SourceFormat };
 }
 

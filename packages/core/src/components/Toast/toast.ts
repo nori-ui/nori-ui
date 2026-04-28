@@ -40,7 +40,9 @@ type ToastId = string | number;
  */
 function dispatchSonner(tone: ToastTone, title: ReactNode, options: ToastOptions): ToastId | undefined {
     const sonner = getSonner();
-    if (!sonner) return undefined;
+    if (!sonner) {
+        return undefined;
+    }
     // Map our action shape (onClick) onto sonner's action shape (onClick).
     // Identical today, but kept as an explicit mapping so a future drift
     // (e.g. our action growing a `variant` prop) is contained here.
@@ -61,7 +63,6 @@ function dispatchSonner(tone: ToastTone, title: ReactNode, options: ToastOptions
             return sonner.toast.warning(title as string, sonnerOptions as never);
         case 'info':
             return sonner.toast.info(title as string, sonnerOptions as never);
-        case 'default':
         default:
             return sonner.toast(title as string, sonnerOptions as never);
     }
@@ -71,7 +72,9 @@ function show(title: ReactNode, options: ToastOptions = {}): ToastId {
     const tone: ToastTone = options.tone ?? 'default';
     if (HAS_SONNER) {
         const id = dispatchSonner(tone, title, options);
-        if (id !== undefined) return id;
+        if (id !== undefined) {
+            return id;
+        }
         // sonner unavailable on web (e.g. SSR or pruned bundle) — fall
         // through to the store so the call still resolves.
     }
@@ -105,8 +108,11 @@ toastFn.dismiss = (id) => {
     if (HAS_SONNER) {
         const sonner = getSonner();
         if (sonner) {
-            if (id === undefined) sonner.toast.dismiss();
-            else sonner.toast.dismiss(id);
+            if (id === undefined) {
+                sonner.toast.dismiss();
+            } else {
+                sonner.toast.dismiss(id);
+            }
             return;
         }
     }

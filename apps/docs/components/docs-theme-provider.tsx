@@ -53,7 +53,9 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
     // Mount-only sync — we don't want to re-read whenever the user picks
     // a new preset (the writer below already keeps storage in sync).
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined') {
+            return;
+        }
         try {
             const stored = window.localStorage.getItem(STORAGE_KEY);
             if (isValidPreset(stored)) {
@@ -74,7 +76,9 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
     // build time. Without this, the Tailwind class wins on CSS
     // specificity and the theme switcher looks broken.
     useEffect(() => {
-        if (typeof document === 'undefined') return;
+        if (typeof document === 'undefined') {
+            return;
+        }
         const root = document.documentElement;
         const active = PRESET_BY_NAME[presetName];
         // Light half drives the variables — dark-mode adjustments come
@@ -113,6 +117,8 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
  */
 export function useDocsTheme(): DocsThemeContextValue {
     const ctx = useContext(DocsThemeContext);
-    if (ctx) return ctx;
+    if (ctx) {
+        return ctx;
+    }
     return { presetName: 'teal', setPresetName: () => undefined, theme: tealTheme };
 }

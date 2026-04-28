@@ -131,7 +131,9 @@ describe('<AlertDialog>', () => {
         // The overlay is the dialog's parent <View>. Click it directly.
         const overlay = dialog.parentElement;
         expect(overlay).not.toBeNull();
-        if (overlay) fireEvent.click(overlay);
+        if (overlay) {
+            fireEvent.click(overlay);
+        }
         expect(screen.getByTestId('dialog')).toBeInTheDocument();
         expect(onOpenChange).not.toHaveBeenCalled();
     });

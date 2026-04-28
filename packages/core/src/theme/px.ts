@@ -18,7 +18,9 @@
  *   px('foo')   → 0   (defensive — bad input shouldn't crash render)
  */
 export function px(value: string | number): number {
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') {
+        return value;
+    }
     const n = Number.parseFloat(value);
     return Number.isFinite(n) ? n : 0;
 }

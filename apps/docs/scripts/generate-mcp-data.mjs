@@ -39,12 +39,16 @@ function walk(dir) {
 // full YAML parser would be overkill for this fixed input shape.
 function parseFrontmatter(raw) {
     const m = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-    if (!m) return { meta: {}, body: raw };
+    if (!m) {
+        return { meta: {}, body: raw };
+    }
     const [, fm, body] = m;
     const meta = {};
     for (const line of fm.split('\n')) {
         const idx = line.indexOf(':');
-        if (idx === -1) continue;
+        if (idx === -1) {
+            continue;
+        }
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
         if (value.startsWith('[') && value.endsWith(']')) {

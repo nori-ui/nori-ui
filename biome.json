@@ -59,7 +59,8 @@
       "style": {
         "useConst": "error",
         "useTemplate": "error",
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "warn",
+        "useBlockStatements": "error"
       },
       "suspicious": {
         "noExplicitAny": "error",

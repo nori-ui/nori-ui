@@ -81,7 +81,9 @@ describe('<Slider>', () => {
         render(<Slider defaultValue={[40, 50]} step={5} aria-label="Range" />);
         const [low, high] = screen.getAllByRole('slider');
         // Low can't go past high (50)
-        for (let i = 0; i < 10; i += 1) fireEvent.keyDown(low as Element, { key: 'ArrowRight' });
+        for (let i = 0; i < 10; i += 1) {
+            fireEvent.keyDown(low as Element, { key: 'ArrowRight' });
+        }
         expect((low as HTMLElement).getAttribute('aria-valuenow')).toBe('50');
         expect((high as HTMLElement).getAttribute('aria-valuenow')).toBe('50');
     });
@@ -89,7 +91,9 @@ describe('<Slider>', () => {
     it('minStepsBetweenThumbs enforces a gap', () => {
         render(<Slider defaultValue={[20, 80]} step={1} minStepsBetweenThumbs={10} aria-label="Range" />);
         const [low] = screen.getAllByRole('slider');
-        for (let i = 0; i < 200; i += 1) fireEvent.keyDown(low as Element, { key: 'ArrowRight' });
+        for (let i = 0; i < 200; i += 1) {
+            fireEvent.keyDown(low as Element, { key: 'ArrowRight' });
+        }
         // Low capped at high - 10 = 70.
         expect((low as HTMLElement).getAttribute('aria-valuenow')).toBe('70');
     });

@@ -14,10 +14,16 @@ const isWeb = Platform.OS === 'web';
 // usually owns that decision and writes it onto <html>; tracking the system
 // preference too would fight the app's chosen value.
 function readWebScheme(): ColorScheme {
-    if (typeof document === 'undefined') return 'light';
+    if (typeof document === 'undefined') {
+        return 'light';
+    }
     const root = document.documentElement;
-    if (root.classList.contains('dark')) return 'dark';
-    if (root.getAttribute('data-theme') === 'dark') return 'dark';
+    if (root.classList.contains('dark')) {
+        return 'dark';
+    }
+    if (root.getAttribute('data-theme') === 'dark') {
+        return 'dark';
+    }
     return 'light';
 }
 
@@ -36,7 +42,9 @@ function readWebScheme(): ColorScheme {
  */
 export function useColorScheme(): ColorScheme {
     const [scheme, setScheme] = useState<ColorScheme>(() => {
-        if (isWeb) return readWebScheme();
+        if (isWeb) {
+            return readWebScheme();
+        }
         return (Appearance.getColorScheme() ?? 'light') as ColorScheme;
     });
 

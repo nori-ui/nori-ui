@@ -40,14 +40,20 @@ export function resolveI18n(input: I18nInput, defaults: Dictionary): TranslateFn
 }
 
 function pluralize(key: string, count: number | undefined): string {
-    if (count === undefined) return key;
+    if (count === undefined) {
+        return key;
+    }
     // Minimal English pluralization — extend with ICU rules later if needed.
-    if (count === 1) return `${key}_one`;
+    if (count === 1) {
+        return `${key}_one`;
+    }
     return `${key}_other`;
 }
 
 function interpolate(template: string, options: I18nOptions | undefined): string {
-    if (!options) return template;
+    if (!options) {
+        return template;
+    }
     return template.replace(/\{\{\s*([A-Za-z0-9_.-]+)\s*\}\}/g, (_match, name: string) => {
         const value = options[name];
         return value === undefined || value === null ? '' : String(value);

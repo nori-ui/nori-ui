@@ -71,7 +71,9 @@ export function AlertDialog({ open, defaultOpen = false, onOpenChange, children 
 
     const setOpen = useCallback(
         (next: boolean) => {
-            if (!isControlled) setInner(next);
+            if (!isControlled) {
+                setInner(next);
+            }
             onOpenChange?.(next);
         },
         [isControlled, onOpenChange]
@@ -201,8 +203,12 @@ const FOCUSABLE_SELECTOR =
  * Idempotent — only sets it when missing.
  */
 function ensureFocusable(node: HTMLElement | null): void {
-    if (!node) return;
-    if (node.hasAttribute('tabindex')) return;
+    if (!node) {
+        return;
+    }
+    if (node.hasAttribute('tabindex')) {
+        return;
+    }
     node.setAttribute('tabindex', '0');
 }
 
@@ -218,9 +224,15 @@ const KEYFRAMES_CSS = `
 `;
 
 function ensureKeyframesInjected(): void {
-    if (Platform.OS !== 'web') return;
-    if (typeof document === 'undefined') return;
-    if (document.getElementById(KEYFRAMES_STYLE_ID)) return;
+    if (Platform.OS !== 'web') {
+        return;
+    }
+    if (typeof document === 'undefined') {
+        return;
+    }
+    if (document.getElementById(KEYFRAMES_STYLE_ID)) {
+        return;
+    }
     const style = document.createElement('style');
     style.id = KEYFRAMES_STYLE_ID;
     style.textContent = KEYFRAMES_CSS;
@@ -277,9 +289,13 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
     // prop. Web only; native uses the flat scrim baked into
     // OVERLAY_BASE_STYLE.
     useEffect(() => {
-        if (Platform.OS !== 'web') return;
+        if (Platform.OS !== 'web') {
+            return;
+        }
         const node = overlayDomRef.current;
-        if (!node) return;
+        if (!node) {
+            return;
+        }
         node.style.transitionProperty = 'background-color, backdrop-filter, -webkit-backdrop-filter';
         node.style.transitionDuration = '150ms, 200ms, 200ms';
         node.style.transitionTimingFunction = 'ease-out';
@@ -295,9 +311,15 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
     }, [entered]);
 
     useEffect(() => {
-        if (!ctx.open) return;
-        if (Platform.OS !== 'web') return;
-        if (typeof document === 'undefined') return;
+        if (!ctx.open) {
+            return;
+        }
+        if (Platform.OS !== 'web') {
+            return;
+        }
+        if (typeof document === 'undefined') {
+            return;
+        }
 
         ensureKeyframesInjected();
 
@@ -314,12 +336,16 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
         // is a misuse — we still want it to receive keydown for the trap).
         const focusInitial = () => {
             const node = contentRef.current;
-            if (!node) return;
+            if (!node) {
+                return;
+            }
             // Make every focusable target reachable up front. RN-Web Pressables
             // render as `<div role="button">` without tabindex; without this
             // poke, programmatic `.focus()` on them is a no-op.
             const focusable = node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-            for (const el of focusable) ensureFocusable(el);
+            for (const el of focusable) {
+                ensureFocusable(el);
+            }
             const cancel = ctx.cancelRef.current;
             if (cancel?.focus) {
                 ensureFocusable(cancel);
@@ -338,9 +364,13 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
 
         // Focus trap only — Escape does NOT close (alert dialog contract).
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key !== 'Tab') return;
+            if (event.key !== 'Tab') {
+                return;
+            }
             const node = contentRef.current;
-            if (!node) return;
+            if (!node) {
+                return;
+            }
             // Don't filter by `offsetParent` here: jsdom always reports `null`
             // for it (no layout engine), which would collapse the trap to the
             // currently focused element only. AlertDialog's content surface is
@@ -352,9 +382,13 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
             }
             const first = focusable[0];
             const last = focusable[focusable.length - 1];
-            if (!first || !last) return;
+            if (!first || !last) {
+                return;
+            }
             // Make every focusable target reachable from jsdom too.
-            for (const el of focusable) ensureFocusable(el);
+            for (const el of focusable) {
+                ensureFocusable(el);
+            }
             if (event.shiftKey) {
                 if (document.activeElement === first || !node.contains(document.activeElement)) {
                     event.preventDefault();

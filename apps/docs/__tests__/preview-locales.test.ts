@@ -27,7 +27,9 @@ describe('PREVIEW_LOCALES', () => {
     test('all translations are non-empty strings', () => {
         const empties: string[] = [];
         for (const [name, dict] of Object.entries(PREVIEW_LOCALES)) {
-            if (dict === undefined) continue;
+            if (dict === undefined) {
+                continue;
+            }
             for (const [key, value] of Object.entries(dict)) {
                 if (typeof value !== 'string' || value.length === 0) {
                     empties.push(`${name}.${key}`);

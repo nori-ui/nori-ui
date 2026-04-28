@@ -10,7 +10,9 @@ import './styles.css';
 (StyleSheet as unknown as { setFlag?: (name: string, value: string) => void }).setFlag?.('darkMode', 'class');
 
 const el = document.getElementById('root');
-if (!el) throw new Error('#root not found');
+if (!el) {
+    throw new Error('#root not found');
+}
 
 createRoot(el).render(
     <StrictMode>

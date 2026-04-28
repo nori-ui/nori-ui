@@ -54,9 +54,13 @@ const FALLBACK_FONT_KEY: Record<AvatarSize, 'xs' | 'sm' | 'lg' | 'xl'> = {
 };
 
 const initialsFromName = (name: string | undefined): string => {
-    if (!name) return '';
+    if (!name) {
+        return '';
+    }
     const trimmed = name.trim();
-    if (!trimmed) return '';
+    if (!trimmed) {
+        return '';
+    }
     const parts = trimmed.split(/\s+/);
     const first = parts[0]?.[0] ?? '';
     const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';

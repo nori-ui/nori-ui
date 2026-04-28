@@ -114,7 +114,9 @@ export function Progress({
     // motion subtle so the bar never feels frantic.
     const shuttle = useRef(new Animated.Value(0)).current;
     useEffect(() => {
-        if (!isIndeterminate) return;
+        if (!isIndeterminate) {
+            return;
+        }
         const loop = Animated.loop(
             Animated.timing(shuttle, {
                 toValue: 1,

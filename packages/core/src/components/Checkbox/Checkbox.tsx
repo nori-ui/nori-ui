@@ -59,9 +59,13 @@ export function Checkbox({
     const isMarked = value || Boolean(indeterminate);
 
     const toggle = useCallback(() => {
-        if (disabled) return;
+        if (disabled) {
+            return;
+        }
         const next = !value;
-        if (!isControlled) setInner(next);
+        if (!isControlled) {
+            setInner(next);
+        }
         onChange?.(next);
     }, [disabled, value, isControlled, onChange]);
 
@@ -77,7 +81,9 @@ export function Checkbox({
         accessibilityState: { checked: value, disabled: Boolean(disabled) },
         testID,
     };
-    if (disabled) commonProps['aria-disabled'] = true;
+    if (disabled) {
+        commonProps['aria-disabled'] = true;
+    }
     if (label !== undefined) {
         commonProps['aria-label'] = label;
         commonProps.accessibilityLabel = label;
@@ -89,10 +95,18 @@ export function Checkbox({
             'aria-checked': ariaChecked,
             onClick: toggle,
         };
-        if (disabled) slotProps['aria-disabled'] = true;
-        if (label !== undefined) slotProps['aria-label'] = label;
-        if (testID !== undefined) slotProps['data-testid'] = testID;
-        if (className !== undefined) slotProps.className = className;
+        if (disabled) {
+            slotProps['aria-disabled'] = true;
+        }
+        if (label !== undefined) {
+            slotProps['aria-label'] = label;
+        }
+        if (testID !== undefined) {
+            slotProps['data-testid'] = testID;
+        }
+        if (className !== undefined) {
+            slotProps.className = className;
+        }
         return <Slot {...slotProps}>{children}</Slot>;
     }
 

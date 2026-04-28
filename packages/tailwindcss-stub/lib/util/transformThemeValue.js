@@ -1,4 +1,4 @@
-function transformThemeValue(themeSection) {
+function transformThemeValue(_themeSection) {
     return (value) => value;
 }
 module.exports = transformThemeValue;

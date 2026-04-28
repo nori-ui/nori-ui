@@ -240,7 +240,9 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
     };
 
     const handlePress: NonNullable<PressableProps['onPress']> = (ev) => {
-        if (isInoperative) return;
+        if (isInoperative) {
+            return;
+        }
         onPress?.(ev);
     };
 
@@ -252,15 +254,25 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
             onClick: handlePress as unknown as (...args: unknown[]) => unknown,
             ...rest,
         };
-        if (isInoperative) slotProps['aria-disabled'] = true;
-        if (loading) slotProps['aria-busy'] = true;
-        if (testID !== undefined) slotProps['data-testid'] = testID;
+        if (isInoperative) {
+            slotProps['aria-disabled'] = true;
+        }
+        if (loading) {
+            slotProps['aria-busy'] = true;
+        }
+        if (testID !== undefined) {
+            slotProps['data-testid'] = testID;
+        }
         return <Slot {...slotProps}>{children}</Slot>;
     }
 
     const pressableExtra: Record<string, unknown> = {};
-    if (isInoperative) pressableExtra['aria-disabled'] = true;
-    if (loading) pressableExtra['aria-busy'] = true;
+    if (isInoperative) {
+        pressableExtra['aria-disabled'] = true;
+    }
+    if (loading) {
+        pressableExtra['aria-busy'] = true;
+    }
 
     return (
         <Pressable

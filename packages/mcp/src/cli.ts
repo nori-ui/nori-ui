@@ -17,9 +17,6 @@ async function main(): Promise<void> {
     await server.connect(transport);
 }
 
-main().catch((err) => {
-    // stderr only — stdout belongs to the MCP transport. Anything
-    // written there outside an MCP frame would corrupt the protocol.
-    console.error('[nori-ui-mcp] fatal:', err);
+main().catch((_err) => {
     process.exit(1);
 });

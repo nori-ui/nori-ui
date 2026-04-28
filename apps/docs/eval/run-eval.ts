@@ -23,7 +23,9 @@ async function callTool(tool: string, input: Record<string, unknown>, baseUrl: s
             params: { name: tool, arguments: input },
         }),
     });
-    if (!res.ok) throw new Error(`MCP call failed: ${res.status} ${await res.text()}`);
+    if (!res.ok) {
+        throw new Error(`MCP call failed: ${res.status} ${await res.text()}`);
+    }
     const json = (await res.json()) as { result?: { content?: Array<{ text: string }> } };
     const text = json.result?.content?.[0]?.text;
     return text ? JSON.parse(text) : null;
@@ -38,8 +40,12 @@ function grade(question: Question, result: unknown): boolean {
     if (e.namePresent) {
         return result !== null && typeof result === 'object' && (result as { name?: string }).name === e.namePresent;
     }
-    if (e.nonNull) return result !== null && result !== undefined;
-    if (e.nonEmpty) return Array.isArray(result) && result.length > 0;
+    if (e.nonNull) {
+        return result !== null && result !== undefined;
+    }
+    if (e.nonEmpty) {
+        return Array.isArray(result) && result.length > 0;
+    }
     return false;
 }
 
@@ -54,7 +60,9 @@ async function main() {
         try {
             const result = await callTool(question.tool, question.input, baseUrl);
             const ok = grade(question, result);
-            if (ok) passed++;
+            if (ok) {
+                passed++;
+            }
             // biome-ignore lint/suspicious/noConsole: eval harness writes to stdout
             console.log(`${ok ? 'PASS' : 'FAIL'}: ${question.q}`);
         } catch (err) {

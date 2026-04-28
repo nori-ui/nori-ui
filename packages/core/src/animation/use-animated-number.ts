@@ -27,7 +27,9 @@ export function useAnimatedNumber(
     options: AnimatedNumberOptions = {}
 ): object {
     const { duration = 180 } = options;
-    if (IS_WEB) return webStyle(property, target, duration);
+    if (IS_WEB) {
+        return webStyle(property, target, duration);
+    }
     // biome-ignore lint/correctness/useHookAtTopLevel: IS_WEB is module-init constant; same path every render
     return useReanimatedTiming(property, target, duration);
 }
@@ -79,10 +81,20 @@ function useReanimatedTiming(property: AnimatedProperty, target: number, duratio
     const rightStyle = useAnimatedStyle(() => ({ right: shared.value }));
     // biome-ignore lint/correctness/useHookAtTopLevel: same
     const bottomStyle = useAnimatedStyle(() => ({ bottom: shared.value }));
-    if (property === 'translateX') return translateXStyle;
-    if (property === 'translateY') return translateYStyle;
-    if (property === 'left') return leftStyle;
-    if (property === 'top') return topStyle;
-    if (property === 'right') return rightStyle;
+    if (property === 'translateX') {
+        return translateXStyle;
+    }
+    if (property === 'translateY') {
+        return translateYStyle;
+    }
+    if (property === 'left') {
+        return leftStyle;
+    }
+    if (property === 'top') {
+        return topStyle;
+    }
+    if (property === 'right') {
+        return rightStyle;
+    }
     return bottomStyle;
 }

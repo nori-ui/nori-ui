@@ -19,7 +19,9 @@ export function PropsTable({ component }: PropsTableProps) {
     // "No props extracted" placeholder that added noise to docs pages
     // for components whose subcomponents legitimately have no props
     // (e.g. <AlertDialogFooter> is layout-only).
-    if (!rows || rows.length === 0) return null;
+    if (!rows || rows.length === 0) {
+        return null;
+    }
     return (
         <div className="not-prose my-6 overflow-x-auto rounded-lg border border-fd-border">
             <table className="w-full text-sm">

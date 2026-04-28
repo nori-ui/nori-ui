@@ -41,11 +41,17 @@ function emitLiteral(value, depth) {
     const pad = '    '.repeat(depth);
     const padInner = '    '.repeat(depth + 1);
 
-    if (typeof value === 'string') return JSON.stringify(value);
-    if (typeof value === 'number') return String(value);
+    if (typeof value === 'string') {
+        return JSON.stringify(value);
+    }
+    if (typeof value === 'number') {
+        return String(value);
+    }
 
     const keys = Object.keys(value).sort();
-    if (keys.length === 0) return '{}';
+    if (keys.length === 0) {
+        return '{}';
+    }
 
     const entries = keys.map((k) => {
         const v = value[k];

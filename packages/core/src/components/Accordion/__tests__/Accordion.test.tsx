@@ -9,9 +9,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 // check aria-hidden, not just check whether the text is in the DOM.
 const isContentHidden = (text: string): boolean => {
     const node = screen.queryByText(text);
-    if (!node) return true;
+    if (!node) {
+        return true;
+    }
     let el: HTMLElement | null = node;
-    while (el && el.getAttribute('role') !== 'region') el = el.parentElement;
+    while (el && el.getAttribute('role') !== 'region') {
+        el = el.parentElement;
+    }
     return el?.getAttribute('aria-hidden') === 'true';
 };
 

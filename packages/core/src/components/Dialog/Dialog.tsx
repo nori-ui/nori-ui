@@ -70,7 +70,9 @@ export function Dialog({ open, defaultOpen = false, onOpenChange, children }: Di
 
     const setOpen = useCallback(
         (next: boolean) => {
-            if (!isControlled) setInner(next);
+            if (!isControlled) {
+                setInner(next);
+            }
             onOpenChange?.(next);
         },
         [isControlled, onOpenChange]
@@ -263,9 +265,13 @@ export function DialogContent({ children, className, testID }: DialogContentProp
     // native shim would be an extra peer dep for negligible gain.
     const overlayDomRef = useRef<HTMLElement | null>(null);
     useEffect(() => {
-        if (Platform.OS !== 'web') return;
+        if (Platform.OS !== 'web') {
+            return;
+        }
         const node = overlayDomRef.current;
-        if (!node) return;
+        if (!node) {
+            return;
+        }
         // First paint: kick off transparent + zero blur so the next
         // assignment animates from 0 to target. We only need this on
         // the very first frame — the inline style on second frame
@@ -289,9 +295,15 @@ export function DialogContent({ children, className, testID }: DialogContentProp
     // handles its own focus model on native, so the platform check keeps
     // these out of the native render path.
     useEffect(() => {
-        if (!ctx.open) return;
-        if (Platform.OS !== 'web') return;
-        if (typeof document === 'undefined') return;
+        if (!ctx.open) {
+            return;
+        }
+        if (Platform.OS !== 'web') {
+            return;
+        }
+        if (typeof document === 'undefined') {
+            return;
+        }
 
         const previouslyFocused = document.activeElement as HTMLElement | null;
 
@@ -305,7 +317,9 @@ export function DialogContent({ children, className, testID }: DialogContentProp
         // receives the keydown events.
         const focusFirst = () => {
             const node = contentRef.current;
-            if (!node) return;
+            if (!node) {
+                return;
+            }
             const focusable = node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
             const first = focusable[0];
             if (first) {
@@ -323,9 +337,13 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                 ctx.setOpen(false);
                 return;
             }
-            if (event.key !== 'Tab') return;
+            if (event.key !== 'Tab') {
+                return;
+            }
             const node = contentRef.current;
-            if (!node) return;
+            if (!node) {
+                return;
+            }
             const focusable = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
                 (el) => el.offsetParent !== null || el === document.activeElement
             );
@@ -335,7 +353,9 @@ export function DialogContent({ children, className, testID }: DialogContentProp
             }
             const first = focusable[0];
             const last = focusable[focusable.length - 1];
-            if (!first || !last) return;
+            if (!first || !last) {
+                return;
+            }
             if (event.shiftKey) {
                 if (document.activeElement === first || !node.contains(document.activeElement)) {
                     event.preventDefault();

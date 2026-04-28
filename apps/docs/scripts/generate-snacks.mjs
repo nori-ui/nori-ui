@@ -197,7 +197,9 @@ async function createSnack(name, code) {
         throw new Error(`Snack save failed for ${name}: ${res.status} ${t}`);
     }
     const body = await res.json();
-    if (body.errors) throw new Error(`${name}: ${JSON.stringify(body.errors)}`);
+    if (body.errors) {
+        throw new Error(`${name}: ${JSON.stringify(body.errors)}`);
+    }
     return body.id;
 }
 

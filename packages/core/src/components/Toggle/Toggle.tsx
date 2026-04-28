@@ -97,9 +97,13 @@ export function Toggle({
     const isOn = isControlled ? Boolean(pressed) : inner;
 
     const handlePress = useCallback(() => {
-        if (disabled) return;
+        if (disabled) {
+            return;
+        }
         const next = !isOn;
-        if (!isControlled) setInner(next);
+        if (!isControlled) {
+            setInner(next);
+        }
         onPressedChange?.(next);
     }, [disabled, isControlled, isOn, onPressedChange]);
 
@@ -268,7 +272,9 @@ const ToggleVisual = ({
             }}
             disabled={disabled}
             onPress={() => {
-                if (!disabled) onPress();
+                if (!disabled) {
+                    onPress();
+                }
             }}
             {...accessibilityProps}
             className={cn(
@@ -324,7 +330,9 @@ const ToggleGroupContext = createContext<ToggleGroupContextValue | null>(null);
 
 const useToggleGroupContext = () => {
     const ctx = useContext(ToggleGroupContext);
-    if (!ctx) throw new Error('<ToggleGroupItem> must be rendered inside a <ToggleGroup>.');
+    if (!ctx) {
+        throw new Error('<ToggleGroupItem> must be rendered inside a <ToggleGroup>.');
+    }
     return ctx;
 };
 
@@ -403,17 +411,23 @@ export function ToggleGroup(props: ToggleGroupProps) {
 
     const setValue = useCallback(
         (next: string) => {
-            if (disabled) return;
+            if (disabled) {
+                return;
+            }
             if (isSingle) {
                 const current = isControlled ? (props as ToggleGroupSingleProps).value : innerSingle;
                 const updated = current === next ? undefined : next;
-                if (!isControlled) setInnerSingle(updated);
+                if (!isControlled) {
+                    setInnerSingle(updated);
+                }
                 (props as ToggleGroupSingleProps).onValueChange?.(updated);
             } else {
                 const current: string[] =
                     (isControlled ? (props as ToggleGroupMultipleProps).value : innerMultiple) ?? [];
                 const updated = current.includes(next) ? current.filter((v) => v !== next) : [...current, next];
-                if (!isControlled) setInnerMultiple(updated);
+                if (!isControlled) {
+                    setInnerMultiple(updated);
+                }
                 (props as ToggleGroupMultipleProps).onValueChange?.(updated);
             }
         },
@@ -460,11 +474,15 @@ export function ToggleGroup(props: ToggleGroupProps) {
     const moveBy = useCallback(
         (delta: 1 | -1, current: string) => {
             const list = order;
-            if (list.length === 0) return;
+            if (list.length === 0) {
+                return;
+            }
             const idx = list.indexOf(current);
             const start = idx === -1 ? 0 : idx;
             const next = list[(start + delta + list.length) % list.length];
-            if (!next) return;
+            if (!next) {
+                return;
+            }
             setRovingValueState(next);
             focusValue(next);
         },
@@ -474,9 +492,13 @@ export function ToggleGroup(props: ToggleGroupProps) {
     const moveTo = useCallback(
         (position: 'first' | 'last') => {
             const list = order;
-            if (list.length === 0) return;
+            if (list.length === 0) {
+                return;
+            }
             const next = position === 'first' ? list[0] : list[list.length - 1];
-            if (!next) return;
+            if (!next) {
+                return;
+            }
             setRovingValueState(next);
             focusValue(next);
         },
@@ -635,7 +657,9 @@ export function ToggleGroupItem({
                 case ' ':
                 case 'Enter': {
                     event.preventDefault();
-                    if (!isDisabled) ctx.setValue(value);
+                    if (!isDisabled) {
+                        ctx.setValue(value);
+                    }
                     return;
                 }
             }

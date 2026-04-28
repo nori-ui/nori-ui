@@ -117,7 +117,9 @@ export function Tooltip({
 
     const setOpen = useCallback(
         (next: boolean) => {
-            if (!isControlled) setInner(next);
+            if (!isControlled) {
+                setInner(next);
+            }
             onOpenChange?.(next);
         },
         [isControlled, onOpenChange]
@@ -145,7 +147,9 @@ export function Tooltip({
             clearTimeout(closeTimer.current);
             closeTimer.current = null;
         }
-        if (openTimer.current) return;
+        if (openTimer.current) {
+            return;
+        }
         if (delayMs <= 0) {
             setOpen(true);
             return;
@@ -161,7 +165,9 @@ export function Tooltip({
             clearTimeout(openTimer.current);
             openTimer.current = null;
         }
-        if (closeTimer.current) return;
+        if (closeTimer.current) {
+            return;
+        }
         if (closeDelayMs <= 0) {
             setOpen(false);
             return;
@@ -185,7 +191,9 @@ export function Tooltip({
     const [triggerRect, setTriggerRect] = useState<TriggerRect | null>(null);
     const measureTrigger = useCallback(() => {
         const node = triggerRef.current;
-        if (!node || typeof node.getBoundingClientRect !== 'function') return;
+        if (!node || typeof node.getBoundingClientRect !== 'function') {
+            return;
+        }
         const rect = node.getBoundingClientRect();
         setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
     }, []);
@@ -248,7 +256,9 @@ export function TooltipTrigger({ asChild = true, children, className, testID }: 
     }, [ctx]);
     const handlePress = useCallback(() => {
         // Native: tap (after a long-press has revealed it) dismisses.
-        if (Platform.OS !== 'web' && ctx.open) ctx.setOpen(false);
+        if (Platform.OS !== 'web' && ctx.open) {
+            ctx.setOpen(false);
+        }
     }, [ctx]);
 
     if (asChild && isValidElement(children)) {
@@ -410,9 +420,15 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
     // Web-only: Escape closes. Re-measure trigger on resize/scroll so the
     // chip stays anchored during page motion.
     useEffect(() => {
-        if (!ctx.open) return;
-        if (Platform.OS !== 'web') return;
-        if (typeof document === 'undefined') return;
+        if (!ctx.open) {
+            return;
+        }
+        if (Platform.OS !== 'web') {
+            return;
+        }
+        if (typeof document === 'undefined') {
+            return;
+        }
 
         ctx.measureTrigger();
 
@@ -450,10 +466,16 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
     // native renders without animation (an animated mount on RN would
     // require Reanimated for negligible visual gain on a hint chip).
     useEffect(() => {
-        if (Platform.OS !== 'web') return;
-        if (!ctx.open) return;
+        if (Platform.OS !== 'web') {
+            return;
+        }
+        if (!ctx.open) {
+            return;
+        }
         const node = domRef.current;
-        if (!node) return;
+        if (!node) {
+            return;
+        }
         // Initial values — explicitly set so the first frame is at the
         // pre-entrance state regardless of inherited styles.
         node.style.transformOrigin = 'center';
@@ -466,13 +488,19 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
 
     // Kick off the transition on the next frame after mount.
     useEffect(() => {
-        if (Platform.OS !== 'web') return;
-        if (!ctx.open) return;
+        if (Platform.OS !== 'web') {
+            return;
+        }
+        if (!ctx.open) {
+            return;
+        }
         const id = requestAnimationFrame(() => setEntered(true));
         return () => cancelAnimationFrame(id);
     }, [ctx.open]);
 
-    if (!ctx.open) return null;
+    if (!ctx.open) {
+        return null;
+    }
 
     const position = ctx.triggerRect ? computePosition(ctx.triggerRect, side, align, contentSize) : null;
 
@@ -520,9 +548,15 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
             ref={(node) => {
                 ctx.contentRef.current = node as unknown as HTMLDivElement | null;
                 domRef.current = node as unknown as HTMLDivElement | null;
-                if (Platform.OS !== 'web') return;
-                if (!node) return;
-                if (typeof (node as unknown as HTMLDivElement).getBoundingClientRect !== 'function') return;
+                if (Platform.OS !== 'web') {
+                    return;
+                }
+                if (!node) {
+                    return;
+                }
+                if (typeof (node as unknown as HTMLDivElement).getBoundingClientRect !== 'function') {
+                    return;
+                }
                 const rect = (node as unknown as HTMLDivElement).getBoundingClientRect();
                 if (!contentSize || contentSize.width !== rect.width || contentSize.height !== rect.height) {
                     setContentSize({ width: rect.width, height: rect.height });

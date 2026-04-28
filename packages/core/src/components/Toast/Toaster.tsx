@@ -96,7 +96,9 @@ function NativeToaster(props: ToasterProps): React.ReactElement | null {
         }
         return map;
     }, [all, position]);
-    if (all.length === 0) return null;
+    if (all.length === 0) {
+        return null;
+    }
     return (
         <>
             {Array.from(grouped.entries()).map(([pos, list]) => (
@@ -209,7 +211,9 @@ function ToastCard({ toast, defaultDuration, closeButton, richColors }: ToastCar
                 accent: colors.color.danger,
             },
         } as const;
-        if (!richColors) return base[tone];
+        if (!richColors) {
+            return base[tone];
+        }
         const rich = {
             default: base.default,
             info: { bg: colors.color.info, fg: colors.semantic.text.inverted, accent: 'transparent' },
@@ -231,7 +235,9 @@ function ToastCard({ toast, defaultDuration, closeButton, richColors }: ToastCar
     // Auto-dismiss timer. `Infinity` (or any non-finite) keeps it open.
     const effectiveDuration = toast.duration ?? defaultDuration;
     useEffect(() => {
-        if (!Number.isFinite(effectiveDuration) || effectiveDuration <= 0) return;
+        if (!Number.isFinite(effectiveDuration) || effectiveDuration <= 0) {
+            return;
+        }
         const handle = setTimeout(() => {
             store.dismiss(toast.id);
         }, effectiveDuration);

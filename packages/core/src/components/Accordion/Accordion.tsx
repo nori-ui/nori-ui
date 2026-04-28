@@ -137,7 +137,9 @@ export function Accordion(props: AccordionProps) {
 
     const isOpen = useCallback(
         (v: string) => {
-            if (type === 'single') return singleCurrent === v;
+            if (type === 'single') {
+                return singleCurrent === v;
+            }
             return multipleCurrent.includes(v);
         },
         [type, singleCurrent, multipleCurrent]
@@ -147,13 +149,19 @@ export function Accordion(props: AccordionProps) {
         (v: string) => {
             if (type === 'single') {
                 const next = singleCurrent === v ? (props.collapsible ? null : singleCurrent) : v;
-                if (next === singleCurrent) return;
-                if (!singleControlled) setSingleInner(next);
+                if (next === singleCurrent) {
+                    return;
+                }
+                if (!singleControlled) {
+                    setSingleInner(next);
+                }
                 props.onValueChange?.(next);
             } else {
                 const has = multipleCurrent.includes(v);
                 const next = has ? multipleCurrent.filter((x) => x !== v) : [...multipleCurrent, v];
-                if (!multipleControlled) setMultipleInner(next);
+                if (!multipleControlled) {
+                    setMultipleInner(next);
+                }
                 props.onValueChange?.(next);
             }
         },
@@ -166,7 +174,9 @@ export function Accordion(props: AccordionProps) {
 
     const register = useCallback((v: string, ref: RefObject<HTMLElement | null>) => {
         refs.current.set(v, ref);
-        if (!orderRef.current.includes(v)) orderRef.current.push(v);
+        if (!orderRef.current.includes(v)) {
+            orderRef.current.push(v);
+        }
     }, []);
 
     const unregister = useCallback((v: string) => {
@@ -176,20 +186,28 @@ export function Accordion(props: AccordionProps) {
 
     const moveFocus = useCallback((offset: 1 | -1, fromValue: string) => {
         const order = orderRef.current;
-        if (order.length === 0) return;
+        if (order.length === 0) {
+            return;
+        }
         const idx = order.indexOf(fromValue);
         const start = idx === -1 ? 0 : idx;
         const len = order.length;
         const next = order[(start + offset + len) % len];
-        if (!next) return;
+        if (!next) {
+            return;
+        }
         refs.current.get(next)?.current?.focus?.();
     }, []);
 
     const focusEdge = useCallback((edge: 'first' | 'last') => {
         const order = orderRef.current;
-        if (order.length === 0) return;
+        if (order.length === 0) {
+            return;
+        }
         const target = edge === 'first' ? order[0] : order[order.length - 1];
-        if (!target) return;
+        if (!target) {
+            return;
+        }
         refs.current.get(target)?.current?.focus?.();
     }, []);
 
@@ -298,7 +316,9 @@ export function AccordionTrigger({ children, className, testID }: AccordionTrigg
     }, [ctx, item.value]);
 
     const onPress = useCallback(() => {
-        if (item.disabled) return;
+        if (item.disabled) {
+            return;
+        }
         ctx.toggle(item.value);
     }, [ctx, item.value, item.disabled]);
 
@@ -324,7 +344,9 @@ export function AccordionTrigger({ children, className, testID }: AccordionTrigg
                 case 'Enter':
                 case ' ': {
                     event.preventDefault();
-                    if (!item.disabled) ctx.toggle(item.value);
+                    if (!item.disabled) {
+                        ctx.toggle(item.value);
+                    }
                     return;
                 }
             }
@@ -441,10 +463,14 @@ export function AccordionContent({ children, className, testID, forceMount = fal
     // accordion we expect static content, so we leave maxHeight at the
     // measured value (good enough; resize observer can come later).
     useEffect(() => {
-        if (Platform.OS !== 'web') return;
+        if (Platform.OS !== 'web') {
+            return;
+        }
         const wrapper = wrapperRef.current;
         const inner = innerRef.current;
-        if (!wrapper || !inner) return;
+        if (!wrapper || !inner) {
+            return;
+        }
 
         // First-render shortcut: skip the animation when an item starts
         // already open (avoids the "all items open then animate closed"
@@ -491,7 +517,9 @@ export function AccordionContent({ children, className, testID, forceMount = fal
     }, [item.open]);
 
     // Native: keep the conditional render — no animation in v0.
-    if (Platform.OS !== 'web' && !item.open && !forceMount) return null;
+    if (Platform.OS !== 'web' && !item.open && !forceMount) {
+        return null;
+    }
 
     return (
         <View

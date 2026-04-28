@@ -34,7 +34,9 @@ const ITEM_CLASSES =
  * as broken, not as decoration.
  */
 export function PageNavArrows({ previous, next }: PageNavArrowsProps) {
-    if (!previous && !next) return null;
+    if (!previous && !next) {
+        return null;
+    }
     return (
         <>
             {previous ? (

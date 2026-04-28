@@ -9,7 +9,9 @@ import { parsePrettyDocsUrl } from '@/lib/source-format';
  */
 export function middleware(req: NextRequest) {
     const parsed = parsePrettyDocsUrl(req.nextUrl.pathname);
-    if (!parsed) return NextResponse.next();
+    if (!parsed) {
+        return NextResponse.next();
+    }
     const { slug, format } = parsed;
     // Pass the format through a request header rather than a query string:
     // Next.js leaves `req.url` set to the original client URL, so the route

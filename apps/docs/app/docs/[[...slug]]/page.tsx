@@ -9,7 +9,9 @@ import { source } from '@/lib/source';
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
     const params = await props.params;
     const page = source.getPage(params.slug);
-    if (!page) notFound();
+    if (!page) {
+        notFound();
+    }
 
     // Compute prev/next from the page tree so fumadocs's footer renders
     // the conventional ← / → arrows at the bottom of every page.
