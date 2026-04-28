@@ -20,7 +20,7 @@ const CLIENT_ALLOWED = [
     'provider/',
     'theme/context.tsx',
     'theme/use-theme.ts',
-    'theme/use-color-scheme.ts',
+    'theme/use-color-scheme.tsx',
     'theme/use-theme-colors.ts',
     'animation/reanimated-adapter.ts',
     'animation/use-animated-number.ts',

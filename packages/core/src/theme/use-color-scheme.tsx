@@ -1,9 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import { Appearance, Platform } from 'react-native';
 
 export type ColorScheme = 'light' | 'dark';
+
+// Override channel so a parent can force a scheme (e.g. an app shell with
+// hard-coded dark chrome that wants nested components to render against
+// the dark token half regardless of the OS Appearance). `null` means
+// "no override — use the system signal".
+const ColorSchemeOverrideContext = createContext<ColorScheme | null>(null);
+ColorSchemeOverrideContext.displayName = 'ColorSchemeOverrideContext';
+
+export type ColorSchemeProviderProps = {
+    /** Force a specific scheme for descendants. */
+    value: ColorScheme;
+    children?: ReactNode;
+};
+
+/**
+ * Forces a color scheme for all descendants. Useful when a screen's chrome
+ * is hard-coded to one scheme (e.g. a forced-dark editorial surface) and
+ * you want library components inside it to follow that, not the OS.
+ */
+export function ColorSchemeProvider({ value, children }: ColorSchemeProviderProps) {
+    return <ColorSchemeOverrideContext.Provider value={value}>{children}</ColorSchemeOverrideContext.Provider>;
+}
 
 const isWeb = Platform.OS === 'web';
 
@@ -41,6 +63,11 @@ function readWebScheme(): ColorScheme {
  * this directly when you need the raw scheme (e.g. to swap an icon).
  */
 export function useColorScheme(): ColorScheme {
+    // A `<ColorSchemeProvider value="dark">` ancestor (or NoriProvider's
+    // `colorScheme` prop, which mounts one) wins over the OS signal — the
+    // app shell knows which scheme its chrome is locked to.
+    const override = useContext(ColorSchemeOverrideContext);
+
     const [scheme, setScheme] = useState<ColorScheme>(() => {
         if (isWeb) {
             return readWebScheme();
@@ -65,5 +92,5 @@ export function useColorScheme(): ColorScheme {
         return () => sub.remove();
     }, []);
 
-    return scheme;
+    return override ?? scheme;
 }

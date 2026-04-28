@@ -17,6 +17,11 @@ export {
     tealTheme,
     violetTheme,
 } from './themes';
-export { type ColorScheme, useColorScheme } from './use-color-scheme';
+export {
+    type ColorScheme,
+    ColorSchemeProvider,
+    type ColorSchemeProviderProps,
+    useColorScheme,
+} from './use-color-scheme';
 export { useTheme } from './use-theme';
 export { useThemeColors } from './use-theme-colors';
