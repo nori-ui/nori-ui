@@ -30,8 +30,18 @@ export default function Home() {
                 <div className="nori-eyebrow">A component library</div>
 
                 <h1 className="nori-display">
-                    <span className="nori-display-word">nori</span>
-                    <span className="nori-display-tag">ui</span>
+                    {/* The wordmark is the brand artifact — set in a custom
+                        serif with sage and cream leaf accents above the i-dots.
+                        Using the PNG directly preserves those accents pixel-for-pixel
+                        instead of trying to reproduce them in live type. */}
+                    <Image
+                        src="/wordmark.png"
+                        alt="Nori UI"
+                        width={1024}
+                        height={264}
+                        priority
+                        className="nori-wordmark"
+                    />
                 </h1>
 
                 <p className="nori-lede">

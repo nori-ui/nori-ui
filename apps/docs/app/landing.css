@@ -156,54 +156,26 @@
 }
 
 .nori-display {
-    /* The one big typographic moment. Fraunces variable serif at the
-       softer axis, optical-sized for display, with negative letter
-       spacing pulled tight enough to feel like a hand-set wordmark. */
+    /* The wordmark is the brand artifact — sized as a fluid block with
+       generous negative space around it. The h1 acts as the rhythmic
+       anchor on the page; the image carries the actual letterforms. */
     margin: 0;
-    font-family: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
-    font-size: clamp(80px, 18vw, 220px);
-    font-weight: 400;
-    font-variation-settings:
-        "opsz" 144,
-        "SOFT" 60,
-        "wght" 400;
-    line-height: 0.86;
-    letter-spacing: -0.05em;
-    color: var(--forest);
+    line-height: 0;
     animation: nori-rise-big 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
     animation-delay: 160ms;
-    /* Allow descenders to breathe without clipping. */
-    padding-block-end: 0.06em;
 }
-.nori-display-word {
-    font-style: italic;
-    font-variation-settings:
-        "opsz" 144,
-        "SOFT" 100,
-        "wght" 320;
+.nori-wordmark {
+    display: block;
+    width: clamp(280px, 56vw, 640px);
+    height: auto;
+    /* The wordmark PNG ships in dark forest on transparent. In dark mode
+       we invert to near-cream so it reads against the deep forest paper.
+       brightness(0) flattens to black first; invert(1) flips to white;
+       a touch of saturate(0.9) avoids a clinical pure-white finish. */
 }
-.nori-display-tag {
-    display: inline-block;
-    margin-left: clamp(8px, 1.2vw, 16px);
-    padding: 0.06em 0.28em 0.05em;
-    font-size: 0.22em;
-    font-style: normal;
-    font-variation-settings:
-        "opsz" 14,
-        "SOFT" 0,
-        "wght" 540;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    vertical-align: 0.78em;
-    color: var(--cream);
-    background: var(--forest);
-    border-radius: 999px;
-    box-shadow: 0 6px 20px -10px rgba(31, 45, 36, 0.6);
-}
-[data-theme="dark"] .nori-display-tag,
-.dark .nori-display-tag {
-    color: var(--paper);
-    background: var(--forest);
+[data-theme="dark"] .nori-wordmark,
+.dark .nori-wordmark {
+    filter: brightness(0) invert(1) saturate(0.9) opacity(0.94);
 }
 
 .nori-lede {
@@ -424,8 +396,8 @@
         margin-left: 0;
         padding-block: 24px;
     }
-    .nori-display {
-        font-size: clamp(64px, 22vw, 120px);
+    .nori-wordmark {
+        width: clamp(240px, 78vw, 420px);
     }
     .nori-cta {
         width: 100%;
