@@ -9,7 +9,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { pascalToKebab } from './csf-loader';
+import { pascalToKebab } from './csf-helpers';
 
 const STORY_RE = /\.stories\.tsx$/;
 // Match the first `title:` value in the CSF default export. Permissive

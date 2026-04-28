@@ -56,6 +56,11 @@
       "import": "./dist/utils/cn.js",
       "require": "./dist/utils/cn.cjs"
     },
+    "./stories/csf-slugs": {
+      "types": "./src/stories/csf-slugs.ts",
+      "source": "./src/stories/csf-slugs.ts",
+      "default": "./src/stories/csf-slugs.ts"
+    },
     "./stories": {
       "types": "./dist/stories/index.d.ts",
       "source": "./src/stories/index.ts",

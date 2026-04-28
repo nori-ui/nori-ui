@@ -14,6 +14,7 @@
 // `parameters`, `decorators`, `loaders`, and `play` are ignored.
 
 import { type ComponentType, createElement, type ReactNode } from 'react';
+import { humanise, pascalToKebab } from './csf-helpers';
 import { discoverCsfModules } from './csf-loader-bundler';
 
 export type Story = {
@@ -34,26 +35,7 @@ export type ComponentEntry = {
     stories: Story[];
 };
 
-/**
- * Convert PascalCase → kebab-case. `'WithGap'` → `'with-gap'`.
- *
- * Splits only at lowercase→uppercase boundaries so leading acronyms stay
- * intact: `'HStack'` → `'hstack'`, `'AlertDialog'` → `'alert-dialog'`.
- * This matches the docs MDX filename convention (`hstack.mdx`, not
- * `h-stack.mdx`).
- */
-export function pascalToKebab(s: string): string {
-    return s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-/**
- * Convert PascalCase → "With Gap" for display. Same boundary rule as
- * pascalToKebab (only lowercase→uppercase splits).
- */
-export function humanise(s: string): string {
-    const spaced = s.replace(/([a-z0-9])([A-Z])/g, '$1 $2');
-    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-}
+export { humanise, pascalToKebab } from './csf-helpers';
 
 export type CsfModule = {
     default: {
