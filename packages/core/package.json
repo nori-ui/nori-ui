@@ -23,11 +23,13 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./client": {
       "types": "./dist/client.d.ts",
+      "react-native": "./src/client.ts",
       "import": "./dist/client.js",
       "require": "./dist/client.cjs"
     },

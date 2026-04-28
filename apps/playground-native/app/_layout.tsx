@@ -13,9 +13,11 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+    // Forced dark for debugging — chrome + library components both read
+    // the dark token half regardless of OS Appearance.
     return (
-        <NoriProvider>
-            <StatusBar style="auto" />
+        <NoriProvider colorScheme="dark">
+            <StatusBar style="light" />
             <Stack screenOptions={{ headerLargeTitle: false }}>
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="components/[slug]" options={{ headerBackTitle: 'Showcase' }} />

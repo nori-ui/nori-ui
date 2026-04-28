@@ -40,8 +40,16 @@ const VARIANT_KEYS: Record<TextVariant, VariantKeys> = {
     'body-md': { fontSize: 'md', fontWeight: 'regular', lineHeight: 'normal' },
     'body-lg': { fontSize: 'lg', fontWeight: 'regular', lineHeight: 'relaxed' },
     'heading-1': { fontSize: '4xl', fontWeight: 'bold', lineHeight: 'tight' },
-    'heading-2': { fontSize: '3xl', fontWeight: 'semibold', lineHeight: 'tight' },
-    'heading-3': { fontSize: '2xl', fontWeight: 'semibold', lineHeight: 'tight' },
+    'heading-2': {
+        fontSize: '3xl',
+        fontWeight: 'semibold',
+        lineHeight: 'tight',
+    },
+    'heading-3': {
+        fontSize: '2xl',
+        fontWeight: 'semibold',
+        lineHeight: 'tight',
+    },
 };
 
 /**
@@ -65,13 +73,13 @@ export function Text({ variant = 'body-md', className, testID, children, ...rest
     const sizePx = px(colors.fontSize[keys.fontSize]);
     const lhMultiplier = Number(colors.lineHeight[keys.lineHeight]);
     const themedStyle: TextStyle = {
-        // Inline color is the source of truth — NativeWind's `dark:`
-        // class variants don't reliably apply on native at runtime, and
-        // even on web inline styles win on CSS specificity. Sourcing
-        // from `useThemeColors()` means light/dark + theme overrides
-        // flow through every <Text> automatically. The Tailwind classes
-        // below are kept as a no-NativeWind fallback (Expo Snack etc.)
-        // and as a hint for class-name-based tooling.
+        // Inline color is the ONLY color source. The Tailwind preset uses
+        // `darkMode: ['class', '[data-theme="dark"]']` — that requires a
+        // DOM, so on native the `dark:` variant never fires and a
+        // className-only color path would always emit the LIGHT variant
+        // (near-black), invisible on a dark surface. Sourcing color from
+        // `useThemeColors()` means it follows the OS scheme AND honors a
+        // forced `colorScheme` override on the provider.
         color: colors.semantic.text.default,
         fontFamily: isHeading ? colors.fontFamily.display : colors.fontFamily.body,
         fontSize: sizePx,
@@ -92,11 +100,7 @@ export function Text({ variant = 'body-md', className, testID, children, ...rest
             testID={testID}
             {...rest}
             {...(role !== undefined ? { accessibilityRole: role } : {})}
-            className={cn(
-                'text-semantic-text-default dark:text-dark-semantic-text-default',
-                VARIANT_CLASSES[variant],
-                className
-            )}
+            className={cn(VARIANT_CLASSES[variant], className)}
             style={[themedStyle, styleProp]}
         >
             {children}
