@@ -1,0 +1,88 @@
+---
+title: Popover
+description: Non-modal floating panel anchored to a trigger — for help content, color pickers, profile previews.
+since: 0.0.6
+tags: [overlay]
+platform: both
+category: overlays
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Popover" />
+
+## At a glance
+
+- Compose: `Popover`, `PopoverTrigger`, `PopoverContent`. Trigger uses `asChild` by default — wrap any element (Button, Link, custom Pressable) and it becomes the activator.
+- Cross-platform: web uses `position: fixed` with a measured trigger rect so it escapes any ancestor `overflow: hidden`. Native uses RN `<Modal>` with a transparent backdrop and tap-outside-to-close.
+- Non-modal: focus is NOT trapped — the user can tab back out as normal. Dismisses on outside click and Escape.
+- Accessibility: trigger gets `aria-haspopup="dialog"` + `aria-expanded`; content gets `role="dialog"` (no `aria-modal`).
+
+<Callout type="info" title="Popover vs Tooltip vs Dialog">
+    - **Popover** — anchored, non-modal, can hold interactive content (forms, buttons, color pickers). Dismisses on outside click + Escape.
+    - **Tooltip** — anchored, non-interactive, short hover-triggered hints (one or two words to a sentence). Use Tooltip when there's nothing to click inside.
+    - **Dialog** — modal, centered, traps focus, locks scroll. Use Dialog when the user must respond before continuing.
+</Callout>
+
+## Preview
+
+<Preview name="popover-basic" />
+
+## Form inside a popover
+
+The content is non-modal, so a small form (rename, quick edit, filter) fits cleanly without dragging the user into a full dialog.
+
+<Preview name="popover-form" />
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `Popover` | Root — owns open state (controlled or uncontrolled). |
+| `PopoverTrigger` | Element that toggles the popover. `asChild` by default. |
+| `PopoverContent` | The floating surface. Renders only while open. |
+
+## Positioning
+
+`PopoverContent` accepts:
+
+- `side` — `'top' | 'right' | 'bottom' | 'left'` (default `'bottom'`). Which edge of the trigger to anchor on.
+- `align` — `'start' | 'center' | 'end'` (default `'center'`). Alignment along the chosen edge.
+
+There is a 4-pixel gap between the trigger and the content so the two don't kiss. The minimum width is 200 px so help text never wraps awkwardly.
+
+## Controlled vs uncontrolled
+
+```tsx
+// Uncontrolled — Popover owns its open state.
+<Popover>
+    <PopoverTrigger><Button>Open</Button></PopoverTrigger>
+    <PopoverContent>...</PopoverContent>
+</Popover>
+
+// Controlled — you own the state, useful for closing from inside the content
+// after a save, or for syncing open with route state.
+const [open, setOpen] = useState(false);
+
+<Popover open={open} onOpenChange={setOpen}>
+    <PopoverTrigger><Button>Open</Button></PopoverTrigger>
+    <PopoverContent>...</PopoverContent>
+</Popover>
+```
+
+## Props
+
+### Popover
+
+<PropsTable component="Popover" />
+
+### PopoverTrigger
+
+<PropsTable component="PopoverTrigger" />
+
+### PopoverContent
+
+<PropsTable component="PopoverContent" />

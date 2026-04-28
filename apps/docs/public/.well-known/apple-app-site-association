@@ -1,0 +1,13 @@
+{
+    "applinks": {
+        "details": [
+            {
+                "appIDs": ["KBWBVNAUNV.com.nori-ui.playground"],
+                "components": [
+                    { "/": "/components/*", "comment": "Component detail (deep link to playground app)" },
+                    { "/": "/", "comment": "Home" }
+                ]
+            }
+        ]
+    }
+}

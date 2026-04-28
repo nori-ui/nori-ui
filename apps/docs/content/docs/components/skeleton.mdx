@@ -1,0 +1,30 @@
+---
+title: Skeleton
+description: Subtly pulsing placeholder that signals "content loading here, in this shape."
+since: 0.2.0
+tags: [feedback]
+platform: both
+category: feedback
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Skeleton" />
+
+## At a glance
+
+- Pulses opacity between 100% and 55% over ~900ms — calm enough to use throughout a list without flashing.
+- `width` accepts a number (px) or any RN dimension string like `'40%'`. `height` is px-only.
+- `radius="full"` for circular skeletons (avatars).
+- `static` opts out of the animation when stacking many skeletons in a long list.
+- Decorative — `aria-hidden` is set automatically. Pair with a real `aria-busy` indicator on the loading region.
+
+## Preview
+
+<Preview name="skeleton-basic" />
+
+## Props
+
+<PropsTable component="Skeleton" />

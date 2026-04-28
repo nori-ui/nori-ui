@@ -8,7 +8,7 @@ export type SourceFormat = 'md' | 'json';
 const PRETTY_SUFFIX = /^\/docs\/(.+)\.(md|json)$/;
 
 /**
- * Parse a pretty docs URL (e.g. `/docs/controls/button.md`) into the
+ * Parse a pretty docs URL (e.g. `/docs/components/button.md`) into the
  * underlying slug and the requested format. Returns null if the path
  * doesn't match the pretty pattern — middleware then falls through to the
  * normal docs page.

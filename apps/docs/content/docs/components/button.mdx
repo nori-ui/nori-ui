@@ -1,0 +1,51 @@
+---
+title: Button
+description: Clickable action with variants, sizes, loading state, icon slots, and asChild.
+since: 0.1.0
+tags: [control, action]
+platform: both
+category: controls
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Button" />
+
+## At a glance
+
+- **Variants:** `primary`, `secondary`, `ghost`, `destructive`
+- **Sizes:** `sm`, `md`, `lg`
+- **States:** default, pressed, disabled, loading
+- **Composition:** `asChild` renders a supplied element (e.g. `<Link>`) as the interactive root.
+
+## Preview
+
+<Preview name="button-basic" />
+
+## Native preview (Expo Snack)
+
+<ExpoSnack component="Button" height={400} />
+
+## Props
+
+<PropsTable component="Button" />
+
+## asChild
+
+`asChild` makes the supplied child the interactive root, so a Button can render as a Next.js `<Link>` (or any other element) while keeping all of its styles and accessibility behavior.
+
+```tsx
+import { Button } from '@nori-ui/core';
+import Link from 'next/link';
+
+export default function Demo() {
+    return (
+        <Button asChild variant="primary">
+            <Link href="/somewhere">Go</Link>
+        </Button>
+    );
+}
+```

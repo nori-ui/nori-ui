@@ -3,8 +3,8 @@ import { parsePrettyDocsUrl } from '@/lib/source-format';
 
 /**
  * Rewrite pretty per-page source URLs onto the single `/api/source/`
- * handler. Lets us expose `/docs/controls/button.md` and
- * `/docs/controls/button.json` even though Next.js doesn't allow file-
+ * handler. Lets us expose `/docs/components/button.md` and
+ * `/docs/components/button.json` even though Next.js doesn't allow file-
  * extension segments on a catch-all route.
  */
 export function middleware(req: NextRequest) {

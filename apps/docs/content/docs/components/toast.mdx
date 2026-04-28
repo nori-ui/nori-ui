@@ -1,0 +1,74 @@
+---
+title: Toast
+description: Imperative notification system based on sonner — auto-dismiss, stacking, six positions, and a typed action slot.
+since: 0.2.0
+tags: [feedback]
+platform: both
+category: feedback
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Toaster" />
+
+## At a glance
+
+- Mount `<Toaster />` **exactly once** near your app root, then call the imperative `toast(...)` from anywhere.
+- Tone-specific shortcuts: `toast.success`, `toast.error`, `toast.warning`, `toast.info`, plus `toast.dismiss(id?)` and `toast.promise(...)`.
+- Web: powered by [sonner](https://sonner.emilkowal.ski) — full feature set including swipe-to-dismiss, screen-reader live region, and rich colors.
+- Native: matched API surface with the same six positions, swipe-to-dismiss, auto-dismiss, and stacking. No `if (Platform.OS === 'web')` in your code.
+- Six positions: `top-left`, `top-center` (default), `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. The global anchor lives on `<Toaster position>`; any individual call may override with `toast(msg, { position })`.
+- `duration` defaults to 4000ms. Pass `Infinity` to keep a toast open until dismissed manually.
+
+## Mount the Toaster once
+
+```tsx
+// app/layout.tsx (Next.js) — or your tree root
+import { Toaster } from '@nori-ui/core/client';
+
+export default function Layout({ children }) {
+  return (
+    <>
+      {children}
+      <Toaster richColors />
+    </>
+  );
+}
+```
+
+The docs site mounts a single `<Toaster richColors />` at the root — that's why every demo on this page uses the saturated tone surface. `richColors` is a Toaster-level flag, not a per-call option.
+
+## Tones, action, promise
+
+All five tones plus an inline action button and `toast.promise` for async flows. Click "Promise" and watch the same card swap from the loading state to success after 1.5s.
+
+<Preview name="toast-basic" />
+
+## Per-call position override
+
+The global `<Toaster position>` sets the default anchor; any single call can override it with `toast(msg, { position: 'bottom-right' })`. Useful for one-off toasts that belong somewhere different from the rest of your UI.
+
+<Preview name="toast-positions" />
+
+## Update an existing toast in place
+
+Reuse the same `id` to swap a loading toast for a success/error one without spawning a second card. Useful when `toast.promise` doesn't fit the flow — chained calls, intermediate progress states, or backend events that arrive asynchronously.
+
+<Preview name="toast-update" />
+
+## API
+
+```ts
+toast(title, options?) // generic
+toast.success(title, options?)
+toast.error(title, options?)
+toast.warning(title, options?)
+toast.info(title, options?)
+toast.message(title, options?)  // alias for the default tone
+toast.dismiss(id?)              // dismiss specific or all
+toast.promise(p, { loading, success, error })
+```
+
+`options` accepts `description`, `duration`, `action`, `cancel`, `tone`, `id`, `position`, `icon`, `className`. Each call returns the toast's id — pass it to `toast.dismiss(id)` later or to `toast(title, { id })` to update the existing entry.

@@ -1,0 +1,39 @@
+---
+title: Checkbox
+description: Controlled or uncontrolled checkbox with indeterminate support and asChild.
+since: 0.1.0
+tags: [control, form]
+platform: both
+category: controls
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Checkbox" />
+
+## At a glance
+
+- **States:** unchecked, checked, indeterminate, disabled.
+- Emits semantic icon via `checkmark` key from `SemanticIconsProvider`.
+- `asChild` passes control to a supplied root element.
+
+## Preview
+
+<Preview name="checkbox-basic" />
+
+## Indeterminate (parent / child)
+
+A common "select all" pattern: the parent is `indeterminate` when some — but not all — children are checked. `indeterminate` is a controlled prop; toggle the parent yourself in response to the children's selection set.
+
+<Preview name="checkbox-indeterminate" />
+
+## Native preview
+
+<ExpoSnack component="Checkbox" height={300} />
+
+## Props
+
+<PropsTable component="Checkbox" />

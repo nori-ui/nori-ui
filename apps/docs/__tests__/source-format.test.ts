@@ -2,15 +2,15 @@ import { parsePrettyDocsUrl, resolveSourceFormat } from '../lib/source-format';
 
 describe('parsePrettyDocsUrl', () => {
     test('matches /docs/<slug>.md', () => {
-        expect(parsePrettyDocsUrl('/docs/controls/button.md')).toEqual({
-            slug: 'controls/button',
+        expect(parsePrettyDocsUrl('/docs/components/button.md')).toEqual({
+            slug: 'components/button',
             format: 'md',
         });
     });
 
     test('matches /docs/<slug>.json', () => {
-        expect(parsePrettyDocsUrl('/docs/controls/button.json')).toEqual({
-            slug: 'controls/button',
+        expect(parsePrettyDocsUrl('/docs/components/button.json')).toEqual({
+            slug: 'components/button',
             format: 'json',
         });
     });
@@ -24,13 +24,13 @@ describe('parsePrettyDocsUrl', () => {
 
     test('returns null for unsuffixed docs paths', () => {
         // The HTML page must continue to render; middleware falls through.
-        expect(parsePrettyDocsUrl('/docs/controls/button')).toBeNull();
+        expect(parsePrettyDocsUrl('/docs/components/button')).toBeNull();
     });
 
     test('returns null for unrelated suffixes', () => {
         // Guards against accidentally rewriting a future asset URL like .html
-        expect(parsePrettyDocsUrl('/docs/controls/button.html')).toBeNull();
-        expect(parsePrettyDocsUrl('/docs/controls/button.txt')).toBeNull();
+        expect(parsePrettyDocsUrl('/docs/components/button.html')).toBeNull();
+        expect(parsePrettyDocsUrl('/docs/components/button.txt')).toBeNull();
     });
 
     test('returns null for non-docs paths', () => {

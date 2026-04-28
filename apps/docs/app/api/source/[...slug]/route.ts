@@ -7,8 +7,8 @@ import { resolveSourceFormat } from '@/lib/source-format';
  * Single endpoint that serves any docs page in a non-HTML form. The middleware
  * rewrites pretty URLs onto this handler:
  *
- *   /docs/controls/button.md   → /api/source/docs/controls/button?format=md
- *   /docs/controls/button.json → /api/source/docs/controls/button?format=json
+ *   /docs/components/button.md   → /api/source/docs/components/button?format=md
+ *   /docs/components/button.json → /api/source/docs/components/button?format=json
  *
  * Markdown returns the verbatim MDX file from the repo. JSON wraps that
  * source plus the page's frontmatter for programmatic consumers (agents

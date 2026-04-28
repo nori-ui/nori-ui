@@ -1,0 +1,36 @@
+---
+title: Separator
+description: Visual or semantic rule between groups of content.
+since: 0.2.0
+tags: [primitive, layout]
+platform: both
+category: primitives
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Separator" />
+
+## At a glance
+
+- Horizontal (default) or vertical orientation.
+- Decorative by default — use `decorative={false}` when the rule carries meaning a screen reader should announce.
+- One-pixel rule using the semantic border color, so it adapts to your theme.
+
+## Horizontal
+
+<Preview name="separator-basic" />
+
+## Vertical
+
+Pass `orientation="vertical"` and place inside an `HStack` (or any
+flex-row container). The separator stretches to its container's
+height via `align-self: stretch`.
+
+<Preview name="separator-vertical" />
+
+## Props
+
+<PropsTable component="Separator" />

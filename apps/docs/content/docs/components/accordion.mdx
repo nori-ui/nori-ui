@@ -1,0 +1,59 @@
+---
+title: Accordion
+description: Vertically stacked, individually expandable sections with full keyboard nav and shared-value content/trigger pairing.
+since: 0.3.0
+tags: [display, disclosure]
+platform: both
+category: display
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Accordion" />
+
+## At a glance
+
+- Compose `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent`. Each item's `value` pairs the trigger with its content.
+- Two modes:
+  - `type="single"` — at most one item open. Pass `collapsible` to allow closing the open item.
+  - `type="multiple"` — any combination open. `value` and `defaultValue` are arrays.
+- Controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`).
+- **Keyboard nav** on triggers:
+  - Arrow Down / Arrow Up → move focus between triggers (wraps)
+  - Home / End → first / last
+  - Enter / Space → toggle the focused item
+- **ARIA**: triggers render as real `<button>`s with `aria-expanded` and `aria-controls`. Content panels expose `role="region"` and `aria-labelledby` pointing at the trigger.
+- Cross-platform: works on React Native and react-native-web. The chevron rotates 180° on open via a CSS transition on web; on native it snaps.
+
+## Single (collapsible)
+
+<Preview name="accordion-single" />
+
+## Multiple
+
+<Preview name="accordion-multiple" />
+
+## API
+
+### Accordion
+
+`type` is required and discriminates the value shape:
+
+- `type="single"` → `value?: string | null`, `defaultValue?: string`, `onValueChange?: (next: string | null) => void`, `collapsible?: boolean`.
+- `type="multiple"` → `value?: string[]`, `defaultValue?: string[]`, `onValueChange?: (next: string[]) => void`.
+
+<PropsTable component="Accordion" />
+
+### AccordionItem
+
+<PropsTable component="AccordionItem" />
+
+### AccordionTrigger
+
+<PropsTable component="AccordionTrigger" />
+
+### AccordionContent
+
+<PropsTable component="AccordionContent" />

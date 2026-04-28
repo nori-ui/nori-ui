@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 export type PageActionsProps = {
-    /** Path of the current page, e.g. `/docs/controls/button`. */
+    /** Path of the current page, e.g. `/docs/components/button`. */
     pagePath: string;
 };
 

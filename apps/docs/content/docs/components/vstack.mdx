@@ -1,0 +1,33 @@
+---
+title: VStack
+description: Vertical stack with gap, align, and justify.
+since: 0.1.0
+tags: [primitive, layout]
+platform: both
+category: primitives
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { ExpoSnack } from '@/components/expo-snack';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="VStack" />
+
+## At a glance
+
+- Flex column with configurable `gap`, `align`, `justify`.
+- Mirror of [HStack](/docs/components/hstack) for vertical layouts.
+- Children stretch to the row's full width by default (cross-axis stretch). Set `align="start"` / `"center"` / `"end"` to opt out, or wrap a child in a `Box` with a fixed width.
+
+## Preview
+
+<Preview name="vstack-basic" />
+
+## Native preview
+
+<ExpoSnack component="VStack" height={300} />
+
+## Props
+
+<PropsTable component="VStack" />

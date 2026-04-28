@@ -3,5 +3,11 @@
   "framework": "nextjs",
   "installCommand": "cd ../.. && corepack enable && yarn install --immutable",
   "buildCommand": "cd ../.. && yarn build:tokens && yarn workspace @nori-ui/core build && yarn workspace @nori-ui/mcp build && yarn workspace @nori-ui/docs build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "headers": [
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [{ "key": "Content-Type", "value": "application/json" }]
+    }
+  ]
 }

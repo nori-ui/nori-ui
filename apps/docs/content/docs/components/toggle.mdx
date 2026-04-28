@@ -1,0 +1,42 @@
+---
+title: Toggle
+description: A single two-state button — like the bold or italic button in a toolbar.
+since: 0.3.0
+tags: [control, form, toolbar]
+platform: both
+category: controls
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Toggle" />
+
+## At a glance
+
+- A single bistable button — think of the **B** / **I** / **U** buttons in a rich-text toolbar, where each one carries its own on/off visual.
+- Controlled (`pressed` + `onPressedChange`) and uncontrolled (`defaultPressed`) usage.
+- Two visual variants: `default` (bordered chip with subtle resting bg) and `outline` (1px border, no fill).
+- Three sizes: `sm`, `md` (default), `lg`.
+- ARIA: `role="button"` + `aria-pressed`.
+- Need a clustered set of toggles instead? Use [`<ToggleGroup>`](/docs/components/toggle-group).
+
+<Callout title="Toggle vs Switch vs Checkbox">
+    These three controls look similar but ship different semantics — pick the one that matches the *meaning* of the choice, not the shape of the visual.
+
+    - **Toggle** — a button with on/off state. Use it for toolbar-style actions where the control *is* a button (Bold, Pin, Mute). Lives outside `<form>`.
+    - **Switch** — a setting that takes effect immediately. Use it for preference rows ("Dark mode", "Email notifications"). Reads as `role="switch"`.
+    - **Checkbox** — a value selected as part of a form. Use it when the user reviews several choices and submits them together. Reads as `role="checkbox"`.
+
+    If the control sits in a toolbar, reach for `Toggle`. If it lives in Settings, reach for `Switch`. If it's part of a form, reach for `Checkbox`.
+</Callout>
+
+## Standalone Toggle
+
+<Preview name="toggle-basic" />
+
+## Props
+
+<PropsTable component="Toggle" />
