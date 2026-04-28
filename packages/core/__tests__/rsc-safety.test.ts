@@ -31,9 +31,11 @@ const CLIENT_ALLOWED = [
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
+    'icons/default-semantic-icons.tsx',
     'components/Accordion/Accordion.tsx',
     'components/Alert/Alert.tsx',
     'components/AlertDialog/AlertDialog.tsx',
+    'components/Dialog/blur-backdrop.tsx',
     'components/Avatar/Avatar.tsx',
     'components/Badge/Badge.tsx',
     'components/Button/Button.tsx',
@@ -69,6 +71,15 @@ function isTestFile(relPath: string): boolean {
     return relPath.includes('/__tests__/') || relPath.endsWith('.test.ts') || relPath.endsWith('.test.tsx');
 }
 
+// Story files are dev-only artifacts. The CSF loader sweeps them via
+// `require.context`, but they never end up in the consumer's RSC entry
+// tree — the `stories` barrel is its own export gated behind the
+// `@nori-ui/core/stories` subpath. Stories often need `useState` for
+// interactive demos; that's expected and not a violation.
+function isStoryFile(relPath: string): boolean {
+    return relPath.endsWith('.stories.tsx') || relPath.endsWith('.stories.ts');
+}
+
 function* walk(dir: string, base: string): Generator<{ abs: string; rel: string }> {
     for (const entry of readdirSync(dir)) {
         const abs = join(dir, entry);
@@ -94,7 +105,7 @@ describe('RSC safety boundary', () => {
         const violations: string[] = [];
 
         for (const { abs, rel } of walk(SRC, SRC)) {
-            if (isClientAllowed(rel) || isTestFile(rel)) {
+            if (isClientAllowed(rel) || isTestFile(rel) || isStoryFile(rel)) {
                 continue;
             }
 

@@ -11235,6 +11235,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:^55.0.14":
+  version: 55.0.14
+  resolution: "expo-blur@npm:55.0.14"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/53e3d7a32e41376e244feec3a7ff17b2efc94c2aef33e16e9a78bd9a1193b553b61af040cedec9877bd7b29530b48fc71825a0b57a9f87c30834b8a20d4bf166
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:~18.0.0, expo-constants@npm:~18.0.13":
   version: 18.0.13
   resolution: "expo-constants@npm:18.0.13"
@@ -18249,6 +18260,7 @@ __metadata:
     "@nori-ui/tokens": "workspace:*"
     "@types/react": "npm:^19"
     expo: "npm:~55.0.0"
+    expo-blur: "npm:^55.0.14"
     expo-constants: "npm:~18.0.0"
     expo-linking: "npm:~8.0.0"
     expo-router: "npm:~6.0.0"

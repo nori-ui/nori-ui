@@ -13,11 +13,13 @@ import {
     useState,
 } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
+import { Modal, Platform, Pressable, Text as RNText, StyleSheet, View } from 'react-native';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
+import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { BlurBackdrop } from '../Dialog/blur-backdrop';
 
 type AlertDialogContextValue = {
     open: boolean;
@@ -266,6 +268,7 @@ export type AlertDialogContentProps = {
 export function AlertDialogContent({ children, className, testID }: AlertDialogContentProps) {
     const ctx = useAlertDialogContext('AlertDialogContent');
     const colors = useThemeColors();
+    const scheme = useColorScheme();
     const contentRef = useRef<HTMLDivElement | null>(null);
     const overlayDomRef = useRef<HTMLElement | null>(null);
     const overlayStyle: ViewStyle = {
@@ -441,6 +444,9 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
             animationType={Platform.OS === 'web' ? 'none' : 'fade'}
             onRequestClose={onRequestClose}
         >
+            {/* Native blur layer; renders nothing on web (CSS handles
+                it) or when expo-blur isn't installed. */}
+            <BlurBackdrop intensity={30} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
             <View
                 ref={(node) => {
                     overlayDomRef.current = node as unknown as HTMLElement | null;

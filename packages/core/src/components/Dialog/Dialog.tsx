@@ -13,12 +13,14 @@ import {
     useState,
 } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
+import { Modal, Platform, Pressable, Text as RNText, StyleSheet, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
+import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { BlurBackdrop } from './blur-backdrop';
 
 type DialogContextValue = {
     open: boolean;
@@ -223,6 +225,7 @@ export type DialogContentProps = {
 export function DialogContent({ children, className, testID }: DialogContentProps) {
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
+    const scheme = useColorScheme();
     const contentRef = useRef<HTMLDivElement | null>(null);
     const overlayStyle: ViewStyle = {
         ...OVERLAY_LAYOUT_BASE,
@@ -405,6 +408,11 @@ export function DialogContent({ children, className, testID }: DialogContentProp
             animationType={Platform.OS === 'web' ? 'none' : 'fade'}
             onRequestClose={() => ctx.setOpen(false)}
         >
+            {/* Native blur layer. Renders nothing on web (the overlay's
+                CSS backdrop-filter handles it) and renders nothing if
+                expo-blur isn't installed (graceful degrade — the scrim
+                Pressable below still dims the background). */}
+            <BlurBackdrop intensity={30} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
             <Pressable
                 accessibilityRole="none"
                 aria-hidden={true}

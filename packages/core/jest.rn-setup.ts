@@ -369,6 +369,10 @@ jest.mock('react-native', () => {
             absoluteFillObject: {},
         },
         Platform: { OS: 'web', select: <T>(obj: { web?: T; default?: T }) => obj.web ?? obj.default },
+        Dimensions: {
+            get: (_dim: 'window' | 'screen') => ({ width: 1024, height: 768, scale: 1, fontScale: 1 }),
+            addEventListener: () => ({ remove: () => undefined }),
+        },
     };
 });
 

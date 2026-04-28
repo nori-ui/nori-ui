@@ -15,6 +15,7 @@
     "@nori-ui/core": "workspace:*",
     "@nori-ui/tokens": "workspace:*",
     "expo": "~55.0.0",
+    "expo-blur": "^55.0.14",
     "expo-constants": "~18.0.0",
     "expo-linking": "~8.0.0",
     "expo-router": "~6.0.0",

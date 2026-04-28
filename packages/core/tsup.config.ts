@@ -64,6 +64,11 @@ export default defineConfig({
         'nativewind',
         'react-native-css-interop',
         'sonner',
+        // `expo-blur` is an OPTIONAL peer (dynamic require in
+        // Dialog/blur-backdrop.tsx). Keep it external so Metro/webpack at
+        // consumer-build time can resolve it if installed; without this
+        // tsup tries to bundle the JSX-laden source and fails.
+        'expo-blur',
     ],
     // Route JSX through NativeWind's runtime so className on RN primitives
     // reaches react-native-css-interop → style instead of being swallowed by

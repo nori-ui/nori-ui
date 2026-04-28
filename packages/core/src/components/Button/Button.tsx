@@ -157,15 +157,21 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
         },
         secondary: {
             rest: colors.semantic.background.subtle,
-            // semantic.background.elevated == subtle when applied on a hovered
-            // chip, so we step up the neutral scale by one for visible contrast.
-            hover: colors.color.neutral['200'],
-            pressed: colors.color.neutral['300'],
+            // hover / pressed must be theme-aware. The previous version
+            // pulled directly from `color.neutral.{200,300}`, which are
+            // raw tokens that DON'T flip per scheme — in dark mode the
+            // hovered state ended up light-gray on dark, ruining contrast.
+            // `border.default` / `border.strong` invert correctly: in
+            // light they read as light-gray washes (next step from
+            // `background.subtle`); in dark they read as the darker grays
+            // expected for hover/pressed on a dark surface.
+            hover: colors.semantic.border.default,
+            pressed: colors.semantic.border.strong,
         },
         ghost: {
             rest: 'transparent',
             hover: colors.semantic.background.subtle,
-            pressed: colors.color.neutral['200'],
+            pressed: colors.semantic.border.default,
         },
         destructive: {
             rest: colors.semantic.interactive.destructive,

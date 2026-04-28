@@ -4,7 +4,6 @@ import {
     type ChangeEvent,
     type KeyboardEvent,
     type ReactNode,
-    type UIEvent,
     useCallback,
     useEffect,
     useId,
@@ -13,8 +12,8 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import type { ViewStyle } from 'react-native';
-import { Platform, Pressable, Text as RNText, View } from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from 'react-native';
+import { Platform, Pressable, Text as RNText, ScrollView, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -434,14 +433,16 @@ export function Select<T = unknown>({
         };
     }, [open, measureTrigger]);
 
-    // Scroll handler for async pagination.
+    // Scroll handler for async pagination. ScrollView's onScroll event shape
+    // works across both react-native-web (HTMLDivElement under the hood) and
+    // native (RCTScrollView), so we read offsets from `nativeEvent`.
     const onListScroll = useCallback(
-        (event: UIEvent<HTMLDivElement>) => {
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
             if (!isAsync) {
                 return;
             }
-            const node = event.currentTarget;
-            const remaining = node.scrollHeight - node.scrollTop - node.clientHeight;
+            const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+            const remaining = contentSize.height - contentOffset.y - layoutMeasurement.height;
             if (remaining < itemHeight * 4) {
                 loadMore();
             }
@@ -671,7 +672,7 @@ type SelectListProps<T> = {
     loadingMessage: string;
     noOptionsMessage: string;
     listboxId: string;
-    onScroll: (event: UIEvent<HTMLDivElement>) => void;
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 function SelectList<T>({
@@ -699,9 +700,9 @@ function SelectList<T>({
         ? Math.min(options.length, Math.ceil((scrollTop + maxHeight) / itemHeight) + VIRTUAL_OVERSCAN)
         : options.length;
 
-    const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (virtualized) {
-            setScrollTop(event.currentTarget.scrollTop);
+            setScrollTop(event.nativeEvent.contentOffset.y);
         }
         onScroll(event);
     };
@@ -815,18 +816,20 @@ function SelectList<T>({
         );
     }
 
+    // ScrollView is the cross-platform container — react-native-web emits
+    // scroll events with the same `nativeEvent.contentOffset` shape as
+    // native, so the handler is identical on both. Web also gets the
+    // `nativeID` prop mapped to the underlying div's `id` for a11y.
     return (
-        <div
-            id={listboxId}
+        <ScrollView
+            nativeID={listboxId}
             onScroll={handleScroll}
-            style={{
-                maxHeight,
-                overflowY: 'auto',
-                position: 'relative',
-            }}
+            scrollEventThrottle={16}
+            style={{ maxHeight }}
+            contentContainerStyle={virtualized ? { height: totalHeight, position: 'relative' } : undefined}
         >
-            <div style={virtualized ? { height: totalHeight, position: 'relative' } : undefined}>{items}</div>
-        </div>
+            {items}
+        </ScrollView>
     );
 }
 

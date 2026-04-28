@@ -1,3 +1,5 @@
+'use client';
+
 // default-semantic-icons — minimal built-in icon placeholders for internal
 // library glyphs. Consumers can swap each one via the provider:
 //
@@ -13,9 +15,15 @@
 // as native components and crashes with "View config getter callback for
 // component `path` must be a function". `react-native-svg` would solve this
 // but it's an extra peer dep this library deliberately doesn't require.
+//
+// Marked `'use client'` because the native render path reads
+// `useThemeColors()` to default the glyph color to the active theme's
+// text token when no explicit color is passed. Without this the native
+// glyph would render in RNText's default (black) regardless of scheme.
 
 import type { ComponentType } from 'react';
 import { Platform, Text as RNText } from 'react-native';
+import { useThemeColors } from '../theme/use-theme-colors';
 import type { IconComponentProps } from './icon';
 
 type SemanticIcon = ComponentType<IconComponentProps>;
@@ -31,6 +39,10 @@ const isWeb = Platform.OS === 'web';
 
 const make = ({ path, glyph }: IconRecipe): SemanticIcon =>
     function PlaceholderIcon({ size = 20, color = 'currentColor' }) {
+        // Always call the hook — rules-of-hooks. The native branch is the
+        // only consumer of the resolved colors, but pulling them on web is
+        // a cheap context read.
+        const colors = useThemeColors();
         if (isWeb) {
             return (
                 <svg
@@ -48,11 +60,15 @@ const make = ({ path, glyph }: IconRecipe): SemanticIcon =>
                 </svg>
             );
         }
+        // 'currentColor' is a CSS keyword without meaning on native — RNText
+        // would render in its inherent default (~black). Resolve it against
+        // the active theme so the glyph stays readable in both schemes.
+        const resolvedColor = color === 'currentColor' ? colors.semantic.text.default : color;
         return (
             <RNText
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
-                style={{ fontSize: size, lineHeight: size, color: color === 'currentColor' ? undefined : color }}
+                style={{ fontSize: size, lineHeight: size, color: resolvedColor }}
             >
                 {glyph}
             </RNText>

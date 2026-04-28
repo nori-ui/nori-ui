@@ -13,7 +13,7 @@ import {
     useState,
 } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
+import { Dimensions, Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -207,6 +207,9 @@ function wrapStringChildren(children: ReactNode): ReactNode {
 
 const GAP = 4; // visual gap between trigger and content
 const MIN_WIDTH = 200;
+// Margin reserved on each side so the popover never butts against the
+// viewport edge. Matches the 8px safe-area we use for native modal pads.
+const VIEWPORT_MARGIN = 8;
 
 function computePosition(
     rect: TriggerRect,
@@ -364,8 +367,16 @@ export function PopoverContent({
 
     const position = ctx.triggerRect ? computePosition(ctx.triggerRect, side, align, contentSize) : null;
 
+    // Viewport-aware max width. Web uses Dimensions.get('window') which
+    // react-native-web maps to window.innerWidth; native uses the same API
+    // for the device window. Subtract margin on both sides so content
+    // doesn't kiss the screen edge.
+    const viewportWidth = Dimensions.get('window').width;
+    const maxContentWidth = Math.max(MIN_WIDTH, viewportWidth - VIEWPORT_MARGIN * 2);
+
     const contentBaseStyle: ViewStyle = {
         minWidth: MIN_WIDTH,
+        maxWidth: maxContentWidth,
         borderRadius: px(colors.radius.lg),
         borderWidth: 1,
         borderColor: colors.semantic.border.default,
@@ -382,13 +393,24 @@ export function PopoverContent({
             : { elevation: 8 }),
     };
 
+    // Clamp `left` so the popover stays within the viewport even when the
+    // trigger sits near the right edge. Width fallback: contentSize once
+    // measured, otherwise MIN_WIDTH so first paint doesn't overshoot.
+    const measuredWidth = contentSize?.width ?? MIN_WIDTH;
+    const clampedLeft = position
+        ? Math.min(
+              Math.max(VIEWPORT_MARGIN, position.left),
+              Math.max(VIEWPORT_MARGIN, viewportWidth - measuredWidth - VIEWPORT_MARGIN)
+          )
+        : 0;
+
     const positionedStyle: ViewStyle =
         Platform.OS === 'web'
             ? position
                 ? ({
                       position: 'fixed' as unknown as 'absolute',
                       top: position.top,
-                      left: position.left,
+                      left: clampedLeft,
                       zIndex: 50,
                   } as ViewStyle)
                 : ({
@@ -462,10 +484,18 @@ export function PopoverContent({
                         position: 'absolute',
                         top: ctx.triggerRect
                             ? side === 'top'
-                                ? Math.max(8, ctx.triggerRect.top - GAP - 80)
+                                ? Math.max(VIEWPORT_MARGIN, ctx.triggerRect.top - GAP - 80)
                                 : ctx.triggerRect.top + ctx.triggerRect.height + GAP
                             : 80,
-                        left: ctx.triggerRect ? Math.max(8, ctx.triggerRect.left) : 16,
+                        // Clamp horizontally so a wide popover near the
+                        // right edge can still grow leftward without
+                        // overflowing the screen.
+                        left: ctx.triggerRect
+                            ? Math.min(
+                                  Math.max(VIEWPORT_MARGIN, ctx.triggerRect.left),
+                                  Math.max(VIEWPORT_MARGIN, viewportWidth - measuredWidth - VIEWPORT_MARGIN)
+                              )
+                            : VIEWPORT_MARGIN * 2,
                     }}
                 >
                     {content}
