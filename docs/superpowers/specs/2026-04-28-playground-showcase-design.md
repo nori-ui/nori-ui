@@ -35,6 +35,15 @@ apps/playground-native/
   app.json                   # scheme: 'nori-ui', router plugin config
 ```
 
+### Bundle identifiers
+
+Update `apps/playground-native/app.json` from the placeholder `dev.noriui.playground` to brand-aligned per-platform IDs:
+
+- `ios.bundleIdentifier`: `com.nori-ui.playground` (Apple bundle IDs allow hyphens)
+- `android.package`: `com.noriui.playground` (Android `applicationId` disallows hyphens — Java-package rules)
+
+The asymmetry is invisible to users (each platform shows only its own ID) and is the only bundle-naming change made by this spec. The iOS ID matches the App ID baked into Spec B's AASA file (`KBWBVNAUNV.com.nori-ui.playground`).
+
 ### Deep linking
 
 `app.json` declares `"scheme": "nori-ui"`. expo-router auto-derives URL ↔ route mapping:
@@ -196,7 +205,7 @@ This makes both `nori-ui://components/button` (matches the eventual web URL) and
 | `apps/playground-native/app/_layout.tsx` | Create | Stack root, NoriProvider, theme, linking config |
 | `apps/playground-native/app/index.tsx` | Create | Home screen |
 | `apps/playground-native/app/component/[slug].tsx` | Create | Detail screen |
-| `apps/playground-native/app.json` | Update | `scheme`, expo-router plugin |
+| `apps/playground-native/app.json` | Update | `scheme: 'nori-ui'`, expo-router plugin, iOS bundle ID `com.nori-ui.playground`, Android package `com.noriui.playground` |
 | `apps/playground-native/package.json` | Update | Add `expo-router`, `expo-linking`, `expo-constants` if missing |
 | `apps/playground-native/babel.config.js` | Update | Add `expo-router/babel` if not picked up by `babel-preset-expo` |
 | `apps/playground-native/metro.config.js` | Verify | `expo-router` works with default Metro config; confirm no overrides break it |
