@@ -16,7 +16,8 @@ The playground app exists primarily to (a) let humans explore the library on a r
 - Universal Link support on iOS via AASA — covered in Spec B.
 - Docs URL flattening (`/docs/components/<slug>`) — covered in Spec B.
 - Android deep-link intent filters — initial scheme works on Android out of the box via expo-router; explicit App Links are deferred.
-- Storybook web parity — the registry refactor preserves the existing `stories` flat export, but the web Storybook target is unchanged.
+- Replacing the playground UI with on-device `@storybook/react-native`. The playground keeps its bespoke branded UI; CSF is adopted as the *story format*, not the *renderer*. A future migration to `@storybook/react-native` would only swap the consumer, since stories are already CSF-compliant.
+- Web Storybook config or appearance — `*.stories.tsx` files keep their current shape; web Storybook continues to consume them unchanged.
 
 ## Architecture
 
@@ -58,54 +59,107 @@ Note the path is `component/<slug>` (singular) inside the app to match the file-
 
 Optionally, expo-router supports a `linking` config that aliases `components/<slug>` → `component/<slug>` to remove the asymmetry. Default to using the linking config so both URL forms work in-app; this future-proofs Universal Link routing without complicating the file tree.
 
-### Story registry refactor
+### Stories: CSF as the canonical source
 
-Currently `packages/core/src/stories/story-registry.tsx` exports a flat `stories: StoryEntry[]` keyed by ids like `switch.default`, `button.primary`. Refactor into a component-rooted tree, deriving the flat list for backwards compatibility:
+The library already maintains `*.stories.tsx` files in CSF (Component Story Format) under `packages/core/src/components/<Name>/<Name>.stories.tsx` — these power the existing web Storybook. The current playground also keeps a parallel `packages/core/src/stories/story-registry.tsx` listing the same components separately, which means every new variant has to be added in two places. **Spec A deletes the parallel registry and derives the playground's component list from CSF at runtime, making `*.stories.tsx` the single source of truth for both web Storybook and the native showcase.**
+
+This keeps the door open to migrate the playground to `@storybook/react-native` later without changing how stories are written: CSF is exactly what Storybook RN consumes, so the consumer can be swapped without touching any story.
+
+#### CSF loader
+
+New file: `packages/core/src/stories/csf-loader.tsx`. Uses Metro's `require.context()` to glob every `*.stories.tsx` file in the components tree, reads each CSF module, and produces the `components: ComponentEntry[]` array the playground renders.
 
 ```ts
+import type { ComponentType } from 'react';
+import { createElement } from 'react';
+
 export type Story = {
-    id: string;            // 'primary' (kebab-case, scoped to component)
-    title: string;         // 'Primary'
+    id: string;            // 'checked' (story export key, kebab-cased)
+    title: string;         // 'Checked' (story export key, humanised)
     render: ComponentType<Record<string, never>>;
 };
 
 export type ComponentEntry = {
-    slug: string;          // 'button' (kebab-case; matches docs slug)
-    name: string;          // 'Button' (display name)
-    stories: Story[];      // ordered, first is the canonical preview
+    slug: string;          // 'switch' (kebab-case; matches docs slug)
+    name: string;          // 'Switch' (last segment of CSF title)
+    stories: Story[];      // ordered by named-export declaration order
 };
 
-export const components: ComponentEntry[] = [
-    {
-        slug: 'button',
-        name: 'Button',
-        stories: [
-            { id: 'primary',     title: 'Primary',     render: () => <Button>Click me</Button> },
-            { id: 'destructive', title: 'Destructive', render: () => <Button variant="destructive">Delete</Button> },
-            { id: 'loading',     title: 'Loading',     render: () => <Button loading>Saving</Button> },
-        ],
-    },
-    // ...
-];
+// require.context is provided by Metro; the third arg is the regexp for matched files.
+const ctx = (require as any).context('../components', true, /\.stories\.tsx$/);
 
-// Backwards-compatible flat export, derived (existing call sites unchanged):
-export const stories: StoryEntry[] = components.flatMap((c) =>
-    c.stories.map((s) => ({
-        id: `${c.slug}.${s.id}`,
-        title: `${c.name} · ${s.title}`,
-        render: s.render,
-    })),
-);
+export const components: ComponentEntry[] = ctx
+    .keys()
+    .map((path: string) => {
+        const mod = ctx(path);
+        const meta = mod.default;                          // CSF default export
+        const Component = meta.component as ComponentType<any>;
+        const titleLast = String(meta.title).split('/').pop()!; // 'Controls/Switch' → 'Switch'
+        const slug = pascalToKebab(titleLast);             // 'Switch' → 'switch'
+
+        const stories: Story[] = Object.keys(mod)
+            .filter((k) => k !== 'default')
+            .map((key) => {
+                const story = mod[key];
+                const args = { ...(meta.args ?? {}), ...(story.args ?? {}) };
+                const renderFn = story.render ?? meta.render;
+                const Render: ComponentType<Record<string, never>> = renderFn
+                    ? () => renderFn(args)
+                    : () => createElement(Component, args);
+                return { id: pascalToKebab(key), title: humanise(key), render: Render };
+            });
+
+        return { slug, name: titleLast, stories };
+    })
+    .sort((a, b) => a.slug.localeCompare(b.slug));
 ```
 
-The flat `stories` export keeps any internal consumer (Storybook bridge, e2e harness) working without change. The new `components` export is the canonical structure for the playground.
+`pascalToKebab` and `humanise` are tiny helpers (`'PrimaryLoading'` → `'primary-loading'`, `'PrimaryLoading'` → `'Primary Loading'`).
 
-Slug rule: kebab-case, matches the docs MDX filename (after Spec B's flattening). Component name: PascalCase display name. Both are typed strings; a small assertion test in `packages/core/src/stories/__tests__/story-registry.test.ts` enforces:
+The loader is **runtime-only** — no codegen step, no build script, no plugin. Metro evaluates `require.context` synchronously at bundle time, so the `components` array is populated before the first render.
 
-- Slug is unique across the registry.
+#### Node-friendly slug discovery for the docs parity test
+
+Spec B's parity test runs under Jest in the docs app (Node, not Metro), so it can't `import` the Metro-coupled `csf-loader.tsx`. To keep one source of truth without forcing Jest to run Metro, this spec also exports a tiny Node helper at `packages/core/src/stories/csf-slugs.ts`:
+
+```ts
+// Node-only: enumerates *.stories.tsx files via fs and extracts CSF titles.
+// Used by tooling that runs outside Metro (Jest in apps/docs).
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+export function readCsfSlugsFromDisk(componentsDir: string): string[] { /* … */ }
+```
+
+The helper reads each `*.stories.tsx` text and matches `title:\s*['"]([^'"]+)['"]` to recover the CSF title — a simple, dependency-free way for Node-side tools to know the component slug list. Both the Metro loader and the Node helper share the same `pascalToKebab` utility, so slugs are identical regardless of which path produces them.
+
+#### CSF contract used
+
+The loader honors the documented CSF surface that already appears in the existing stories:
+
+- `default.title` (string) — used for slug + display name (last `/`-segment).
+- `default.component` (component) — what to render when a story has no `render`.
+- `default.args` (object, optional) — merged under each story's args.
+- Named exports — each is a `Story` with optional `args` and optional `render`.
+
+Any CSF feature not explicitly handled (`parameters`, `decorators`, `loaders`, `play` functions) is ignored — the playground is a renderer, not a full Storybook host. The library's existing stories don't use these features today; if a future story needs e.g. a decorator (provider wrapper), we add support to the loader as needed.
+
+#### One-time migration of existing variants
+
+The current `story-registry.tsx` contains some variants (e.g. `text.body-md`, `text.heading-1`, `hstack.gap-4`, `vstack.gap-4`, `spinner.lg`, `text-input.error`) that may not exist as named exports in the corresponding `*.stories.tsx`. As part of this spec's implementation, **every variant currently in `story-registry.tsx` is moved to the corresponding component's CSF file** as a named export, then `story-registry.tsx` is deleted. After migration, no variant is lost — the CSF files are the union of what existed before.
+
+For components without a `*.stories.tsx` yet (`Box`, `HStack`, `VStack`, `Text`, `Spinner` may or may not have one — verified in implementation), a minimal CSF file is created with the same variants the registry had.
+
+#### Slug invariants
+
+A small assertion test in `packages/core/src/stories/__tests__/csf-loader.test.ts` enforces:
+
+- Slug is unique across loaded components.
 - Slug is kebab-case (`/^[a-z][a-z0-9-]*$/`).
 - Story ids are unique within a component and kebab-case.
-- Component list is alphabetised by slug (catches drift in PR review).
+- Every component has at least one story.
+
+Slugs match docs MDX filenames (after Spec B's flattening). The Spec B parity test reads from `csf-loader`'s `components` export — the import path `@nori-ui/core/stories` resolves to a barrel that re-exports `components` from `csf-loader.tsx`.
 
 ## Screen 1 — Showcase home (`app/index.tsx`)
 
@@ -209,9 +263,14 @@ This makes both `nori-ui://components/button` (matches the eventual web URL) and
 | `apps/playground-native/package.json` | Update | Add `expo-router`, `expo-linking`, `expo-constants` if missing |
 | `apps/playground-native/babel.config.js` | Update | Add `expo-router/babel` if not picked up by `babel-preset-expo` |
 | `apps/playground-native/metro.config.js` | Verify | `expo-router` works with default Metro config; confirm no overrides break it |
-| `packages/core/src/stories/story-registry.tsx` | Refactor | New `components` export, derive flat `stories` |
-| `packages/core/src/stories/__tests__/story-registry.test.ts` | Create | Slug uniqueness + format + story uniqueness assertions |
-| `packages/core/src/index.ts` | Verify | Re-export of `stories` and (new) `components` from the stories barrel |
+| `packages/core/src/stories/story-registry.tsx` | **Delete** | Replaced by CSF loader |
+| `packages/core/src/stories/csf-loader.tsx` | Create | Runtime CSF discovery via `require.context`, exports `components` |
+| `packages/core/src/stories/csf-slugs.ts` | Create | Node-only helper for tools running outside Metro (e.g. docs Jest); reads slugs from `*.stories.tsx` via `fs` |
+| `packages/core/src/stories/index.ts` | Update | Barrel re-exports `components` from `csf-loader` (replaces flat `stories` export) |
+| `packages/core/src/components/<Name>/<Name>.stories.tsx` | Update (per component) | Add any variant currently only in `story-registry.tsx` as a named CSF export |
+| `packages/core/src/components/<Name>/<Name>.stories.tsx` | Create (where missing) | Minimal CSF file for components that don't have one yet (Box, HStack, VStack, Text, Spinner — verify per file) |
+| `packages/core/src/stories/__tests__/csf-loader.test.ts` | Create | Slug uniqueness + format + story uniqueness assertions |
+| `packages/core/src/index.ts` | Verify | Re-export of `components` from the stories barrel |
 
 ## Testing
 
@@ -225,6 +284,8 @@ No e2e regression suite for the playground yet — Spec A doesn't add one (out o
 
 ## Risks and mitigations
 
+- **`require.context` availability.** Metro supports `require.context` since 0.72 with `transformer.unstable_allowRequireContext: true`. The current `metro.config.js` may need this flag set explicitly. Mitigation: add the flag during implementation; verify the loader populates `components` non-empty in a smoke test before wiring it into the screens.
+- **CSF tree-shaking on web.** The `*.stories.tsx` files currently sit inside the published `@nori-ui/core` package. We don't want them shipped in production bundles. Mitigation: confirm `tsup.config.ts` excludes `**/*.stories.tsx` from the published build (likely already the case — verify). Stories are only consumed by the playground (which compiles directly from source via the workspace symlink) and by Storybook's own bundler.
 - **expo-router static-analysis edge cases.** expo-router relies on Metro's static file discovery for routes. If Metro config has overrides that break this, routes silently 404. Mitigation: keep `metro.config.js` minimal; if the existing config has nativewind transforms, verify expo-router still discovers the `app/` dir by running the app cold.
 - **NoriProvider already-mounted assumption.** Some components may assume a NoriProvider exists at the root. `_layout.tsx` mounts it once around the `Stack`, so all routes inherit it. Verified by the existing usage in `App.tsx`.
 - **Reanimated worklets across navigation.** The Switch component uses Reanimated worklets (cf. recent fixes). When unmounted via stack pop, worklets must clean up. Mitigation: existing Switch already handles this; we only need to ensure detail-screen unmount doesn't leak. Smoke test: navigate Switch detail ↔ home rapidly, watch for warnings.

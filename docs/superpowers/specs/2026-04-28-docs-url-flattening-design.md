@@ -223,13 +223,13 @@ Apple's CDN cache will reject the file silently if served with `text/html` or no
 Both specs assume the slug list comes from a single ground truth. Two candidates:
 
 1. **Filesystem of `content/docs/components/*.mdx`** — list lives in one place, but only after Spec B lands.
-2. **`packages/core/src/stories/story-registry.tsx`** `components` array — lives in one place, lands with Spec A, accessible from anywhere via the `@nori-ui/core` package.
+2. **`packages/core/src/stories/csf-loader.tsx`** `components` array — lives in one place, derived from the `*.stories.tsx` CSF files (Spec A's source-of-truth refactor), accessible from anywhere via the `@nori-ui/core` package.
 
 **Recommendation:** the filesystem is canonical for docs (Spec B). The story registry is canonical for the playground (Spec A). They are independently maintained but must agree.
 
 A small parity test runs in CI:
 
-- `apps/docs/__tests__/component-slug-parity.test.ts` reads the filesystem list and the imported `components` from `@nori-ui/core/stories`. Asserts the two slug sets match. Failures point to either an MDX file without a story or a story without a docs page.
+- `apps/docs/__tests__/component-slug-parity.test.ts` reads the docs filesystem list (`content/docs/components/*.mdx`) and the CSF slug list via `readCsfSlugsFromDisk` from `@nori-ui/core/stories/csf-slugs` (Node-friendly helper introduced by Spec A). Asserts the two slug sets match. Failures point to either an MDX file without a story or a story without a docs page. The Node helper is used here rather than the Metro-coupled `csf-loader.tsx` because Jest in the docs app runs in plain Node.
 
 This test ships as part of Spec B (it's the docs-side enforcement). Spec A doesn't depend on it.
 
