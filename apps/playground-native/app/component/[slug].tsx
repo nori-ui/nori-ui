@@ -13,8 +13,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ComponentDetail() {
     const { slug, story } = useLocalSearchParams<{ slug: string; story?: string }>();
-
     const entry = useMemo(() => components.find((c) => c.slug === slug), [slug]);
+
+    // Hooks must run unconditionally regardless of whether the slug
+    // resolves, so the "not found" branch below sits AFTER all hooks.
+    const scrollRef = useRef<ScrollView | null>(null);
+    // Map story id → y offset captured by each block's onLayout.
+    const offsets = useRef<Record<string, number>>({});
+
+    const onStoryLayout = useCallback(
+        (id: string) =>
+            (event: { nativeEvent: { layout: { y: number } } }) => {
+                offsets.current[id] = event.nativeEvent.layout.y;
+            },
+        [],
+    );
+
+    // Whenever the `story` param resolves to a known offset, scroll there.
+    // A short delay gives initial layout time to record y values before
+    // we read them.
+    const entrySlug = entry?.slug;
+    useEffect(() => {
+        if (!story || !entrySlug) return;
+        const handle = setTimeout(() => {
+            const y = offsets.current[story];
+            if (typeof y === 'number') {
+                scrollRef.current?.scrollTo({ y, animated: true });
+            }
+        }, 80);
+        return () => clearTimeout(handle);
+    }, [story, entrySlug]);
 
     if (!entry) {
         return (
@@ -34,33 +62,6 @@ export default function ComponentDetail() {
             </SafeAreaView>
         );
     }
-
-    const scrollRef = useRef<ScrollView | null>(null);
-    // Map story id → y offset captured by each block's onLayout.
-    const offsets = useRef<Record<string, number>>({});
-
-    const onStoryLayout = useCallback(
-        (id: string) =>
-            (event: { nativeEvent: { layout: { y: number } } }) => {
-                offsets.current[id] = event.nativeEvent.layout.y;
-            },
-        [],
-    );
-
-    // Whenever the `story` param resolves to a known offset, scroll there.
-    // Use a microtask delay so initial layout has a chance to record y
-    // values before we read them.
-    useEffect(() => {
-        if (!story) return;
-        // 1-2 frame delay matches what onLayout needs on cold start.
-        const handle = setTimeout(() => {
-            const y = offsets.current[story];
-            if (typeof y === 'number') {
-                scrollRef.current?.scrollTo({ y, animated: true });
-            }
-        }, 80);
-        return () => clearTimeout(handle);
-    }, [story, entry.slug]);
 
     return (
         <View style={{ flex: 1 }}>
