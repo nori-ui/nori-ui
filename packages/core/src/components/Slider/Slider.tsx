@@ -142,7 +142,12 @@ export function Slider({
     const colors = useThemeColors();
     const ariaLabel = rest['aria-label'];
     const isVertical = orientation === 'vertical';
-    const reversed = isVertical ? !inverted : dir === 'rtl' ? !inverted : inverted;
+    // `reversed` flips the visual mapping: default vertical sliders have
+    // max at the TOP (drag UP to increase, matching audio faders / volume
+    // controls / brightness sliders). Horizontal LTR has max at the
+    // right; horizontal RTL flips that. The `inverted` prop opts INTO
+    // the opposite direction for either axis.
+    const reversed = isVertical ? Boolean(inverted) : dir === 'rtl' ? !inverted : Boolean(inverted);
     const gap = step * minStepsBetweenThumbs;
 
     const initial = (defaultValue ?? value ?? [min]).map((v) => snap(v, min, max, step));
