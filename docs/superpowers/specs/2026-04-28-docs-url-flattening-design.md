@@ -18,7 +18,7 @@ This produces the public URL surface that "Open in app" buttons, QR codes, and s
 
 - Playground app changes — covered in Spec A.
 - Android App Links (intent-filter + Digital Asset Links) — deferred; iOS-first.
-- Bundle ID / Team ID provisioning in App Store Connect — captured as a TODO in the AASA file with a placeholder. Real values land when the app's distribution build is set up.
+- Provisioning the `dev.noriui.playground` bundle in App Store Connect — outside this spec. Team ID (`KBWBVNAUNV`, shared with `barhoppers-guide`) and bundle ID are known and baked into the AASA file from day one.
 - Legacy redirects from third-party deep links not under our control — only own-domain old paths get 301 rules.
 - Sitemap and robots.txt rewrites — covered if affected, but not the focus.
 
@@ -184,7 +184,7 @@ File: `apps/docs/public/.well-known/apple-app-site-association`
     "applinks": {
         "details": [
             {
-                "appIDs": ["TODO_TEAM_ID.com.noriui.playground"],
+                "appIDs": ["KBWBVNAUNV.dev.noriui.playground"],
                 "components": [
                     { "/": "/components/*", "comment": "Component detail (deep link to playground app)" },
                     { "/": "/", "comment": "Home" }
@@ -195,7 +195,7 @@ File: `apps/docs/public/.well-known/apple-app-site-association`
 }
 ```
 
-Placeholder `TODO_TEAM_ID` is replaced when the App Store Connect bundle ID is provisioned. A short README at `apps/docs/public/.well-known/README.md` documents how to swap it.
+`KBWBVNAUNV` is the Apple Team ID (same team as `barhoppers-guide`, sourced from `barhoppers-guide/packages/app/eas.json`). `dev.noriui.playground` matches `apps/playground-native/app.json`'s `ios.bundleIdentifier`. A short README at `apps/docs/public/.well-known/README.md` documents the lineage so future contributors don't have to dig.
 
 ### Vercel content-type header
 
@@ -246,7 +246,7 @@ This test ships as part of Spec B (it's the docs-side enforcement). Spec A doesn
 | `apps/docs/app/components/[slug]/page.tsx` | Create | Universal-Link landing → 302 docs |
 | `apps/docs/lib/component-slugs.ts` | Create | Read fumadocs source, export `componentSlugs: string[]` and `isKnownComponentSlug` |
 | `apps/docs/public/.well-known/apple-app-site-association` | Create | JSON, no extension |
-| `apps/docs/public/.well-known/README.md` | Create | How to fill `TODO_TEAM_ID` |
+| `apps/docs/public/.well-known/README.md` | Create | Documents `KBWBVNAUNV.dev.noriui.playground` lineage |
 | `apps/docs/vercel.json` | Update | Add Content-Type header rule for AASA |
 | `apps/docs/__tests__/component-slug-parity.test.ts` | Create | Parity vs `@nori-ui/core` `components` |
 | `apps/docs/__tests__/redirects.test.ts` | Create | Smoke: each old path appears in the redirect map |
@@ -268,13 +268,13 @@ This test ships as part of Spec B (it's the docs-side enforcement). Spec A doesn
 - **Stale external links.** Anything we don't control (community posts, README references in other repos) hits the 301. Functionally fine.
 - **Fumadocs source resolution.** Fumadocs reads `meta.json` and the file tree. If the catch-all route at `app/docs/[[...slug]]/page.tsx` doesn't tolerate the new structure, dev server fails. Mitigation: dev server smoke test as the first verification in implementation.
 - **AASA caching by Apple.** Apple caches AASA aggressively (~48h). A bad first deploy can be sticky. Mitigation: verify with `curl` immediately after deploy, before testing Universal Links on a real device.
-- **Bundle ID placeholder leaks.** Placeholder `TODO_TEAM_ID` ships to production. The AASA file is harmless if bundle ID is invalid (Apple just ignores it). README clearly documents the swap. CI grep for `TODO_TEAM_ID` in production deploys is optional.
+- **AASA referencing an unprovisioned bundle.** `dev.noriui.playground` may not yet be registered in App Store Connect. AASA is harmless in that case — Apple validates the App ID against the device's installed app, so an unmatched ID just means no Universal Link match (no error, no leak).
 - **Catch-all `/components/[slug]` collision.** If anyone later adds a `app/components/page.tsx` that conflicts with the dynamic route, the dynamic route still wins for `/components/<slug>` paths. No collision in this spec.
 - **Open Graph and llms-full.txt.** The existing `app/llms-full.txt/` and `app/llms.txt/` routes may hard-code old URL paths in their content. Implementation grep + update both.
 
 ## Open questions
 
-None blocking. Bundle ID provisioning is a known TODO with a clear unblock path (App Store Connect setup). Spec B can ship without the real ID; the AASA file is dormant until the ID is filled in.
+None. Team ID and bundle ID are known and baked into the spec.
 
 ## Out-of-scope for this spec
 
