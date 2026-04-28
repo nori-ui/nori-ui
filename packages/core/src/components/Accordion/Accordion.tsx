@@ -591,7 +591,12 @@ export function AccordionContent({
                     <View
                         onLayout={onInnerLayout}
                         className={cn('px-4 pt-1 pb-3')}
-                        style={[innerStyle, { position: 'absolute', opacity: 0 }]}
+                        // Absolute + left/right:0 stretches the measurement
+                        // pass to the parent's full width, so wrapping text
+                        // measures at its REAL natural height. Without
+                        // left/right, Yoga gives an absolute child width 0
+                        // and the measurement collapses to a few pixels.
+                        style={[innerStyle, { position: 'absolute', left: 0, right: 0, opacity: 0 }]}
                     >
                         {typeof children === 'string' ? (
                             <RNText
@@ -621,7 +626,16 @@ export function AccordionContent({
                 className={cn('overflow-hidden', className)}
             >
                 <AnimatedView style={opacityAnim as object}>
-                    <View onLayout={onInnerLayout} className={cn('px-4 pt-1 pb-3')} style={innerStyle}>
+                    {/* No `onLayout` on this inner — once we've captured
+                        the natural height in the measurement pass above,
+                        re-measuring here during the animation would see
+                        the CLIPPED height (the parent is mid-transition
+                        between 0 and the target) and clobber
+                        `measuredHeight` with that smaller value, freezing
+                        the open state at one line. Single-shot measurement
+                        is fine for static content; remeasuring on content
+                        change is a follow-up. */}
+                    <View className={cn('px-4 pt-1 pb-3')} style={innerStyle}>
                         {typeof children === 'string' ? (
                             <RNText
                                 style={{
