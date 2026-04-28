@@ -115,14 +115,25 @@ export function TextInput({
 
     return (
         <View className={cn('flex flex-col gap-1', containerClassName)} style={containerStyle}>
+            {/*
+             * Use RNText for the label so the component renders on both
+             * platforms. The previous `<label htmlFor>` worked only on
+             * the web (rn-web compiled it through), but on native RN
+             * tries to look up `label` as a host component and crashes
+             * with "View config getter callback for component `label`
+             * must be a function". Click-to-focus on web is a small
+             * cost we accept; the underlying RNTextInput still gets
+             * `accessibilityLabel={label}` (above) for screen readers.
+             */}
             {label !== undefined ? (
-                <label
-                    htmlFor={inputId}
+                <RNText
+                    nativeID={`${inputId}-label`}
+                    accessibilityRole="text"
                     className="text-sm font-medium text-semantic-text-default"
-                    style={labelStyle as object}
+                    style={labelStyle}
                 >
                     {label}
-                </label>
+                </RNText>
             ) : null}
             <View
                 className={cn(

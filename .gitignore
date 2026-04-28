@@ -66,3 +66,10 @@ e2e/web/test-results/
 qa-*.png
 findings.md
 snapshot-*.md
+
+# expo prebuild outputs — regenerated per build, not committed
+apps/*/ios/
+apps/*/android/
+
+# project-local MCP config — per-developer
+.mcp.json

@@ -88,7 +88,9 @@
     "jest-environment-jsdom": "^29",
     "nativewind": "^4",
     "react-native-css-interop": "^0.2.3",
+    "react-native-reanimated": "~4.3.0",
     "react-native-web": "^0.21",
+    "react-native-worklets": "^0.8.1",
     "size-limit": "^12.1.0",
     "ts-jest": "^29",
     "tsup": "^8.5.1",
@@ -105,7 +107,8 @@
     "react-dom": "^19",
     "react-native": "^0.83",
     "react-native-css-interop": ">=0.2.3",
-    "react-native-reanimated": ">=3.0.0"
+    "react-native-reanimated": ">=4.3.0",
+    "react-native-worklets": ">=0.8.0"
   },
   "peerDependenciesMeta": {
     "nativewind": {
@@ -121,7 +124,10 @@
       "optional": false
     },
     "react-native-reanimated": {
-      "optional": true
+      "optional": false
+    },
+    "react-native-worklets": {
+      "optional": false
     }
   }
 }

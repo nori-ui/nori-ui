@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useAnimatedNumber } from '../../animation/use-animated-number';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
@@ -157,7 +158,15 @@ export function Switch({
             style={rowStyle}
         >
             <View className={trackClasses} style={trackStyle}>
-                <View className={thumbClasses} style={thumbStyle} />
+                {/*
+                 * Animated.View — the slide style fragment from
+                 * `useAnimatedNumber` contains an `Animated.Value` on
+                 * native; a plain `View` would render the value as 0
+                 * (no animation). On web, the same fragment is plain
+                 * CSS and `Animated.View` falls through to a regular
+                 * div via react-native-web.
+                 */}
+                <Animated.View className={thumbClasses} style={thumbStyle} />
             </View>
             {label ? (
                 <RNText

@@ -8,14 +8,16 @@ describe('<TextInput>', () => {
         expect(screen.getByRole('textbox')).toBeInTheDocument();
     });
 
-    it('associates the label with the input via htmlFor/id (a11y)', () => {
+    it('renders the label and exposes it to the input via accessibilityLabel (cross-platform a11y)', () => {
+        // The label used to be a `<label htmlFor>` element on web, which crashed
+        // on native ("View config getter callback for component `label` must
+        // be a function"). The label is now a cross-platform `<Text>` and the
+        // a11y association lives on the input via `accessibilityLabel`.
         render(<TextInput label="Email" testID="in" />);
+        expect(screen.getByText('Email')).toBeInTheDocument();
         const input = screen.getByTestId('in');
-        const id = input.getAttribute('id');
-        expect(id).toBeTruthy();
-        // label is a <label> element with htmlFor === id on web
-        const label = screen.getByText('Email');
-        expect(label.getAttribute('for') ?? label.getAttribute('htmlFor')).toBe(id);
+        // RN-web compiles `accessibilityLabel` to `aria-label` on the host node.
+        expect(input.getAttribute('aria-label')).toBe('Email');
     });
 
     it('uncontrolled: calls onChangeText on input', () => {

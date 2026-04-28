@@ -299,3 +299,72 @@ jest.mock('react-native', () => {
         Platform: { OS: 'web', select: <T>(obj: { web?: T; default?: T }) => obj.web ?? obj.default },
     };
 });
+
+// Reanimated mock — the lib statically imports `useAnimatedStyle`,
+// `useSharedValue`, and `withSpring`. Loading the real reanimated
+// module under jest pulls in its native bridge setup which doesn't
+// run in jsdom. The stubs below return inert values that satisfy
+// the lib's call sites without any worklet machinery.
+jest.mock('react-native-reanimated', () => {
+    const useSharedValue = <T>(initial: T) => ({ value: initial });
+    const withSpring = <T>(target: T) => target;
+    const withTiming = <T>(target: T) => target;
+    const useAnimatedStyle = (factory: () => object) => factory();
+    const Easing = {
+        bezier: () => (t: number) => t,
+        in: (fn: unknown) => fn,
+        out: (fn: unknown) => fn,
+        inOut: (fn: unknown) => fn,
+        ease: (t: number) => t,
+        linear: (t: number) => t,
+    };
+    // `Animated.View`, `Animated.Text`, etc. are reanimated's primitives
+    // that accept worklet styles. In jsdom we mirror what the rn mock
+    // does for plain `react-native` — render simple DOM tags so tests
+    // can assert classes / data attributes / inline styles directly.
+    const buildAnimatedTag = (tag: 'div' | 'span') =>
+        function AnimatedTag(props: Record<string, unknown> & { children?: React.ReactNode }) {
+            const { children, testID, className, style, ...rest } = props as {
+                children?: React.ReactNode;
+                testID?: string;
+                className?: string;
+                style?: unknown;
+            } & Record<string, unknown>;
+            const domProps: Record<string, unknown> = { ...rest };
+            if (className !== undefined) domProps.className = className;
+            if (testID !== undefined) domProps['data-testid'] = testID;
+            if (style !== undefined) {
+                const flatten = (s: unknown): React.CSSProperties | undefined => {
+                    if (s === undefined || s === null || s === false) return undefined;
+                    if (Array.isArray(s)) {
+                        const out: Record<string, unknown> = {};
+                        for (const e of s) {
+                            const sub = flatten(e);
+                            if (sub) Object.assign(out, sub);
+                        }
+                        return out as React.CSSProperties;
+                    }
+                    if (typeof s === 'object') return s as React.CSSProperties;
+                    return undefined;
+                };
+                const flat = flatten(style);
+                if (flat) domProps.style = flat;
+            }
+            return React.createElement(tag, domProps, children);
+        };
+    const Animated = {
+        View: buildAnimatedTag('div'),
+        Text: buildAnimatedTag('span'),
+        ScrollView: buildAnimatedTag('div'),
+        createAnimatedComponent: (Component: unknown) => Component,
+    };
+    return {
+        __esModule: true,
+        default: Animated,
+        useSharedValue,
+        withSpring,
+        withTiming,
+        useAnimatedStyle,
+        Easing,
+    };
+});

@@ -1,74 +1,46 @@
 'use client';
 
 /**
- * Optional reanimated adapter.
+ * Reanimated adapter — re-exports the subset of `react-native-reanimated`
+ * the lib uses internally.
  *
- * `react-native-reanimated` is listed as an OPTIONAL peer dependency. When a
- * consumer installs it (and runs the babel plugin so `worklet`s compile),
- * components in this library will reach for spring-driven animations on
- * native; otherwise they fall back to react-native's built-in `Animated`
- * (smooth) or to a snap (instant) — never to crashing.
+ * Reanimated is a REQUIRED peer dep and the import here is **static**,
+ * so the consumer's babel `react-native-worklets/plugin` can follow the
+ * import binding statically and mark our `useAnimatedStyle(() => …)`
+ * callbacks as worklets. That tracking only works on static `import`
+ * bindings; a dynamic `require()` breaks the chain — the worklets
+ * transform fails silently and reanimated 4 crashes at runtime with
+ * "Cannot add new property '_tracking'" or "set the key 'current' …
+ * immutable and has been frozen".
  *
- * Detection happens once at module init via a try/catch around require().
- * Metro tolerates this pattern (try/catch'd require is the recipe used by
- * Tamagui, Restyle, Skia for the same situation). When the module is not
- * installed Metro will print one "Unable to resolve" warning during bundle
- * — that's the only consumer-visible cost; either silence it via a Metro
- * resolver or live with it.
+ * Consumers MUST:
+ *   1. install `react-native-reanimated` (>= 4.3) + `react-native-worklets`
+ *   2. add `'react-native-worklets/plugin'` to `babel.config.js`
+ *   3. add a babel `overrides` block that applies the same plugin to
+ *      `node_modules/@nori-ui/core/dist/**`, so the marker attaches to
+ *      our pre-bundled `useAnimatedStyle` callbacks too
  *
- * Web doesn't go through this adapter — components use CSS transitions
- * directly there, which work without any extra dep.
+ * See `getting-started` docs for the exact snippet. Without these, the
+ * lib's animated primitives crash on first render.
  */
+import * as Reanimated from 'react-native-reanimated';
 
-// Type-only import — has no runtime cost and the types are reachable even
-// when reanimated isn't installed because TypeScript resolves `import type`
-// purely structurally.
-import type * as Reanimated from 'react-native-reanimated';
+let cached: typeof Reanimated = Reanimated;
 
-type ReanimatedModule = typeof Reanimated;
-
-let cached: ReanimatedModule | null | undefined;
-
-function tryLoad(): ReanimatedModule | null {
-    if (cached !== undefined) return cached;
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports, global-require
-        const mod = require('react-native-reanimated') as ReanimatedModule;
-        // Some Expo Go / web bundles ship a partial export — sanity-check
-        // that the surface we actually need is callable. If it isn't, treat
-        // it as "not available" so callers fall back gracefully.
-        if (typeof mod.useSharedValue !== 'function' || typeof mod.withSpring !== 'function') {
-            cached = null;
-            return null;
-        }
-        cached = mod;
-        return mod;
-    } catch {
-        cached = null;
-        return null;
-    }
+/**
+ * Returns the bundled `react-native-reanimated` module. Test code can
+ * substitute a stub via `__setReanimatedForTest` so jest doesn't load
+ * the real reanimated runtime (which has its own native-side setup).
+ */
+export function getReanimated(): typeof Reanimated {
+    return cached;
 }
 
 /**
- * Returns the loaded `react-native-reanimated` module, or `null` when the
- * consumer hasn't installed it. Cached after first call.
- *
- * Use this when you want spring physics on native and you're prepared to
- * fall back. For most components, prefer the higher-level hooks below.
+ * Test seam — lets the adapter return a stub instead of the real
+ * reanimated module. Pass the original `Reanimated` namespace (or
+ * `undefined` to reset) to restore.
  */
-export function getReanimated(): ReanimatedModule | null {
-    return tryLoad();
-}
-
-/** True iff `react-native-reanimated` resolves AND exposes its core API. */
-export const isReanimatedAvailable = (): boolean => getReanimated() !== null;
-
-/**
- * Test seam — lets the adapter's behavior be forced for unit tests of the
- * components that consume it. Pass `null` to simulate "not installed",
- * pass a stub module to simulate "installed". Pass `undefined` to clear
- * and re-detect on next access.
- */
-export function __setReanimatedForTest(value: ReanimatedModule | null | undefined): void {
-    cached = value;
+export function __setReanimatedForTest(value: typeof Reanimated | undefined): void {
+    cached = value ?? Reanimated;
 }
