@@ -9,7 +9,15 @@ export default defineConfig({
         'icons/index': 'src/icons/index.ts',
         'slot/index': 'src/slot/index.ts',
         'utils/cn': 'src/utils/cn.ts',
-        'stories/story-registry': 'src/stories/story-registry.tsx',
+        // Stories barrel — re-exports the CSF-derived `components` array.
+        // The barrel itself is a thin re-export of csf-loader; the loader
+        // uses `require.context` which only Metro/webpack provide. In the
+        // published Node/CJS build the loader's runtime call falls back to
+        // an empty modules map (typeof require.context !== 'function'),
+        // so consumers can import the types but won't get a populated list
+        // from the dist build. The native playground compiles from source
+        // (workspace symlink), so it picks up the live Metro `components`.
+        'stories/index': 'src/stories/index.ts',
         // Platform-split files. Each is its own entry so the `.web.js`
         // suffix is preserved in dist and consumer bundlers (Metro picks
         // the bare `.js`, webpack/Next picks the `.web.js`) can choose at

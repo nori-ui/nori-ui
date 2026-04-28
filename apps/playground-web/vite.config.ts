@@ -11,6 +11,12 @@ export default defineConfig({
     // internal CSS-in-JS StyleSheet system.
     plugins: [react({ jsxImportSource: 'nativewind' })],
     resolve: {
+        // Pick `source` over `import` for `@nori-ui/core/stories` so Vite's
+        // `import.meta.glob` runs against the live `src/components/` tree
+        // and discovers every `*.stories.tsx`. Without this, Vite consumes
+        // the tsup-built dist/stories/index.js and the glob (already
+        // executed at lib-build time, against an empty fs) returns nothing.
+        conditions: ['source', 'browser', 'module', 'import', 'default'],
         alias: [
             // Specific overrides MUST come before the wildcard `react-native/*` so they win.
             // codegenNativeComponent is RN-codegen only — stub it on web.

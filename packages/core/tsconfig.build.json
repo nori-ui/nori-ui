@@ -5,5 +5,13 @@
     "outDir": "./dist"
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules", "**/__tests__/**", "**/*.test.ts", "**/*.test.tsx", "**/*.stories.tsx"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.stories.tsx",
+    "src/stories/csf-slugs.ts"
+  ]
 }

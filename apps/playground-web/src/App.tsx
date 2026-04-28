@@ -1,7 +1,7 @@
 'use client';
 
 import { NoriProvider } from '@nori-ui/core/client';
-import { stories } from '@nori-ui/core/stories';
+import { components } from '@nori-ui/core/stories';
 
 function StoriesPage() {
     return (
@@ -19,18 +19,25 @@ function StoriesPage() {
             </header>
 
             <div className="grid gap-8">
-                {stories.map(({ id, title, render: Render }) => (
-                    <section
-                        key={id}
-                        data-testid={`section-${id}`}
-                        className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm"
-                    >
-                        <h2 className="mb-3 text-sm font-medium text-neutral-500">{title}</h2>
-                        <div className="rounded-md bg-neutral-50 p-4">
-                            <Render />
-                        </div>
-                    </section>
-                ))}
+                {components.flatMap((component) =>
+                    component.stories.map(({ id, title, render: Render }) => {
+                        const sectionId = `${component.slug}.${id}`;
+                        return (
+                            <section
+                                key={sectionId}
+                                data-testid={`section-${sectionId}`}
+                                className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm"
+                            >
+                                <h2 className="mb-3 text-sm font-medium text-neutral-500">
+                                    {component.name} · {title}
+                                </h2>
+                                <div className="rounded-md bg-neutral-50 p-4">
+                                    <Render />
+                                </div>
+                            </section>
+                        );
+                    })
+                )}
             </div>
         </main>
     );

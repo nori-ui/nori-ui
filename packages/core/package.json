@@ -57,9 +57,11 @@
       "require": "./dist/utils/cn.cjs"
     },
     "./stories": {
-      "types": "./dist/stories/story-registry.d.ts",
-      "import": "./dist/stories/story-registry.js",
-      "require": "./dist/stories/story-registry.cjs"
+      "types": "./dist/stories/index.d.ts",
+      "source": "./src/stories/index.ts",
+      "react-native": "./src/stories/index.ts",
+      "import": "./dist/stories/index.js",
+      "require": "./dist/stories/index.cjs"
     }
   },
   "publishConfig": {
