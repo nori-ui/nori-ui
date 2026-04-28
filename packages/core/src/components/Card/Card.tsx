@@ -89,9 +89,29 @@ export function CardContent({ children, className, style, ...rest }: CardSection
         paddingHorizontal: px(colors.spacing['6']),
         paddingVertical: px(colors.spacing['4']),
     };
+    // Auto-wrap raw string children in <Text>. RN refuses to render a
+    // bare string inside a View in dev, and on rn-web it silently slips
+    // through using whatever ambient color the surface has — which is
+    // wrong in dark mode. Wrapping here matches the pattern other Card
+    // subcomponents already follow.
+    const wrapped =
+        typeof children === 'string' ? (
+            <RNText
+                style={{
+                    color: colors.semantic.text.default,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.md),
+                    lineHeight: px(colors.fontSize.md) * Number(colors.lineHeight.normal),
+                }}
+            >
+                {children}
+            </RNText>
+        ) : (
+            children
+        );
     return (
         <View {...rest} className={cn('px-6 py-4', className)} style={[contentStyle, style]}>
-            {children}
+            {wrapped}
         </View>
     );
 }

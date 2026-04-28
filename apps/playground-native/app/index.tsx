@@ -1,13 +1,14 @@
-// Showcase home — dark-first, category-grouped, search-filtered list of
-// every nori-ui component. The rows are derived from CSF stories at
-// bundle time via `@nori-ui/core/stories`; categories come from the first
-// segment of each story's CSF `title` (e.g. `Controls/Switch` → Controls).
+// Showcase home — dark-first, alphabetical, search-filtered list of
+// every nori-ui component. Rows are derived from CSF stories at bundle
+// time via `@nori-ui/core/stories`. Categories were dropped once the
+// docs nav was flattened (every component lives at /docs/components/<slug>
+// alphabetically); the native showcase mirrors that flat listing.
 
 import { TextInput } from '@nori-ui/core';
 import { components } from '@nori-ui/core/stories';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Visual tokens. Centralised here so the detail screen can reuse them.
@@ -25,96 +26,23 @@ const palette = {
     accent: '#5eead4',
 } as const;
 
-// CSF titles look like `Controls/Switch`. We split on `/` and use the
-// first segment as the category label.
 type Row = { slug: string; name: string };
-type Section = { title: string; data: Row[] };
 
-const CATEGORY_ORDER = ['Primitives', 'Controls', 'Inputs', 'Display', 'Feedback', 'Overlays', 'Navigation', 'Misc'];
-
-// Read the CSF `title` *prefix* to bucket components. The CSF loader
-// only exposes `slug` and `name` (last segment) on `ComponentEntry`, so
-// we re-read each story's title prefix here. Stories without a category
-// prefix fall into "Misc".
-function categoriseFromCsf(): Section[] {
-    const buckets = new Map<string, Row[]>();
-    for (const c of components) {
-        // Pull the category from the first story's render closure isn't
-        // accessible — but the CSF title is on each underlying module.
-        // Since the loader doesn't expose it, we accept a small
-        // duplication: a per-component `categoryFor` function below.
-        const cat = categoryFor(c.slug);
-        if (!buckets.has(cat)) {
-            buckets.set(cat, []);
-        }
-        buckets.get(cat)?.push({ slug: c.slug, name: c.name });
-    }
-    return CATEGORY_ORDER.filter((c) => buckets.has(c))
-        .map((c) => ({ title: c, data: (buckets.get(c) ?? []).sort((a, b) => a.name.localeCompare(b.name)) }))
-        .filter((section) => section.data.length > 0);
-}
-
-// Mapping of slug → category. Mirrors the CSF `title` first segment.
-// Kept as a small static table because the CSF loader doesn't currently
-// surface the title prefix; if a component is missing here it falls
-// into "Misc" automatically.
-const CATEGORIES: Record<string, string> = {
-    box: 'Primitives',
-    hstack: 'Primitives',
-    vstack: 'Primitives',
-    text: 'Primitives',
-    separator: 'Primitives',
-    button: 'Controls',
-    checkbox: 'Controls',
-    'radio-group': 'Controls',
-    'segmented-control': 'Controls',
-    switch: 'Controls',
-    toggle: 'Controls',
-    'toggle-group': 'Controls',
-    'input-group': 'Inputs',
-    select: 'Inputs',
-    slider: 'Inputs',
-    'text-area': 'Inputs',
-    'text-input': 'Inputs',
-    accordion: 'Display',
-    avatar: 'Display',
-    badge: 'Display',
-    card: 'Display',
-    alert: 'Feedback',
-    progress: 'Feedback',
-    skeleton: 'Feedback',
-    spinner: 'Feedback',
-    toast: 'Feedback',
-    'alert-dialog': 'Overlays',
-    dialog: 'Overlays',
-    popover: 'Overlays',
-    tooltip: 'Overlays',
-    tabs: 'Navigation',
-    icon: 'Misc',
-};
-
-function categoryFor(slug: string): string {
-    return CATEGORIES[slug] ?? 'Misc';
-}
-
-const SECTIONS = categoriseFromCsf();
-const TOTAL = components.length;
+const ALL_ROWS: Row[] = components
+    .map((c) => ({ slug: c.slug, name: c.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+const TOTAL = ALL_ROWS.length;
 
 export default function ShowcaseHome() {
     const [query, setQuery] = useState('');
 
-    const filteredSections = useMemo<Section[]>(() => {
+    const filteredRows = useMemo<Row[]>(() => {
         const q = query.trim().toLowerCase();
         if (q.length === 0) {
-            return SECTIONS;
+            return ALL_ROWS;
         }
-        return SECTIONS.map((s) => ({
-            ...s,
-            data: s.data.filter((row) => row.name.toLowerCase().includes(q)),
-        })).filter((s) => s.data.length > 0);
+        return ALL_ROWS.filter((row) => row.name.toLowerCase().includes(q));
     }, [query]);
-
-    const matchedCount = useMemo(() => filteredSections.reduce((acc, s) => acc + s.data.length, 0), [filteredSections]);
 
     return (
         <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
@@ -136,24 +64,20 @@ export default function ShowcaseHome() {
                 />
             </View>
 
-            {matchedCount === 0 ? (
+            {filteredRows.length === 0 ? (
                 <View style={styles.emptyWrap}>
                     <Text style={styles.emptyText}>No components match "{query}".</Text>
                 </View>
             ) : (
-                <SectionList<Row, Section>
+                <FlatList<Row>
                     testID="showcase-list"
-                    sections={filteredSections}
+                    data={filteredRows}
                     keyExtractor={(row) => row.slug}
                     keyboardShouldPersistTaps="handled"
                     keyboardDismissMode="on-drag"
-                    stickySectionHeadersEnabled={false}
                     contentContainerStyle={styles.listContent}
-                    renderSectionHeader={({ section }) => (
-                        <Text style={styles.sectionHeader}>{section.title.toUpperCase()}</Text>
-                    )}
-                    renderItem={({ item, index, section }) => (
-                        <ComponentRow row={item} isLast={index === section.data.length - 1} />
+                    renderItem={({ item, index }) => (
+                        <ComponentRow row={item} isLast={index === filteredRows.length - 1} />
                     )}
                 />
             )}
@@ -211,17 +135,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingBottom: 12,
     },
-    sectionHeader: {
-        color: palette.textFaint,
-        fontSize: 11,
-        fontWeight: '600',
-        letterSpacing: 1.5,
-        marginTop: 24,
-        marginBottom: 4,
-        paddingHorizontal: 24,
-    },
     listContent: {
         paddingBottom: 48,
+        paddingTop: 8,
     },
     row: {
         flexDirection: 'row',

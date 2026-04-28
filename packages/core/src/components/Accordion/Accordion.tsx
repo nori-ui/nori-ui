@@ -13,8 +13,10 @@ import {
     useRef,
     useState,
 } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
+import { AnimatedView } from '../../animation/animated-view';
+import { useAnimatedNumber } from '../../animation/use-animated-number';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -430,25 +432,40 @@ export type AccordionContentProps = {
     forceMount?: boolean;
 };
 
+// Animation timing — mirrors the Switch slide and the web CSS
+// transition exactly so the accordion feels identical on web and native.
+const ACCORDION_ANIM_DURATION_MS = 200;
+
 /**
  * The collapsible body. On web it always mounts but slides open / closed
  * via an animated max-height + opacity transition (200ms ease). On native
- * we mount/unmount based on the open flag — RN doesn't have the CSS
- * machinery for height transitions out of the box, and adding it would
- * require react-native-reanimated which is currently optional.
+ * it mounts in a measure-pass on first render to capture the natural
+ * content height, then animates `height` + `opacity` via the shared
+ * `useAnimatedNumber` primitive (200ms, cubic-bezier(0.16, 1, 0.3, 1) —
+ * matches the Switch thumb slide).
  *
- * Implementation note: the height + transition styles are pushed onto the
- * outer wrapper's DOM node via a ref + useEffect rather than through the
- * View's `style` prop. Reason: rn-web's style filter drops keys it
- * doesn't recognise as RN style props (`transition`, `maxHeight` shorthand,
- * etc.), taking the whole fragment with them. Direct DOM mutation
- * bypasses that filter — same trick used by Dialog's backdrop blur.
+ * Implementation note: the web-side height + transition styles are pushed
+ * onto the outer wrapper's DOM node via a ref + useEffect rather than
+ * through the View's `style` prop. Reason: rn-web's style filter drops
+ * keys it doesn't recognise as RN style props (`transition`, `maxHeight`
+ * shorthand, etc.), taking the whole fragment with them. Direct DOM
+ * mutation bypasses that filter — same trick used by Dialog's backdrop
+ * blur.
  */
-export function AccordionContent({ children, className, testID, forceMount = false }: AccordionContentProps) {
+export function AccordionContent({
+    children,
+    className,
+    testID,
+    forceMount: _forceMount = false,
+}: AccordionContentProps) {
     const item = useAccordionItemContext('AccordionContent');
     const colors = useThemeColors();
     const wrapperRef = useRef<HTMLElement | null>(null);
     const innerRef = useRef<HTMLElement | null>(null);
+    // Natural (open-state) height of the content, captured on first
+    // layout. Re-captured if the layout reports a different size while
+    // open (e.g. dynamic content).
+    const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
     const innerStyle: ViewStyle = {
         ...CONTENT_INNER_LAYOUT_BASE,
         paddingHorizontal: px(colors.spacing['4']),
@@ -480,7 +497,7 @@ export function AccordionContent({ children, className, testID, forceMount = fal
 
         wrapper.style.overflow = 'hidden';
         wrapper.style.transitionProperty = 'max-height, opacity';
-        wrapper.style.transitionDuration = '220ms';
+        wrapper.style.transitionDuration = `${ACCORDION_ANIM_DURATION_MS}ms`;
         wrapper.style.transitionTimingFunction = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
         if (item.open) {
@@ -516,9 +533,113 @@ export function AccordionContent({ children, className, testID, forceMount = fal
         }
     }, [item.open]);
 
-    // Native: keep the conditional render — no animation in v0.
-    if (Platform.OS !== 'web' && !item.open && !forceMount) {
-        return null;
+    // Native height + opacity animation. Driven by `useAnimatedNumber`,
+    // which dispatches per-property to a static-key reanimated worklet
+    // (the plugin can't serialize closures over computed keys, so each
+    // property gets its own static-key useAnimatedStyle inside the hook).
+    //
+    // Target values are derived from open + measured size. Before
+    // measurement we still call the hooks (hook order must stay
+    // stable); they animate to/from 0 which becomes a no-op until the
+    // first onLayout fires.
+    const targetHeight = item.open ? (measuredHeight ?? 0) : 0;
+    const targetOpacity = item.open ? 1 : 0;
+    const heightAnim = useAnimatedNumber('height', targetHeight, {
+        duration: ACCORDION_ANIM_DURATION_MS,
+    });
+    const opacityAnim = useAnimatedNumber('opacity', targetOpacity, {
+        duration: ACCORDION_ANIM_DURATION_MS,
+    });
+
+    const onInnerLayout = useCallback(
+        (e: LayoutChangeEvent) => {
+            if (Platform.OS === 'web') {
+                return;
+            }
+            const next = e.nativeEvent.layout.height;
+            if (next > 0 && next !== measuredHeight) {
+                setMeasuredHeight(next);
+            }
+        },
+        [measuredHeight]
+    );
+
+    // Native path: always mount the inner so we can measure its natural
+    // height once. Before measurement, we render with `position:
+    // absolute, opacity: 0` so the layout pass runs off-screen and
+    // doesn't affect the surrounding flow (avoids the "flash of fully-
+    // open content" on first paint of an initially-closed item).
+    // After measurement, the outer Animated.View drives height +
+    // opacity together.
+    if (Platform.OS !== 'web') {
+        const animatedWrapperStyle: ViewStyle = {
+            overflow: 'hidden',
+        };
+        // Pre-measurement: render the inner off-screen for one layout
+        // pass. The wrapper claims 0 height in the flow so the next
+        // sibling is positioned correctly until we know the real size.
+        if (measuredHeight === null) {
+            return (
+                <AnimatedView
+                    {...(testID !== undefined ? { testID } : {})}
+                    accessibilityRole="none"
+                    aria-labelledby={item.triggerId}
+                    aria-hidden={!item.open}
+                    style={[animatedWrapperStyle, { height: 0 }]}
+                    className={cn('overflow-hidden', className)}
+                >
+                    <View
+                        onLayout={onInnerLayout}
+                        className={cn('px-4 pt-1 pb-3')}
+                        style={[innerStyle, { position: 'absolute', opacity: 0 }]}
+                    >
+                        {typeof children === 'string' ? (
+                            <RNText
+                                style={{
+                                    color: colors.semantic.text.muted,
+                                    fontFamily: colors.fontFamily.body,
+                                    fontSize: px(colors.fontSize.sm),
+                                    lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+                                }}
+                            >
+                                {children}
+                            </RNText>
+                        ) : (
+                            children
+                        )}
+                    </View>
+                </AnimatedView>
+            );
+        }
+        return (
+            <AnimatedView
+                {...(testID !== undefined ? { testID } : {})}
+                accessibilityRole="none"
+                aria-labelledby={item.triggerId}
+                aria-hidden={!item.open}
+                style={[animatedWrapperStyle, heightAnim as object]}
+                className={cn('overflow-hidden', className)}
+            >
+                <AnimatedView style={opacityAnim as object}>
+                    <View onLayout={onInnerLayout} className={cn('px-4 pt-1 pb-3')} style={innerStyle}>
+                        {typeof children === 'string' ? (
+                            <RNText
+                                style={{
+                                    color: colors.semantic.text.muted,
+                                    fontFamily: colors.fontFamily.body,
+                                    fontSize: px(colors.fontSize.sm),
+                                    lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
+                                }}
+                            >
+                                {children}
+                            </RNText>
+                        ) : (
+                            children
+                        )}
+                    </View>
+                </AnimatedView>
+            </AnimatedView>
+        );
     }
 
     return (

@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
-export type AnimatedProperty = 'left' | 'top' | 'right' | 'bottom' | 'translateX' | 'translateY';
+export type AnimatedProperty = 'left' | 'top' | 'right' | 'bottom' | 'translateX' | 'translateY' | 'opacity' | 'height';
 
 export type AnimatedNumberOptions = {
     /** Animation duration in ms. @defaultValue 180 */
@@ -51,6 +51,11 @@ function webStyle(property: AnimatedProperty, target: number, duration: number):
     };
 }
 
+// `opacity` and `height` aren't transforms or position props but follow
+// the exact same animated-shared-value pattern. Adding them here keeps
+// the cross-platform API consistent — Accordion content fades + slides
+// open with the same easing as a Switch thumb.
+
 // Reanimated worklets can't reliably serialize closures over computed
 // keys (`{ [property]: value }`). Static-key paths per property work
 // fine. Six tiny worklets — one per AnimatedProperty — give the plugin
@@ -81,6 +86,10 @@ function useReanimatedTiming(property: AnimatedProperty, target: number, duratio
     const rightStyle = useAnimatedStyle(() => ({ right: shared.value }));
     // biome-ignore lint/correctness/useHookAtTopLevel: same
     const bottomStyle = useAnimatedStyle(() => ({ bottom: shared.value }));
+    // biome-ignore lint/correctness/useHookAtTopLevel: same
+    const opacityStyle = useAnimatedStyle(() => ({ opacity: shared.value }));
+    // biome-ignore lint/correctness/useHookAtTopLevel: same
+    const heightStyle = useAnimatedStyle(() => ({ height: shared.value }));
     if (property === 'translateX') {
         return translateXStyle;
     }
@@ -96,5 +105,11 @@ function useReanimatedTiming(property: AnimatedProperty, target: number, duratio
     if (property === 'right') {
         return rightStyle;
     }
-    return bottomStyle;
+    if (property === 'bottom') {
+        return bottomStyle;
+    }
+    if (property === 'opacity') {
+        return opacityStyle;
+    }
+    return heightStyle;
 }

@@ -15,7 +15,7 @@
 // duration the native side targets via `Easing.bezier(0.16, 1, 0.3, 1)`
 // + `withTiming(180)` so primitives feel identical across platforms.
 
-export type AnimatedProperty = 'left' | 'top' | 'right' | 'bottom' | 'translateX' | 'translateY';
+export type AnimatedProperty = 'left' | 'top' | 'right' | 'bottom' | 'translateX' | 'translateY' | 'opacity' | 'height';
 
 export type AnimatedNumberOptions = {
     /** Animation duration in ms. @defaultValue 180 */

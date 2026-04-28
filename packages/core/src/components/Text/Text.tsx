@@ -65,6 +65,14 @@ export function Text({ variant = 'body-md', className, testID, children, ...rest
     const sizePx = px(colors.fontSize[keys.fontSize]);
     const lhMultiplier = Number(colors.lineHeight[keys.lineHeight]);
     const themedStyle: TextStyle = {
+        // Inline color is the source of truth — NativeWind's `dark:`
+        // class variants don't reliably apply on native at runtime, and
+        // even on web inline styles win on CSS specificity. Sourcing
+        // from `useThemeColors()` means light/dark + theme overrides
+        // flow through every <Text> automatically. The Tailwind classes
+        // below are kept as a no-NativeWind fallback (Expo Snack etc.)
+        // and as a hint for class-name-based tooling.
+        color: colors.semantic.text.default,
         fontFamily: isHeading ? colors.fontFamily.display : colors.fontFamily.body,
         fontSize: sizePx,
         // RN expects lineHeight in px, not unitless. Tokens carry it as a
