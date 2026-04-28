@@ -106,7 +106,12 @@ describe('buildComponents', () => {
             },
         });
         expect(entries).toHaveLength(1);
-        expect(entries[0].stories[0].render({})).toBeNull();
+        const story = entries[0]?.stories[0];
+        expect(story).toBeDefined();
+        // story.render is a React function component; invoking it as a
+        // plain function is valid here because we asserted it exists.
+        // biome-ignore lint/style/noNonNullAssertion: covered by the assertion above
+        expect(story!.render({})).toBeNull();
     });
 
     it('sorts entries alphabetically by slug', () => {
