@@ -28,7 +28,14 @@ const RN_CSS_INTEROP = path.resolve(__dirname, '../../node_modules/react-native-
 module.exports = (api) => {
     api.cache(true);
     return {
-        presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
+        presets: [
+            // unstable_transformImportMeta polyfills `import.meta` for Hermes.
+            // The CSF loader's bundler module uses `import.meta.glob` (Vite path)
+            // and Hermes can't parse it natively; the preset rewrites the
+            // expression to a runtime-safe shape during transform.
+            ['babel-preset-expo', { jsxImportSource: 'nativewind', unstable_transformImportMeta: true }],
+            'nativewind/babel',
+        ],
         plugins: ['react-native-worklets/plugin'],
         overrides: [
             {
