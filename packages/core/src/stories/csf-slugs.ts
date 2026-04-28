@@ -52,10 +52,10 @@ export function readCsfSlugsFromDisk(componentsDir: string): string[] {
     for (const file of files) {
         const text = readFileSync(file, 'utf8');
         const match = text.match(TITLE_RE);
-        if (!match) {
+        const title = match?.[1];
+        if (!title) {
             continue;
         }
-        const title = match[1];
         const last = title.split('/').pop() ?? title;
         slugs.push(pascalToKebab(last));
     }
