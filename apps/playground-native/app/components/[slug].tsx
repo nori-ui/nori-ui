@@ -88,7 +88,7 @@ export default function ComponentDetail() {
             <Stack.Screen
                 options={{
                     title: entry.name,
-                    headerBackTitle: 'Showcase',
+                    headerBackTitle: 'Nori UI',
                     headerStyle: { backgroundColor: bg },
                     headerTitleStyle: { color: text, fontWeight: '700' },
                     headerTintColor: accent,

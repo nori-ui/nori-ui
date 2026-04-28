@@ -39,7 +39,7 @@ export default function ShowcaseHome() {
     return (
         <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.semantic.background.default }}>
             <View style={styles.headerWrap}>
-                <Text style={[styles.heading, { color: colors.semantic.text.default }]}>Showcase</Text>
+                <Text style={[styles.heading, { color: colors.semantic.text.default }]}>Nori UI</Text>
                 <Text style={[styles.headingMeta, { color: colors.semantic.text.muted }]}>
                     {TOTAL} component{TOTAL === 1 ? '' : 's'}
                 </Text>

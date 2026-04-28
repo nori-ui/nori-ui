@@ -45,7 +45,7 @@ function ThemedShell() {
                 <StatusBar style={statusBarStyle} />
                 <Stack screenOptions={{ headerLargeTitle: false }}>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="components/[slug]" options={{ headerBackTitle: 'Showcase' }} />
+                    <Stack.Screen name="components/[slug]" options={{ headerBackTitle: 'Nori UI' }} />
                 </Stack>
                 <ColorSchemeToggle />
             </View>
