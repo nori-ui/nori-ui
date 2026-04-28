@@ -144,9 +144,21 @@ export function AlertDialogTrigger({ asChild = true, children, className, testID
             {...(testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
-            {children}
+            {wrapStringChildren(children)}
         </Pressable>
     );
+}
+
+// On native, raw strings rendered as children of a non-Text component
+// throw "Text strings must be rendered within a <Text> component". On
+// web, react-native-web silently tolerates it. Wrap any string/number
+// children in an RNText so the same JSX renders cleanly on both
+// platforms. Non-string children are passed through unchanged.
+function wrapStringChildren(children: ReactNode): ReactNode {
+    if (typeof children === 'string' || typeof children === 'number') {
+        return <RNText>{children}</RNText>;
+    }
+    return children;
 }
 
 // Same scrim + blur recipe as Dialog (see Dialog.tsx). 24% black + 4px
@@ -567,7 +579,7 @@ export function AlertDialogAction({ asChild = true, children, className, testID,
             {...(testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
-            {children}
+            {wrapStringChildren(children)}
         </Pressable>
     );
 }
@@ -630,7 +642,7 @@ export function AlertDialogCancel({ asChild = true, children, className, testID,
             {...(testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
-            {children}
+            {wrapStringChildren(children)}
         </Pressable>
     );
 }

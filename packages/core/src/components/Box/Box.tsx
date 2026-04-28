@@ -1,6 +1,7 @@
 import type { ViewProps, ViewStyle } from 'react-native';
 import { View } from 'react-native';
 import { cn } from '../../utils/cn';
+import { wrapStringChildren } from '../../utils/wrap-string-children';
 
 export type BoxProps = ViewProps & {
     className?: string;
@@ -26,7 +27,7 @@ export function Box({ className, children, flex, style, ...rest }: BoxProps) {
     const merged = flexStyle === undefined ? style : style === undefined ? flexStyle : [flexStyle, style];
     return (
         <View {...rest} className={cn(className)} style={merged}>
-            {children}
+            {wrapStringChildren(children)}
         </View>
     );
 }

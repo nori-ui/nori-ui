@@ -14,7 +14,7 @@ import {
     useState,
 } from 'react';
 import type { TextInput as RNTextInputType, TextStyle, ViewStyle } from 'react-native';
-import { Pressable, Text as RNText, TextInput as RNTextInput, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, TextInput as RNTextInput, View } from 'react-native';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -194,16 +194,38 @@ export function InputGroup({
             style={containerStyle}
         >
             {label !== undefined ? (
-                // RN web renders <RNText> as <div>; we use a real <label
-                // htmlFor> so clicking the label focuses the input the
-                // standard a11y way.
-                <label
-                    htmlFor={inputId}
-                    className="text-sm font-medium text-semantic-text-default"
-                    style={labelStyle as object}
-                >
-                    {label}
-                </label>
+                // On web we render a real <label htmlFor> so clicking the
+                // label focuses the input the standard a11y way (and so
+                // jsdom-based tests can assert the label↔input
+                // association via the `for` attribute).
+                //
+                // On native, raw <label> is not a valid host component
+                // and RN crashes with "View config getter callback for
+                // component `label` must be a function". The native
+                // path renders an RNText instead — the underlying
+                // RNTextInput still carries accessibilityLabel for
+                // screen readers, so the visible text + the a11y name
+                // remain in sync. Same web-only `<label>` story as
+                // TextInput's earlier iteration; this branch is the
+                // explicit native-safe fallback.
+                Platform.OS === 'web' ? (
+                    <label
+                        htmlFor={inputId}
+                        className="text-sm font-medium text-semantic-text-default"
+                        style={labelStyle as object}
+                    >
+                        {label}
+                    </label>
+                ) : (
+                    <RNText
+                        nativeID={`${inputId}-label`}
+                        accessibilityRole="text"
+                        className="text-sm font-medium text-semantic-text-default"
+                        style={labelStyle}
+                    >
+                        {label}
+                    </RNText>
+                )
             ) : null}
             <InputGroupContext.Provider value={ctx}>
                 <View

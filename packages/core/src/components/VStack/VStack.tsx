@@ -1,6 +1,7 @@
 import type { ViewProps } from 'react-native';
 import { View } from 'react-native';
 import { cn } from '../../utils/cn';
+import { wrapStringChildren } from '../../utils/wrap-string-children';
 import type { StackAlign, StackGap, StackJustify } from '../HStack/HStack';
 
 export type VStackProps = ViewProps & {
@@ -43,7 +44,7 @@ export function VStack({ gap, align, justify, className, children, ...rest }: VS
                 className
             )}
         >
-            {children}
+            {wrapStringChildren(children)}
         </View>
     );
 }
