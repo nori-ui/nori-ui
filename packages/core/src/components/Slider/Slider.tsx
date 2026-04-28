@@ -9,7 +9,7 @@ import {
     useRef,
     useState,
 } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { GestureResponderEvent, ViewStyle } from 'react-native';
 import { Platform, View } from 'react-native';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -142,13 +142,27 @@ export function Slider({
 
     // Measure the track on layout (RN onLayout), and on web also on
     // window resize, since onLayout doesn't fire for window-relative shifts.
+    // On native we use `measureInWindow` to get window-relative coords that
+    // line up with `event.nativeEvent.pageX/pageY` from the responder.
     const measure = useCallback(() => {
-        const node = trackRef.current as unknown as HTMLElement | null;
-        if (!node || typeof window === 'undefined' || typeof node.getBoundingClientRect !== 'function') {
+        const node = trackRef.current;
+        if (!node) {
             return;
         }
-        const rect = node.getBoundingClientRect();
-        trackRectRef.current = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+        if (Platform.OS === 'web') {
+            const webNode = node as unknown as HTMLElement;
+            if (typeof window === 'undefined' || typeof webNode.getBoundingClientRect !== 'function') {
+                return;
+            }
+            const rect = webNode.getBoundingClientRect();
+            trackRectRef.current = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+            return;
+        }
+        if (typeof node.measureInWindow === 'function') {
+            node.measureInWindow((x, y, width, height) => {
+                trackRectRef.current = { x, y, width, height };
+            });
+        }
     }, []);
 
     useEffect(() => {
@@ -423,8 +437,53 @@ export function Slider({
               opacity: disabled ? 0.5 : 1,
           };
 
+    // Native gesture handlers — claim the responder so a parent ScrollView
+    // can't steal the drag, then drive the same value-from-coords logic
+    // using `pageX`/`pageY` (window-relative, matches `measureInWindow`).
+    const onTrackResponderGrant = useCallback(
+        (event: GestureResponderEvent) => {
+            if (disabled) {
+                return;
+            }
+            // Re-measure on grant to capture any layout shift that happened
+            // between mount and the first touch (e.g. inside an animated
+            // ScrollView). Doing it here is cheap and guarantees fresh
+            // coords for the upcoming move sequence.
+            measure();
+            const { pageX, pageY } = event.nativeEvent;
+            const targetValue = valueFromClient(pageX, pageY);
+            const idx = closestThumbIndex(targetValue);
+            const next = updateAt(current, idx, targetValue, gap);
+            setValues(next);
+            draggingRef.current = { index: idx, pointerId: 0 };
+        },
+        [disabled, measure, valueFromClient, closestThumbIndex, current, gap, setValues]
+    );
+    const onTrackResponderMove = useCallback(
+        (event: GestureResponderEvent) => {
+            if (!draggingRef.current) {
+                return;
+            }
+            const { pageX, pageY } = event.nativeEvent;
+            const targetValue = valueFromClient(pageX, pageY);
+            const next = updateAt(current, draggingRef.current.index, targetValue, gap);
+            setValues(next);
+        },
+        [valueFromClient, current, gap, setValues]
+    );
+    const onTrackResponderRelease = useCallback(() => {
+        if (!draggingRef.current) {
+            return;
+        }
+        draggingRef.current = null;
+        commitValues(current);
+    }, [commitValues, current]);
+
     // RN's View doesn't model pointer events in its TS surface; rn-web
-    // forwards them. Cast at the spread boundary.
+    // forwards them. Cast at the spread boundary. Native uses the
+    // GestureResponder system so a vertical slider inside a ScrollView
+    // still wins the touch — `onMoveShouldSetResponderCapture` claims
+    // the gesture before the ScrollView can.
     const trackPointerProps: Record<string, unknown> =
         Platform.OS === 'web'
             ? {
@@ -433,7 +492,16 @@ export function Slider({
                   onPointerUp: onTrackPointerUp,
                   onPointerCancel: onTrackPointerUp,
               }
-            : {};
+            : {
+                  onStartShouldSetResponder: () => !disabled,
+                  onMoveShouldSetResponder: () => !disabled,
+                  onMoveShouldSetResponderCapture: () => !disabled,
+                  onResponderGrant: onTrackResponderGrant,
+                  onResponderMove: onTrackResponderMove,
+                  onResponderRelease: onTrackResponderRelease,
+                  onResponderTerminate: onTrackResponderRelease,
+                  onResponderTerminationRequest: () => false,
+              };
 
     return (
         <View
