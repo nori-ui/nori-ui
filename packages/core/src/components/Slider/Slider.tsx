@@ -493,9 +493,16 @@ export function Slider({
                   onPointerCancel: onTrackPointerUp,
               }
             : {
+                  // Capture variants run BEFORE non-capture handlers and
+                  // walk root → leaf, so they win the gesture against an
+                  // ancestor ScrollView whose own `onStartShould` would
+                  // otherwise claim the touch first. Without these, a
+                  // vertical slider inside a vertical ScrollView lets the
+                  // ScrollView swallow the drag.
+                  onStartShouldSetResponderCapture: () => !disabled,
+                  onMoveShouldSetResponderCapture: () => !disabled,
                   onStartShouldSetResponder: () => !disabled,
                   onMoveShouldSetResponder: () => !disabled,
-                  onMoveShouldSetResponderCapture: () => !disabled,
                   onResponderGrant: onTrackResponderGrant,
                   onResponderMove: onTrackResponderMove,
                   onResponderRelease: onTrackResponderRelease,

@@ -183,7 +183,11 @@ const OVERLAY_LAYOUT_BASE: ViewStyle = {
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
+    // Native overlay stays transparent — the BlurBackdrop sibling renders
+    // dim + frosted-glass via expo-blur, and a SCRIM_COLOR layer on top
+    // would hide the blur. Web keeps its CSS overlay path (the imperative
+    // useEffect below sets backgroundColor + backdrop-filter on web).
+    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: 'transparent' }),
 };
 
 // Layout / animation only; theme-driven dimensions are merged inside
@@ -446,7 +450,7 @@ export function AlertDialogContent({ children, className, testID }: AlertDialogC
         >
             {/* Native blur layer; renders nothing on web (CSS handles
                 it) or when expo-blur isn't installed. */}
-            <BlurBackdrop intensity={30} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+            <BlurBackdrop intensity={60} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
             <View
                 ref={(node) => {
                     overlayDomRef.current = node as unknown as HTMLElement | null;

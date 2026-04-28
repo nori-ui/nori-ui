@@ -193,7 +193,12 @@ const OVERLAY_LAYOUT_BASE: ViewStyle = {
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
+    // On native the BlurBackdrop sibling renders BEHIND this overlay and
+    // already provides dim + frosted-glass via expo-blur's `tint`/`intensity`.
+    // Painting SCRIM_COLOR on top would mask the blur entirely (the user
+    // sees only a flat tint), so the overlay stays transparent and the
+    // BlurView is the dominant visual on native.
+    ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: 'transparent' }),
 };
 
 // Layout / animation only — theme-driven dimensions are merged inside
@@ -412,7 +417,7 @@ export function DialogContent({ children, className, testID }: DialogContentProp
                 CSS backdrop-filter handles it) and renders nothing if
                 expo-blur isn't installed (graceful degrade — the scrim
                 Pressable below still dims the background). */}
-            <BlurBackdrop intensity={30} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+            <BlurBackdrop intensity={60} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
             <Pressable
                 accessibilityRole="none"
                 aria-hidden={true}

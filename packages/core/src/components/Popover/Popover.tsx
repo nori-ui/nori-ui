@@ -394,9 +394,11 @@ export function PopoverContent({
     };
 
     // Clamp `left` so the popover stays within the viewport even when the
-    // trigger sits near the right edge. Width fallback: contentSize once
-    // measured, otherwise MIN_WIDTH so first paint doesn't overshoot.
-    const measuredWidth = contentSize?.width ?? MIN_WIDTH;
+    // trigger sits near the right edge. First-paint fallback uses
+    // `maxContentWidth` (the cap we apply via maxWidth above) — content
+    // is allowed to grow up to that size, so assuming worst-case avoids
+    // a one-frame overflow before measurement settles.
+    const measuredWidth = contentSize?.width ?? maxContentWidth;
     const clampedLeft = position
         ? Math.min(
               Math.max(VIEWPORT_MARGIN, position.left),

@@ -36,6 +36,7 @@ const CLIENT_ALLOWED = [
     'components/Alert/Alert.tsx',
     'components/AlertDialog/AlertDialog.tsx',
     'components/Dialog/blur-backdrop.tsx',
+    'components/Dialog/blur-backdrop.native.tsx',
     'components/Avatar/Avatar.tsx',
     'components/Badge/Badge.tsx',
     'components/Button/Button.tsx',

@@ -4567,6 +4567,7 @@ __metadata:
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.6.0"
   peerDependencies:
+    expo-blur: ">=14"
     nativewind: ^4.2.0
     react: ^19
     react-dom: ^19
@@ -4575,6 +4576,8 @@ __metadata:
     react-native-reanimated: ">=4.3.0"
     react-native-worklets: ">=0.8.0"
   peerDependenciesMeta:
+    expo-blur:
+      optional: true
     nativewind:
       optional: false
     react-dom:
