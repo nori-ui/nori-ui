@@ -13,12 +13,9 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-    // Editorial chrome is hard-coded dark (`palette.bg = '#0a0a0a'`), so
-    // pin the library components to dark too — without this an OS-light
-    // simulator would render every <Text> in near-black on near-black.
     return (
-        <NoriProvider colorScheme="dark">
-            <StatusBar style="light" />
+        <NoriProvider>
+            <StatusBar style="auto" />
             <Stack screenOptions={{ headerLargeTitle: false }}>
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="components/[slug]" options={{ headerBackTitle: 'Showcase' }} />

@@ -1,27 +1,23 @@
-// Component detail — stacks every story for a component vertically with
-// a category-tinted header. Reads the slug from the file-based route. If
-// `?story=<id>` is present, scrolls the matching story into view on mount.
-// Unknown slug → small "not found" view with a Link back home.
+// Component detail — stacks every story for a component vertically.
+// Reads the slug from the file-based route. If `?story=<id>` is present,
+// scrolls the matching story into view on mount. Unknown slug → small
+// "not found" view with a Link back home.
+//
+// Chrome follows the OS color scheme via `useThemeColors()` so the
+// canvas matches the light/dark token half the components themselves
+// use — text always stays readable.
 
+import { useThemeColors } from '@nori-ui/core/client';
 import { components } from '@nori-ui/core/stories';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const palette = {
-    bg: '#0a0a0a',
-    surface: '#141414',
-    border: 'rgba(255,255,255,0.08)',
-    text: '#fafafa',
-    textMuted: '#a1a1aa',
-    textFaint: '#52525b',
-    accent: '#5eead4',
-} as const;
-
 export default function ComponentDetail() {
     const { slug, story } = useLocalSearchParams<{ slug: string; story?: string }>();
     const entry = useMemo(() => components.find((c) => c.slug === slug), [slug]);
+    const colors = useThemeColors();
 
     // Hooks must run unconditionally regardless of whether the slug
     // resolves; the not-found branch is below all hooks.
@@ -49,21 +45,30 @@ export default function ComponentDetail() {
         return () => clearTimeout(handle);
     }, [story, entrySlug]);
 
+    const bg = colors.semantic.background.default;
+    const surface = colors.semantic.background.subtle;
+    const border = colors.semantic.border.default;
+    const text = colors.semantic.text.default;
+    const textMuted = colors.semantic.text.muted;
+    const accent = colors.semantic.interactive.primary;
+
     if (!entry) {
         return (
-            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: bg }}>
                 <Stack.Screen
                     options={{
                         title: 'Not found',
-                        headerStyle: { backgroundColor: palette.bg },
-                        headerTitleStyle: { color: palette.text },
-                        headerTintColor: palette.accent,
+                        headerStyle: { backgroundColor: bg },
+                        headerTitleStyle: { color: text },
+                        headerTintColor: accent,
                     }}
                 />
                 <View style={styles.notFoundWrap}>
-                    <Text style={styles.notFoundTitle}>Component not found</Text>
-                    <Text style={styles.notFoundBody}>No component matches the slug "{slug}".</Text>
-                    <Link href="/" testID="not-found-back" style={{ color: palette.accent }}>
+                    <Text style={[styles.notFoundTitle, { color: text }]}>Component not found</Text>
+                    <Text style={[styles.notFoundBody, { color: textMuted }]}>
+                        No component matches the slug "{slug}".
+                    </Text>
+                    <Link href="/" testID="not-found-back" style={{ color: accent }}>
                         Back to showcase
                     </Link>
                 </View>
@@ -72,14 +77,14 @@ export default function ComponentDetail() {
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: palette.bg }}>
+        <View style={{ flex: 1, backgroundColor: bg }}>
             <Stack.Screen
                 options={{
                     title: entry.name,
                     headerBackTitle: 'Showcase',
-                    headerStyle: { backgroundColor: palette.bg },
-                    headerTitleStyle: { color: palette.text, fontWeight: '700' },
-                    headerTintColor: palette.accent,
+                    headerStyle: { backgroundColor: bg },
+                    headerTitleStyle: { color: text, fontWeight: '700' },
+                    headerTintColor: accent,
                     headerShadowVisible: false,
                 }}
             />
@@ -91,8 +96,8 @@ export default function ComponentDetail() {
                         onLayout={onStoryLayout(s.id)}
                         style={styles.storyBlock}
                     >
-                        <Text style={styles.storyTitle}>{s.title}</Text>
-                        <View style={styles.storyCanvas}>
+                        <Text style={[styles.storyTitle, { color: textMuted }]}>{s.title}</Text>
+                        <View style={[styles.storyCanvas, { backgroundColor: surface, borderColor: border }]}>
                             <s.render />
                         </View>
                         {idx < entry.stories.length - 1 ? <View style={styles.storyDivider} /> : null}
@@ -113,7 +118,6 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     storyTitle: {
-        color: palette.textMuted,
         fontSize: 11,
         fontWeight: '600',
         letterSpacing: 1.5,
@@ -122,11 +126,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
     },
     storyCanvas: {
-        backgroundColor: palette.surface,
         borderRadius: 14,
         padding: 20,
         borderWidth: StyleSheet.hairlineWidth,
-        borderColor: palette.border,
     },
     storyDivider: {
         height: 32,
@@ -136,12 +138,10 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     notFoundTitle: {
-        color: palette.text,
         fontSize: 22,
         fontWeight: '700',
     },
     notFoundBody: {
-        color: palette.textMuted,
         fontSize: 15,
     },
 });
