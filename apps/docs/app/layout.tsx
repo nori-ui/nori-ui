@@ -1,5 +1,5 @@
 import { RootProvider } from 'fumadocs-ui/provider';
-import { Fraunces } from 'next/font/google';
+import { Exo_2, Fraunces } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { DocsThemeProvider } from '@/components/docs-theme-provider';
 import { GlobalToaster } from '@/components/global-toaster';
@@ -16,6 +16,16 @@ const fraunces = Fraunces({
     axes: ['SOFT', 'opsz'],
 });
 
+// Sans companion — Exo 2 is a variable geometric sans (Natanael Gama,
+// OFL-licensed). Used for UI / label / small-caps elements alongside
+// Fraunces. next/font self-hosts it from _next/static/media/, same as
+// fraunces. Referenced as `var(--font-exo2)`.
+const exo2 = Exo_2({
+    subsets: ['latin'],
+    display: 'swap',
+    variable: '--font-exo2',
+});
+
 export const metadata = {
     title: 'nori-ui — React Native + Web components',
     description: 'React Native + Web component library, AI-documented, Expo-first.',
@@ -23,7 +33,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
-        <html lang="en" suppressHydrationWarning className={fraunces.variable}>
+        <html lang="en" suppressHydrationWarning className={`${fraunces.variable} ${exo2.variable}`}>
             <body className="flex min-h-screen flex-col bg-fd-background text-fd-foreground">
                 <RootProvider>
                     <DocsThemeProvider>
