@@ -13,14 +13,15 @@
 // Metro build step, which is the right signal — they wanted native
 // toasts and forgot the dependency.
 //
-// We wrap sonner-native's <Toaster> with a thin component that reads
-// `useSafeAreaInsets` and pushes the positioner away from the notch /
-// status bar / home indicator via `positionerStyle`. sonner-native
-// doesn't apply safe-area insets itself — its `offset` prop is a flat
-// pixel number — so we have to feed insets in via the styled wrapper.
+// IMPORTANT: sonner-native's internal Positioner already calls
+// `useSafeAreaInsets()` and computes `top: insets.top + (offset || 16)`
+// (or `bottom: insets.bottom + offset` for bottom-anchored toasts).
+// So we only need a `<SafeAreaProvider>` ancestor — no manual padding
+// here, otherwise the inset gets applied twice and the toast lands far
+// below its visual hit-test region (which causes phantom passthrough
+// taps on whatever sits underneath).
 
 import type { ComponentType, ReactNode } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toaster as RawToaster, toast as sonnerToast } from 'sonner-native';
 
 export type SonnerNativeToastOptions = Record<string, unknown>;
@@ -54,26 +55,11 @@ function mapPosition(p: string | undefined): 'top-center' | 'bottom-center' | 'c
 }
 
 function NativeToaster(props: Record<string, unknown>) {
-    const insets = useSafeAreaInsets();
-    const position = mapPosition(props.position as string | undefined);
-    // The positioner is a `position: absolute` overlay that fills the
-    // screen; padding it on the relevant edge inset moves the toast
-    // stack inward. A small 8px buffer keeps the toast off the very
-    // edge of the safe area.
-    const positionerStyle =
-        position === 'bottom-center'
-            ? { paddingBottom: insets.bottom + 8 }
-            : position === 'top-center'
-              ? { paddingTop: insets.top + 8 }
-              : undefined;
-
+    // sonner-native's Positioner reads safe-area insets itself; we only
+    // pass the position prop through after clamping to its 3-value type.
     const merged: Record<string, unknown> = {
         ...props,
-        position,
-        positionerStyle,
-        // Default swipe direction is `up`. For bottom-anchored toasts,
-        // `down` would be more intuitive — but sonner-native only
-        // supports `left | up`, so we leave it as the upstream default.
+        position: mapPosition(props.position as string | undefined),
     };
     return <RawToaster {...(merged as object)} />;
 }
