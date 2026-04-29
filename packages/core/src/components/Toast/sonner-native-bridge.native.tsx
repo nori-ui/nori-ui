@@ -22,7 +22,7 @@
 // as `insets.top + buffer`. We do the latter so consumers still get a
 // consistent visual buffer below the status bar.
 
-import type { ComponentType, ReactNode } from 'react';
+import { type ComponentType, Fragment, type ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toaster as RawToaster, toast as sonnerToast } from 'sonner-native';
 
@@ -71,8 +71,23 @@ function NativeToaster(props: Record<string, unknown>) {
         ...props,
         position,
         offset,
+        // Bypass sonner-native's iOS-only FullWindowOverlay wrapper.
+        // The upstream Toaster mounts itself into a SEPARATE UIWindow
+        // on iOS (via react-native-screens' FullWindowOverlay) so it
+        // can render above modals/navigation, but that overlay window
+        // has flaky touch propagation under the new architecture —
+        // taps on the action Pressable pass through to the underlying
+        // app window and hit whatever sits beneath them. Passing a
+        // passthrough wrapper short-circuits the FullWindowOverlay
+        // branch and keeps the toast inside the regular view hierarchy
+        // where touches route normally.
+        ToasterOverlayWrapper: PassthroughOverlay,
     };
     return <RawToaster {...(merged as object)} />;
+}
+
+function PassthroughOverlay({ children }: { children: ReactNode }) {
+    return <Fragment>{children}</Fragment>;
 }
 
 export const HAS_SONNER_NATIVE = true;
