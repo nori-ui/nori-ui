@@ -622,7 +622,6 @@ export function ToggleGroupItem({
         } as unknown as RefObject<HTMLElement | null>;
         registryRef.current.register(value, holder);
         return () => registryRef.current.unregister(value);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     const isOn = ctx.isPressed(value);

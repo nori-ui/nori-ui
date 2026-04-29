@@ -170,7 +170,6 @@ export function Accordion(props: AccordionProps) {
         // The handler needs the latest snapshot of every prop — `props` is a
         // discriminated union so spreading it into the deps is the cleanest
         // way to keep both branches honest.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [type, singleCurrent, multipleCurrent, singleControlled, multipleControlled, props]
     );
 
