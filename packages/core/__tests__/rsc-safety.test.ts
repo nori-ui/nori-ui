@@ -39,6 +39,7 @@ const CLIENT_ALLOWED = [
     'components/Dialog/blur-backdrop.native.tsx',
     'components/Avatar/Avatar.tsx',
     'components/Badge/Badge.tsx',
+    'components/Breadcrumb/Breadcrumb.tsx',
     'components/Button/Button.tsx',
     'components/Card/Card.tsx',
     'components/Checkbox/Checkbox.tsx',

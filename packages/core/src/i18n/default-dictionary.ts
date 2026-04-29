@@ -19,6 +19,13 @@ export const defaultDictionary: Dictionary = {
     'common.error': 'Something went wrong',
     'common.retry': 'Try again',
 
+    // breadcrumb
+    'breadcrumb.ariaLabel': 'Breadcrumb',
+    'breadcrumb.expandLabel': 'Show full path',
+    'breadcrumb.ellipsisLabel': 'More',
+    'breadcrumb.currentPageLabel': 'Current page',
+    'breadcrumb.siblingMenuLabel': 'Open sibling pages',
+
     // button
     'button.loadingLabel': 'Loading',
 

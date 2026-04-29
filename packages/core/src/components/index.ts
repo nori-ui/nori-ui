@@ -4,6 +4,7 @@ export * from './AlertDialog';
 export * from './Avatar';
 export * from './Badge';
 export * from './Box';
+export * from './Breadcrumb';
 export * from './Button';
 export * from './Card';
 export * from './Checkbox';
