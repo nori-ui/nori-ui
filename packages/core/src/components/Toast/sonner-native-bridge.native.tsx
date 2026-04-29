@@ -13,15 +13,17 @@
 // Metro build step, which is the right signal — they wanted native
 // toasts and forgot the dependency.
 //
-// IMPORTANT: sonner-native's internal Positioner already calls
-// `useSafeAreaInsets()` and computes `top: insets.top + (offset || 16)`
-// (or `bottom: insets.bottom + offset` for bottom-anchored toasts).
-// So we only need a `<SafeAreaProvider>` ancestor — no manual padding
-// here, otherwise the inset gets applied twice and the toast lands far
-// below its visual hit-test region (which causes phantom passthrough
-// taps on whatever sits underneath).
+// IMPORTANT: sonner-native's internal Positioner uses an OR-fallback:
+//   top: offset || insets.top || 40
+// — meaning ANY non-zero `offset` we pass SUPPRESSES the safe-area
+// fallback. So if we pass `offset=24`, the toast lands flush at 24px
+// from the screen edge regardless of the notch. To honor insets we
+// either skip `offset` entirely (insets-only) or compute it ourselves
+// as `insets.top + buffer`. We do the latter so consumers still get a
+// consistent visual buffer below the status bar.
 
 import type { ComponentType, ReactNode } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toaster as RawToaster, toast as sonnerToast } from 'sonner-native';
 
 export type SonnerNativeToastOptions = Record<string, unknown>;
@@ -55,11 +57,20 @@ function mapPosition(p: string | undefined): 'top-center' | 'bottom-center' | 'c
 }
 
 function NativeToaster(props: Record<string, unknown>) {
-    // sonner-native's Positioner reads safe-area insets itself; we only
-    // pass the position prop through after clamping to its 3-value type.
+    const insets = useSafeAreaInsets();
+    const position = mapPosition(props.position as string | undefined);
+    // Compose offset = insets + buffer so the toast clears the notch
+    // (top) or home indicator (bottom). We override whatever offset
+    // came in via props because the upstream `||` semantics make a
+    // raw pixel offset suppress the inset fallback entirely. Center
+    // position needs no offset.
+    const buffer = 8;
+    const offset =
+        position === 'top-center' ? insets.top + buffer : position === 'bottom-center' ? insets.bottom + buffer : 0;
     const merged: Record<string, unknown> = {
         ...props,
-        position: mapPosition(props.position as string | undefined),
+        position,
+        offset,
     };
     return <RawToaster {...(merged as object)} />;
 }
