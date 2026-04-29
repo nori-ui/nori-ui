@@ -14,6 +14,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ColorSchemeToggle, PlaygroundColorSchemeProvider, usePlaygroundColorScheme } from '../components/color-scheme';
 
 export const unstable_settings = {
@@ -45,20 +46,30 @@ function ThemedShell() {
         // GestureHandlerRootView is required by `sonner-native` for
         // swipe-to-dismiss; it must wrap the entire app so any descendant
         // pan recognizers reach the gesture system.
+        //
+        // SafeAreaProvider feeds `useSafeAreaInsets` to the Toaster so
+        // top-anchored toasts clear the status bar / dynamic island,
+        // and bottom-anchored toasts clear the home indicator. Without
+        // it the insets default to zero and toasts collide with system
+        // UI. expo-router adds its own SafeAreaProvider around <Stack>,
+        // but our <Toaster> is a SIBLING of <Stack> — outside that
+        // subtree — so we hoist a top-level provider here.
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <NoriProvider {...noriProps}>
-                <View style={{ flex: 1 }}>
-                    <StatusBar style={statusBarStyle} />
-                    <Stack screenOptions={{ headerLargeTitle: false }}>
-                        <Stack.Screen name="index" options={{ headerShown: false }} />
-                        <Stack.Screen name="components/[slug]" options={{ headerBackTitle: 'Nori UI' }} />
-                    </Stack>
-                    <ColorSchemeToggle />
-                    {/* Toast viewport. One mount near the app root drives
-                        every `toast(...)` call across all screens. */}
-                    <Toaster position="top-center" visibleToasts={3} expand />
-                </View>
-            </NoriProvider>
+            <SafeAreaProvider>
+                <NoriProvider {...noriProps}>
+                    <View style={{ flex: 1 }}>
+                        <StatusBar style={statusBarStyle} />
+                        <Stack screenOptions={{ headerLargeTitle: false }}>
+                            <Stack.Screen name="index" options={{ headerShown: false }} />
+                            <Stack.Screen name="components/[slug]" options={{ headerBackTitle: 'Nori UI' }} />
+                        </Stack>
+                        <ColorSchemeToggle />
+                        {/* Toast viewport. One mount near the app root drives
+                            every `toast(...)` call across all screens. */}
+                        <Toaster position="top-center" visibleToasts={3} expand />
+                    </View>
+                </NoriProvider>
+            </SafeAreaProvider>
         </GestureHandlerRootView>
     );
 }
