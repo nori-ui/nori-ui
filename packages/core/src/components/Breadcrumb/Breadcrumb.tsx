@@ -343,7 +343,12 @@ function useOverflowFit({
     const itemWidthsRef = useRef<Map<number, number>>(new Map());
     const ellipsisWidthRef = useRef<number>(0);
     const separatorWidthRef = useRef<number>(0);
-    const [, forceUpdate] = useState(0);
+    // The widths above live in refs so we can write to them inside layout
+    // callbacks without React's setState quotas. But the fit algorithm
+    // depends on them — so any change has to invalidate the visibleIndices
+    // memo. Bumping `widthsTick` does both: triggers a re-render AND adds
+    // a memo dependency that actually changes between writes.
+    const [widthsTick, setWidthsTick] = useState(0);
 
     const onContainerLayout = useCallback((event: LayoutChangeEvent) => {
         const w = event.nativeEvent.layout.width;
@@ -356,7 +361,7 @@ function useOverflowFit({
             const prev = itemWidthsRef.current.get(index);
             if (prev === undefined || Math.abs(prev - w) >= 0.5) {
                 itemWidthsRef.current.set(index, w);
-                forceUpdate((t) => t + 1);
+                setWidthsTick((t) => t + 1);
             }
         },
         []
@@ -366,7 +371,7 @@ function useOverflowFit({
         const w = event.nativeEvent.layout.width;
         if (Math.abs(ellipsisWidthRef.current - w) >= 0.5) {
             ellipsisWidthRef.current = w;
-            forceUpdate((t) => t + 1);
+            setWidthsTick((t) => t + 1);
         }
     }, []);
 
@@ -374,10 +379,11 @@ function useOverflowFit({
         const w = event.nativeEvent.layout.width;
         if (Math.abs(separatorWidthRef.current - w) >= 0.5) {
             separatorWidthRef.current = w;
-            forceUpdate((t) => t + 1);
+            setWidthsTick((t) => t + 1);
         }
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: widthsTick is a manual invalidation signal for ref-stored measurements; the algorithm reads itemWidthsRef/ellipsisWidthRef/separatorWidthRef which biome can't see through
     const visibleIndices = useMemo<Set<number>>(() => {
         const all = new Set<number>();
         for (let i = 0; i < itemCount; i += 1) {
@@ -489,7 +495,7 @@ function useOverflowFit({
             }
         }
         return anchorIndices;
-    }, [containerWidth, itemCount, itemsBeforeCollapse, itemsAfterCollapse, enabled]);
+    }, [containerWidth, itemCount, itemsBeforeCollapse, itemsAfterCollapse, enabled, widthsTick]);
 
     const ready = !enabled || (containerWidth !== null && itemWidthsRef.current.size >= itemCount);
 
@@ -979,7 +985,6 @@ function BreadcrumbItemsRenderer({
                     aria-hidden
                     accessibilityElementsHidden
                     importantForAccessibility="no-hide-descendants"
-                    pointerEvents="none"
                     style={{
                         position: 'absolute',
                         opacity: 0,
@@ -987,6 +992,10 @@ function BreadcrumbItemsRenderer({
                         alignItems: 'center',
                         left: -99999,
                         top: 0,
+                        // `pointerEvents` lives on the style object now —
+                        // the prop form is deprecated in RN 0.71+ / RN-Web
+                        // 0.20+ and emits a runtime warning every render.
+                        pointerEvents: 'none' as ViewStyle['pointerEvents'],
                     }}
                 >
                     {measurementCells}
