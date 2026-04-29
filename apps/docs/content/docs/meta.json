@@ -11,6 +11,7 @@
     "components/avatar",
     "components/badge",
     "components/box",
+    "components/breadcrumb",
     "components/button",
     "components/card",
     "components/checkbox",

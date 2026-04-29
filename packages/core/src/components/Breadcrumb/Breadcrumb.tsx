@@ -46,7 +46,6 @@ import {
     createContext,
     Fragment,
     isValidElement,
-    type ReactElement,
     type ReactNode,
     useCallback,
     useContext,
@@ -612,7 +611,7 @@ function truncateString(input: string, max: number): string {
 // Root
 // =============================================================================
 
-function BreadcrumbRoot({
+export function Breadcrumb({
     items,
     separator,
     maxItems,
@@ -1567,29 +1566,19 @@ function BreadcrumbEllipsis({ ellipsisLabel, className, testID }: BreadcrumbElli
 // Public surface
 // =============================================================================
 
-type BreadcrumbComponent = ((props: BreadcrumbProps) => ReactElement | null) & {
-    List: typeof BreadcrumbList;
-    Item: typeof BreadcrumbItem;
-    Link: typeof BreadcrumbLink;
-    Page: typeof BreadcrumbPage;
-    Separator: typeof BreadcrumbSeparator;
-    Ellipsis: typeof BreadcrumbEllipsis;
-};
+// Attach the compound subcomponents on the function as static members.
+// Namespace declaration merging gives us:
+//   - Type-side: `Breadcrumb.List` is recognised as `typeof BreadcrumbList`
+//   - Runtime-side: TS compiles the namespace block to `Breadcrumb.List = ...`
+// Consumers can write `<Breadcrumb.Item>` or import `BreadcrumbItem`
+// standalone; both refer to the same component.
+export namespace Breadcrumb {
+    export const List = BreadcrumbList;
+    export const Item = BreadcrumbItem;
+    export const Link = BreadcrumbLink;
+    export const Page = BreadcrumbPage;
+    export const Separator = BreadcrumbSeparator;
+    export const Ellipsis = BreadcrumbEllipsis;
+}
 
-const Breadcrumb = BreadcrumbRoot as unknown as BreadcrumbComponent;
-Breadcrumb.List = BreadcrumbList;
-Breadcrumb.Item = BreadcrumbItem;
-Breadcrumb.Link = BreadcrumbLink;
-Breadcrumb.Page = BreadcrumbPage;
-Breadcrumb.Separator = BreadcrumbSeparator;
-Breadcrumb.Ellipsis = BreadcrumbEllipsis;
-
-export {
-    Breadcrumb,
-    BreadcrumbEllipsis,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-};
+export { BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator };

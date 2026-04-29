@@ -29,6 +29,7 @@ const TARGETS = [
     'Avatar',
     'Badge',
     'Box',
+    'Breadcrumb',
     'Button',
     'Card',
     'Checkbox',

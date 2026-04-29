@@ -1,0 +1,118 @@
+---
+title: Breadcrumb
+description: Cross-platform breadcrumb trail with width-aware collapse, sibling menus, JSON-LD schema, and an agent-friendly items API.
+since: 0.0.6
+tags: [navigation]
+platform: both
+category: navigation
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Breadcrumb" />
+
+## At a glance
+
+- **Two equivalent APIs**: `<Breadcrumb items={[…]} />` for terse, agent-friendly markup and a compound `Breadcrumb.List` / `Breadcrumb.Item` / `Breadcrumb.Link` / `Breadcrumb.Page` form for full JSX control.
+- **Width-aware collapse on web AND native** via `onLayout` (RN-Web routes through `ResizeObserver`; native uses its own layout system). Middle items fold into an interactive ellipsis when the container can't fit the trail.
+- **Count-based collapse** (`maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse`) as a deterministic ceiling above width fit.
+- **`expandBehavior`**: `inline` (web default) folds the trail back open; `menu` (native default) opens a popover with the hidden items; `scroll` falls back to a horizontal scroller for IDE-style file paths; `none` is purely visual.
+- **Per-item icons**, **sibling menus** (the VSCode/file-path pattern), label truncation, loading skeletons, and RTL chevron flip via `dir="rtl"`.
+- **JSON-LD `BreadcrumbList`** structured data is injected automatically on web for SEO + LLM ingest. SSR consumers should call the exported `getBreadcrumbJsonLd(items)` helper from their framework's metadata API instead.
+- **Auto `aria-current="page"`** on the last item (or any item flagged `current`), with a visually-hidden "Current page:" prefix for screen readers. The wrapper is a real `<nav>` landmark with a localized `aria-label`.
+- i18n hooks: `breadcrumb.ariaLabel`, `breadcrumb.expandLabel`, `breadcrumb.ellipsisLabel`, `breadcrumb.currentPageLabel`, `breadcrumb.siblingMenuLabel`.
+
+## Preview
+
+<Preview name="breadcrumb-basic" />
+
+## Custom separators
+
+The default is a chevron that auto-flips for RTL. Pass any string, ReactNode, or `(ctx) => ReactNode` to customize.
+
+<Preview name="breadcrumb-separators" />
+
+## With icons
+
+Add a leading icon per item via the `icon` prop — sized to the line height. Any icon component with the shape `({ size?: number; color?: string }) => ReactNode` works (lucide, custom SVG, your own icon set).
+
+<Preview name="breadcrumb-icons" />
+
+## Count-based collapse
+
+Set `maxItems` to fold the middle of the trail into an ellipsis. Click the ellipsis to expand inline (default on web).
+
+<Preview name="breadcrumb-collapse" />
+
+## Width-based collapse
+
+Pass `collapseOnOverflow` to make the trail react to the container width. The library renders a hidden measurement copy of every item via `onLayout`, then shows only the items that fit. Resize the container in the demo below to see it in action.
+
+<Preview name="breadcrumb-width-collapse" />
+
+## Sibling menus (VSCode-style)
+
+Pass a `siblings` array on any item to add a chevron toggle that opens a popover menu of sibling pages — useful for file paths or any breadcrumb where the user might want to jump laterally.
+
+<Preview name="breadcrumb-sibling-menu" />
+
+## Compound API
+
+For full JSX control, use the compound subcomponents. Separators auto-insert between consecutive `Breadcrumb.Item`s unless you place your own.
+
+<Preview name="breadcrumb-compound" />
+
+## SEO + LLM ingest
+
+The component injects a `BreadcrumbList` JSON-LD document into `<head>` on the client when `items` is provided. For SSR-time emission (recommended for crawler reliability), use the helper:
+
+```tsx
+import { getBreadcrumbJsonLd } from '@nori-ui/core';
+
+// Next.js App Router metadata
+export async function generateMetadata() {
+    return {
+        other: {
+            'application/ld+json': getBreadcrumbJsonLd([
+                { label: 'Home', href: 'https://example.com/' },
+                { label: 'Docs', href: 'https://example.com/docs' },
+                { label: 'Breadcrumb' },
+            ]),
+        },
+    };
+}
+```
+
+Pass `schemaOrg={false}` on the component to opt out of the client-side injection if you're already emitting JSON-LD via your metadata pipeline.
+
+## Props
+
+### Breadcrumb
+
+<PropsTable component="Breadcrumb" />
+
+### Breadcrumb.List
+
+<PropsTable component="BreadcrumbList" />
+
+### Breadcrumb.Item
+
+<PropsTable component="BreadcrumbItem" />
+
+### Breadcrumb.Link
+
+<PropsTable component="BreadcrumbLink" />
+
+### Breadcrumb.Page
+
+<PropsTable component="BreadcrumbPage" />
+
+### Breadcrumb.Separator
+
+<PropsTable component="BreadcrumbSeparator" />
+
+### Breadcrumb.Ellipsis
+
+<PropsTable component="BreadcrumbEllipsis" />

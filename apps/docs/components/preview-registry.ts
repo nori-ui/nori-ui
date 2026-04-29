@@ -8,6 +8,13 @@ import AlertDialogDestructive from './demos/alert-dialog-destructive';
 import AvatarBasic from './demos/avatar-basic';
 import BadgeBasic from './demos/badge-basic';
 import BoxBasic from './demos/box-basic';
+import BreadcrumbBasic from './demos/breadcrumb-basic';
+import BreadcrumbCollapse from './demos/breadcrumb-collapse';
+import BreadcrumbCompound from './demos/breadcrumb-compound';
+import BreadcrumbIcons from './demos/breadcrumb-icons';
+import BreadcrumbSeparators from './demos/breadcrumb-separators';
+import BreadcrumbSiblingMenu from './demos/breadcrumb-sibling-menu';
+import BreadcrumbWidthCollapse from './demos/breadcrumb-width-collapse';
 import ButtonBasic from './demos/button-basic';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
@@ -101,6 +108,25 @@ export const previews = {
     'accordion-multiple': { Component: AccordionMultiple, ...previewSources['accordion-multiple'], ...DIR_ONLY },
     'text-basic': { Component: TextBasic, ...previewSources['text-basic'], ...NO_CHROME },
     'box-basic': { Component: BoxBasic, ...previewSources['box-basic'], ...NO_CHROME },
+    'breadcrumb-basic': { Component: BreadcrumbBasic, ...previewSources['breadcrumb-basic'] },
+    'breadcrumb-separators': {
+        Component: BreadcrumbSeparators,
+        ...previewSources['breadcrumb-separators'],
+        ...NO_CHROME,
+    },
+    'breadcrumb-icons': { Component: BreadcrumbIcons, ...previewSources['breadcrumb-icons'], ...NO_CHROME },
+    'breadcrumb-collapse': { Component: BreadcrumbCollapse, ...previewSources['breadcrumb-collapse'] },
+    'breadcrumb-width-collapse': {
+        Component: BreadcrumbWidthCollapse,
+        ...previewSources['breadcrumb-width-collapse'],
+        ...NO_CHROME,
+    },
+    'breadcrumb-sibling-menu': {
+        Component: BreadcrumbSiblingMenu,
+        ...previewSources['breadcrumb-sibling-menu'],
+        ...NO_CHROME,
+    },
+    'breadcrumb-compound': { Component: BreadcrumbCompound, ...previewSources['breadcrumb-compound'], ...NO_CHROME },
     'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'], ...NO_CHROME },
     'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'], ...NO_CHROME },
     'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'], ...NO_CHROME },
