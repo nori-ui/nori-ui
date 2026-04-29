@@ -69,6 +69,10 @@ export default defineConfig({
         // consumer-build time can resolve it if installed; without this
         // tsup tries to bundle the JSX-laden source and fails.
         'expo-blur',
+        // `sonner-native` is the native counterpart to `sonner` for the
+        // Toast component. Optional peer; keep external so consumer's
+        // Metro bundles whichever copy they have installed.
+        'sonner-native',
     ],
     // Route JSX through NativeWind's runtime so className on RN primitives
     // reaches react-native-css-interop → style instead of being swallowed by

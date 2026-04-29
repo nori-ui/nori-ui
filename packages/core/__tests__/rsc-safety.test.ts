@@ -59,8 +59,9 @@ const CLIENT_ALLOWED = [
     'components/TextInput/TextInput.tsx',
     'components/Toast/Toaster.tsx',
     'components/Toast/toast.ts',
-    'components/Toast/toast-store.ts',
     'components/Toast/sonner-bridge.ts',
+    'components/Toast/sonner-native-bridge.tsx',
+    'components/Toast/sonner-native-bridge.native.tsx',
     'components/Toggle/Toggle.tsx',
     'components/Tooltip/Tooltip.tsx',
 ];

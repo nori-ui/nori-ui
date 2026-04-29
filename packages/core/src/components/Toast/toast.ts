@@ -1,20 +1,19 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 import { getSonner, HAS_SONNER } from './sonner-bridge';
-import * as store from './toast-store';
+import { getSonnerNative } from './sonner-native-bridge';
 import type { ToastOptions, ToastTone } from './types';
 
 /**
  * Imperative toast API.
  *
- * - Web: delegates to `sonner` directly. Identical syntax to sonner so
- *   the upstream docs apply 1:1, and existing sonner muscle memory
- *   transfers.
- * - Native: pushes to our own pub/sub store, which `<Toaster>` reads.
+ * - Web → delegates to `sonner` (Emil Kowalski).
+ * - Native → delegates to `sonner-native` (Gunnar Torfi's port).
  *
- * The exported surface is identical on both platforms — userland never
- * branches on `Platform.OS` to call a toast.
+ * Userland never branches on `Platform.OS` — `toast(...)`, `toast.success(...)`
+ * and friends call the right package transparently.
  *
  * Example:
  *   ```tsx
@@ -32,53 +31,74 @@ import type { ToastOptions, ToastTone } from './types';
  */
 
 type ToastId = string | number;
+// Both sonner and sonner-native expose the same callable shape on
+// their `toast` export — default callable plus `success` / `error` /
+// `warning` / `info` / `dismiss` / `promise`. The exact types differ
+// upstream (sonner ships ExternalToast options; sonner-native ships its
+// own option shape), but the runtime contract is identical for our
+// purposes. Use a structural shim and cast at the bridge boundary.
+type ToastFn = {
+    (message: ReactNode, options?: Record<string, unknown>): ToastId;
+    success: (message: ReactNode, options?: Record<string, unknown>) => ToastId;
+    error: (message: ReactNode, options?: Record<string, unknown>) => ToastId;
+    warning: (message: ReactNode, options?: Record<string, unknown>) => ToastId;
+    info: (message: ReactNode, options?: Record<string, unknown>) => ToastId;
+    dismiss: (id?: ToastId) => void;
+    promise: <T>(p: Promise<T>, opts: unknown) => ToastId;
+};
+type SonnerLike = { toast: ToastFn };
+
+function getActive(): SonnerLike | null {
+    if (HAS_SONNER) {
+        return getSonner() as SonnerLike | null;
+    }
+    if (Platform.OS !== 'web') {
+        return getSonnerNative() as SonnerLike | null;
+    }
+    return null;
+}
 
 /**
- * Map our cross-platform `tone` to sonner's named methods. Sonner has
- * no public `tone` option; you have to call the right method to get
- * the right styling.
+ * Map our cross-platform `tone` to sonner's named methods. Both sonner
+ * and sonner-native expose the same `success` / `error` / `warning` /
+ * `info` shortcuts plus a default callable, so a single dispatcher
+ * works for both.
  */
-function dispatchSonner(tone: ToastTone, title: ReactNode, options: ToastOptions): ToastId | undefined {
-    const sonner = getSonner();
-    if (!sonner) {
+function dispatch(tone: ToastTone, title: ReactNode, options: ToastOptions): ToastId | undefined {
+    const active = getActive();
+    if (!active) {
         return undefined;
     }
-    // Map our action shape (onClick) onto sonner's action shape (onClick).
-    // Identical today, but kept as an explicit mapping so a future drift
-    // (e.g. our action growing a `variant` prop) is contained here.
-    const sonnerOptions: Record<string, unknown> = { ...options };
+    const mapped: Record<string, unknown> = { ...options };
     if (options.action) {
-        sonnerOptions.action = { label: options.action.label, onClick: options.action.onClick };
+        mapped.action = { label: options.action.label, onClick: options.action.onClick };
     }
     if (options.cancel) {
-        sonnerOptions.cancel = { label: options.cancel.label, onClick: options.cancel.onClick };
+        mapped.cancel = { label: options.cancel.label, onClick: options.cancel.onClick };
     }
-    delete sonnerOptions.tone;
+    delete mapped.tone;
     switch (tone) {
         case 'success':
-            return sonner.toast.success(title as string, sonnerOptions as never);
+            return active.toast.success(title, mapped);
         case 'danger':
-            return sonner.toast.error(title as string, sonnerOptions as never);
+            return active.toast.error(title, mapped);
         case 'warning':
-            return sonner.toast.warning(title as string, sonnerOptions as never);
+            return active.toast.warning(title, mapped);
         case 'info':
-            return sonner.toast.info(title as string, sonnerOptions as never);
+            return active.toast.info(title, mapped);
         default:
-            return sonner.toast(title as string, sonnerOptions as never);
+            return active.toast(title, mapped);
     }
 }
 
 function show(title: ReactNode, options: ToastOptions = {}): ToastId {
     const tone: ToastTone = options.tone ?? 'default';
-    if (HAS_SONNER) {
-        const id = dispatchSonner(tone, title, options);
-        if (id !== undefined) {
-            return id;
-        }
-        // sonner unavailable on web (e.g. SSR or pruned bundle) — fall
-        // through to the store so the call still resolves.
-    }
-    return store.add(title, { ...options, tone });
+    const id = dispatch(tone, title, options);
+    // Both sonner and sonner-native return string|number ids. If the
+    // active provider couldn't dispatch (e.g. the package isn't installed
+    // on a particular platform), return a synthetic id so the caller's
+    // chained `.dismiss(id)` still resolves cleanly.
+    return id ?? `nori-toast-${Date.now()}`;
 }
 
 const toastFn = show as ((title: ReactNode, options?: ToastOptions) => ToastId) & {
@@ -105,41 +125,24 @@ toastFn.info = (title, options = {}) => show(title, { ...options, tone: 'info' }
 toastFn.message = (title, options = {}) => show(title, { ...options, tone: 'default' });
 
 toastFn.dismiss = (id) => {
-    if (HAS_SONNER) {
-        const sonner = getSonner();
-        if (sonner) {
-            if (id === undefined) {
-                sonner.toast.dismiss();
-            } else {
-                sonner.toast.dismiss(id);
-            }
-            return;
-        }
+    const active = getActive();
+    if (!active) {
+        return;
     }
-    store.dismiss(id);
+    if (id === undefined) {
+        active.toast.dismiss();
+    } else {
+        active.toast.dismiss(id);
+    }
 };
 
 toastFn.promise = (promise, opts) => {
     const resolved = typeof promise === 'function' ? promise() : promise;
-    if (HAS_SONNER) {
-        const sonner = getSonner();
-        if (sonner) {
-            return sonner.toast.promise(resolved, opts as never) as ToastId;
-        }
+    const active = getActive();
+    if (!active) {
+        return `nori-toast-${Date.now()}`;
     }
-    // Native fallback: show a loading toast, then update on resolve.
-    const id = show(opts.loading, { tone: 'default', duration: Number.POSITIVE_INFINITY });
-    resolved.then(
-        (data) => {
-            const title = typeof opts.success === 'function' ? opts.success(data) : opts.success;
-            store.update(id, { title, tone: 'success', duration: 4000, insertedAt: Date.now() });
-        },
-        (err) => {
-            const title = typeof opts.error === 'function' ? opts.error(err) : opts.error;
-            store.update(id, { title, tone: 'danger', duration: 4000, insertedAt: Date.now() });
-        }
-    );
-    return id;
+    return active.toast.promise(resolved, opts) as ToastId;
 };
 
 export const toast = toastFn;
