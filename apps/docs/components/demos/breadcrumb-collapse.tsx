@@ -9,10 +9,10 @@ export default function BreadcrumbCollapse() {
                 itemsBeforeCollapse={1}
                 itemsAfterCollapse={1}
                 items={[
-                    { label: 'Home', href: '/' },
-                    { label: 'Docs', href: '/docs' },
-                    { label: 'Components', href: '/docs/components' },
-                    { label: 'Navigation', href: '/docs/components/navigation' },
+                    { label: 'Home', href: '#', onSelect: () => {} },
+                    { label: 'Docs', href: '#', onSelect: () => {} },
+                    { label: 'Components', href: '#', onSelect: () => {} },
+                    { label: 'Navigation', href: '#', onSelect: () => {} },
                     { label: 'Breadcrumb' },
                 ]}
             />

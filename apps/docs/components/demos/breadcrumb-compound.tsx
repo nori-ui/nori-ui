@@ -5,10 +5,14 @@ export default function BreadcrumbCompound() {
         <Breadcrumb separator="/">
             <Breadcrumb.List>
                 <Breadcrumb.Item>
-                    <Breadcrumb.Link href="/">Home</Breadcrumb.Link>
+                    <Breadcrumb.Link href="#" onPress={() => {}}>
+                        Home
+                    </Breadcrumb.Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
-                    <Breadcrumb.Link href="/docs">Docs</Breadcrumb.Link>
+                    <Breadcrumb.Link href="#" onPress={() => {}}>
+                        Docs
+                    </Breadcrumb.Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
                     <Breadcrumb.Page>Breadcrumb</Breadcrumb.Page>

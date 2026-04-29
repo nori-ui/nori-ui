@@ -60,10 +60,10 @@ export default function BreadcrumbIcons() {
     return (
         <Breadcrumb
             items={[
-                { label: 'Home', href: '/', icon: HomeIcon },
-                { label: 'Programs', href: '/programs', icon: FolderIcon },
-                { label: 'Files', href: '/programs/files', icon: FolderIcon },
-                { label: 'Services', href: '/programs/files/services', icon: FolderIcon },
+                { label: 'Home', href: '#', onSelect: () => {}, icon: HomeIcon },
+                { label: 'Programs', href: '#', onSelect: () => {}, icon: FolderIcon },
+                { label: 'Files', href: '#', onSelect: () => {}, icon: FolderIcon },
+                { label: 'Services', href: '#', onSelect: () => {}, icon: FolderIcon },
                 { label: 'config.txt', icon: FileIcon },
             ]}
         />

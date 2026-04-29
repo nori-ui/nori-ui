@@ -926,12 +926,27 @@ function BreadcrumbItemsRenderer({
         </View>
     );
 
+    // When width-based collapse is on, the wrapper MUST measure the
+    // available width — not its content's natural width. Without an
+    // explicit `width: '100%'` (or `alignSelf: 'stretch'`) the wrapper
+    // hugs its row of items on native, so `containerWidth` from
+    // `onLayout` equals the items' total — and the algorithm
+    // never sees an overflow. With `width: '100%'`, the wrapper fills
+    // its parent's cross-axis (which is the row width in a typical
+    // column-flex parent), giving us a real budget to compare against.
     const wrapperStyle: ViewStyle = {
         flexDirection: 'row',
         alignItems: 'center',
         direction: dir as ViewStyle['direction'],
         flexShrink: 1,
         minWidth: 0,
+        ...(collapseOnOverflow && expandBehavior !== 'scroll' ? { width: '100%' } : null),
+        // `overflow: 'hidden'` keeps the visible row from blowing past
+        // its container before the first measurement settles. Without
+        // it, native renders the natural-width row briefly on the first
+        // paint, even though the JS layout reports the correct measured
+        // width on the very next tick.
+        ...(collapseOnOverflow ? { overflow: 'hidden' as ViewStyle['overflow'] } : null),
     };
 
     return (
@@ -1103,10 +1118,20 @@ function BreadcrumbInteractive({ item, children }: { item: BreadcrumbItemData; c
     }, [item]);
 
     if (Platform.OS === 'web' && item.href) {
+        // When the consumer passes `onSelect`, treat it as the action and
+        // suppress the default `<a>` navigation. This is the standard
+        // pattern for "link-styled button" use-cases (router Links,
+        // analytics-only handlers, demo pseudo-links).
+        const handleClick = item.onSelect
+            ? (event: { preventDefault: () => void }) => {
+                  event.preventDefault();
+                  item.onSelect?.();
+              }
+            : undefined;
         return (
             <a
                 href={item.href}
-                onClick={item.onSelect ? () => item.onSelect?.() : undefined}
+                onClick={handleClick}
                 style={{
                     color: colors.semantic.interactive.primary,
                     textDecoration: 'none',
@@ -1196,12 +1221,14 @@ function SiblingRow({ sibling }: { sibling: BreadcrumbSibling }) {
     );
 
     if (Platform.OS === 'web' && sibling.href && !sibling.disabled) {
+        const handleClick = sibling.onSelect
+            ? (event: { preventDefault: () => void }) => {
+                  event.preventDefault();
+                  sibling.onSelect?.();
+              }
+            : undefined;
         return (
-            <a
-                href={sibling.href}
-                onClick={sibling.onSelect ? () => sibling.onSelect?.() : undefined}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-            >
+            <a href={sibling.href} onClick={handleClick} style={{ textDecoration: 'none', color: 'inherit' }}>
                 {inner}
             </a>
         );
@@ -1409,10 +1436,19 @@ function BreadcrumbLink({ href, onPress, asChild, children, className, testID }:
     }
 
     if (Platform.OS === 'web' && href) {
+        // `onPress` overrides the default `<a>` navigation — same pattern
+        // as the items-mode `onSelect`. Lets consumers use `<Link>` from
+        // a router or build pseudo-links for demos.
+        const handleClick = onPress
+            ? (event: { preventDefault: () => void }) => {
+                  event.preventDefault();
+                  onPress?.();
+              }
+            : undefined;
         return (
             <a
                 href={href}
-                onClick={onPress ? () => onPress?.() : undefined}
+                onClick={handleClick}
                 {...(testID !== undefined ? { 'data-testid': testID } : {})}
                 {...(className !== undefined ? { className } : {})}
                 style={{

@@ -55,11 +55,11 @@ export default function BreadcrumbWidthCollapse() {
                 <Breadcrumb
                     collapseOnOverflow
                     items={[
-                        { label: 'Home', href: '/', icon: HomeIcon },
-                        { label: 'Programs', href: '/programs', icon: FolderIcon },
-                        { label: 'Files', href: '/programs/files', icon: FolderIcon },
-                        { label: 'Services', href: '/programs/files/services', icon: FolderIcon },
-                        { label: 'Background', href: '/programs/files/services/bg', icon: FolderIcon },
+                        { label: 'Home', href: '#', onSelect: () => {}, icon: HomeIcon },
+                        { label: 'Programs', href: '#', onSelect: () => {}, icon: FolderIcon },
+                        { label: 'Files', href: '#', onSelect: () => {}, icon: FolderIcon },
+                        { label: 'Services', href: '#', onSelect: () => {}, icon: FolderIcon },
+                        { label: 'Background', href: '#', onSelect: () => {}, icon: FolderIcon },
                         { label: 'configuration.txt' },
                     ]}
                 />

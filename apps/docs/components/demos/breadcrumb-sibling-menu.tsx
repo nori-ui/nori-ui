@@ -24,16 +24,17 @@ export default function BreadcrumbSiblingMenu() {
             <Text>Click the small arrow next to "Programs" to jump to a sibling folder.</Text>
             <Breadcrumb
                 items={[
-                    { label: 'Home', href: '/' },
+                    { label: 'Home', href: '#', onSelect: () => {} },
                     {
                         label: 'Programs',
-                        href: '/programs',
+                        href: '#',
+                        onSelect: () => {},
                         icon: FolderIcon,
                         siblings: [
-                            { label: 'Documents', href: '/documents', icon: FolderIcon },
-                            { label: 'Downloads', href: '/downloads', icon: FolderIcon },
-                            { label: 'Music', href: '/music', icon: FolderIcon },
-                            { label: 'Pictures', href: '/pictures', icon: FolderIcon },
+                            { label: 'Documents', href: '#', onSelect: () => {}, icon: FolderIcon },
+                            { label: 'Downloads', href: '#', onSelect: () => {}, icon: FolderIcon },
+                            { label: 'Music', href: '#', onSelect: () => {}, icon: FolderIcon },
+                            { label: 'Pictures', href: '#', onSelect: () => {}, icon: FolderIcon },
                         ],
                     },
                     { label: 'config.txt' },
