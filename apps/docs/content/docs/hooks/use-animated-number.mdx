@@ -1,0 +1,45 @@
+---
+title: useAnimatedNumber
+description: Animate a numeric value over time. Web uses CSS transitions; native uses Reanimated worklets.
+since: 0.0.4
+tags: [hooks, animation]
+platform: both
+category: hooks
+---
+
+Drives a numeric value smoothly between targets — used internally by `Slider`, `Progress`, `Toggle`, and animated counters. Cross-platform: on web it bridges to a CSS-driven number; on native it bridges to a Reanimated `SharedValue`.
+
+## Usage
+
+```tsx
+import { useAnimatedNumber } from '@nori-ui/core/client';
+
+function CountUp({ to }: { to: number }) {
+    const value = useAnimatedNumber(to, { duration: 400 });
+    return <span>{Math.round(value)}</span>;
+}
+```
+
+## API
+
+### Arguments
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `target` | `number` | — | The target value. The hook animates from the previous render's value to this. |
+| `options.duration` | `number` | `200` | Animation duration in ms. |
+| `options.easing` | `(t: number) => number` | `(t) => t` | Easing function applied to the normalized 0..1 progress. |
+
+### Returns
+
+A `number` — the current interpolated value as of the last animation tick. Re-renders at frame rate while the animation is in flight; stops re-rendering once it settles.
+
+## Notes
+
+- The hook runs on the JS thread on web (`requestAnimationFrame`) and on the UI thread on native (Reanimated worklet) — both stay 60fps for typical UI animations.
+- Pass a stable `easing` reference (memoized or module-scoped) — passing a fresh function each render restarts the animation.
+- For multi-property animations, run multiple `useAnimatedNumber` calls in parallel; the hook is intentionally single-value.
+
+## Related
+
+- [Theming](/docs/theming) — animation token presets (`duration.fast`, `duration.normal`, `easing.standard`).

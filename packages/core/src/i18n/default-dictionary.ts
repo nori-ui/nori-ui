@@ -26,6 +26,19 @@ export const defaultDictionary: Dictionary = {
     'breadcrumb.currentPageLabel': 'Current page',
     'breadcrumb.siblingMenuLabel': 'Open sibling pages',
 
+    // pagination
+    'pagination.ariaLabel': 'Pagination',
+    'pagination.previous': 'Previous page',
+    'pagination.next': 'Next page',
+    'pagination.first': 'First page',
+    'pagination.last': 'Last page',
+    'pagination.ellipsis': 'More pages',
+    'pagination.currentPage': 'Current page',
+    'pagination.gotoPage': 'Go to page {{page}}',
+    'pagination.range': 'Showing {{from}}–{{to}} of {{total}}',
+    'pagination.pageOf': 'Page {{page}} of {{total}}',
+    'pagination.pageSizeLabel': 'Items per page',
+
     // button
     'button.loadingLabel': 'Loading',
 

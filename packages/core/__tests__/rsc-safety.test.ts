@@ -45,6 +45,8 @@ const CLIENT_ALLOWED = [
     'components/Checkbox/Checkbox.tsx',
     'components/Dialog/Dialog.tsx',
     'components/InputGroup/InputGroup.tsx',
+    'components/Pagination/Pagination.tsx',
+    'components/Pagination/use-pagination.ts',
     'components/Popover/Popover.tsx',
     'components/Progress/Progress.tsx',
     'components/RadioGroup/RadioGroup.tsx',

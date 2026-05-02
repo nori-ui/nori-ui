@@ -1,0 +1,15 @@
+---
+title: Hooks
+description: Public hooks shipped by @nori-ui/core — i18n, theming, animation, and pagination logic, all cross-platform and tree-shakable.
+---
+
+The library exposes a small surface of hooks alongside its components. Each hook is cross-platform (web + React Native), tree-shakable, and has its own documentation page below.
+
+| Hook | Purpose |
+|---|---|
+| [`usePagination`](/docs/hooks/use-pagination) | Headless pagination math — sibling/boundary windowing, prev/next/first/last actions, controlled or uncontrolled. |
+| [`useTranslation`](/docs/hooks/use-translation) | The library's i18n primitive — read keys with interpolation and pluralization. |
+| [`useThemeColors`](/docs/hooks/use-theme-colors) | Read the resolved theme tokens (colors, spacing, radii, typography) for the current color scheme. |
+| [`useAnimatedNumber`](/docs/hooks/use-animated-number) | Animate a numeric value over time — works on web (CSS transitions) and native (Reanimated worklets). |
+
+All hooks must be imported from `@nori-ui/core/client` (they're client-only) and require a `<NoriProvider>` ancestor for theme + i18n context.

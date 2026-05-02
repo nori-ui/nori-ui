@@ -19,6 +19,7 @@
     "components/hstack",
     "components/icon",
     "components/input-group",
+    "components/pagination",
     "components/popover",
     "components/progress",
     "components/radio-group",
@@ -38,6 +39,12 @@
     "components/toggle-group",
     "components/tooltip",
     "components/vstack",
+    "---Hooks---",
+    "hooks/index",
+    "hooks/use-pagination",
+    "hooks/use-translation",
+    "hooks/use-theme-colors",
+    "hooks/use-animated-number",
     "---Project---",
     "changelog"
   ]

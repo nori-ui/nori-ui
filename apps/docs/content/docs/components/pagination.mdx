@@ -1,0 +1,134 @@
+---
+title: Pagination
+description: Cross-platform pagination with auto-compact mobile variant, compound API, page-size selector, range display, and a headless usePagination hook.
+since: 0.0.7
+tags: [navigation]
+platform: both
+category: navigation
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Pagination" />
+
+## At a glance
+
+- **Two equivalent APIs**: `<Pagination page={…} pageCount={…} onPageChange={…} />` for the 80% case and a compound `Pagination.Prev` / `Pagination.Items` / `Pagination.Item` / `Pagination.Range` / `Pagination.PageSize` / `Pagination.Next` form for full layout control.
+- **Auto-compact on phones**: `variant="auto"` (the default) renders numbered pages on viewports ≥ `PAGINATION_COMPACT_BREAKPOINT` (480px) and switches to a `‹ Page X of Y ›` row below — works the same on web and on iOS / Android via `useWindowDimensions`. Force one with `variant="numbered" | "compact"`.
+- **Sibling- and boundary-aware ellipsis** (`siblingCount`, `boundaryCount`) using the same algorithm as MUI's `usePagination`, so AI agents that have learned MUI's behavior get the right defaults.
+- **Optional first / last buttons** (`showFirstLast`).
+- **`hideOnSinglePage={true}` by default** — drop in confidently and the component disappears when there's only one page of data.
+- **Built-in range display** — pass `itemCount` and `pageSize` plus `showRange` (or render `<Pagination.Range />`) to get a localized "Showing 21–30 of 142" string.
+- **Built-in page-size selector** — `<Pagination.PageSize options={[10, 25, 50]} />` wraps our own `Select`. Picking a new size resets the current page to 1.
+- **`renderItem` slot** for `<Link>` integration with any router (Next.js, Expo Router, react-router) — same signature on web and native.
+- **Headless [`usePagination()`](/docs/hooks/use-pagination) hook** — the same math the component uses, exposed for fully custom UIs.
+- **WCAG 2.2 AA**: `<nav>` landmark, `aria-current="page"` on the active item, debounced `aria-live="polite"` page-change announcements, every label localizable via `useTranslation` (`pagination.previous`, `pagination.next`, `pagination.first`, `pagination.last`, `pagination.gotoPage`, `pagination.range`, `pagination.pageOf`, `pagination.pageSizeLabel`, `pagination.ariaLabel`).
+- **RTL** via `dir="rtl"` — chevron glyphs and DOM order both flip.
+
+## Preview
+
+<Preview name="pagination-basic" />
+
+## First / last buttons
+
+For very long lists, surface jump-to-first and jump-to-last with `showFirstLast`.
+
+<Preview name="pagination-first-last" />
+
+## Compact variant
+
+The compact variant is what `variant="auto"` switches to on phone-width screens. You can also force it on any viewport — useful for dense toolbars.
+
+<Preview name="pagination-compact" />
+
+## Wider sibling and boundary windows
+
+Tune how many pages are shown around the current page (`siblingCount`) and at the start / end (`boundaryCount`).
+
+<Preview name="pagination-siblings" />
+
+## Range display
+
+Pass `itemCount` and `pageSize` together with `showRange` to render the canonical "Showing X–Y of Z" string. The text is localized via `useTranslation` and updates live as the page changes.
+
+<Preview name="pagination-range" />
+
+## Compound API
+
+Use compound parts when you need full control over the layout (extra buttons, custom spacing, mixing with other UI). The same context drives both APIs, so behavior matches the shorthand 1:1.
+
+<Preview name="pagination-compound" />
+
+## Page-size selector
+
+`<Pagination.PageSize options={[10, 25, 50, 100]} />` wraps the project's `Select` and reads / writes the current page size from / to the root context. Picking a new size resets the page to 1 and forwards both values through `onPageChange({ page, pageSize })`.
+
+<Preview name="pagination-page-size" />
+
+## Custom rendering with `renderItem`
+
+Replace the default item rendering — useful for SSR-friendly anchor tags or your router's `<Link>`. Same signature on web and native. The example below uses an `<a>` tag and prevents default navigation; in a real app you'd return your `<Link href="/items?page=N">` of choice.
+
+<Preview name="pagination-custom-render" />
+
+## Just the math: `usePagination`
+
+For fully custom UIs (drag scrubbers, infinite-scroll page indicators, custom keyboard interactions), use the headless hook. It returns the same item descriptors and actions the component uses internally — without any DOM or RN elements.
+
+See the [`usePagination`](/docs/hooks/use-pagination) hook page for the full API.
+
+<Preview name="pagination-hook" />
+
+## When to use which API
+
+| Use the shorthand `<Pagination items />` when… | Use the compound `<Pagination>` children when… | Use `usePagination()` when… |
+|---|---|---|
+| You want one-line drop-in (the 80% case) | You need to mix Range / PageSize / extra UI freely | You want a totally custom UI (no `<View>` wrappers, no theming) |
+| The default layout fits | You want `<Link>` per item via `asChild` on `Pagination.Item` | You're integrating with a virtualized list, scrubber, or other non-standard UI |
+| You don't need a page-size selector | You need a page-size selector or live range text | You want to test pagination math without any rendered output |
+
+## Auto vs forced compact
+
+The `variant` prop accepts `'auto' | 'numbered' | 'compact'`. Defaults to `'auto'` — measures `useWindowDimensions().width` once per render and swaps to `compact` below `PAGINATION_COMPACT_BREAKPOINT` (480px). The constant is exported so consumers can override it for an entire app via theme or tokens; per-instance you can simply pass `variant="numbered"` or `variant="compact"` to opt out.
+
+## Accessibility
+
+- The wrapper is a real `<nav>` landmark (web) / `accessibilityRole="navigation"` (native), with a localized `aria-label` defaulting to `t('pagination.ariaLabel') = 'Pagination'`.
+- The current page renders `aria-current="page"` and uses the `t('pagination.currentPage') = 'Current page'` label so screen readers don't confuse it with neighboring page numbers.
+- Page changes announce through a hidden `role="status"` region (`aria-live="polite"`) with a `Page X of Y` message, debounced 150ms so rapid clicks don't spam the screen reader.
+- Disabled prev / next / first / last expose `aria-disabled="true"` and intercept presses (no callback fires).
+- The ellipsis renders `aria-hidden` and is not focusable — assistive tech sees a clean linear sequence of pages.
+- Keyboard: each page item is a `Pressable` (renders `<button>` on web, accessible role on native) so Tab moves through them in DOM order; Enter / Space activate.
+- Touch targets are at least the spacing-8 token wide and tall (≥ 32px on the default theme).
+
+## Internationalization
+
+Every visible string is sourced from `useTranslation`. Override individual strings via the per-instance label props (`previousLabel`, `nextLabel`, `firstLabel`, `lastLabel`, `ariaLabel`) or replace the whole dictionary via your `i18nProvider`. Keys:
+
+| Key | Default |
+|---|---|
+| `pagination.ariaLabel` | "Pagination" |
+| `pagination.previous` | "Previous page" |
+| `pagination.next` | "Next page" |
+| `pagination.first` | "First page" |
+| `pagination.last` | "Last page" |
+| `pagination.ellipsis` | "More pages" |
+| `pagination.currentPage` | "Current page" |
+| `pagination.gotoPage` | "Go to page \{\{page\}\}" |
+| `pagination.range` | "Showing \{\{from\}\}–\{\{to\}\} of \{\{total\}\}" |
+| `pagination.pageOf` | "Page \{\{page\}\} of \{\{total\}\}" |
+| `pagination.pageSizeLabel` | "Items per page" |
+
+## Cursor-based pagination
+
+For prev/next-only cursor APIs, drive the shorthand with `pageCount={hasNext ? page + 1 : page}` so the next button stays enabled while you have more cursors. Or build a tiny shell with the headless hook plus your own request state — the lib doesn't ship a separate cursor variant because the prev/next surface is identical.
+
+## URL-state sync
+
+Pagination is a pure UI primitive — it does not read or write the URL on its own. To wire it to query params, hold `page` in your route's source of truth (e.g. Next's `useSearchParams` + `router.replace`, or Expo Router's `router.setParams`) and pass it back as the controlled `page` prop. See the source of any of the demos above for the controlled-state pattern.
+
+## Props
+
+<PropsTable component="Pagination" />

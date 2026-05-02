@@ -1,0 +1,53 @@
+---
+title: useTranslation
+description: Read i18n keys with interpolation and pluralization. Drives every visible string in the library.
+since: 0.0.1
+tags: [hooks, i18n]
+platform: both
+category: hooks
+---
+
+The library's i18n primitive. Every visible string in `@nori-ui/core` is sourced through this hook — overriding a key in your `<NoriProvider i18n={…}>` rewires every component that uses it.
+
+## Usage
+
+```tsx
+import { useTranslation } from '@nori-ui/core/client';
+
+function GreetButton({ name }: { name: string }) {
+    const { t } = useTranslation();
+    return <button type="button">{t('greet.hello', { name, defaultValue: 'Hello, {{name}}' })}</button>;
+}
+```
+
+## API
+
+### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| `t` | `(key: string, options?: { defaultValue?: string; count?: number; [k: string]: unknown }) => string` | Resolve a key against the current dictionary. Falls back to `defaultValue` if the key is missing. |
+| `language` | `string` | Active BCP 47 locale (read-only). |
+
+## Behavior notes
+
+- **Interpolation** uses `{{name}}` syntax — double braces, no spaces.
+- **Pluralization** follows i18next conventions: `count`-based suffixes (`_zero`, `_one`, `_two`, `_few`, `_many`, `_other`).
+- **`defaultValue`** is required for every call by convention — it documents the fallback inline and keeps your translation files self-describing.
+- **Missing keys** return `defaultValue` and emit a dev warning so missing translations are visible in development.
+
+## Adding a custom dictionary
+
+```tsx
+import { NoriProvider } from '@nori-ui/core/client';
+
+<NoriProvider i18n={{ en: { 'pagination.next': 'More results →' } }}>
+    {children}
+</NoriProvider>
+```
+
+Keys you don't override fall through to the library default dictionary.
+
+## Related
+
+- [Theming](/docs/theming) — the sibling provider.

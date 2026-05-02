@@ -1,0 +1,62 @@
+---
+title: useThemeColors
+description: Read the resolved theme tokens (colors, spacing, radii, typography) for the current color scheme.
+since: 0.0.1
+tags: [hooks, theming]
+platform: both
+category: hooks
+---
+
+Returns the fully resolved theme object for the current `colorScheme` ('light' | 'dark') under the nearest `<NoriProvider>` / `<ThemeProvider>`. Every component in the library reads its tokens through this hook — use it to style your own components in the same look-and-feel.
+
+## Usage
+
+```tsx
+import { useThemeColors } from '@nori-ui/core/client';
+import { px } from '@nori-ui/core/theme/px';
+import { View, Text } from 'react-native';
+
+function Card() {
+    const colors = useThemeColors();
+    return (
+        <View
+            style={{
+                backgroundColor: colors.semantic.background.subtle,
+                borderRadius: px(colors.radius.md),
+                padding: px(colors.spacing['4']),
+            }}
+        >
+            <Text
+                style={{
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.md),
+                    color: colors.semantic.text.default,
+                }}
+            >
+                Hello
+            </Text>
+        </View>
+    );
+}
+```
+
+## Token surface
+
+The returned object exposes the following families (see [Theming](/docs/theming) for the full token tree):
+
+- `semantic.{background, text, border, …}` — color roles that change with the active scheme.
+- `colors.{neutral, primary, danger, success, warning, info}.{50…900}` — the raw palette ramps.
+- `spacing` — `0` … `64` numeric scale.
+- `radius` — `xs` … `full`.
+- `fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing` — typography.
+- `shadow.{sm, md, lg}` — elevation tokens.
+
+## Notes
+
+- The returned object is **memoized per scheme + theme combo** — safe to use as a dependency in `useMemo` / `useEffect` arrays.
+- `colors.semantic.*` automatically swaps between the active light / dark mapping; `colors.colors.*` does not.
+- The hook is client-only — import from `@nori-ui/core/client`.
+
+## Related
+
+- [Theming](/docs/theming) — token reference + custom theme construction.

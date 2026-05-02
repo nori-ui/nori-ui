@@ -26,6 +26,15 @@ import IconBasic from './demos/icon-basic';
 import InputGroupBoth from './demos/input-group-both';
 import InputGroupPrefix from './demos/input-group-prefix';
 import InputGroupSuffix from './demos/input-group-suffix';
+import PaginationBasic from './demos/pagination-basic';
+import PaginationCompact from './demos/pagination-compact';
+import PaginationCompound from './demos/pagination-compound';
+import PaginationCustomRender from './demos/pagination-custom-render';
+import PaginationFirstLast from './demos/pagination-first-last';
+import PaginationHook from './demos/pagination-hook';
+import PaginationPageSize from './demos/pagination-page-size';
+import PaginationRange from './demos/pagination-range';
+import PaginationSiblings from './demos/pagination-siblings';
 import PopoverBasic from './demos/popover-basic';
 import PopoverForm from './demos/popover-form';
 import ProgressBasic from './demos/progress-basic';
@@ -183,6 +192,19 @@ export const previews = {
     },
     'toggle-group-single': { Component: ToggleGroupSingle, ...previewSources['toggle-group-single'], ...DIR_ONLY },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'], ...NO_CHROME },
+    'pagination-basic': { Component: PaginationBasic, ...previewSources['pagination-basic'] },
+    'pagination-first-last': { Component: PaginationFirstLast, ...previewSources['pagination-first-last'] },
+    'pagination-compact': { Component: PaginationCompact, ...previewSources['pagination-compact'], ...NO_CHROME },
+    'pagination-siblings': { Component: PaginationSiblings, ...previewSources['pagination-siblings'] },
+    'pagination-range': { Component: PaginationRange, ...previewSources['pagination-range'] },
+    'pagination-compound': { Component: PaginationCompound, ...previewSources['pagination-compound'] },
+    'pagination-page-size': { Component: PaginationPageSize, ...previewSources['pagination-page-size'] },
+    'pagination-custom-render': {
+        Component: PaginationCustomRender,
+        ...previewSources['pagination-custom-render'],
+        ...NO_CHROME,
+    },
+    'pagination-hook': { Component: PaginationHook, ...previewSources['pagination-hook'], ...NO_CHROME },
     'popover-basic': { Component: PopoverBasic, ...previewSources['popover-basic'], ...DIR_ONLY },
     'popover-form': { Component: PopoverForm, ...previewSources['popover-form'], ...DIR_ONLY },
     'tooltip-basic': { Component: TooltipBasic, ...previewSources['tooltip-basic'], ...NO_CHROME },

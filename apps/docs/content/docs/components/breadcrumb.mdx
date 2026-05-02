@@ -16,7 +16,7 @@ import { PropsTable } from '@/components/props-table';
 ## At a glance
 
 - **Two equivalent APIs**: `<Breadcrumb items={[…]} />` for terse, agent-friendly markup and a compound `Breadcrumb.List` / `Breadcrumb.Item` / `Breadcrumb.Link` / `Breadcrumb.Page` form for full JSX control.
-- **Width-aware collapse on web AND native** via `onLayout` (RN-Web routes through `ResizeObserver`; native uses its own layout system). Middle items fold into an interactive ellipsis when the container can't fit the trail.
+- **Width-aware collapse on web AND native** via `onLayout` (RN-Web routes through `ResizeObserver`; native uses its own layout system). Middle items fold into an interactive ellipsis when the container can't fit the trail. **On by default** — pass `collapseOnOverflow={false}` to opt out.
 - **Count-based collapse** (`maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse`) as a deterministic ceiling above width fit.
 - **`expandBehavior`**: `inline` (web default) folds the trail back open; `menu` (native default) opens a popover with the hidden items; `scroll` falls back to a horizontal scroller for IDE-style file paths; `none` is purely visual.
 - **Per-item icons**, **sibling menus** (the VSCode/file-path pattern), label truncation, loading skeletons, and RTL chevron flip via `dir="rtl"`.
@@ -48,7 +48,7 @@ Set `maxItems` to fold the middle of the trail into an ellipsis. Click the ellip
 
 ## Width-based collapse
 
-Pass `collapseOnOverflow` to make the trail react to the container width. The library renders a hidden measurement copy of every item via `onLayout`, then shows only the items that fit. Resize the container in the demo below to see it in action.
+Width-based collapse is **on by default**. The library renders a hidden measurement copy of every item via `onLayout`, then shows only the items that fit the container's available width — middle items fold into the ellipsis. Resize the container in the demo below to see it in action. Pass `collapseOnOverflow={false}` to opt out and let the row grow to its natural width (consider only when the parent provides its own scroll/clip handling).
 
 <Preview name="breadcrumb-width-collapse" />
 

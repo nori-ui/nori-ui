@@ -1,0 +1,100 @@
+---
+title: usePagination
+description: Headless pagination math — sibling/boundary windowing, prev/next/first/last actions, controlled or uncontrolled state.
+since: 0.0.7
+tags: [hooks, pagination]
+platform: both
+category: hooks
+---
+
+import { Preview } from '@/components/preview';
+
+A pure-logic hook that produces the items to render and the actions that drive them — without any DOM or React Native elements. Use it directly when [`<Pagination>`](/docs/components/pagination)'s default UI doesn't fit (drag scrubbers, infinite-scroll page indicators, custom keyboard interactions, integration with virtualized lists).
+
+The math mirrors MUI's `usePagination` algorithm so its behavior is predictable for anyone who has used the React ecosystem before.
+
+## Usage
+
+```tsx
+import { usePagination } from '@nori-ui/core/client';
+
+function MyPaginator() {
+    const p = usePagination({ pageCount: 12, defaultPage: 1 });
+    return (
+        <div>
+            <button type="button" disabled={!p.canPrev} onClick={p.prev}>Prev</button>
+            {p.pages.map((item, i) => {
+                if (item.type === 'ellipsis') return <span key={i}>…</span>;
+                if (item.type !== 'page' || item.page === undefined) return null;
+                const target = item.page;
+                return (
+                    <button
+                        type="button"
+                        key={target}
+                        disabled={item.selected}
+                        onClick={() => p.goToPage(target)}
+                    >
+                        {target}
+                    </button>
+                );
+            })}
+            <button type="button" disabled={!p.canNext} onClick={p.next}>Next</button>
+        </div>
+    );
+}
+```
+
+## Live demo
+
+<Preview name="pagination-hook" />
+
+## API
+
+### Arguments
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `page` | `number` | — | Controlled current page (1-indexed). Omit for uncontrolled. |
+| `defaultPage` | `number` | `1` | Initial page when uncontrolled (1-indexed). |
+| `pageCount` | `number` | — | Total number of pages. **Required.** |
+| `siblingCount` | `number` | `1` | Pages on each side of the current page. |
+| `boundaryCount` | `number` | `1` | Pages always visible at start / end. |
+| `showFirstLast` | `boolean` | `false` | Include `'first'` / `'last'` items in the `pages` list. |
+| `showPrevNext` | `boolean` | `true` | Include `'prev'` / `'next'` items in the `pages` list. |
+| `onPageChange` | `(page: number) => void` | — | Fired on every page change. |
+
+### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| `page` | `number` | Current page (1-indexed), clamped to `[1, max(1, pageCount)]`. |
+| `pages` | `ReadonlyArray<PaginationItemDescriptor>` | Item descriptors in render order. Each is one of `{ type: 'page', page, selected }`, `{ type: 'ellipsis' }`, or `{ type: 'prev' \| 'next' \| 'first' \| 'last', disabled }`. |
+| `canPrev` | `boolean` | `true` when `page > 1`. |
+| `canNext` | `boolean` | `true` when `page < pageCount`. |
+| `goToPage` | `(page: number) => void` | Jump to a specific 1-indexed page (clamped). |
+| `prev` | `() => void` | Decrement by 1 (clamped at 1). |
+| `next` | `() => void` | Increment by 1 (clamped at `pageCount`). |
+| `first` | `() => void` | Jump to page 1. |
+| `last` | `() => void` | Jump to `pageCount`. |
+
+### Item descriptor
+
+```ts
+type PaginationItemDescriptor = {
+    type: 'page' | 'prev' | 'next' | 'first' | 'last' | 'ellipsis';
+    page?: number;          // set on `'page'` items
+    selected?: boolean;     // set on the current `'page'` item
+    disabled?: boolean;     // set on prev/next/first/last when at the edge
+};
+```
+
+## Behavior notes
+
+- **Controlled vs uncontrolled** — pass `page` to control externally, or `defaultPage` to seed the initial state. The hook switches modes automatically.
+- **Out-of-range pages** are clamped to `[1, pageCount]`, so an over-eager parent can't crash the renderer.
+- **`pageCount` of 0** is treated as `1` (a single empty page) so the hook never returns an empty `pages` array.
+- The `pages` array length is `O(siblingCount + boundaryCount)` — it does **not** scale with `pageCount`. Even at 1,000,000 pages the rendered window is constant-time.
+
+## Related
+
+- [`<Pagination>`](/docs/components/pagination) — the full UI built on this hook.

@@ -11,6 +11,7 @@ export * from './Checkbox';
 export * from './Dialog';
 export * from './HStack';
 export * from './InputGroup';
+export * from './Pagination';
 export * from './Popover';
 export * from './Progress';
 export * from './RadioGroup';
