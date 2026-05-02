@@ -5,6 +5,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('renders every item with the right label and a hrefless current page', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 items={[{ label: 'Home', href: '/' }, { label: 'Docs', href: '/docs' }, { label: 'Breadcrumb' }]}
             />
         );
@@ -25,6 +26,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('flags the explicitly current item, not the last, when one is given', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 items={[
                     { label: 'Home', href: '/' },
                     { label: 'Docs', current: true },
@@ -41,6 +43,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('renders a configurable separator string', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 separator="/"
                 items={[{ label: 'A', href: '/a' }, { label: 'B', href: '/b' }, { label: 'C' }]}
             />
@@ -52,6 +55,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('count-based collapse renders an ellipsis between visible items', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 maxItems={3}
                 itemsBeforeCollapse={1}
                 itemsAfterCollapse={1}
@@ -77,6 +81,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('inline expand reveals the hidden items when the ellipsis is clicked', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 maxItems={3}
                 expandBehavior="inline"
                 items={[
@@ -100,6 +105,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('expandBehavior="none" leaves the ellipsis non-interactive', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 maxItems={2}
                 expandBehavior="none"
                 items={[{ label: 'A', href: '/a' }, { label: 'B', href: '/b' }, { label: 'C' }]}
@@ -162,6 +168,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('truncates long labels when maxLabelLength is set', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 maxLabelLength={5}
                 items={[{ label: 'Settings — Personal', href: '/' }, { label: 'Profile' }]}
             />
@@ -173,6 +180,7 @@ describe('<Breadcrumb> — items mode', () => {
     it('per-item maxLabelLength overrides the root maxLabelLength', () => {
         render(
             <Breadcrumb
+                collapseOnOverflow={false}
                 maxLabelLength={5}
                 items={[{ label: 'Documents', href: '/d', maxLabelLength: 8 }, { label: 'Photo Albums' }]}
             />
@@ -190,7 +198,12 @@ describe('<Breadcrumb> — items mode', () => {
                 <path d="M0 0h1v1H0z" />
             </svg>
         );
-        render(<Breadcrumb items={[{ label: 'Home', href: '/', icon: HomeIcon }, { label: 'Page' }]} />);
+        render(
+            <Breadcrumb
+                collapseOnOverflow={false}
+                items={[{ label: 'Home', href: '/', icon: HomeIcon }, { label: 'Page' }]}
+            />
+        );
         expect(screen.getByTestId('home-icon')).toBeInTheDocument();
     });
 
@@ -208,10 +221,19 @@ describe('<Breadcrumb> — items mode', () => {
     });
 
     it('current page is announced via aria-current="page"', () => {
-        render(<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Settings' }]} />);
+        render(<Breadcrumb collapseOnOverflow={false} items={[{ label: 'Home', href: '/' }, { label: 'Settings' }]} />);
         // Find the descendant that has aria-current="page" — it wraps the label.
         const currentEls = document.querySelectorAll('[aria-current="page"]');
         expect(currentEls.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('width-based collapse is on by default — renders the hidden measurement copy', () => {
+        // Default `collapseOnOverflow` is true, so each label appears twice in
+        // the DOM: once in the visible row, once in the offscreen measurement
+        // pass that the layout algorithm uses to pick which items fit.
+        render(<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Settings' }]} />);
+        expect(screen.getAllByText('Home')).toHaveLength(2);
+        expect(screen.getAllByText('Settings')).toHaveLength(2);
     });
 });
 

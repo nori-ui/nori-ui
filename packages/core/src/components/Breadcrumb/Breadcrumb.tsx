@@ -149,8 +149,10 @@ export type BreadcrumbProps = {
      * built-in ResizeObserver shim and on native via the layout system).
      * The library renders a hidden measurement copy of every item, then
      * shows only the items that fit the container — middle items are
-     * folded into the ellipsis.
-     * @defaultValue false
+     * folded into the ellipsis. Pass `false` to opt out and let the row
+     * grow to its natural width (it will overflow its parent if the
+     * parent does not provide its own scroll/clip handling).
+     * @defaultValue true
      */
     collapseOnOverflow?: boolean;
     /**
@@ -658,7 +660,7 @@ export function Breadcrumb({
                 maxItems={maxItems}
                 itemsBeforeCollapse={itemsBeforeCollapse}
                 itemsAfterCollapse={itemsAfterCollapse}
-                collapseOnOverflow={Boolean(collapseOnOverflow)}
+                collapseOnOverflow={collapseOnOverflow ?? true}
                 expandBehavior={resolvedExpandBehavior}
                 expandLabel={resolvedExpandLabel}
                 ellipsisLabel={resolvedEllipsisLabel}
