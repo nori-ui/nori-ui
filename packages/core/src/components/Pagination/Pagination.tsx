@@ -15,14 +15,13 @@ import {
     useState,
 } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Platform, Pressable, Text as RNText, useWindowDimensions, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, TextInput as RNTextInput, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from '../../i18n/use-translation';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 import { Select, type SelectOption } from '../Select';
-import { TextInput } from '../TextInput';
 import { type PaginationItemDescriptor, type PaginationItemType, usePagination } from './use-pagination';
 
 // =============================================================================
@@ -156,21 +155,21 @@ type ItemButtonProps = {
 
 function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, onPress, testID }: ItemButtonProps) {
     const colors = useThemeColors();
-
+    const isChevron = type === 'prev' || type === 'next' || type === 'first' || type === 'last';
     const isInteractive = !disabled && type !== 'ellipsis';
-    const fg = selected ? colors.semantic.text.default : colors.semantic.text.muted;
-    const bg = selected ? colors.semantic.background.subtle : 'transparent';
+    const size = px(colors.spacing['8']); // 32px — minimum touch target
 
     if (type === 'ellipsis') {
+        // Ellipsis is presentational; no button chrome, no padding — just a
+        // balanced spacer that keeps the row's rhythm intact.
         return (
             <View
                 aria-hidden
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
                 style={{
-                    minWidth: px(colors.spacing['8']),
-                    minHeight: px(colors.spacing['8']),
-                    paddingHorizontal: px(colors.spacing['2']),
+                    minWidth: size,
+                    minHeight: size,
                     alignItems: 'center',
                     justifyContent: 'center',
                 }}
@@ -180,7 +179,9 @@ function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, o
                         fontFamily: colors.fontFamily.body,
                         fontSize: px(colors.fontSize.sm),
                         color: colors.semantic.text.muted,
-                        fontVariant: ['tabular-nums'],
+                        // Optical adjust so the dots sit on the row baseline.
+                        marginTop: -2,
+                        letterSpacing: 1,
                     }}
                 >
                     {label}
@@ -200,24 +201,45 @@ function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, o
             disabled={disabled}
             aria-disabled={disabled || undefined}
             onPress={isInteractive ? onPress : undefined}
-            style={({ pressed }) => ({
-                minWidth: px(colors.spacing['8']),
-                minHeight: px(colors.spacing['8']),
-                paddingHorizontal: px(colors.spacing['3']),
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: px(colors.radius.sm),
-                backgroundColor: bg,
-                opacity: disabled ? 0.4 : pressed ? 0.6 : 1,
-            })}
+            // Pressable on RN-Web exposes `hovered`; on native it's always undefined.
+            // The cast keeps TS happy without breaking either platform.
+            style={(state) => {
+                const { pressed, hovered } = state as { pressed: boolean; hovered?: boolean };
+                const bg = selected
+                    ? colors.semantic.interactive.primary
+                    : pressed || hovered
+                      ? colors.semantic.background.subtle
+                      : 'transparent';
+                return {
+                    minWidth: size,
+                    height: size,
+                    paddingHorizontal: px(colors.spacing['2']),
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: px(colors.radius.md),
+                    backgroundColor: bg,
+                    opacity: disabled ? 0.35 : 1,
+                    // RN-Web maps these to CSS — silently ignored on native.
+                    transitionProperty: 'background-color, color',
+                    transitionDuration: '120ms',
+                    transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+                } as ViewStyle;
+            }}
         >
             <RNText
                 style={{
                     fontFamily: colors.fontFamily.body,
-                    fontSize: px(colors.fontSize.sm),
-                    color: fg,
-                    fontWeight: selected ? (colors.fontWeight.semibold as '600') : (colors.fontWeight.regular as '400'),
+                    fontSize: isChevron ? px(colors.fontSize.md) : px(colors.fontSize.sm),
+                    lineHeight: px(colors.fontSize.md),
+                    color: selected
+                        ? colors.semantic.text.inverted
+                        : disabled
+                          ? colors.semantic.text.muted
+                          : colors.semantic.text.default,
+                    fontWeight: selected ? (colors.fontWeight.semibold as '600') : (colors.fontWeight.medium as '500'),
                     fontVariant: ['tabular-nums'],
+                    // Chevron glyphs sit a hair high in most fonts.
+                    marginTop: isChevron ? -1 : 0,
                 }}
             >
                 {label}
@@ -376,7 +398,8 @@ function CompactView({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: px(colors.spacing['2']),
+                gap: px(colors.spacing['1']),
+                flexGrow: 1,
             }}
         >
             <ItemButton
@@ -387,16 +410,26 @@ function CompactView({
                 label={flip ? '›' : '‹'}
                 onPress={onPrev}
             />
-            <RNText
+            <View
                 style={{
-                    fontFamily: colors.fontFamily.body,
-                    fontSize: px(colors.fontSize.sm),
-                    color: colors.semantic.text.default,
-                    fontVariant: ['tabular-nums'],
+                    flexGrow: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: px(colors.spacing['3']),
                 }}
             >
-                {pageLabel}
-            </RNText>
+                <RNText
+                    style={{
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        color: colors.semantic.text.default,
+                        fontWeight: colors.fontWeight.medium as '500',
+                        fontVariant: ['tabular-nums'],
+                    }}
+                >
+                    {pageLabel}
+                </RNText>
+            </View>
             <ItemButton
                 type="next"
                 selected={false}
@@ -554,7 +587,7 @@ function PaginationRoot(props: PaginationProps) {
                     style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        gap: px(colors.spacing['2']),
+                        gap: px(colors.spacing['1']),
                         direction: dir as ViewStyle['direction'],
                     }}
                 >
@@ -608,7 +641,7 @@ function PaginationRoot(props: PaginationProps) {
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: px(colors.spacing['2']),
+                    gap: px(colors.spacing['1']),
                     direction: dir as ViewStyle['direction'],
                 }}
             >
@@ -832,6 +865,9 @@ const PaginationRange: FC = () => {
                 fontSize: px(colors.fontSize.sm),
                 color: colors.semantic.text.muted,
                 fontVariant: ['tabular-nums'],
+                paddingHorizontal: px(colors.spacing['2']),
+                // Sits on the same baseline as the 32px buttons.
+                lineHeight: px(colors.spacing['8']),
             }}
         >
             {message}
@@ -841,50 +877,77 @@ const PaginationRange: FC = () => {
 
 const PaginationPageSize: FC<{ options: ReadonlyArray<number>; testID?: string }> = ({ options, testID }) => {
     const ctx = usePaginationContext('Pagination.PageSize');
+    const colors = useThemeColors();
     const value = ctx.pageSize !== undefined ? String(ctx.pageSize) : '';
     const selectOptions = useMemo<SelectOption[]>(
         () => options.map((n) => ({ value: String(n), label: String(n) })),
         [options]
     );
     return (
-        <Select
-            {...(testID !== undefined ? { testID } : {})}
-            aria-label={ctx.labels.pageSize}
-            options={selectOptions}
-            value={value}
-            onChange={(v) => {
-                const n = Number(v);
-                if (Number.isFinite(n) && n > 0) {
-                    ctx.setPageSize(n);
-                }
+        <View
+            style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: px(colors.spacing['2']),
             }}
-        />
+        >
+            <RNText
+                style={{
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
+                    color: colors.semantic.text.muted,
+                }}
+            >
+                {ctx.labels.pageSize}
+            </RNText>
+            <Select
+                {...(testID !== undefined ? { testID } : {})}
+                aria-label={ctx.labels.pageSize}
+                options={selectOptions}
+                value={value}
+                onChange={(v) => {
+                    const n = Number(v);
+                    if (Number.isFinite(n) && n > 0) {
+                        ctx.setPageSize(n);
+                    }
+                }}
+            />
+        </View>
     );
 };
 
 type PaginationJumperProps = {
-    /** Hide the visible "Go to page" label (still announced to screen readers). @defaultValue false */
-    hideLabel?: boolean;
+    /** Show a separate visible "Go to page" label before the input. The aria-label is always set regardless. @defaultValue false */
+    showLabel?: boolean;
     /** Override the visible label / accessible name. */
     label?: string;
-    /** Override the input placeholder. */
+    /** Override the input placeholder. @defaultValue the localized "Go to" hint */
     placeholder?: string;
-    /** Width of the input in px. @defaultValue 64 */
+    /** Width of the input in px. @defaultValue 56 */
     inputWidth?: number;
     testID?: string;
 };
 
+/**
+ * Compact, purpose-built jumper. Built directly from RN's `TextInput`
+ * primitive so we can render the exact 32px-tall borderless-then-focused
+ * treatment that fits in a pagination row, instead of inheriting the full
+ * form-field chrome (label, helper text, error slot) of `<TextInput>`.
+ */
 const PaginationJumper: FC<PaginationJumperProps> = ({
-    hideLabel = false,
+    showLabel = false,
     label,
     placeholder,
-    inputWidth = 64,
+    inputWidth = 56,
     testID,
 }) => {
     const ctx = usePaginationContext('Pagination.Jumper');
     const colors = useThemeColors();
     const [draft, setDraft] = useState('');
+    const [focused, setFocused] = useState(false);
+    const [hovered, setHovered] = useState(false);
     const visibleLabel = label ?? ctx.labels.jumperLabel;
+    const placeholderText = placeholder ?? ctx.labels.jumperPlaceholder;
 
     const submit = () => {
         const trimmed = draft.trim();
@@ -893,8 +956,6 @@ const PaginationJumper: FC<PaginationJumperProps> = ({
         }
         const n = Number(trimmed);
         if (!Number.isFinite(n) || n < 1) {
-            // Bad input — clear silently rather than throwing; consumers can
-            // wrap with their own validation if they want richer feedback.
             setDraft('');
             return;
         }
@@ -902,6 +963,12 @@ const PaginationJumper: FC<PaginationJumperProps> = ({
         ctx.goToPage(clamped);
         setDraft('');
     };
+
+    const borderColor = focused
+        ? colors.semantic.interactive.primary
+        : hovered
+          ? colors.semantic.border.strong
+          : colors.semantic.border.default;
 
     return (
         <View
@@ -911,7 +978,7 @@ const PaginationJumper: FC<PaginationJumperProps> = ({
                 gap: px(colors.spacing['2']),
             }}
         >
-            {hideLabel ? null : (
+            {showLabel ? (
                 <RNText
                     style={{
                         fontFamily: colors.fontFamily.body,
@@ -921,25 +988,83 @@ const PaginationJumper: FC<PaginationJumperProps> = ({
                 >
                     {visibleLabel}
                 </RNText>
-            )}
-            <View style={{ width: inputWidth }}>
-                <TextInput
+            ) : null}
+            <View
+                // The wrapper carries the visual chrome so the bare TextInput
+                // can stay completely unstyled — it's just text + caret.
+                onPointerEnter={Platform.OS === 'web' ? () => setHovered(true) : undefined}
+                onPointerLeave={Platform.OS === 'web' ? () => setHovered(false) : undefined}
+                style={
+                    {
+                        width: inputWidth,
+                        height: px(colors.spacing['8']),
+                        borderWidth: 1,
+                        borderColor,
+                        borderRadius: px(colors.radius.md),
+                        backgroundColor: colors.semantic.background.elevated,
+                        paddingHorizontal: px(colors.spacing['2']),
+                        justifyContent: 'center',
+                        // Web-only properties (silently dropped on native).
+                        ...(focused
+                            ? {
+                                  boxShadow: `0 0 0 3px ${withAlpha(colors.semantic.interactive.primary, 0.15)}`,
+                              }
+                            : null),
+                        transitionProperty: 'border-color, box-shadow',
+                        transitionDuration: '120ms',
+                        transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+                    } as unknown as ViewStyle
+                }
+            >
+                <RNTextInput
                     {...(testID !== undefined ? { testID } : {})}
                     value={draft}
                     onChangeText={setDraft}
                     onSubmitEditing={submit}
-                    onBlur={submit}
+                    onBlur={() => {
+                        setFocused(false);
+                        submit();
+                    }}
+                    onFocus={() => setFocused(true)}
                     keyboardType="number-pad"
                     inputMode="numeric"
-                    placeholder={placeholder ?? ctx.labels.jumperPlaceholder}
+                    placeholder={placeholderText}
+                    placeholderTextColor={colors.semantic.text.muted}
                     aria-label={visibleLabel}
                     accessibilityLabel={visibleLabel}
                     returnKeyType="go"
+                    selectTextOnFocus
+                    style={{
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        color: colors.semantic.text.default,
+                        fontVariant: ['tabular-nums'],
+                        textAlign: 'center',
+                        // Strip the browser's default outline — we draw our own
+                        // focus ring on the wrapper.
+                        ...(Platform.OS === 'web' ? ({ outline: 'none' } as object) : null),
+                    }}
                 />
             </View>
         </View>
     );
 };
+
+/**
+ * Apply an alpha channel to any of our token color strings (hex / rgb / hsl).
+ * Cheap, zero-dep helper just for the focus glow.
+ */
+function withAlpha(color: string, alpha: number): string {
+    if (color.startsWith('#') && (color.length === 7 || color.length === 4)) {
+        const expanded =
+            color.length === 4 ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}` : color;
+        const r = Number.parseInt(expanded.slice(1, 3), 16);
+        const g = Number.parseInt(expanded.slice(3, 5), 16);
+        const b = Number.parseInt(expanded.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    return color;
+}
 
 export type { PaginationJumperProps };
 
