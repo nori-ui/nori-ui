@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from 'react-native';
-import { Platform, Pressable, Text as RNText, ScrollView, View } from 'react-native';
+import { Modal, Platform, Pressable, Text as RNText, ScrollView, useWindowDimensions, View } from 'react-native';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -410,16 +410,32 @@ export function Select<T = unknown>({
     // computed coords. position:fixed escapes any ancestor's overflow:hidden
     // (e.g. fumadocs Tabs panes, our Preview frame), which is the
     // single biggest source of "the dropdown got cut off" bugs.
+    //
+    // On native we ignore the web `position:fixed` path entirely and
+    // measure via `View.measure(...)` to feed an RN `<Modal>` positioned
+    // absolutely below the trigger.
     const [triggerRect, setTriggerRect] = useState<{ top: number; left: number; width: number; height: number } | null>(
         null
     );
     const measureTrigger = useCallback(() => {
-        const node = triggerRef.current;
-        if (!node || typeof node.getBoundingClientRect !== 'function') {
+        const node = triggerRef.current as unknown as {
+            getBoundingClientRect?: () => DOMRect;
+            measure?: (cb: (x: number, y: number, w: number, h: number, pageX: number, pageY: number) => void) => void;
+        } | null;
+        if (!node) {
             return;
         }
-        const rect = node.getBoundingClientRect();
-        setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+        if (Platform.OS === 'web' && typeof node.getBoundingClientRect === 'function') {
+            const rect = node.getBoundingClientRect();
+            setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+            return;
+        }
+        // Native path — RN's measure() reports page-relative coords on the UI thread.
+        if (typeof node.measure === 'function') {
+            node.measure((_x, _y, w, h, pageX, pageY) => {
+                setTriggerRect({ top: pageY, left: pageX, width: w, height: h });
+            });
+        }
     }, []);
     useEffect(() => {
         if (!open) {
@@ -472,18 +488,26 @@ export function Select<T = unknown>({
         opacity: disabled ? 0.6 : 1,
     };
 
-    // position: fixed + computed coords from the trigger so the popup can
-    // escape any ancestor with `overflow: hidden`. Width matches the
-    // trigger so the dropdown lines up; if the trigger is narrower than
-    // 200px we widen to the minimum readable width.
+    // Web: position:fixed + computed coords from the trigger so the popup
+    // can escape any ancestor with `overflow: hidden` (fumadocs Tabs, our
+    // Preview frame, etc.). Width matches the trigger; widen to a 200px
+    // floor for readability.
+    //
+    // Native: same coords, but on `position:'absolute'` inside the Modal —
+    // RN doesn't have `position:'fixed'`, but Modal renders above all
+    // content as a true overlay so absolute coords against the screen
+    // window are correct.
+    const winDims = useWindowDimensions();
     const popupStyle: ViewStyle = triggerRect
         ? {
-              position: 'fixed' as unknown as 'absolute',
+              position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as unknown as 'absolute',
               top: triggerRect.top + triggerRect.height + px(colors.spacing['1']),
               left: dir === 'rtl' ? undefined : triggerRect.left,
               right:
-                  dir === 'rtl' && typeof window !== 'undefined'
-                      ? window.innerWidth - (triggerRect.left + triggerRect.width)
+                  dir === 'rtl'
+                      ? Platform.OS === 'web' && typeof window !== 'undefined'
+                          ? window.innerWidth - (triggerRect.left + triggerRect.width)
+                          : winDims.width - (triggerRect.left + triggerRect.width)
                       : undefined,
               minWidth: Math.max(200, triggerRect.width),
               backgroundColor: colors.semantic.background.elevated,
@@ -501,7 +525,7 @@ export function Select<T = unknown>({
         : {
               // Trigger not yet measured — render off-screen until the
               // first measurement lands. Avoids a one-frame flash at (0,0).
-              position: 'fixed' as unknown as 'absolute',
+              position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as unknown as 'absolute',
               top: -9999,
               left: -9999,
           };
@@ -536,6 +560,9 @@ export function Select<T = unknown>({
                     if (disabled) {
                         return;
                     }
+                    // Re-measure on every press so the popup picks up
+                    // post-scroll / rotation / keyboard-shifted positions.
+                    measureTrigger();
                     setOpen((v) => !v);
                 }}
                 style={triggerStyle}
@@ -605,7 +632,27 @@ export function Select<T = unknown>({
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
             return createPortal(popup, document.body);
         }
-        return popup;
+        // Native: wrap in a transparent Modal so the popup renders above
+        // all in-tree content (RN has no `position:'fixed'` and an
+        // absolute child can't escape its parent's overflow). The
+        // Modal's onRequestClose handles Android's hardware back button;
+        // a transparent backdrop Pressable closes the popup on outside
+        // tap (the equivalent of the document-mousedown handler on web).
+        return (
+            <Modal transparent visible animationType="fade" onRequestClose={() => setOpen(false)} statusBarTranslucent>
+                <Pressable
+                    onPress={() => setOpen(false)}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                    }}
+                />
+                {popup}
+            </Modal>
+        );
     }
 }
 
