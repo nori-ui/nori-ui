@@ -190,6 +190,39 @@ function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, o
         );
     }
 
+    // Pre-compute the static style so the Pressable's function form only has
+    // to overlay press/hover deltas. This is more robust on native, where
+    // some renderers were observed to drop properties from the function-form
+    // result intermittently — especially the selected pill's `backgroundColor`,
+    // producing white text on a white background.
+    const baseStyle: ViewStyle = {
+        minWidth: size,
+        height: size,
+        paddingHorizontal: px(colors.spacing['2']),
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: px(colors.radius.md),
+        // Selected: filled pill in primary. Default: transparent. Press/hover
+        // deltas overlay this in the style fn below.
+        backgroundColor: selected ? colors.semantic.interactive.primary : 'transparent',
+        // A 1px transparent border is reserved on every item so the layout
+        // stays stable when the selected one shows its accent border.
+        borderWidth: 1,
+        borderColor: selected ? colors.semantic.interactive.primary : 'transparent',
+        opacity: disabled ? 0.35 : 1,
+    };
+
+    // Web-only CSS transitions; merged into the static base on web.
+    const webExtras =
+        Platform.OS === 'web'
+            ? ({
+                  transitionProperty: 'background-color, color, border-color',
+                  transitionDuration: '120ms',
+                  transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+              } as unknown as ViewStyle)
+            : null;
+    const staticStyle: ViewStyle = { ...baseStyle, ...(webExtras ?? {}) };
+
     return (
         <Pressable
             {...(testID !== undefined ? { testID } : {})}
@@ -197,34 +230,26 @@ function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, o
             accessibilityRole="button"
             accessibilityLabel={ariaLabel}
             aria-label={ariaLabel}
-            {...(ariaCurrent ? { 'aria-current': ariaCurrent, accessibilityState: { selected: true } } : {})}
+            {...(ariaCurrent ? { 'aria-current': ariaCurrent } : {})}
             disabled={disabled}
             aria-disabled={disabled || undefined}
             onPress={isInteractive ? onPress : undefined}
-            // Pressable on RN-Web exposes `hovered`; on native it's always undefined.
-            // The cast keeps TS happy without breaking either platform.
-            style={(state) => {
-                const { pressed, hovered } = state as { pressed: boolean; hovered?: boolean };
-                const bg = selected
-                    ? colors.semantic.interactive.primary
-                    : pressed || hovered
-                      ? colors.semantic.background.subtle
-                      : 'transparent';
-                return {
-                    minWidth: size,
-                    height: size,
-                    paddingHorizontal: px(colors.spacing['2']),
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: px(colors.radius.md),
-                    backgroundColor: bg,
-                    opacity: disabled ? 0.35 : 1,
-                    // RN-Web maps these to CSS — silently ignored on native.
-                    transitionProperty: 'background-color, color',
-                    transitionDuration: '120ms',
-                    transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
-                } as ViewStyle;
-            }}
+            // Use a function form ONLY on web so Pressable can read `hovered`.
+            // On native the function form was observed to occasionally drop
+            // its returned style block on iOS — so we pass a plain object,
+            // which renders reliably.
+            style={
+                Platform.OS === 'web'
+                    ? (state) => {
+                          const { pressed, hovered } = state as { pressed: boolean; hovered?: boolean };
+                          const interactive =
+                              !selected && (pressed || hovered)
+                                  ? colors.semantic.background.subtle
+                                  : staticStyle.backgroundColor;
+                          return { ...staticStyle, backgroundColor: interactive };
+                      }
+                    : staticStyle
+            }
         >
             <RNText
                 style={{
@@ -503,7 +528,7 @@ function PaginationRoot(props: PaginationProps) {
             pageOfFmt: (p, total) => t('pagination.pageOf', { page: p, total, defaultValue: `Page ${p} of ${total}` }),
             pageSize: t('pagination.pageSizeLabel', { defaultValue: 'Items per page' }),
             jumperLabel: t('pagination.jumperLabel', { defaultValue: 'Go to page' }),
-            jumperPlaceholder: t('pagination.jumperPlaceholder', { defaultValue: 'Page #' }),
+            jumperPlaceholder: t('pagination.jumperPlaceholder', { defaultValue: '#' }),
         }),
         [t, previousLabel, nextLabel, firstLabel, lastLabel]
     );
@@ -573,7 +598,10 @@ function PaginationRoot(props: PaginationProps) {
         setPageSize,
     };
 
-    // Compound mode — caller supplies the layout.
+    // Compound mode — caller supplies the layout. We still wrap children in
+    // a flex-row that wraps on overflow so a long compound chain
+    // (Items + Range + PageSize + Jumper) doesn't blow off the right edge
+    // of a phone-width container.
     if (children !== undefined) {
         return (
             <PaginationContext.Provider value={ctxValue}>
@@ -583,11 +611,13 @@ function PaginationRoot(props: PaginationProps) {
                     aria-label={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
                     accessibilityLabel={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
                     accessible
-                    className={cn('flex-row items-center', className)}
+                    className={cn('flex-row items-center flex-wrap', className)}
                     style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        gap: px(colors.spacing['1']),
+                        flexWrap: 'wrap',
+                        rowGap: px(colors.spacing['2']),
+                        columnGap: px(colors.spacing['1']),
                         direction: dir as ViewStyle['direction'],
                     }}
                 >
@@ -629,6 +659,8 @@ function PaginationRoot(props: PaginationProps) {
         }
     };
 
+    const showRangeBlock = showRange && itemCount !== undefined && effectivePageSize !== undefined;
+
     return (
         <PaginationContext.Provider value={ctxValue}>
             <View
@@ -637,11 +669,16 @@ function PaginationRoot(props: PaginationProps) {
                 aria-label={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
                 accessibilityLabel={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
                 accessible
-                className={cn('flex-row items-center', className)}
+                className={cn(isCompact ? 'flex-col items-stretch' : 'flex-row items-center flex-wrap', className)}
                 style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: px(colors.spacing['1']),
+                    // Compact mode lays out as a column so the Range/PageSize
+                    // block falls below the controls instead of overflowing
+                    // a phone-width row. Numbered mode wraps on overflow.
+                    flexDirection: isCompact ? 'column' : 'row',
+                    alignItems: isCompact ? 'stretch' : 'center',
+                    flexWrap: isCompact ? 'nowrap' : 'wrap',
+                    rowGap: px(colors.spacing['2']),
+                    columnGap: px(colors.spacing['1']),
                     direction: dir as ViewStyle['direction'],
                 }}
             >
@@ -656,7 +693,7 @@ function PaginationRoot(props: PaginationProps) {
                 ) : (
                     <ItemsRenderer items={pagination.pages} onItemPress={onItemPress} />
                 )}
-                {showRange && itemCount !== undefined && effectivePageSize !== undefined ? <PaginationRange /> : null}
+                {showRangeBlock ? <PaginationRange /> : null}
             </View>
             <LiveRegion message={announcement} />
         </PaginationContext.Provider>

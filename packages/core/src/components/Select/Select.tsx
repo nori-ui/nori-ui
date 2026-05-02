@@ -380,7 +380,11 @@ export function Select<T = unknown>({
     const triggerRef = useRef<HTMLElement | null>(null);
     const popupRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        if (typeof document === 'undefined') {
+        if (
+            Platform.OS !== 'web' ||
+            typeof document === 'undefined' ||
+            typeof document.addEventListener !== 'function'
+        ) {
             return;
         }
         if (!open) {
@@ -421,7 +425,9 @@ export function Select<T = unknown>({
         if (!open) {
             return;
         }
-        if (typeof window === 'undefined') {
+        // `window` is defined on RN's Hermes/JSC runtime but `addEventListener`
+        // is web-only; gate on Platform.OS to avoid the runtime crash on native.
+        if (Platform.OS !== 'web' || typeof window === 'undefined' || typeof window.addEventListener !== 'function') {
             return;
         }
         measureTrigger();
