@@ -10,12 +10,23 @@
 //   - default.component (component)
 //   - default.args (object, optional)
 //   - default.render (function, optional)
-//   - named exports: each with optional `args` and optional `render`
-// `parameters`, `decorators`, `loaders`, and `play` are ignored.
+//   - named exports: each with optional `args`, optional `render`, and
+//     optional `parameters.platforms` (filters the story out when the
+//     current platform is not in the list — used for demos that only
+//     make sense on a resizable web canvas, etc.)
+// `decorators`, `loaders`, and `play` are ignored.
 
 import { type ComponentType, createElement, type ReactNode } from 'react';
 import { humanise, pascalToKebab } from './csf-helpers';
 import { discoverCsfModules } from './csf-loader-bundler';
+
+type StoryPlatform = 'web' | 'native';
+// We can't `import { Platform } from 'react-native'` here — Jest's CJS
+// transform chokes on RN's flow-typed entry. The DOM probe is a reliable
+// proxy: only RN's JSC/Hermes runtime lacks `document`. Tests (jsdom)
+// and Storybook see `document` and resolve to `'web'`, which matches
+// where they actually run.
+const CURRENT_PLATFORM: StoryPlatform = typeof document !== 'undefined' ? 'web' : 'native';
 
 export type Story = {
     /** kebab-case story id (export name, kebab-cased) */
@@ -91,9 +102,18 @@ export function buildComponents(modules: Record<string, CsfModule>): ComponentEn
                 continue;
             }
             const story = mod[key] as
-                | { args?: Record<string, unknown>; render?: (a: Record<string, unknown>) => unknown }
+                | {
+                      args?: Record<string, unknown>;
+                      render?: (a: Record<string, unknown>) => unknown;
+                      parameters?: { platforms?: ReadonlyArray<StoryPlatform> };
+                  }
                 | undefined;
             if (!story || typeof story !== 'object') {
+                continue;
+            }
+
+            const platforms = story.parameters?.platforms;
+            if (platforms && !platforms.includes(CURRENT_PLATFORM)) {
                 continue;
             }
 

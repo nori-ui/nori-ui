@@ -157,8 +157,13 @@ export const MenuExpand: Story = {
  * Width-based collapse uses `onLayout` (cross-platform; works on RN-Web
  * via its ResizeObserver shim and on native via the layout system).
  * Resize the canvas to see middle items collapse into the ellipsis.
+ *
+ * Web-only: a phone viewport has no resizable container, so the demo
+ * has nothing to demonstrate on native. The default `collapseOnOverflow`
+ * behavior is already covered by the `WithIcons` story on both platforms.
  */
 export const WidthCollapse: Story = {
+    parameters: { platforms: ['web'] },
     render: () => (
         <VStack gap={2}>
             <Text>Try resizing the canvas — the trail collapses to fit.</Text>
