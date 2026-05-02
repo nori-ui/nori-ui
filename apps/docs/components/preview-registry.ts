@@ -32,6 +32,7 @@ import PaginationCompound from './demos/pagination-compound';
 import PaginationCustomRender from './demos/pagination-custom-render';
 import PaginationFirstLast from './demos/pagination-first-last';
 import PaginationHook from './demos/pagination-hook';
+import PaginationJumper from './demos/pagination-jumper';
 import PaginationPageSize from './demos/pagination-page-size';
 import PaginationRange from './demos/pagination-range';
 import PaginationSiblings from './demos/pagination-siblings';
@@ -205,6 +206,7 @@ export const previews = {
         ...NO_CHROME,
     },
     'pagination-hook': { Component: PaginationHook, ...previewSources['pagination-hook'], ...NO_CHROME },
+    'pagination-jumper': { Component: PaginationJumper, ...previewSources['pagination-jumper'] },
     'popover-basic': { Component: PopoverBasic, ...previewSources['popover-basic'], ...DIR_ONLY },
     'popover-form': { Component: PopoverForm, ...previewSources['popover-form'], ...DIR_ONLY },
     'tooltip-basic': { Component: TooltipBasic, ...previewSources['tooltip-basic'], ...NO_CHROME },

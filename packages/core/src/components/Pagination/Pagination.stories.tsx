@@ -180,6 +180,28 @@ export const CustomRender: Story = {
     },
 };
 
+/**
+ * Jumper input lets users type a page number and press Enter (or blur)
+ * to jump there. Out-of-range values are clamped silently; non-numeric
+ * input is ignored.
+ */
+export const WithJumper: Story = {
+    render: () => {
+        function Demo() {
+            const [page, setPage] = useState(1);
+            return (
+                <Pagination page={page} pageCount={50} onPageChange={(info) => setPage(info.page)}>
+                    <Pagination.Prev />
+                    <Pagination.Items />
+                    <Pagination.Next />
+                    <Pagination.Jumper />
+                </Pagination>
+            );
+        }
+        return <Demo />;
+    },
+};
+
 /** RTL flips chevron direction and DOM order via `dir="rtl"`. */
 export const RTL: Story = {
     render: () => {

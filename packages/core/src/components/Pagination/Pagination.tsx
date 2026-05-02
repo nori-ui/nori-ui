@@ -22,6 +22,7 @@ import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 import { Select, type SelectOption } from '../Select';
+import { TextInput } from '../TextInput';
 import { type PaginationItemDescriptor, type PaginationItemType, usePagination } from './use-pagination';
 
 // =============================================================================
@@ -119,6 +120,8 @@ type PaginationContextValue = {
         rangeFmt: (from: number, to: number, total: number) => string;
         pageOfFmt: (page: number, total: number) => string;
         pageSize: string;
+        jumperLabel: string;
+        jumperPlaceholder: string;
     };
     renderItem?: (args: PaginationRenderItemArgs) => ReactNode;
     goToPage: (page: number) => void;
@@ -466,6 +469,8 @@ function PaginationRoot(props: PaginationProps) {
                 }),
             pageOfFmt: (p, total) => t('pagination.pageOf', { page: p, total, defaultValue: `Page ${p} of ${total}` }),
             pageSize: t('pagination.pageSizeLabel', { defaultValue: 'Items per page' }),
+            jumperLabel: t('pagination.jumperLabel', { defaultValue: 'Go to page' }),
+            jumperPlaceholder: t('pagination.jumperPlaceholder', { defaultValue: 'Page #' }),
         }),
         [t, previousLabel, nextLabel, firstLabel, lastLabel]
     );
@@ -857,6 +862,87 @@ const PaginationPageSize: FC<{ options: ReadonlyArray<number>; testID?: string }
     );
 };
 
+type PaginationJumperProps = {
+    /** Hide the visible "Go to page" label (still announced to screen readers). @defaultValue false */
+    hideLabel?: boolean;
+    /** Override the visible label / accessible name. */
+    label?: string;
+    /** Override the input placeholder. */
+    placeholder?: string;
+    /** Width of the input in px. @defaultValue 64 */
+    inputWidth?: number;
+    testID?: string;
+};
+
+const PaginationJumper: FC<PaginationJumperProps> = ({
+    hideLabel = false,
+    label,
+    placeholder,
+    inputWidth = 64,
+    testID,
+}) => {
+    const ctx = usePaginationContext('Pagination.Jumper');
+    const colors = useThemeColors();
+    const [draft, setDraft] = useState('');
+    const visibleLabel = label ?? ctx.labels.jumperLabel;
+
+    const submit = () => {
+        const trimmed = draft.trim();
+        if (trimmed === '') {
+            return;
+        }
+        const n = Number(trimmed);
+        if (!Number.isFinite(n) || n < 1) {
+            // Bad input — clear silently rather than throwing; consumers can
+            // wrap with their own validation if they want richer feedback.
+            setDraft('');
+            return;
+        }
+        const clamped = Math.min(Math.max(1, Math.floor(n)), ctx.pageCount);
+        ctx.goToPage(clamped);
+        setDraft('');
+    };
+
+    return (
+        <View
+            style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: px(colors.spacing['2']),
+            }}
+        >
+            {hideLabel ? null : (
+                <RNText
+                    style={{
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        color: colors.semantic.text.muted,
+                    }}
+                >
+                    {visibleLabel}
+                </RNText>
+            )}
+            <View style={{ width: inputWidth }}>
+                <TextInput
+                    {...(testID !== undefined ? { testID } : {})}
+                    value={draft}
+                    onChangeText={setDraft}
+                    onSubmitEditing={submit}
+                    onBlur={submit}
+                    keyboardType="number-pad"
+                    inputMode="numeric"
+                    placeholder={placeholder ?? ctx.labels.jumperPlaceholder}
+                    aria-label={visibleLabel}
+                    accessibilityLabel={visibleLabel}
+                    returnKeyType="go"
+                />
+            </View>
+        </View>
+    );
+};
+
+export type { PaginationJumperProps };
+
 // =============================================================================
 // Public symbol — Pagination + compound parts
 // =============================================================================
@@ -872,6 +958,7 @@ type PaginationCompound = FC<PaginationProps> & {
     Ellipsis: FC<{ children?: ReactNode }>;
     Range: FC;
     PageSize: FC<{ options: ReadonlyArray<number>; testID?: string }>;
+    Jumper: FC<PaginationJumperProps>;
 };
 
 export const Pagination = PaginationRoot as PaginationCompound;
@@ -885,6 +972,7 @@ Pagination.Last = PaginationLast;
 Pagination.Ellipsis = PaginationEllipsis;
 Pagination.Range = PaginationRange;
 Pagination.PageSize = PaginationPageSize;
+Pagination.Jumper = PaginationJumper;
 
 // Re-exports under nominal compound names for tree-shake-friendly imports.
 export {
@@ -892,6 +980,7 @@ export {
     PaginationFirst,
     PaginationItem,
     PaginationItems,
+    PaginationJumper,
     PaginationLast,
     PaginationNext,
     PaginationPageSize,

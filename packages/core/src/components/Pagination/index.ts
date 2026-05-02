@@ -7,6 +7,8 @@ export {
     type PaginationItemDescriptor,
     PaginationItems,
     type PaginationItemType,
+    PaginationJumper,
+    type PaginationJumperProps,
     PaginationLast,
     PaginationNext,
     type PaginationOnPageChange,

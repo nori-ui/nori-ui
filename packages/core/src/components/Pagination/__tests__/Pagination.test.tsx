@@ -125,6 +125,62 @@ describe('<Pagination> compound mode', () => {
         }
     });
 
+    it('Pagination.Jumper jumps to a typed page on submit', () => {
+        function JumperDemo() {
+            const [page, setPage] = useState(1);
+            return (
+                <Pagination page={page} pageCount={20} onPageChange={(info) => setPage(info.page)}>
+                    <Pagination.Items />
+                    <Pagination.Jumper testID="jumper" />
+                </Pagination>
+            );
+        }
+        render(<JumperDemo />);
+        const input = screen.getByTestId('jumper') as HTMLInputElement;
+        fireEvent.change(input, { target: { value: '12' } });
+        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+        // RN-Web doesn't fire onSubmitEditing on key events in jsdom; fall back to onBlur
+        fireEvent.blur(input);
+        expect(screen.getByLabelText('Current page').textContent).toBe('12');
+        // input clears after a successful jump
+        expect(input.value).toBe('');
+    });
+
+    it('Pagination.Jumper clamps an out-of-range value into [1, pageCount]', () => {
+        function JumperDemo() {
+            const [page, setPage] = useState(5);
+            return (
+                <Pagination page={page} pageCount={20} onPageChange={(info) => setPage(info.page)}>
+                    <Pagination.Items />
+                    <Pagination.Jumper testID="jumper" />
+                </Pagination>
+            );
+        }
+        render(<JumperDemo />);
+        const input = screen.getByTestId('jumper') as HTMLInputElement;
+        fireEvent.change(input, { target: { value: '999' } });
+        fireEvent.blur(input);
+        expect(screen.getByLabelText('Current page').textContent).toBe('20');
+    });
+
+    it('Pagination.Jumper ignores non-numeric input silently', () => {
+        function JumperDemo() {
+            const [page, setPage] = useState(3);
+            return (
+                <Pagination page={page} pageCount={20} onPageChange={(info) => setPage(info.page)}>
+                    <Pagination.Items />
+                    <Pagination.Jumper testID="jumper" />
+                </Pagination>
+            );
+        }
+        render(<JumperDemo />);
+        const input = screen.getByTestId('jumper') as HTMLInputElement;
+        fireEvent.change(input, { target: { value: 'abc' } });
+        fireEvent.blur(input);
+        // page unchanged
+        expect(screen.getByLabelText('Current page').textContent).toBe('3');
+    });
+
     it('Pagination.Items renders the auto-computed page list', () => {
         function AutoItems() {
             const [page, setPage] = useState(5);

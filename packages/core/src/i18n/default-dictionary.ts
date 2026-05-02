@@ -38,6 +38,8 @@ export const defaultDictionary: Dictionary = {
     'pagination.range': 'Showing {{from}}–{{to}} of {{total}}',
     'pagination.pageOf': 'Page {{page}} of {{total}}',
     'pagination.pageSizeLabel': 'Items per page',
+    'pagination.jumperLabel': 'Go to page',
+    'pagination.jumperPlaceholder': 'Page #',
 
     // button
     'button.loadingLabel': 'Loading',

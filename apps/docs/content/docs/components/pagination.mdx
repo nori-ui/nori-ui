@@ -22,6 +22,7 @@ import { PropsTable } from '@/components/props-table';
 - **`hideOnSinglePage={true}` by default** — drop in confidently and the component disappears when there's only one page of data.
 - **Built-in range display** — pass `itemCount` and `pageSize` plus `showRange` (or render `<Pagination.Range />`) to get a localized "Showing 21–30 of 142" string.
 - **Built-in page-size selector** — `<Pagination.PageSize options={[10, 25, 50]} />` wraps our own `Select`. Picking a new size resets the current page to 1.
+- **Jumper input** — `<Pagination.Jumper />` lets users type a page number and jump on Enter or blur; clamps out-of-range and ignores non-numeric input.
 - **`renderItem` slot** for `<Link>` integration with any router (Next.js, Expo Router, react-router) — same signature on web and native.
 - **Headless [`usePagination()`](/docs/hooks/use-pagination) hook** — the same math the component uses, exposed for fully custom UIs.
 - **WCAG 2.2 AA**: `<nav>` landmark, `aria-current="page"` on the active item, debounced `aria-live="polite"` page-change announcements, every label localizable via `useTranslation` (`pagination.previous`, `pagination.next`, `pagination.first`, `pagination.last`, `pagination.gotoPage`, `pagination.range`, `pagination.pageOf`, `pagination.pageSizeLabel`, `pagination.ariaLabel`).
@@ -66,6 +67,12 @@ Use compound parts when you need full control over the layout (extra buttons, cu
 `<Pagination.PageSize options={[10, 25, 50, 100]} />` wraps the project's `Select` and reads / writes the current page size from / to the root context. Picking a new size resets the page to 1 and forwards both values through `onPageChange({ page, pageSize })`.
 
 <Preview name="pagination-page-size" />
+
+## Jumper input
+
+For long lists where the user knows the page they want, drop in `<Pagination.Jumper />` — a tiny number input that jumps on Enter or blur. Out-of-range values are clamped to `[1, pageCount]` silently; non-numeric input is ignored. Pair with `Pagination.Items` for the click-driven nav.
+
+<Preview name="pagination-jumper" />
 
 ## Custom rendering with `renderItem`
 
@@ -120,6 +127,8 @@ Every visible string is sourced from `useTranslation`. Override individual strin
 | `pagination.range` | "Showing \{\{from\}\}–\{\{to\}\} of \{\{total\}\}" |
 | `pagination.pageOf` | "Page \{\{page\}\} of \{\{total\}\}" |
 | `pagination.pageSizeLabel` | "Items per page" |
+| `pagination.jumperLabel` | "Go to page" |
+| `pagination.jumperPlaceholder` | "Page #" |
 
 ## Cursor-based pagination
 
