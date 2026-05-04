@@ -77,7 +77,7 @@ export type PopoverProps = {
  * uses `position: fixed` + a measured trigger rect so it escapes any
  * ancestor `overflow: hidden`.
  */
-export function Popover({ open, defaultOpen = false, onOpenChange, children }: PopoverProps) {
+function PopoverRoot({ open, defaultOpen = false, onOpenChange, children }: PopoverProps) {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -138,7 +138,7 @@ export type PopoverTriggerProps = {
  * The trigger element gets `aria-haspopup="dialog"` and `aria-expanded`
  * so assistive tech announces the relationship.
  */
-export function PopoverTrigger({ asChild = true, children, className, testID }: PopoverTriggerProps) {
+function PopoverTrigger({ asChild = true, children, className, testID }: PopoverTriggerProps) {
     const ctx = usePopoverContext('PopoverTrigger');
     const onPress = useCallback(() => {
         ctx.measureTrigger();
@@ -288,7 +288,7 @@ export type PopoverContentProps = {
  * ARIA: `role="dialog"` (without `aria-modal`) so assistive tech
  * announces it as a grouping but doesn't suppress the rest of the page.
  */
-export function PopoverContent({
+function PopoverContent({
     side = 'bottom',
     align = 'center',
     children,
@@ -506,3 +506,14 @@ export function PopoverContent({
         </Modal>
     );
 }
+
+/**
+ * Public `Popover` value — the root function plus its `.Trigger` and `.Content`
+ * static members. `Object.assign` produces a value whose inferred type carries
+ * the static properties, so `.d.ts` consumers can write `<Popover.Trigger>`
+ * without a separate import.
+ */
+export const Popover = Object.assign(PopoverRoot, {
+    Trigger: PopoverTrigger,
+    Content: PopoverContent,
+});

@@ -15,8 +15,8 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- `<RadioGroup>` owns the selected value (controlled via `value` + `onChange`, or uncontrolled via `defaultValue`).
-- `<Radio>` declares a single option — it must be rendered inside a `<RadioGroup>` or you'll get a runtime error explaining why.
+- `<Radio.Group>` owns the selected value (controlled via `value` + `onChange`, or uncontrolled via `defaultValue`).
+- `<Radio>` declares a single option — it must be rendered inside a `<Radio.Group>` or you'll get a runtime error explaining why.
 - Keyboard nav follows the WAI-ARIA radiogroup pattern: arrow keys move between options (selection follows focus), `Home` / `End` jump to first / last, wrap-around at the edges.
 - Roving tabindex: tabbing into the group lands on the selected option; only one option participates in the tab order at a time.
 

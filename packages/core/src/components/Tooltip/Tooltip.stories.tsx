@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from '../Button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './Tooltip';
+import { Tooltip } from './Tooltip';
 
 const meta: Meta<typeof Tooltip> = {
     title: 'Overlays/Tooltip',
@@ -12,10 +12,10 @@ type Story = StoryObj<typeof Tooltip>;
 export const OnButton: Story = {
     render: () => (
         <Tooltip>
-            <TooltipTrigger>
+            <Tooltip.Trigger>
                 <Button variant="secondary">Hover or focus me</Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Click to view details</TooltipContent>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="top">Click to view details</Tooltip.Content>
         </Tooltip>
     ),
 };

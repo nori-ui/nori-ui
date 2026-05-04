@@ -1,19 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Radio, RadioGroup } from './RadioGroup';
+import { Radio } from './RadioGroup';
 
-const meta: Meta<typeof RadioGroup> = {
+const meta: Meta<typeof Radio.Group> = {
     title: 'Controls/RadioGroup',
-    component: RadioGroup,
+    component: Radio.Group,
 };
 export default meta;
-type Story = StoryObj<typeof RadioGroup>;
+type Story = StoryObj<typeof Radio.Group>;
 
 export const Shipping: Story = {
     render: () => (
-        <RadioGroup defaultValue="standard" name="shipping">
+        <Radio.Group defaultValue="standard" name="shipping">
             <Radio value="standard" label="Standard — 3-5 business days, free" />
             <Radio value="express" label="Express — 1-2 business days, $9" />
             <Radio value="overnight" label="Overnight — next morning, $24" />
-        </RadioGroup>
+        </Radio.Group>
     ),
 };

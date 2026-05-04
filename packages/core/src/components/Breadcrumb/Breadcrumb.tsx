@@ -61,7 +61,7 @@ import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
-import { Popover, PopoverContent, PopoverTrigger } from '../Popover';
+import { Popover } from '../Popover';
 
 // =============================================================================
 // Types
@@ -1166,7 +1166,7 @@ function BreadcrumbSiblingMenu({ item, siblingMenuLabel }: { item: BreadcrumbIte
     const siblings = item.siblings ?? [];
     return (
         <Popover>
-            <PopoverTrigger asChild={false}>
+            <Popover.Trigger asChild={false}>
                 <View
                     accessibilityLabel={siblingMenuLabel}
                     style={{
@@ -1184,14 +1184,14 @@ function BreadcrumbSiblingMenu({ item, siblingMenuLabel }: { item: BreadcrumbIte
                         ▾
                     </RNText>
                 </View>
-            </PopoverTrigger>
-            <PopoverContent side="bottom" align="start">
+            </Popover.Trigger>
+            <Popover.Content side="bottom" align="start">
                 <View style={{ minWidth: 200, paddingVertical: 4 }}>
                     {siblings.map((sib, idx) => (
                         <SiblingRow key={sib.href ?? idx} sibling={sib} />
                     ))}
                 </View>
-            </PopoverContent>
+            </Popover.Content>
         </Popover>
     );
 }
@@ -1316,7 +1316,7 @@ function BreadcrumbEllipsisInternal({
     // Menu mode: ellipsis triggers a popover with the hidden items.
     return (
         <Popover>
-            <PopoverTrigger asChild={false}>
+            <Popover.Trigger asChild={false}>
                 <View
                     accessibilityLabel={expandLabel}
                     aria-label={expandLabel}
@@ -1324,8 +1324,8 @@ function BreadcrumbEllipsisInternal({
                 >
                     {renderDots()}
                 </View>
-            </PopoverTrigger>
-            <PopoverContent side="bottom" align="start">
+            </Popover.Trigger>
+            <Popover.Content side="bottom" align="start">
                 <View style={{ minWidth: 200, paddingVertical: 4 }}>
                     {hiddenItems.map((it, idx) => {
                         const sib: BreadcrumbSibling = { label: it.label };
@@ -1346,7 +1346,7 @@ function BreadcrumbEllipsisInternal({
                         );
                     })}
                 </View>
-            </PopoverContent>
+            </Popover.Content>
         </Popover>
     );
 }
@@ -1627,5 +1627,3 @@ export namespace Breadcrumb {
     export const Separator = BreadcrumbSeparator;
     export const Ellipsis = BreadcrumbEllipsis;
 }
-
-export { BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator };

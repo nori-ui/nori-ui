@@ -37,7 +37,7 @@ const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
 const useRadioGroupContext = (): RadioGroupContextValue => {
     const ctx = useContext(RadioGroupContext);
     if (!ctx) {
-        throw new Error('<Radio> must be rendered inside a <RadioGroup>.');
+        throw new Error('<Radio> must be rendered inside a <Radio.Group>.');
     }
     return ctx;
 };
@@ -109,7 +109,7 @@ const DOT_INNER_BASE: ViewStyle = {
  *   - Selection follows focus, so an arrow key both moves focus and
  *     activates the option (the standard radiogroup behavior).
  */
-export function RadioGroup({
+function RadioGroup({
     value,
     defaultValue,
     onChange,
@@ -288,7 +288,7 @@ function RadioGroupViewport({
  * One option inside a `<RadioGroup>`. Must be rendered inside one — throws
  * with a clear message if not.
  */
-export function Radio({ value, label, disabled, children, className, testID }: RadioProps) {
+function RadioOption({ value, label, disabled, children, className, testID }: RadioProps) {
     const ctx = useRadioGroupContext();
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
@@ -375,3 +375,15 @@ function isFirstOption(ctx: RadioGroupContextValue, value: string): boolean {
     void value;
     return true;
 }
+
+/**
+ * Public `Radio` value — the per-option component plus its `.Group` static
+ * member (the cluster). Use `<Radio.Group>` to wrap a list of `<Radio />`s.
+ *
+ * `Object.assign` produces a value whose inferred type carries the static
+ * properties, so `.d.ts` consumers can write `<Radio.Group>` without a
+ * separate import.
+ */
+export const Radio = Object.assign(RadioOption, {
+    Group: RadioGroup,
+});

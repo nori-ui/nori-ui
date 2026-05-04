@@ -66,7 +66,7 @@ export type AlertDialogProps = {
  * it allows Escape and click-outside to dismiss, which is the expected
  * affordance for forgettable interactions.
  */
-export function AlertDialog({ open, defaultOpen = false, onOpenChange, children }: AlertDialogProps) {
+function AlertDialogRoot({ open, defaultOpen = false, onOpenChange, children }: AlertDialogProps) {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -109,7 +109,7 @@ export type AlertDialogTriggerProps = {
  * Element that opens the alert dialog when activated. `asChild` by default
  * so any element (Button, Link, custom Pressable) becomes the trigger.
  */
-export function AlertDialogTrigger({ asChild = true, children, className, testID }: AlertDialogTriggerProps) {
+function AlertDialogTrigger({ asChild = true, children, className, testID }: AlertDialogTriggerProps) {
     const ctx = useAlertDialogContext('AlertDialogTrigger');
     const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
 
@@ -269,7 +269,7 @@ export type AlertDialogContentProps = {
  * on close. Crucially, neither overlay click nor Escape closes — the user
  * MUST press an explicit Cancel/Action button.
  */
-export function AlertDialogContent({ children, className, testID }: AlertDialogContentProps) {
+function AlertDialogContent({ children, className, testID }: AlertDialogContentProps) {
     const ctx = useAlertDialogContext('AlertDialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -493,7 +493,7 @@ export type AlertDialogTextProps = {
 };
 
 /** Heading inside AlertDialogContent. Wires `aria-labelledby`. */
-export function AlertDialogTitle({ children, className }: AlertDialogTextProps) {
+function AlertDialogTitle({ children, className }: AlertDialogTextProps) {
     const ctx = useAlertDialogContext('AlertDialogTitle');
     const colors = useThemeColors();
     return (
@@ -516,7 +516,7 @@ export function AlertDialogTitle({ children, className }: AlertDialogTextProps) 
 }
 
 /** Body description inside AlertDialogContent. Wires `aria-describedby`. */
-export function AlertDialogDescription({ children, className }: AlertDialogTextProps) {
+function AlertDialogDescription({ children, className }: AlertDialogTextProps) {
     const ctx = useAlertDialogContext('AlertDialogDescription');
     const colors = useThemeColors();
     return (
@@ -550,7 +550,7 @@ export type AlertDialogActionProps = {
  * The destructive / confirming action. Closes the dialog AND forwards
  * `onPress` to the consumer's handler so they can run the side effect.
  */
-export function AlertDialogAction({ asChild = true, children, className, testID, onPress }: AlertDialogActionProps) {
+function AlertDialogAction({ asChild = true, children, className, testID, onPress }: AlertDialogActionProps) {
     const ctx = useAlertDialogContext('AlertDialogAction');
     const handle = useCallback(
         (event?: unknown) => {
@@ -610,7 +610,7 @@ export type AlertDialogCancelProps = {
  * least destructive default, so a stray Enter keypress can't fire the
  * destructive action.
  */
-export function AlertDialogCancel({ asChild = true, children, className, testID, onPress }: AlertDialogCancelProps) {
+function AlertDialogCancel({ asChild = true, children, className, testID, onPress }: AlertDialogCancelProps) {
     const ctx = useAlertDialogContext('AlertDialogCancel');
     const handle = useCallback(
         (event?: unknown) => {
@@ -663,7 +663,7 @@ export type AlertDialogFooterProps = {
 };
 
 /** Convenience row for action buttons (right-aligned). */
-export function AlertDialogFooter({ children, className }: AlertDialogFooterProps) {
+function AlertDialogFooter({ children, className }: AlertDialogFooterProps) {
     const colors = useThemeColors();
     return (
         <View
@@ -680,3 +680,20 @@ export function AlertDialogFooter({ children, className }: AlertDialogFooterProp
         </View>
     );
 }
+
+/**
+ * Public `AlertDialog` value — the root function plus its `.Trigger`,
+ * `.Content`, `.Title`, `.Description`, `.Footer`, `.Action`, and `.Cancel`
+ * static members. `Object.assign` produces a value whose inferred type carries
+ * the static properties, so `.d.ts` consumers can write `<AlertDialog.Content>`
+ * without a separate import.
+ */
+export const AlertDialog = Object.assign(AlertDialogRoot, {
+    Trigger: AlertDialogTrigger,
+    Content: AlertDialogContent,
+    Title: AlertDialogTitle,
+    Description: AlertDialogDescription,
+    Footer: AlertDialogFooter,
+    Action: AlertDialogAction,
+    Cancel: AlertDialogCancel,
+});

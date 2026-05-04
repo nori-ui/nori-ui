@@ -31,11 +31,11 @@ export type CardProps = Omit<ViewProps, 'children'> & {
 };
 
 /**
- * Container surface for grouping related content. Pair with `CardHeader`,
- * `CardTitle`, `CardDescription`, `CardContent`, and `CardFooter` for the
- * conventional layout, or use any children directly.
+ * Container surface for grouping related content. Pair with `Card.Header`,
+ * `Card.Title`, `Card.Description`, `Card.Content`, and `Card.Footer` for
+ * the conventional layout, or use any children directly.
  */
-export function Card({ children, className, style, ...rest }: CardProps) {
+function CardRoot({ children, className, style, ...rest }: CardProps) {
     const colors = useThemeColors();
     return (
         <View
@@ -65,7 +65,7 @@ export type CardSectionProps = Omit<ViewProps, 'children'> & {
 };
 
 /** Header section — sits flush with the card top with comfortable padding. */
-export function CardHeader({ children, className, style, ...rest }: CardSectionProps) {
+function CardHeader({ children, className, style, ...rest }: CardSectionProps) {
     const colors = useThemeColors();
     const headerStyle: ViewStyle = {
         ...HEADER_LAYOUT_BASE,
@@ -82,7 +82,7 @@ export function CardHeader({ children, className, style, ...rest }: CardSectionP
 }
 
 /** Body content — for arbitrary content between header and footer. */
-export function CardContent({ children, className, style, ...rest }: CardSectionProps) {
+function CardContent({ children, className, style, ...rest }: CardSectionProps) {
     const colors = useThemeColors();
     const contentStyle: ViewStyle = {
         ...CONTENT_LAYOUT_BASE,
@@ -117,7 +117,7 @@ export function CardContent({ children, className, style, ...rest }: CardSection
 }
 
 /** Footer with a top border and a row of actions (typically Buttons). */
-export function CardFooter({ children, className, style, ...rest }: CardSectionProps) {
+function CardFooter({ children, className, style, ...rest }: CardSectionProps) {
     const colors = useThemeColors();
     const footerStyle: ViewStyle = {
         ...FOOTER_LAYOUT_BASE,
@@ -147,7 +147,7 @@ export type CardTextProps = {
 };
 
 /** Card title — heading-weight text. Renders as a heading on web. */
-export function CardTitle({ children, className, testID }: CardTextProps) {
+function CardTitle({ children, className, testID }: CardTextProps) {
     const colors = useThemeColors();
     return (
         <RNText
@@ -168,8 +168,8 @@ export function CardTitle({ children, className, testID }: CardTextProps) {
     );
 }
 
-/** Muted subtitle that pairs with CardTitle. */
-export function CardDescription({ children, className, testID }: CardTextProps) {
+/** Muted subtitle that pairs with Card.Title. */
+function CardDescription({ children, className, testID }: CardTextProps) {
     const colors = useThemeColors();
     return (
         <RNText
@@ -185,3 +185,17 @@ export function CardDescription({ children, className, testID }: CardTextProps) 
         </RNText>
     );
 }
+
+/**
+ * Public `Card` value — the root function plus its `.Header`, `.Title`,
+ * `.Description`, `.Content`, and `.Footer` static members. `Object.assign`
+ * produces a value whose inferred type carries the static properties, so
+ * `.d.ts` consumers can write `<Card.Header>` without a separate import.
+ */
+export const Card = Object.assign(CardRoot, {
+    Header: CardHeader,
+    Title: CardTitle,
+    Description: CardDescription,
+    Content: CardContent,
+    Footer: CardFooter,
+});

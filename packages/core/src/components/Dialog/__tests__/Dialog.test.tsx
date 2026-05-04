@@ -1,16 +1,16 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { Button } from '../../Button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '../Dialog';
+import { Dialog } from '../Dialog';
 
 describe('<Dialog>', () => {
     it('starts closed when defaultOpen is omitted', () => {
         render(
             <Dialog>
-                <DialogTrigger asChild={false}>Open</DialogTrigger>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                <Dialog.Trigger asChild={false}>Open</Dialog.Trigger>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         expect(screen.queryByTestId('dialog')).toBeNull();
@@ -19,12 +19,12 @@ describe('<Dialog>', () => {
     it('opens when the trigger is clicked', () => {
         render(
             <Dialog>
-                <DialogTrigger asChild={false} testID="trigger">
+                <Dialog.Trigger asChild={false} testID="trigger">
                     Open
-                </DialogTrigger>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                </Dialog.Trigger>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         fireEvent.click(screen.getByTestId('trigger'));
@@ -37,12 +37,12 @@ describe('<Dialog>', () => {
         // open the dialog when the trigger child was a <Button>.
         render(
             <Dialog>
-                <DialogTrigger>
+                <Dialog.Trigger>
                     <Button testID="trigger">Open</Button>
-                </DialogTrigger>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                </Dialog.Trigger>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         fireEvent.click(screen.getByTestId('trigger'));
@@ -52,12 +52,12 @@ describe('<Dialog>', () => {
     it('asChild close forwards both onClick and onPress so a wrapped Button (Pressable) dismisses', () => {
         render(
             <Dialog defaultOpen>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                    <DialogClose>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                    <Dialog.Close>
                         <Button testID="close">Close</Button>
-                    </DialogClose>
-                </DialogContent>
+                    </Dialog.Close>
+                </Dialog.Content>
             </Dialog>
         );
         fireEvent.click(screen.getByTestId('close'));
@@ -67,9 +67,9 @@ describe('<Dialog>', () => {
     it('renders defaultOpen state immediately', () => {
         render(
             <Dialog defaultOpen>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         expect(screen.getByTestId('dialog')).toBeInTheDocument();
@@ -84,9 +84,9 @@ describe('<Dialog>', () => {
                         close-from-outside
                     </button>
                     <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogContent testID="dialog">
-                            <DialogTitle>Hi</DialogTitle>
-                        </DialogContent>
+                        <Dialog.Content testID="dialog">
+                            <Dialog.Title>Hi</Dialog.Title>
+                        </Dialog.Content>
                     </Dialog>
                 </>
             );
@@ -100,9 +100,9 @@ describe('<Dialog>', () => {
     it('Escape closes the dialog', () => {
         render(
             <Dialog defaultOpen>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         expect(screen.getByTestId('dialog')).toBeInTheDocument();
@@ -114,12 +114,12 @@ describe('<Dialog>', () => {
         const onOpenChange = jest.fn();
         render(
             <Dialog defaultOpen onOpenChange={onOpenChange}>
-                <DialogContent>
-                    <DialogTitle>Hi</DialogTitle>
-                    <DialogClose asChild={false} testID="close">
+                <Dialog.Content>
+                    <Dialog.Title>Hi</Dialog.Title>
+                    <Dialog.Close asChild={false} testID="close">
                         Done
-                    </DialogClose>
-                </DialogContent>
+                    </Dialog.Close>
+                </Dialog.Content>
             </Dialog>
         );
         fireEvent.click(screen.getByTestId('close'));
@@ -129,17 +129,17 @@ describe('<Dialog>', () => {
     it('locks body scroll while open and restores on close', () => {
         const { rerender } = render(
             <Dialog open>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         expect(document.body.style.overflow).toBe('hidden');
         rerender(
             <Dialog open={false}>
-                <DialogContent testID="dialog">
-                    <DialogTitle>Hi</DialogTitle>
-                </DialogContent>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
             </Dialog>
         );
         expect(document.body.style.overflow).toBe('');
@@ -148,10 +148,10 @@ describe('<Dialog>', () => {
     it('wires aria-labelledby and aria-describedby to title and description', () => {
         render(
             <Dialog defaultOpen>
-                <DialogContent testID="dialog">
-                    <DialogTitle>The title</DialogTitle>
-                    <DialogDescription>Some context</DialogDescription>
-                </DialogContent>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>The title</Dialog.Title>
+                    <Dialog.Description>Some context</Dialog.Description>
+                </Dialog.Content>
             </Dialog>
         );
         const dialog = screen.getByTestId('dialog');
@@ -169,9 +169,9 @@ describe('<Dialog>', () => {
         try {
             expect(() =>
                 render(
-                    <DialogContent>
-                        <DialogTitle>x</DialogTitle>
-                    </DialogContent>
+                    <Dialog.Content>
+                        <Dialog.Title>x</Dialog.Title>
+                    </Dialog.Content>
                 )
             ).toThrow(/Dialog/);
         } finally {

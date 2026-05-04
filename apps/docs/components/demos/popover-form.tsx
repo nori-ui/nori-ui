@@ -1,4 +1,4 @@
-import { Button, Popover, PopoverContent, PopoverTrigger, Text, TextInput, VStack } from '@nori-ui/core';
+import { Button, Popover, Text, TextInput, VStack } from '@nori-ui/core';
 import { useState } from 'react';
 
 export default function PopoverForm() {
@@ -7,10 +7,10 @@ export default function PopoverForm() {
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger>
+            <Popover.Trigger>
                 <Button>Rename</Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom" align="start" aria-label="Rename project">
+            </Popover.Trigger>
+            <Popover.Content side="bottom" align="start" aria-label="Rename project">
                 <VStack gap={3}>
                     <Text variant="body-md" className="font-semibold">
                         Rename project
@@ -23,7 +23,7 @@ export default function PopoverForm() {
                     />
                     <Button onPress={() => setOpen(false)}>Save</Button>
                 </VStack>
-            </PopoverContent>
+            </Popover.Content>
         </Popover>
     );
 }

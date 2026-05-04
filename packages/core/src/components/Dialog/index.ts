@@ -1,15 +1,9 @@
 export {
     Dialog,
-    DialogClose,
     type DialogCloseProps,
-    DialogContent,
     type DialogContentProps,
-    DialogDescription,
-    DialogFooter,
     type DialogFooterProps,
     type DialogProps,
     type DialogTextProps,
-    DialogTitle,
-    DialogTrigger,
     type DialogTriggerProps,
 } from './Dialog';

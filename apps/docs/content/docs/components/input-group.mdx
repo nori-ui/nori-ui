@@ -38,11 +38,11 @@ import { PropsTable } from '@/components/props-table';
 
 ## With label, helper text, and error
 
-`label`, `helperText`, and `error` belong on `<InputGroupInput>`. They render *outside* the bordered field row — label above, helper/error below — exactly like a normal `TextInput`. When `error` is set, the entire group's border turns red and `aria-invalid` is forwarded to the `<input>`.
+`label`, `helperText`, and `error` belong on `<InputGroup.Input>`. They render *outside* the bordered field row — label above, helper/error below — exactly like a normal `TextInput`. When `error` is set, the entire group's border turns red and `aria-invalid` is forwarded to the `<input>`.
 
 ```tsx
 <InputGroup>
-    <InputGroupAddon>@</InputGroupAddon>
+    <InputGroup.Addon>@</InputGroup.Addon>
     <InputGroupInput
         label="Username"
         helperText="3–20 characters, no spaces."
@@ -59,24 +59,24 @@ Addons accept any `ReactNode`, so you can drop in an icon component:
 import { MailIcon } from 'lucide-react';
 
 <InputGroup>
-    <InputGroupAddon><MailIcon size={16} /></InputGroupAddon>
-    <InputGroupInput label="Email" placeholder="you@example.com" />
+    <InputGroup.Addon><MailIcon size={16} /></InputGroup.Addon>
+    <InputGroup.Input label="Email" placeholder="you@example.com" />
 </InputGroup>
 ```
 
 ## Disabled and error states
 
-Pass `disabled` or `error` on the group itself to dim/mark the whole compound, or pass `disabled` / `error` on `<InputGroupInput>` for input-only control. Either source flips the border + addon dim.
+Pass `disabled` or `error` on the group itself to dim/mark the whole compound, or pass `disabled` / `error` on `<InputGroup.Input>` for input-only control. Either source flips the border + addon dim.
 
 ```tsx
 <InputGroup disabled>
-    <InputGroupAddon>@</InputGroupAddon>
-    <InputGroupInput defaultValue="locked" />
+    <InputGroup.Addon>@</InputGroup.Addon>
+    <InputGroup.Input defaultValue="locked" />
 </InputGroup>
 
 <InputGroup>
-    <InputGroupAddon>@</InputGroupAddon>
-    <InputGroupInput error="Invalid format" defaultValue="not an email" />
+    <InputGroup.Addon>@</InputGroup.Addon>
+    <InputGroup.Input error="Invalid format" defaultValue="not an email" />
 </InputGroup>
 ```
 
@@ -86,10 +86,10 @@ Pass `disabled` or `error` on the group itself to dim/mark the whole compound, o
 
 <PropsTable component="InputGroup" />
 
-### `<InputGroupAddon>`
+### `<InputGroup.Addon>`
 
 <PropsTable component="InputGroupAddon" />
 
-### `<InputGroupInput>`
+### `<InputGroup.Input>`
 
 Inherits every prop from [`TextInput`](./text-input).

@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../Tooltip';
+import { Tooltip } from '../Tooltip';
 
 // jsdom doesn't lay anything out — getBoundingClientRect returns zeros by
 // default. Stub it so the position math has something deterministic to chew on.
@@ -56,8 +56,8 @@ describe('<Tooltip>', () => {
     it('starts closed when defaultOpen is omitted', () => {
         render(
             <Tooltip>
-                <TooltipTrigger asChild={false}>Info</TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                <Tooltip.Trigger asChild={false}>Info</Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         expect(screen.queryByTestId('content')).toBeNull();
@@ -66,10 +66,10 @@ describe('<Tooltip>', () => {
     it('opens after delayMs when the trigger is hovered', () => {
         render(
             <Tooltip delayMs={300}>
-                <TooltipTrigger asChild={false} testID="trigger">
+                <Tooltip.Trigger asChild={false} testID="trigger">
                     Info
-                </TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                </Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         fireEvent.mouseEnter(screen.getByTestId('trigger'));
@@ -84,10 +84,10 @@ describe('<Tooltip>', () => {
     it('disappears on mouseleave', () => {
         render(
             <Tooltip delayMs={0}>
-                <TooltipTrigger asChild={false} testID="trigger">
+                <Tooltip.Trigger asChild={false} testID="trigger">
                     Info
-                </TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                </Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         fireEvent.mouseEnter(screen.getByTestId('trigger'));
@@ -102,8 +102,8 @@ describe('<Tooltip>', () => {
     it('Escape closes the tooltip', () => {
         render(
             <Tooltip defaultOpen>
-                <TooltipTrigger asChild={false}>Info</TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                <Tooltip.Trigger asChild={false}>Info</Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         expect(screen.getByTestId('content')).toBeInTheDocument();
@@ -114,10 +114,10 @@ describe('<Tooltip>', () => {
     it('focus opens the tooltip; blur closes it', () => {
         render(
             <Tooltip delayMs={0}>
-                <TooltipTrigger asChild={false} testID="trigger">
+                <Tooltip.Trigger asChild={false} testID="trigger">
                     Info
-                </TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                </Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         fireEvent.focus(screen.getByTestId('trigger'));
@@ -142,10 +142,10 @@ describe('<Tooltip>', () => {
                         setOpen(next);
                     }}
                 >
-                    <TooltipTrigger asChild={false} testID="trigger">
+                    <Tooltip.Trigger asChild={false} testID="trigger">
                         Info
-                    </TooltipTrigger>
-                    <TooltipContent testID="content">Hint</TooltipContent>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content testID="content">Hint</Tooltip.Content>
                 </Tooltip>
             );
         };
@@ -162,12 +162,12 @@ describe('<Tooltip>', () => {
     it('side="right" positions content to the right of the trigger (left > trigger.right)', () => {
         render(
             <Tooltip defaultOpen>
-                <TooltipTrigger asChild={false} testID="trigger">
+                <Tooltip.Trigger asChild={false} testID="trigger">
                     Info
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" testID="content">
+                </Tooltip.Trigger>
+                <Tooltip.Content side="right" align="center" testID="content">
                     Hint
-                </TooltipContent>
+                </Tooltip.Content>
             </Tooltip>
         );
         const content = screen.getByTestId('content');
@@ -180,10 +180,10 @@ describe('<Tooltip>', () => {
     it('trigger gets aria-describedby pointing at content id when open', () => {
         render(
             <Tooltip defaultOpen>
-                <TooltipTrigger asChild={false} testID="trigger">
+                <Tooltip.Trigger asChild={false} testID="trigger">
                     Info
-                </TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                </Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         const trigger = screen.getByTestId('trigger');
@@ -196,8 +196,8 @@ describe('<Tooltip>', () => {
     it('content gets role="tooltip"', () => {
         render(
             <Tooltip defaultOpen>
-                <TooltipTrigger asChild={false}>Info</TooltipTrigger>
-                <TooltipContent testID="content">Hint</TooltipContent>
+                <Tooltip.Trigger asChild={false}>Info</Tooltip.Trigger>
+                <Tooltip.Content testID="content">Hint</Tooltip.Content>
             </Tooltip>
         );
         const content = screen.getByTestId('content');
@@ -208,7 +208,7 @@ describe('<Tooltip>', () => {
         const original = console.error;
         console.error = () => {};
         try {
-            expect(() => render(<TooltipContent>x</TooltipContent>)).toThrow(/Tooltip/);
+            expect(() => render(<Tooltip.Content>x</Tooltip.Content>)).toThrow(/Tooltip/);
         } finally {
             console.error = original;
         }

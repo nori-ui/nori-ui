@@ -1,34 +1,25 @@
-import {
-    Button,
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogTitle,
-    DialogTrigger,
-} from '@nori-ui/core';
+import { Button, Dialog } from '@nori-ui/core';
 
 export default function DialogBasic() {
     return (
         <Dialog>
-            <DialogTrigger>
+            <Dialog.Trigger>
                 <Button>Open dialog</Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogTitle>Delete project?</DialogTitle>
-                <DialogDescription>
+            </Dialog.Trigger>
+            <Dialog.Content>
+                <Dialog.Title>Delete project?</Dialog.Title>
+                <Dialog.Description>
                     This permanently removes the project and every record attached to it. This cannot be undone.
-                </DialogDescription>
-                <DialogFooter>
-                    <DialogClose>
+                </Dialog.Description>
+                <Dialog.Footer>
+                    <Dialog.Close>
                         <Button variant="secondary">Cancel</Button>
-                    </DialogClose>
-                    <DialogClose>
+                    </Dialog.Close>
+                    <Dialog.Close>
                         <Button variant="destructive">Delete project</Button>
-                    </DialogClose>
-                </DialogFooter>
-            </DialogContent>
+                    </Dialog.Close>
+                </Dialog.Footer>
+            </Dialog.Content>
         </Dialog>
     );
 }

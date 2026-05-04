@@ -1,12 +1,12 @@
-import { Button, defaultSemanticIcons, Tooltip, TooltipContent, TooltipTrigger } from '@nori-ui/core';
+import { Button, defaultSemanticIcons, Tooltip } from '@nori-ui/core';
 
 export default function TooltipBasic() {
     return (
         <Tooltip>
-            <TooltipTrigger>
+            <Tooltip.Trigger>
                 <Button variant="ghost" leadingIcon={defaultSemanticIcons.info} aria-label="More info" />
-            </TooltipTrigger>
-            <TooltipContent side="top">Click to view details</TooltipContent>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="top">Click to view details</Tooltip.Content>
         </Tooltip>
     );
 }

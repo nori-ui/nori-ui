@@ -86,7 +86,7 @@ export type TabsProps = {
  * arrow-key navigation that wraps, Home/End for first/last, and roving
  * tabindex so tabbing into the group lands on the active tab.
  */
-export function Tabs({
+function TabsRoot({
     value,
     defaultValue,
     onChange,
@@ -245,7 +245,7 @@ const LIST_VERTICAL_LAYOUT_BASE: ViewStyle = {
 };
 
 /** Container for `TabsTrigger`s. Renders the underline rule on the appropriate edge. */
-export function TabsList({ children, className, testID }: TabsListProps) {
+function TabsList({ children, className, testID }: TabsListProps) {
     const ctx = useTabsContext('TabsList');
     const colors = useThemeColors();
     const gap = px(colors.spacing['1']);
@@ -310,7 +310,7 @@ const TRIGGER_LAYOUT_BASE_VERTICAL: ViewStyle = {
 };
 
 /** Clickable tab. Activating it shows the matching `TabsContent`. */
-export function TabsTrigger({ value, disabled, children, className, testID }: TabsTriggerProps) {
+function TabsTrigger({ value, disabled, children, className, testID }: TabsTriggerProps) {
     const ctx = useTabsContext('TabsTrigger');
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
@@ -437,7 +437,7 @@ export type TabsContentProps = {
 };
 
 /** Panel content shown when its `value` matches the active tab. */
-export function TabsContent({ value, children, className, testID }: TabsContentProps) {
+function TabsContent({ value, children, className, testID }: TabsContentProps) {
     const ctx = useTabsContext('TabsContent');
     const active = ctx.value === value;
     if (!active) {
@@ -457,3 +457,15 @@ export function TabsContent({ value, children, className, testID }: TabsContentP
         </View>
     );
 }
+
+/**
+ * Public `Tabs` value — the root function plus its `.List`, `.Trigger`, and
+ * `.Content` static members. `Object.assign` produces a value whose inferred
+ * type carries the static properties, so `.d.ts` consumers can write
+ * `<Tabs.List>` without a separate import.
+ */
+export const Tabs = Object.assign(TabsRoot, {
+    List: TabsList,
+    Trigger: TabsTrigger,
+    Content: TabsContent,
+});

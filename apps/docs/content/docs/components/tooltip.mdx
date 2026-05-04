@@ -61,16 +61,16 @@ import { PropsTable } from '@/components/props-table';
 
 ```tsx
 import { useState } from 'react';
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nori-ui/core';
+import { Button, Tooltip } from '@nori-ui/core';
 
 // Uncontrolled — Tooltip owns its open state.
 export function Uncontrolled() {
     return (
         <Tooltip>
-            <TooltipTrigger>
+            <Tooltip.Trigger>
                 <Button>Hover me</Button>
-            </TooltipTrigger>
-            <TooltipContent>Hint</TooltipContent>
+            </Tooltip.Trigger>
+            <Tooltip.Content>Hint</Tooltip.Content>
         </Tooltip>
     );
 }
@@ -81,10 +81,10 @@ export function Controlled() {
     const [open, setOpen] = useState(false);
     return (
         <Tooltip open={open} onOpenChange={setOpen}>
-            <TooltipTrigger>
+            <Tooltip.Trigger>
                 <Button>Hover me</Button>
-            </TooltipTrigger>
-            <TooltipContent>Hint</TooltipContent>
+            </Tooltip.Trigger>
+            <Tooltip.Content>Hint</Tooltip.Content>
         </Tooltip>
     );
 }
@@ -96,10 +96,10 @@ The trigger receives `aria-describedby` referencing the content's id only while 
 
 ```tsx
 <Tooltip>
-    <TooltipTrigger>
+    <Tooltip.Trigger>
         <Button leadingIcon={InfoIcon} aria-label="More info" />
-    </TooltipTrigger>
-    <TooltipContent>Click to view details</TooltipContent>
+    </Tooltip.Trigger>
+    <Tooltip.Content>Click to view details</Tooltip.Content>
 </Tooltip>
 ```
 

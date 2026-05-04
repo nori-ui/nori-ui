@@ -36,7 +36,7 @@ const TARGETS = [
     'Dialog',
     'HStack',
     'Icon',
-    'RadioGroup',
+    'Radio',
     'SegmentedControl',
     'Select',
     'Separator',

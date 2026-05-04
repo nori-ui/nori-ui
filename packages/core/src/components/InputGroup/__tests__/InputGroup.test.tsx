@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../InputGroup';
+import { InputGroup } from '../InputGroup';
 
 describe('<InputGroup>', () => {
     it('renders with a prefix addon only', () => {
         render(
             <InputGroup>
-                <InputGroupAddon testID="prefix">@</InputGroupAddon>
-                <InputGroupInput testID="in" placeholder="username" />
+                <InputGroup.Addon testID="prefix">@</InputGroup.Addon>
+                <InputGroup.Input testID="in" placeholder="username" />
             </InputGroup>
         );
         expect(screen.getByTestId('prefix')).toBeInTheDocument();
@@ -18,8 +18,8 @@ describe('<InputGroup>', () => {
     it('renders with a suffix addon only', () => {
         render(
             <InputGroup>
-                <InputGroupInput testID="in" placeholder="amount" />
-                <InputGroupAddon testID="suffix">USD</InputGroupAddon>
+                <InputGroup.Input testID="in" placeholder="amount" />
+                <InputGroup.Addon testID="suffix">USD</InputGroup.Addon>
             </InputGroup>
         );
         expect(screen.getByTestId('suffix')).toBeInTheDocument();
@@ -30,9 +30,9 @@ describe('<InputGroup>', () => {
     it('renders with both prefix and suffix addons', () => {
         render(
             <InputGroup>
-                <InputGroupAddon testID="prefix">https://</InputGroupAddon>
-                <InputGroupInput testID="in" defaultValue="example" />
-                <InputGroupAddon testID="suffix">.com</InputGroupAddon>
+                <InputGroup.Addon testID="prefix">https://</InputGroup.Addon>
+                <InputGroup.Input testID="in" defaultValue="example" />
+                <InputGroup.Addon testID="suffix">.com</InputGroup.Addon>
             </InputGroup>
         );
         expect(screen.getByText('https://')).toBeInTheDocument();
@@ -43,8 +43,8 @@ describe('<InputGroup>', () => {
     it('focuses the input when an addon is clicked', () => {
         render(
             <InputGroup>
-                <InputGroupAddon testID="prefix">@</InputGroupAddon>
-                <InputGroupInput testID="in" placeholder="username" />
+                <InputGroup.Addon testID="prefix">@</InputGroup.Addon>
+                <InputGroup.Input testID="in" placeholder="username" />
             </InputGroup>
         );
         const input = screen.getByTestId('in') as HTMLInputElement;
@@ -59,8 +59,8 @@ describe('<InputGroup>', () => {
     it('passes label, helperText, and defaultValue through InputGroupInput', () => {
         render(
             <InputGroup>
-                <InputGroupAddon>@</InputGroupAddon>
-                <InputGroupInput testID="in" label="Username" helperText="No spaces allowed" defaultValue="alice" />
+                <InputGroup.Addon>@</InputGroup.Addon>
+                <InputGroup.Input testID="in" label="Username" helperText="No spaces allowed" defaultValue="alice" />
             </InputGroup>
         );
         expect(screen.getByText('Username')).toBeInTheDocument();
@@ -71,8 +71,8 @@ describe('<InputGroup>', () => {
     it('label htmlFor matches the input id (a11y)', () => {
         render(
             <InputGroup>
-                <InputGroupAddon>@</InputGroupAddon>
-                <InputGroupInput testID="in" label="Username" />
+                <InputGroup.Addon>@</InputGroup.Addon>
+                <InputGroup.Input testID="in" label="Username" />
             </InputGroup>
         );
         const input = screen.getByTestId('in');
@@ -87,8 +87,8 @@ describe('<InputGroup>', () => {
             const [v, setV] = useState('');
             return (
                 <InputGroup>
-                    <InputGroupAddon>@</InputGroupAddon>
-                    <InputGroupInput testID="in" value={v} onChangeText={setV} />
+                    <InputGroup.Addon>@</InputGroup.Addon>
+                    <InputGroup.Input testID="in" value={v} onChangeText={setV} />
                 </InputGroup>
             );
         }
@@ -102,8 +102,8 @@ describe('<InputGroup>', () => {
         const onChangeText = jest.fn();
         render(
             <InputGroup disabled>
-                <InputGroupAddon>@</InputGroupAddon>
-                <InputGroupInput testID="in" onChangeText={onChangeText} />
+                <InputGroup.Addon>@</InputGroup.Addon>
+                <InputGroup.Input testID="in" onChangeText={onChangeText} />
             </InputGroup>
         );
         const input = screen.getByTestId('in') as HTMLInputElement;
@@ -114,8 +114,8 @@ describe('<InputGroup>', () => {
     it('error on InputGroupInput renders the message and sets aria-invalid', () => {
         render(
             <InputGroup>
-                <InputGroupAddon>@</InputGroupAddon>
-                <InputGroupInput testID="in" label="Email" error="Invalid format" />
+                <InputGroup.Addon>@</InputGroup.Addon>
+                <InputGroup.Input testID="in" label="Email" error="Invalid format" />
             </InputGroup>
         );
         expect(screen.getByText('Invalid format')).toBeInTheDocument();
@@ -125,8 +125,8 @@ describe('<InputGroup>', () => {
     it('group-level error prop flips aria-invalid on the input', () => {
         render(
             <InputGroup error>
-                <InputGroupAddon>@</InputGroupAddon>
-                <InputGroupInput testID="in" />
+                <InputGroup.Addon>@</InputGroup.Addon>
+                <InputGroup.Input testID="in" />
             </InputGroup>
         );
         expect(screen.getByTestId('in').getAttribute('aria-invalid')).toBe('true');

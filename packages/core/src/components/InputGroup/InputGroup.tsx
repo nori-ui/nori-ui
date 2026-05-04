@@ -100,7 +100,7 @@ export type InputGroupProps = {
  *   <InputGroupAddon>.com</InputGroupAddon>
  * </InputGroup>
  */
-export function InputGroup({
+function InputGroupRoot({
     children,
     disabled = false,
     error: groupErrorProp = false,
@@ -334,7 +334,7 @@ export type InputGroupAddonProps = {
  * box that visually fuses with the input. Place before `<InputGroupInput>`
  * for a prefix, after for a suffix. Accepts strings or `ReactNode` (icons).
  */
-export function InputGroupAddon({ children, className, testID }: InputGroupAddonProps) {
+function InputGroupAddon({ children, className, testID }: InputGroupAddonProps) {
     const colors = useThemeColors();
     const textStyle: TextStyle = {
         color: colors.semantic.text.muted,
@@ -389,7 +389,7 @@ export type InputGroupInputProps = TextInputProps;
  * those bits are lifted to the parent so they render OUTSIDE the bordered
  * field row, the way a normal field's label/helper sits above/below the box.
  */
-export function InputGroupInput({
+function InputGroupInput({
     label: _label,
     helperText: _helperText,
     error,
@@ -470,3 +470,14 @@ export function InputGroupInput({
 }
 
 (InputGroupInput as unknown as { __noriType: symbol }).__noriType = INPUT_TYPE;
+
+/**
+ * Public `InputGroup` value — the root function plus its `.Addon` and `.Input`
+ * static members. `Object.assign` produces a value whose inferred type carries
+ * the static properties, so `.d.ts` consumers can write `<InputGroup.Addon>`
+ * without a separate import.
+ */
+export const InputGroup = Object.assign(InputGroupRoot, {
+    Addon: InputGroupAddon,
+    Input: InputGroupInput,
+});

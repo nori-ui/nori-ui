@@ -1,7 +1,1 @@
-export {
-    Radio,
-    RadioGroup,
-    type RadioGroupOrientation,
-    type RadioGroupProps,
-    type RadioProps,
-} from './RadioGroup';
+export { Radio, type RadioGroupOrientation, type RadioGroupProps, type RadioProps } from './RadioGroup';

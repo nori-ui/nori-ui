@@ -91,7 +91,7 @@ const AccordionItemContext = createContext<AccordionItemContextValue | null>(nul
 const useAccordionItemContext = (label: string): AccordionItemContextValue => {
     const ctx = useContext(AccordionItemContext);
     if (!ctx) {
-        throw new Error(`<${label}> must be rendered inside an <AccordionItem>.`);
+        throw new Error(`<${label}> must be rendered inside an <Accordion.Item>.`);
     }
     return ctx;
 };
@@ -100,10 +100,10 @@ const useAccordionItemContext = (label: string): AccordionItemContextValue => {
  * Vertically stacked, individually expandable sections. Compose:
  *
  *   <Accordion type="single" defaultValue="overview" collapsible>
- *     <AccordionItem value="overview">
- *       <AccordionTrigger>Overview</AccordionTrigger>
- *       <AccordionContent>...</AccordionContent>
- *     </AccordionItem>
+ *     <Accordion.Item value="overview">
+ *       <Accordion.Trigger>Overview</Accordion.Trigger>
+ *       <Accordion.Content>...</Accordion.Content>
+ *     </Accordion.Item>
  *   </Accordion>
  *
  * Modes:
@@ -115,7 +115,7 @@ const useAccordionItemContext = (label: string): AccordionItemContextValue => {
  * supported. Triggers are real `<button>`s with full keyboard nav: ArrowDown /
  * ArrowUp move focus, Home / End jump to first / last, Enter / Space toggle.
  */
-export function Accordion(props: AccordionProps) {
+function AccordionRoot(props: AccordionProps) {
     const baseId = useId();
     const refs = useRef<Map<string, RefObject<HTMLElement | null>>>(new Map());
     const orderRef = useRef<string[]>([]);
@@ -258,9 +258,9 @@ const CONTENT_INNER_LAYOUT_BASE: ViewStyle = {
     // Padding values come from theme inside AccordionContent.
 };
 
-/** A single expandable section. Wraps an `AccordionTrigger` and `AccordionContent`. */
-export function AccordionItem({ value, disabled = false, children, className, testID }: AccordionItemProps) {
-    const ctx = useAccordionContext('AccordionItem');
+/** A single expandable section. Wraps an `Accordion.Trigger` and `Accordion.Content`. */
+function AccordionItem({ value, disabled = false, children, className, testID }: AccordionItemProps) {
+    const ctx = useAccordionContext('Accordion.Item');
     const colors = useThemeColors();
     const open = ctx.isOpen(value);
 
@@ -297,11 +297,11 @@ export type AccordionTriggerProps = {
 /**
  * The clickable row that toggles its item open / closed. Renders a real
  * `<button>` (via Pressable) and wires `aria-expanded` + `aria-controls` to
- * the matching `AccordionContent`.
+ * the matching `Accordion.Content`.
  */
-export function AccordionTrigger({ children, className, testID }: AccordionTriggerProps) {
-    const ctx = useAccordionContext('AccordionTrigger');
-    const item = useAccordionItemContext('AccordionTrigger');
+function AccordionTrigger({ children, className, testID }: AccordionTriggerProps) {
+    const ctx = useAccordionContext('Accordion.Trigger');
+    const item = useAccordionItemContext('Accordion.Trigger');
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
     const triggerStyle: ViewStyle = {
@@ -451,13 +451,8 @@ const ACCORDION_ANIM_DURATION_MS = 200;
  * mutation bypasses that filter — same trick used by Dialog's backdrop
  * blur.
  */
-export function AccordionContent({
-    children,
-    className,
-    testID,
-    forceMount: _forceMount = false,
-}: AccordionContentProps) {
-    const item = useAccordionItemContext('AccordionContent');
+function AccordionContent({ children, className, testID, forceMount: _forceMount = false }: AccordionContentProps) {
+    const item = useAccordionItemContext('Accordion.Content');
     const colors = useThemeColors();
     const wrapperRef = useRef<HTMLElement | null>(null);
     const innerRef = useRef<HTMLElement | null>(null);
@@ -693,3 +688,15 @@ export function AccordionContent({
         </View>
     );
 }
+
+/**
+ * Public `Accordion` value — the root function plus its `.Item`, `.Trigger`,
+ * and `.Content` static members. `Object.assign` produces a value whose
+ * inferred type carries the static properties, so `.d.ts` consumers can
+ * write `<Accordion.Item>` without a separate import.
+ */
+export const Accordion = Object.assign(AccordionRoot, {
+    Item: AccordionItem,
+    Trigger: AccordionTrigger,
+    Content: AccordionContent,
+});

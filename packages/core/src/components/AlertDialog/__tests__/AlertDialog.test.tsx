@@ -1,15 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Button } from '../../Button';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '../AlertDialog';
+import { AlertDialog } from '../AlertDialog';
 
 /**
  * AlertDialog is a stricter sibling of Dialog: it MUST NOT close on Escape
@@ -20,10 +11,10 @@ describe('<AlertDialog>', () => {
     it('starts closed when defaultOpen is omitted', () => {
         render(
             <AlertDialog>
-                <AlertDialogTrigger asChild={false}>Open</AlertDialogTrigger>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Hi</AlertDialogTitle>
-                </AlertDialogContent>
+                <AlertDialog.Trigger asChild={false}>Open</AlertDialog.Trigger>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Hi</AlertDialog.Title>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         expect(screen.queryByTestId('dialog')).toBeNull();
@@ -32,12 +23,12 @@ describe('<AlertDialog>', () => {
     it('opens when the trigger is clicked', () => {
         render(
             <AlertDialog>
-                <AlertDialogTrigger>
+                <AlertDialog.Trigger>
                     <Button testID="trigger">Open</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                </AlertDialogContent>
+                </AlertDialog.Trigger>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         fireEvent.click(screen.getByTestId('trigger'));
@@ -49,16 +40,16 @@ describe('<AlertDialog>', () => {
         const onOpenChange = jest.fn();
         render(
             <AlertDialog defaultOpen onOpenChange={onOpenChange}>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onPress={onCancel}>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel onPress={onCancel}>
                             <Button testID="cancel" variant="secondary">
                                 Cancel
                             </Button>
-                        </AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Cancel>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         fireEvent.click(screen.getByTestId('cancel'));
@@ -72,19 +63,19 @@ describe('<AlertDialog>', () => {
         const onOpenChange = jest.fn();
         render(
             <AlertDialog defaultOpen onOpenChange={onOpenChange}>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel>
                             <Button variant="secondary">Cancel</Button>
-                        </AlertDialogCancel>
-                        <AlertDialogAction onPress={onConfirm}>
+                        </AlertDialog.Cancel>
+                        <AlertDialog.Action onPress={onConfirm}>
                             <Button testID="action" variant="destructive">
                                 Delete
                             </Button>
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Action>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         fireEvent.click(screen.getByTestId('action'));
@@ -97,14 +88,14 @@ describe('<AlertDialog>', () => {
         const onOpenChange = jest.fn();
         render(
             <AlertDialog defaultOpen onOpenChange={onOpenChange}>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel>
                             <Button variant="secondary">Cancel</Button>
-                        </AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Cancel>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         expect(screen.getByTestId('dialog')).toBeInTheDocument();
@@ -117,14 +108,14 @@ describe('<AlertDialog>', () => {
         const onOpenChange = jest.fn();
         render(
             <AlertDialog defaultOpen onOpenChange={onOpenChange}>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel>
                             <Button variant="secondary">Cancel</Button>
-                        </AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Cancel>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         const dialog = screen.getByTestId('dialog');
@@ -141,21 +132,21 @@ describe('<AlertDialog>', () => {
     it('initial focus lands on the Cancel button', () => {
         render(
             <AlertDialog defaultOpen>
-                <AlertDialogContent>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
+                <AlertDialog.Content>
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel>
                             <Button testID="cancel" variant="secondary">
                                 Cancel
                             </Button>
-                        </AlertDialogCancel>
-                        <AlertDialogAction>
+                        </AlertDialog.Cancel>
+                        <AlertDialog.Action>
                             <Button testID="action" variant="destructive">
                                 Delete
                             </Button>
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Action>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         // The Slot wraps the Button; the focused element is the underlying
@@ -167,21 +158,21 @@ describe('<AlertDialog>', () => {
     it('traps Tab focus inside the content (Tab from last wraps to first)', () => {
         render(
             <AlertDialog defaultOpen>
-                <AlertDialogContent>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
+                <AlertDialog.Content>
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel>
                             <Button testID="cancel" variant="secondary">
                                 Cancel
                             </Button>
-                        </AlertDialogCancel>
-                        <AlertDialogAction>
+                        </AlertDialog.Cancel>
+                        <AlertDialog.Action>
                             <Button testID="action" variant="destructive">
                                 Delete
                             </Button>
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Action>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         const action = screen.getByTestId('action');
@@ -195,15 +186,15 @@ describe('<AlertDialog>', () => {
     it('wires role="alertdialog", aria-modal, aria-labelledby, aria-describedby', () => {
         render(
             <AlertDialog defaultOpen>
-                <AlertDialogContent testID="dialog">
-                    <AlertDialogTitle>Delete project?</AlertDialogTitle>
-                    <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Delete project?</AlertDialog.Title>
+                    <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel>
                             <Button variant="secondary">Cancel</Button>
-                        </AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                        </AlertDialog.Cancel>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
             </AlertDialog>
         );
         const dialog = screen.getByTestId('dialog');
@@ -223,9 +214,9 @@ describe('<AlertDialog>', () => {
         try {
             expect(() =>
                 render(
-                    <AlertDialogContent>
-                        <AlertDialogTitle>x</AlertDialogTitle>
-                    </AlertDialogContent>
+                    <AlertDialog.Content>
+                        <AlertDialog.Title>x</AlertDialog.Title>
+                    </AlertDialog.Content>
                 )
             ).toThrow(/AlertDialog/);
         } finally {

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '../Popover';
+import { Popover } from '../Popover';
 
 // jsdom doesn't lay anything out — getBoundingClientRect returns zeros by
 // default. Stub it so position math has something deterministic to chew on.
@@ -45,8 +45,8 @@ describe('<Popover>', () => {
     it('starts closed when defaultOpen is omitted', () => {
         render(
             <Popover>
-                <PopoverTrigger asChild={false}>Open</PopoverTrigger>
-                <PopoverContent testID="content">Hi</PopoverContent>
+                <Popover.Trigger asChild={false}>Open</Popover.Trigger>
+                <Popover.Content testID="content">Hi</Popover.Content>
             </Popover>
         );
         expect(screen.queryByTestId('content')).toBeNull();
@@ -55,10 +55,10 @@ describe('<Popover>', () => {
     it('opens when the trigger is clicked', () => {
         render(
             <Popover>
-                <PopoverTrigger asChild={false} testID="trigger">
+                <Popover.Trigger asChild={false} testID="trigger">
                     Open
-                </PopoverTrigger>
-                <PopoverContent testID="content">Hi</PopoverContent>
+                </Popover.Trigger>
+                <Popover.Content testID="content">Hi</Popover.Content>
             </Popover>
         );
         fireEvent.click(screen.getByTestId('trigger'));
@@ -68,10 +68,10 @@ describe('<Popover>', () => {
     it('toggles closed when trigger is clicked again', () => {
         render(
             <Popover>
-                <PopoverTrigger asChild={false} testID="trigger">
+                <Popover.Trigger asChild={false} testID="trigger">
                     Open
-                </PopoverTrigger>
-                <PopoverContent testID="content">Hi</PopoverContent>
+                </Popover.Trigger>
+                <Popover.Content testID="content">Hi</Popover.Content>
             </Popover>
         );
         fireEvent.click(screen.getByTestId('trigger'));
@@ -87,10 +87,10 @@ describe('<Popover>', () => {
                     elsewhere
                 </button>
                 <Popover defaultOpen>
-                    <PopoverTrigger asChild={false} testID="trigger">
+                    <Popover.Trigger asChild={false} testID="trigger">
                         Open
-                    </PopoverTrigger>
-                    <PopoverContent testID="content">Hi</PopoverContent>
+                    </Popover.Trigger>
+                    <Popover.Content testID="content">Hi</Popover.Content>
                 </Popover>
             </div>
         );
@@ -102,14 +102,14 @@ describe('<Popover>', () => {
     it('does NOT close when clicking inside the content', () => {
         render(
             <Popover defaultOpen>
-                <PopoverTrigger asChild={false} testID="trigger">
+                <Popover.Trigger asChild={false} testID="trigger">
                     Open
-                </PopoverTrigger>
-                <PopoverContent testID="content">
+                </Popover.Trigger>
+                <Popover.Content testID="content">
                     <button type="button" data-testid="inside">
                         action
                     </button>
-                </PopoverContent>
+                </Popover.Content>
             </Popover>
         );
         fireEvent.mouseDown(screen.getByTestId('inside'));
@@ -119,8 +119,8 @@ describe('<Popover>', () => {
     it('Escape closes the popover', () => {
         render(
             <Popover defaultOpen>
-                <PopoverTrigger asChild={false}>Open</PopoverTrigger>
-                <PopoverContent testID="content">Hi</PopoverContent>
+                <Popover.Trigger asChild={false}>Open</Popover.Trigger>
+                <Popover.Content testID="content">Hi</Popover.Content>
             </Popover>
         );
         expect(screen.getByTestId('content')).toBeInTheDocument();
@@ -140,10 +140,10 @@ describe('<Popover>', () => {
                         setOpen(next);
                     }}
                 >
-                    <PopoverTrigger asChild={false} testID="trigger">
+                    <Popover.Trigger asChild={false} testID="trigger">
                         Open
-                    </PopoverTrigger>
-                    <PopoverContent testID="content">Hi</PopoverContent>
+                    </Popover.Trigger>
+                    <Popover.Content testID="content">Hi</Popover.Content>
                 </Popover>
             );
         };
@@ -157,12 +157,12 @@ describe('<Popover>', () => {
     it('side="top" positions content above the trigger (y < trigger.top)', () => {
         render(
             <Popover defaultOpen>
-                <PopoverTrigger asChild={false} testID="trigger">
+                <Popover.Trigger asChild={false} testID="trigger">
                     Open
-                </PopoverTrigger>
-                <PopoverContent side="top" align="center" testID="content">
+                </Popover.Trigger>
+                <Popover.Content side="top" align="center" testID="content">
                     Hi
-                </PopoverContent>
+                </Popover.Content>
             </Popover>
         );
         // Content has to render once to measure itself, then position settles.
@@ -175,12 +175,12 @@ describe('<Popover>', () => {
     it('align="end" right-aligns to the trigger\'s right edge', () => {
         render(
             <Popover defaultOpen>
-                <PopoverTrigger asChild={false} testID="trigger">
+                <Popover.Trigger asChild={false} testID="trigger">
                     Open
-                </PopoverTrigger>
-                <PopoverContent side="bottom" align="end" testID="content">
+                </Popover.Trigger>
+                <Popover.Content side="bottom" align="end" testID="content">
                     Hi
-                </PopoverContent>
+                </Popover.Content>
             </Popover>
         );
         const content = screen.getByTestId('content');
@@ -194,10 +194,10 @@ describe('<Popover>', () => {
     it('trigger gets aria-haspopup="dialog" and aria-expanded reflects open', () => {
         render(
             <Popover>
-                <PopoverTrigger asChild={false} testID="trigger">
+                <Popover.Trigger asChild={false} testID="trigger">
                     Open
-                </PopoverTrigger>
-                <PopoverContent testID="content">Hi</PopoverContent>
+                </Popover.Trigger>
+                <Popover.Content testID="content">Hi</Popover.Content>
             </Popover>
         );
         const trigger = screen.getByTestId('trigger');
@@ -210,10 +210,10 @@ describe('<Popover>', () => {
     it('content gets role="dialog" without aria-modal (non-modal)', () => {
         render(
             <Popover defaultOpen>
-                <PopoverTrigger asChild={false}>Open</PopoverTrigger>
-                <PopoverContent testID="content" aria-label="Help">
+                <Popover.Trigger asChild={false}>Open</Popover.Trigger>
+                <Popover.Content testID="content" aria-label="Help">
                     Hi
-                </PopoverContent>
+                </Popover.Content>
             </Popover>
         );
         const content = screen.getByTestId('content');
@@ -225,7 +225,7 @@ describe('<Popover>', () => {
         const original = console.error;
         console.error = () => {};
         try {
-            expect(() => render(<PopoverContent>x</PopoverContent>)).toThrow(/Popover/);
+            expect(() => render(<Popover.Content>x</Popover.Content>)).toThrow(/Popover/);
         } finally {
             console.error = original;
         }

@@ -103,7 +103,7 @@ export type TooltipProps = {
  * hidden`. Native renders inline with `position: absolute` — the parent
  * needs to allow overflow for the chip to peek out.
  */
-export function Tooltip({
+function TooltipRoot({
     open,
     defaultOpen = false,
     onOpenChange,
@@ -233,7 +233,7 @@ export type TooltipTriggerProps = {
  * `blur`, both honoring the configured delays. Native: opens on
  * `onLongPress` (500ms hold) and closes on the next press anywhere.
  */
-export function TooltipTrigger({ asChild = true, children, className, testID }: TooltipTriggerProps) {
+function TooltipTrigger({ asChild = true, children, className, testID }: TooltipTriggerProps) {
     const ctx = useTooltipContext('TooltipTrigger');
 
     const handleMouseEnter = useCallback(() => {
@@ -412,7 +412,7 @@ export type TooltipContentProps = {
  * ARIA: `role="tooltip"` plus a unique id that the trigger's
  * `aria-describedby` points at.
  */
-export function TooltipContent({ side = 'top', align = 'center', children, className, testID }: TooltipContentProps) {
+function TooltipContent({ side = 'top', align = 'center', children, className, testID }: TooltipContentProps) {
     const ctx = useTooltipContext('TooltipContent');
     const colors = useThemeColors();
 
@@ -601,3 +601,14 @@ export function TooltipContent({ side = 'top', align = 'center', children, class
         </View>
     );
 }
+
+/**
+ * Public `Tooltip` value — the root function plus its `.Trigger` and
+ * `.Content` static members. `Object.assign` produces a value whose inferred
+ * type carries the static properties, so `.d.ts` consumers can write
+ * `<Tooltip.Trigger>` without a separate import.
+ */
+export const Tooltip = Object.assign(TooltipRoot, {
+    Trigger: TooltipTrigger,
+    Content: TooltipContent,
+});

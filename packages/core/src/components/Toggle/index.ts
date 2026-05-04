@@ -1,7 +1,5 @@
 export {
     Toggle,
-    ToggleGroup,
-    ToggleGroupItem,
     type ToggleGroupItemProps,
     type ToggleGroupMultipleProps,
     type ToggleGroupProps,

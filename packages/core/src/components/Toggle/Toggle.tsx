@@ -79,7 +79,7 @@ export type ToggleProps = {
  * control selects a value inside a form. `<Toggle>` is for buttons that
  * carry an on/off visual.
  */
-export function Toggle({
+function ToggleRoot({
     pressed,
     defaultPressed = false,
     onPressedChange,
@@ -383,7 +383,7 @@ export type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps
  * tabindex), `Home` / `End` jump to the ends, and `Space` / `Enter`
  * toggle the focused item.
  */
-export function ToggleGroup(props: ToggleGroupProps) {
+function ToggleGroup(props: ToggleGroupProps) {
     const {
         type,
         disabled = false,
@@ -592,7 +592,7 @@ export type ToggleGroupItemProps = {
  * One toggle inside a `<ToggleGroup>`. Throws with a clear message when
  * rendered outside of one.
  */
-export function ToggleGroupItem({
+function ToggleGroupItem({
     value,
     disabled,
     children,
@@ -711,3 +711,16 @@ export function ToggleGroupItem({
         </ToggleVisual>
     );
 }
+
+/**
+ * Public `Toggle` value — the standalone toggle plus its `.Group` and `.Item`
+ * static members. Use `<Toggle.Group>` to wrap a list of `<Toggle.Item>`s.
+ *
+ * `Object.assign` produces a value whose inferred type carries the static
+ * properties, so `.d.ts` consumers can write `<Toggle.Group>` without a
+ * separate import.
+ */
+export const Toggle = Object.assign(ToggleRoot, {
+    Group: ToggleGroup,
+    Item: ToggleGroupItem,
+});

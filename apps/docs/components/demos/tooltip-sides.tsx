@@ -1,33 +1,33 @@
-import { Button, HStack, Tooltip, TooltipContent, TooltipTrigger, VStack } from '@nori-ui/core';
+import { Button, HStack, Tooltip, VStack } from '@nori-ui/core';
 
 export default function TooltipSides() {
     return (
         <VStack gap={4} className="items-center py-12">
             <Tooltip>
-                <TooltipTrigger>
+                <Tooltip.Trigger>
                     <Button variant="secondary">Top</Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Tooltip on top</TooltipContent>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top">Tooltip on top</Tooltip.Content>
             </Tooltip>
             <HStack gap={4}>
                 <Tooltip>
-                    <TooltipTrigger>
+                    <Tooltip.Trigger>
                         <Button variant="secondary">Left</Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">Tooltip on left</TooltipContent>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content side="left">Tooltip on left</Tooltip.Content>
                 </Tooltip>
                 <Tooltip>
-                    <TooltipTrigger>
+                    <Tooltip.Trigger>
                         <Button variant="secondary">Right</Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">Tooltip on right</TooltipContent>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content side="right">Tooltip on right</Tooltip.Content>
                 </Tooltip>
             </HStack>
             <Tooltip>
-                <TooltipTrigger>
+                <Tooltip.Trigger>
                     <Button variant="secondary">Bottom</Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Tooltip on bottom</TooltipContent>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="bottom">Tooltip on bottom</Tooltip.Content>
             </Tooltip>
         </VStack>
     );

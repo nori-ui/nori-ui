@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../Card';
+import { Card } from '../Card';
 
 describe('<Card>', () => {
     it('composes header / title / description / content / footer', () => {
         render(
             <Card testID="card">
-                <CardHeader>
-                    <CardTitle testID="title">Hello</CardTitle>
-                    <CardDescription testID="desc">A description</CardDescription>
-                </CardHeader>
-                <CardContent>body content</CardContent>
-                <CardFooter>footer</CardFooter>
+                <Card.Header>
+                    <Card.Title testID="title">Hello</Card.Title>
+                    <Card.Description testID="desc">A description</Card.Description>
+                </Card.Header>
+                <Card.Content>body content</Card.Content>
+                <Card.Footer>footer</Card.Footer>
             </Card>
         );
         expect(screen.getByTestId('card')).toBeInTheDocument();
@@ -21,7 +21,7 @@ describe('<Card>', () => {
     });
 
     it('CardTitle renders with heading semantics so screen readers announce it', () => {
-        render(<CardTitle testID="t">Heading</CardTitle>);
+        render(<Card.Title testID="t">Heading</Card.Title>);
         const el = screen.getByTestId('t');
         // role="heading" with aria-level=3 — picked up by every modern AT
         // and also by accessibility audits.

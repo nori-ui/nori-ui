@@ -1,12 +1,12 @@
-import { Button, Popover, PopoverContent, PopoverTrigger, Text, VStack } from '@nori-ui/core';
+import { Button, Popover, Text, VStack } from '@nori-ui/core';
 
 export default function PopoverBasic() {
     return (
         <Popover>
-            <PopoverTrigger>
+            <Popover.Trigger>
                 <Button variant="secondary">What is this?</Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom" align="start" aria-label="Help">
+            </Popover.Trigger>
+            <Popover.Content side="bottom" align="start" aria-label="Help">
                 <VStack gap={2}>
                     <Text variant="body-md" className="font-semibold">
                         Project archive
@@ -16,7 +16,7 @@ export default function PopoverBasic() {
                         any time from Settings.
                     </Text>
                 </VStack>
-            </PopoverContent>
+            </Popover.Content>
         </Popover>
     );
 }

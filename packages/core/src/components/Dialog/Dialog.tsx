@@ -65,7 +65,7 @@ export type DialogProps = {
  * web, additional focus-trap / scroll-lock / Escape-key effects layer on
  * top via the platform check inside `DialogContent`.
  */
-export function Dialog({ open, defaultOpen = false, onOpenChange, children }: DialogProps) {
+function DialogRoot({ open, defaultOpen = false, onOpenChange, children }: DialogProps) {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -106,7 +106,7 @@ export type DialogTriggerProps = {
  * Element that opens the dialog when activated. Uses `asChild` by default so
  * any element (Button, Link, custom Pressable) becomes the trigger.
  */
-export function DialogTrigger({ asChild = true, children, className, testID }: DialogTriggerProps) {
+function DialogTrigger({ asChild = true, children, className, testID }: DialogTriggerProps) {
     const ctx = useDialogContext('DialogTrigger');
     const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
 
@@ -227,7 +227,7 @@ export type DialogContentProps = {
  * the parent `Dialog` is open. On web: traps focus inside, locks body
  * scroll, and dismisses on Escape or overlay click.
  */
-export function DialogContent({ children, className, testID }: DialogContentProps) {
+function DialogContent({ children, className, testID }: DialogContentProps) {
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -459,7 +459,7 @@ export type DialogTextProps = {
 };
 
 /** Heading inside DialogContent. Wires `aria-labelledby`. */
-export function DialogTitle({ children, className }: DialogTextProps) {
+function DialogTitle({ children, className }: DialogTextProps) {
     const ctx = useDialogContext('DialogTitle');
     const colors = useThemeColors();
     return (
@@ -482,7 +482,7 @@ export function DialogTitle({ children, className }: DialogTextProps) {
 }
 
 /** Subtitle / description inside DialogContent. Wires `aria-describedby`. */
-export function DialogDescription({ children, className }: DialogTextProps) {
+function DialogDescription({ children, className }: DialogTextProps) {
     const ctx = useDialogContext('DialogDescription');
     const colors = useThemeColors();
     return (
@@ -516,13 +516,7 @@ export type DialogCloseProps = {
  * wraps the child. Without `asChild`, renders a default ✕ button — useful
  * for the canonical top-right corner close.
  */
-export function DialogClose({
-    asChild = true,
-    children,
-    className,
-    testID,
-    accessibilityLabel = 'Close',
-}: DialogCloseProps) {
+function DialogClose({ asChild = true, children, className, testID, accessibilityLabel = 'Close' }: DialogCloseProps) {
     const ctx = useDialogContext('DialogClose');
     const colors = useThemeColors();
     const onPress = useCallback(() => ctx.setOpen(false), [ctx]);
@@ -596,7 +590,7 @@ export type DialogFooterProps = {
 };
 
 /** Convenience row for dialog action buttons (right-aligned). */
-export function DialogFooter({ children, className }: DialogFooterProps) {
+function DialogFooter({ children, className }: DialogFooterProps) {
     const colors = useThemeColors();
     return (
         <View
@@ -613,3 +607,18 @@ export function DialogFooter({ children, className }: DialogFooterProps) {
         </View>
     );
 }
+
+/**
+ * Public `Dialog` value — the root function plus its `.Trigger`, `.Content`,
+ * `.Title`, `.Description`, `.Footer`, and `.Close` static members. `Object.assign`
+ * produces a value whose inferred type carries the static properties, so `.d.ts`
+ * consumers can write `<Dialog.Content>` without a separate import.
+ */
+export const Dialog = Object.assign(DialogRoot, {
+    Trigger: DialogTrigger,
+    Content: DialogContent,
+    Title: DialogTitle,
+    Description: DialogDescription,
+    Footer: DialogFooter,
+    Close: DialogClose,
+});

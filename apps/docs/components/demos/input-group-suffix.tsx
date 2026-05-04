@@ -1,12 +1,12 @@
 'use client';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nori-ui/core';
+import { InputGroup } from '@nori-ui/core';
 
 export default function InputGroupSuffix() {
     return (
         <InputGroup>
-            <InputGroupInput placeholder="amount" />
-            <InputGroupAddon>USD</InputGroupAddon>
+            <InputGroup.Input placeholder="amount" />
+            <InputGroup.Addon>USD</InputGroup.Addon>
         </InputGroup>
     );
 }

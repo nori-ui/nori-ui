@@ -56,36 +56,29 @@ import { PropsTable } from '@/components/props-table';
 ```tsx
 import {
     AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogTitle,
-    AlertDialogTrigger,
     Button,
 } from '@nori-ui/core';
 
 export function DeleteProjectButton({ onDelete }: { onDelete: () => void }) {
     return (
         <AlertDialog>
-            <AlertDialogTrigger>
+            <AlertDialog.Trigger>
                 <Button variant="destructive">Delete project</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogTitle>Delete this project?</AlertDialogTitle>
-                <AlertDialogDescription>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+                <AlertDialog.Title>Delete this project?</AlertDialog.Title>
+                <AlertDialog.Description>
                     This permanently removes the project and every record attached to it. This cannot be undone.
-                </AlertDialogDescription>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>
+                </AlertDialog.Description>
+                <AlertDialog.Footer>
+                    <AlertDialog.Cancel>
                         <Button variant="secondary">Cancel</Button>
-                    </AlertDialogCancel>
-                    <AlertDialogAction onPress={onDelete}>
+                    </AlertDialog.Cancel>
+                    <AlertDialog.Action onPress={onDelete}>
                         <Button variant="destructive">Delete project</Button>
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+                    </AlertDialog.Action>
+                </AlertDialog.Footer>
+            </AlertDialog.Content>
         </AlertDialog>
     );
 }

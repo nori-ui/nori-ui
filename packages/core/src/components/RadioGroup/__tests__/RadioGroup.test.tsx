@@ -1,15 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Radio, RadioGroup } from '../RadioGroup';
+import { Radio } from '../RadioGroup';
 
-describe('<RadioGroup>', () => {
+describe('<Radio.Group>', () => {
     it('renders all options inside a role="radiogroup"', () => {
         render(
-            <RadioGroup defaultValue="b" testID="rg">
+            <Radio.Group defaultValue="b" testID="rg">
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" testID="b" />
                 <Radio value="c" label="C" testID="c" />
-            </RadioGroup>
+            </Radio.Group>
         );
         expect(screen.getByTestId('rg').getAttribute('role')).toBe('radiogroup');
         expect(screen.getAllByRole('radio')).toHaveLength(3);
@@ -17,10 +17,10 @@ describe('<RadioGroup>', () => {
 
     it('marks defaultValue as checked', () => {
         render(
-            <RadioGroup defaultValue="b">
+            <Radio.Group defaultValue="b">
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" testID="b" />
-            </RadioGroup>
+            </Radio.Group>
         );
         expect(screen.getByTestId('a').getAttribute('aria-checked')).toBe('false');
         expect(screen.getByTestId('b').getAttribute('aria-checked')).toBe('true');
@@ -28,10 +28,10 @@ describe('<RadioGroup>', () => {
 
     it('uncontrolled: clicking an option updates the selection', () => {
         render(
-            <RadioGroup defaultValue="a">
+            <Radio.Group defaultValue="a">
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" testID="b" />
-            </RadioGroup>
+            </Radio.Group>
         );
         fireEvent.click(screen.getByTestId('b'));
         expect(screen.getByTestId('a').getAttribute('aria-checked')).toBe('false');
@@ -44,10 +44,10 @@ describe('<RadioGroup>', () => {
             return (
                 <>
                     <span data-testid="cur">{v}</span>
-                    <RadioGroup value={v} onChange={setV}>
+                    <Radio.Group value={v} onChange={setV}>
                         <Radio value="a" label="A" testID="a" />
                         <Radio value="b" label="B" testID="b" />
-                    </RadioGroup>
+                    </Radio.Group>
                 </>
             );
         };
@@ -61,10 +61,10 @@ describe('<RadioGroup>', () => {
     it('disabled at the group level prevents selection changes', () => {
         const onChange = jest.fn();
         render(
-            <RadioGroup defaultValue="a" disabled onChange={onChange}>
+            <Radio.Group defaultValue="a" disabled onChange={onChange}>
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" testID="b" />
-            </RadioGroup>
+            </Radio.Group>
         );
         fireEvent.click(screen.getByTestId('b'));
         expect(onChange).not.toHaveBeenCalled();
@@ -73,10 +73,10 @@ describe('<RadioGroup>', () => {
 
     it('disabled at the option level prevents that option from being selected', () => {
         render(
-            <RadioGroup defaultValue="a">
+            <Radio.Group defaultValue="a">
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" disabled testID="b" />
-            </RadioGroup>
+            </Radio.Group>
         );
         fireEvent.click(screen.getByTestId('b'));
         expect(screen.getByTestId('b').getAttribute('aria-checked')).toBe('false');
@@ -85,11 +85,11 @@ describe('<RadioGroup>', () => {
 
     it('ArrowDown moves selection to the next option (and wraps)', () => {
         render(
-            <RadioGroup defaultValue="a" testID="rg">
+            <Radio.Group defaultValue="a" testID="rg">
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" testID="b" />
                 <Radio value="c" label="C" testID="c" />
-            </RadioGroup>
+            </Radio.Group>
         );
         const group = screen.getByTestId('rg');
         fireEvent.keyDown(group, { key: 'ArrowDown' });
@@ -103,11 +103,11 @@ describe('<RadioGroup>', () => {
 
     it('Home / End jump to first / last option', () => {
         render(
-            <RadioGroup defaultValue="b" testID="rg">
+            <Radio.Group defaultValue="b" testID="rg">
                 <Radio value="a" label="A" testID="a" />
                 <Radio value="b" label="B" testID="b" />
                 <Radio value="c" label="C" testID="c" />
-            </RadioGroup>
+            </Radio.Group>
         );
         const group = screen.getByTestId('rg');
         fireEvent.keyDown(group, { key: 'End' });
@@ -121,7 +121,7 @@ describe('<RadioGroup>', () => {
         const original = console.error;
         console.error = () => {};
         try {
-            expect(() => render(<Radio value="x" label="X" />)).toThrow(/RadioGroup/);
+            expect(() => render(<Radio value="x" label="X" />)).toThrow(/Radio\.Group/);
         } finally {
             console.error = original;
         }

@@ -8,29 +8,29 @@ import { useState } from 'react';
 import { Text as RNText } from 'react-native';
 import { Text } from '../Text';
 import { VStack } from '../VStack';
-import { ToggleGroup, ToggleGroupItem } from './Toggle';
+import { Toggle } from './Toggle';
 
-const meta: Meta<typeof ToggleGroup> = {
+const meta: Meta<typeof Toggle.Group> = {
     title: 'Controls/ToggleGroup',
-    component: ToggleGroup,
+    component: Toggle.Group,
 };
 export default meta;
-type Story = StoryObj<typeof ToggleGroup>;
+type Story = StoryObj<typeof Toggle.Group>;
 
 function Alignment() {
     const [align, setAlign] = useState<string | undefined>('left');
     return (
-        <ToggleGroup type="single" value={align} onValueChange={setAlign} aria-label="Text alignment">
-            <ToggleGroupItem value="left" aria-label="Align left">
+        <Toggle.Group type="single" value={align} onValueChange={setAlign} aria-label="Text alignment">
+            <Toggle.Item value="left" aria-label="Align left">
                 Left
-            </ToggleGroupItem>
-            <ToggleGroupItem value="center" aria-label="Align center">
+            </Toggle.Item>
+            <Toggle.Item value="center" aria-label="Align center">
                 Center
-            </ToggleGroupItem>
-            <ToggleGroupItem value="right" aria-label="Align right">
+            </Toggle.Item>
+            <Toggle.Item value="right" aria-label="Align right">
                 Right
-            </ToggleGroupItem>
-        </ToggleGroup>
+            </Toggle.Item>
+        </Toggle.Group>
     );
 }
 
@@ -41,20 +41,20 @@ function TextFormatting() {
     const has = (m: string) => marks.includes(m);
     return (
         <VStack gap={3}>
-            <ToggleGroup type="multiple" value={marks} onValueChange={setMarks} aria-label="Text formatting">
-                <ToggleGroupItem value="bold" aria-label="Bold">
+            <Toggle.Group type="multiple" value={marks} onValueChange={setMarks} aria-label="Text formatting">
+                <Toggle.Item value="bold" aria-label="Bold">
                     <RNText style={{ fontWeight: '700' }}>B</RNText>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="italic" aria-label="Italic">
+                </Toggle.Item>
+                <Toggle.Item value="italic" aria-label="Italic">
                     <RNText style={{ fontStyle: 'italic' }}>I</RNText>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="underline" aria-label="Underline">
+                </Toggle.Item>
+                <Toggle.Item value="underline" aria-label="Underline">
                     <RNText style={{ textDecorationLine: 'underline' }}>U</RNText>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="strike" aria-label="Strikethrough">
+                </Toggle.Item>
+                <Toggle.Item value="strike" aria-label="Strikethrough">
                     <RNText style={{ textDecorationLine: 'line-through' }}>S</RNText>
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
             <Text
                 style={{
                     fontWeight: has('bold') ? '700' : '400',
@@ -79,17 +79,17 @@ function ViewMode() {
     const [view, setView] = useState<string | undefined>('grid');
     return (
         <VStack gap={2}>
-            <ToggleGroup type="single" value={view} onValueChange={setView} aria-label="View mode">
-                <ToggleGroupItem value="list" aria-label="List view">
+            <Toggle.Group type="single" value={view} onValueChange={setView} aria-label="View mode">
+                <Toggle.Item value="list" aria-label="List view">
                     List
-                </ToggleGroupItem>
-                <ToggleGroupItem value="grid" aria-label="Grid view">
+                </Toggle.Item>
+                <Toggle.Item value="grid" aria-label="Grid view">
                     Grid
-                </ToggleGroupItem>
-                <ToggleGroupItem value="gallery" aria-label="Gallery view">
+                </Toggle.Item>
+                <Toggle.Item value="gallery" aria-label="Gallery view">
                     Gallery
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
             <Text>Active: {view ?? 'none'}</Text>
         </VStack>
     );

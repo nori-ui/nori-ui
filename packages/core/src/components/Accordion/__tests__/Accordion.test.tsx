@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
+import { Accordion } from '../Accordion';
 
 // AccordionContent on web stays mounted (so the slide animation has
 // something to transition between), and is hidden via aria-hidden +
@@ -23,14 +23,14 @@ describe('<Accordion>', () => {
     it('renders all triggers; only the open item shows its content', () => {
         render(
             <Accordion type="single" defaultValue="b">
-                <AccordionItem value="a">
-                    <AccordionTrigger>A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger>B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger>A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger>B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         expect(screen.getByText('A')).toBeInTheDocument();
@@ -42,14 +42,14 @@ describe('<Accordion>', () => {
     it('single mode: clicking a closed trigger opens it and closes the previous one', () => {
         render(
             <Accordion type="single" defaultValue="a">
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-b'));
@@ -60,10 +60,10 @@ describe('<Accordion>', () => {
     it('single mode (default): clicking the open trigger does nothing — at least one item stays open', () => {
         render(
             <Accordion type="single" defaultValue="a">
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-a'));
@@ -73,10 +73,10 @@ describe('<Accordion>', () => {
     it('single + collapsible: clicking the open trigger closes it', () => {
         render(
             <Accordion type="single" collapsible defaultValue="a">
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         expect(screen.getByText('A body')).toBeInTheDocument();
@@ -87,14 +87,14 @@ describe('<Accordion>', () => {
     it('multiple mode: clicking opens both items independently', () => {
         render(
             <Accordion type="multiple" defaultValue={[]}>
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-a'));
@@ -121,14 +121,14 @@ describe('<Accordion>', () => {
                         setV(next);
                     }}
                 >
-                    <AccordionItem value="a">
-                        <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                        <AccordionContent>A body</AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="b">
-                        <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                        <AccordionContent>B body</AccordionContent>
-                    </AccordionItem>
+                    <Accordion.Item value="a">
+                        <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                        <Accordion.Content>A body</Accordion.Content>
+                    </Accordion.Item>
+                    <Accordion.Item value="b">
+                        <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                        <Accordion.Content>B body</Accordion.Content>
+                    </Accordion.Item>
                 </Accordion>
             );
         };
@@ -144,14 +144,14 @@ describe('<Accordion>', () => {
         const onValueChange = jest.fn();
         render(
             <Accordion type="multiple" value={['a']} onValueChange={onValueChange}>
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-b'));
@@ -161,14 +161,14 @@ describe('<Accordion>', () => {
     it('keyboard nav: ArrowDown moves focus to the next trigger; Enter toggles', () => {
         render(
             <Accordion type="single" collapsible>
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         const a = screen.getByTestId('trig-a');
@@ -183,18 +183,18 @@ describe('<Accordion>', () => {
     it('Home / End jump focus to the first / last trigger', () => {
         render(
             <Accordion type="single" collapsible>
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="c">
-                    <AccordionTrigger testID="trig-c">C</AccordionTrigger>
-                    <AccordionContent>C body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="c">
+                    <Accordion.Trigger testID="trig-c">C</Accordion.Trigger>
+                    <Accordion.Content>C body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         const a = screen.getByTestId('trig-a');
@@ -209,14 +209,14 @@ describe('<Accordion>', () => {
     it('ARIA: triggers expose aria-expanded; content gets role="region" and aria-labelledby', () => {
         render(
             <Accordion type="single" defaultValue="a">
-                <AccordionItem value="a">
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent testID="content-a">A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a">
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content testID="content-a">A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         const trigA = screen.getByTestId('trig-a');
@@ -232,14 +232,14 @@ describe('<Accordion>', () => {
     it('disabled item ignores clicks and never opens', () => {
         render(
             <Accordion type="single" collapsible>
-                <AccordionItem value="a" disabled>
-                    <AccordionTrigger testID="trig-a">A</AccordionTrigger>
-                    <AccordionContent>A body</AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="b">
-                    <AccordionTrigger testID="trig-b">B</AccordionTrigger>
-                    <AccordionContent>B body</AccordionContent>
-                </AccordionItem>
+                <Accordion.Item value="a" disabled>
+                    <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
+                    <Accordion.Content>A body</Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger testID="trig-b">B</Accordion.Trigger>
+                    <Accordion.Content>B body</Accordion.Content>
+                </Accordion.Item>
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-a'));
@@ -253,7 +253,7 @@ describe('<Accordion>', () => {
         const original = console.error;
         console.error = () => {};
         try {
-            expect(() => render(<AccordionTrigger>x</AccordionTrigger>)).toThrow(/AccordionTrigger/);
+            expect(() => render(<Accordion.Trigger>x</Accordion.Trigger>)).toThrow(/Accordion\.Trigger/);
         } finally {
             console.error = original;
         }

@@ -1,17 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../Tabs';
+import { Tabs } from '../Tabs';
 
 describe('<Tabs>', () => {
     it('renders tablist with the matching panel for the default value', () => {
         render(
             <Tabs defaultValue="b">
-                <TabsList>
-                    <TabsTrigger value="a">A</TabsTrigger>
-                    <TabsTrigger value="b">B</TabsTrigger>
-                </TabsList>
-                <TabsContent value="a">A content</TabsContent>
-                <TabsContent value="b">B content</TabsContent>
+                <Tabs.List>
+                    <Tabs.Trigger value="a">A</Tabs.Trigger>
+                    <Tabs.Trigger value="b">B</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A content</Tabs.Content>
+                <Tabs.Content value="b">B content</Tabs.Content>
             </Tabs>
         );
         expect(screen.queryByText('A content')).toBeNull();
@@ -21,14 +21,14 @@ describe('<Tabs>', () => {
     it('clicking a trigger switches the active panel (uncontrolled)', () => {
         render(
             <Tabs defaultValue="a">
-                <TabsList>
-                    <TabsTrigger value="a">A</TabsTrigger>
-                    <TabsTrigger value="b" testID="tab-b">
+                <Tabs.List>
+                    <Tabs.Trigger value="a">A</Tabs.Trigger>
+                    <Tabs.Trigger value="b" testID="tab-b">
                         B
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="a">A content</TabsContent>
-                <TabsContent value="b">B content</TabsContent>
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A content</Tabs.Content>
+                <Tabs.Content value="b">B content</Tabs.Content>
             </Tabs>
         );
         fireEvent.click(screen.getByTestId('tab-b'));
@@ -43,14 +43,14 @@ describe('<Tabs>', () => {
                 <>
                     <span data-testid="cur">{v}</span>
                     <Tabs value={v} onChange={setV}>
-                        <TabsList>
-                            <TabsTrigger value="a">A</TabsTrigger>
-                            <TabsTrigger value="b" testID="tab-b">
+                        <Tabs.List>
+                            <Tabs.Trigger value="a">A</Tabs.Trigger>
+                            <Tabs.Trigger value="b" testID="tab-b">
                                 B
-                            </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="a">A content</TabsContent>
-                        <TabsContent value="b">B content</TabsContent>
+                            </Tabs.Trigger>
+                        </Tabs.List>
+                        <Tabs.Content value="a">A content</Tabs.Content>
+                        <Tabs.Content value="b">B content</Tabs.Content>
                     </Tabs>
                 </>
             );
@@ -63,16 +63,16 @@ describe('<Tabs>', () => {
     it('exposes role="tab" with aria-selected; only the active tab has tabIndex 0', () => {
         render(
             <Tabs defaultValue="a">
-                <TabsList>
-                    <TabsTrigger value="a" testID="tab-a">
+                <Tabs.List>
+                    <Tabs.Trigger value="a" testID="tab-a">
                         A
-                    </TabsTrigger>
-                    <TabsTrigger value="b" testID="tab-b">
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="b" testID="tab-b">
                         B
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="a">A</TabsContent>
-                <TabsContent value="b">B</TabsContent>
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A</Tabs.Content>
+                <Tabs.Content value="b">B</Tabs.Content>
             </Tabs>
         );
         const tabA = screen.getByTestId('tab-a');
@@ -87,14 +87,14 @@ describe('<Tabs>', () => {
     it('aria-controls links the trigger to its panel via shared id', () => {
         render(
             <Tabs defaultValue="a">
-                <TabsList>
-                    <TabsTrigger value="a" testID="tab-a">
+                <Tabs.List>
+                    <Tabs.Trigger value="a" testID="tab-a">
                         A
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="a" testID="panel-a">
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a" testID="panel-a">
                     A content
-                </TabsContent>
+                </Tabs.Content>
             </Tabs>
         );
         const tab = screen.getByTestId('tab-a');
@@ -106,16 +106,16 @@ describe('<Tabs>', () => {
     it('ArrowRight on the active trigger activates the next tab (automatic activation)', () => {
         render(
             <Tabs defaultValue="a">
-                <TabsList>
-                    <TabsTrigger value="a" testID="tab-a">
+                <Tabs.List>
+                    <Tabs.Trigger value="a" testID="tab-a">
                         A
-                    </TabsTrigger>
-                    <TabsTrigger value="b" testID="tab-b">
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="b" testID="tab-b">
                         B
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="a">A content</TabsContent>
-                <TabsContent value="b">B content</TabsContent>
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A content</Tabs.Content>
+                <Tabs.Content value="b">B content</Tabs.Content>
             </Tabs>
         );
         fireEvent.keyDown(screen.getByTestId('tab-a'), { key: 'ArrowRight' });
@@ -126,16 +126,16 @@ describe('<Tabs>', () => {
     it('manual activation: arrow keys move focus only; Enter activates', () => {
         render(
             <Tabs defaultValue="a" activation="manual">
-                <TabsList>
-                    <TabsTrigger value="a" testID="tab-a">
+                <Tabs.List>
+                    <Tabs.Trigger value="a" testID="tab-a">
                         A
-                    </TabsTrigger>
-                    <TabsTrigger value="b" testID="tab-b">
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="b" testID="tab-b">
                         B
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="a">A content</TabsContent>
-                <TabsContent value="b">B content</TabsContent>
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A content</Tabs.Content>
+                <Tabs.Content value="b">B content</Tabs.Content>
             </Tabs>
         );
         fireEvent.keyDown(screen.getByTestId('tab-a'), { key: 'ArrowRight' });
@@ -151,14 +151,14 @@ describe('<Tabs>', () => {
     it('disabled trigger ignores clicks', () => {
         render(
             <Tabs defaultValue="a">
-                <TabsList>
-                    <TabsTrigger value="a">A</TabsTrigger>
-                    <TabsTrigger value="b" disabled testID="tab-b">
+                <Tabs.List>
+                    <Tabs.Trigger value="a">A</Tabs.Trigger>
+                    <Tabs.Trigger value="b" disabled testID="tab-b">
                         B
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="a">A content</TabsContent>
-                <TabsContent value="b">B content</TabsContent>
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A content</Tabs.Content>
+                <Tabs.Content value="b">B content</Tabs.Content>
             </Tabs>
         );
         fireEvent.click(screen.getByTestId('tab-b'));
@@ -170,7 +170,7 @@ describe('<Tabs>', () => {
         const original = console.error;
         console.error = () => {};
         try {
-            expect(() => render(<TabsTrigger value="x">x</TabsTrigger>)).toThrow(/TabsTrigger/);
+            expect(() => render(<Tabs.Trigger value="x">x</Tabs.Trigger>)).toThrow(/TabsTrigger/);
         } finally {
             console.error = original;
         }

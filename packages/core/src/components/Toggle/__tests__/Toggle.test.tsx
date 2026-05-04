@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Toggle, ToggleGroup, ToggleGroupItem } from '../Toggle';
+import { Toggle } from '../Toggle';
 
 describe('<Toggle>', () => {
     it('renders with role="button" and aria-pressed="false" by default', () => {
@@ -56,21 +56,21 @@ describe('<Toggle>', () => {
     });
 });
 
-describe('<ToggleGroup type="multiple">', () => {
+describe('<Toggle.Group type="multiple">', () => {
     it('clicking adds and removes the value from the array', () => {
         const onValueChange = jest.fn();
         render(
-            <ToggleGroup type="multiple" defaultValue={['bold']} onValueChange={onValueChange} aria-label="Formatting">
-                <ToggleGroupItem value="bold" testID="bold">
+            <Toggle.Group type="multiple" defaultValue={['bold']} onValueChange={onValueChange} aria-label="Formatting">
+                <Toggle.Item value="bold" testID="bold">
                     B
-                </ToggleGroupItem>
-                <ToggleGroupItem value="italic" testID="italic">
+                </Toggle.Item>
+                <Toggle.Item value="italic" testID="italic">
                     I
-                </ToggleGroupItem>
-                <ToggleGroupItem value="underline" testID="underline">
+                </Toggle.Item>
+                <Toggle.Item value="underline" testID="underline">
                     U
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
         );
         const bold = screen.getByTestId('bold');
         const italic = screen.getByTestId('italic');
@@ -88,30 +88,30 @@ describe('<ToggleGroup type="multiple">', () => {
 
     it('uses role="group" for multiple selection', () => {
         render(
-            <ToggleGroup type="multiple" testID="g">
-                <ToggleGroupItem value="a">A</ToggleGroupItem>
-                <ToggleGroupItem value="b">B</ToggleGroupItem>
-            </ToggleGroup>
+            <Toggle.Group type="multiple" testID="g">
+                <Toggle.Item value="a">A</Toggle.Item>
+                <Toggle.Item value="b">B</Toggle.Item>
+            </Toggle.Group>
         );
         expect(screen.getByTestId('g').getAttribute('role')).toBe('group');
     });
 });
 
-describe('<ToggleGroup type="single">', () => {
+describe('<Toggle.Group type="single">', () => {
     it('clicking sets the value; re-clicking the active one unsets it', () => {
         const onValueChange = jest.fn();
         render(
-            <ToggleGroup type="single" onValueChange={onValueChange} aria-label="Align">
-                <ToggleGroupItem value="left" testID="left">
+            <Toggle.Group type="single" onValueChange={onValueChange} aria-label="Align">
+                <Toggle.Item value="left" testID="left">
                     L
-                </ToggleGroupItem>
-                <ToggleGroupItem value="center" testID="center">
+                </Toggle.Item>
+                <Toggle.Item value="center" testID="center">
                     C
-                </ToggleGroupItem>
-                <ToggleGroupItem value="right" testID="right">
+                </Toggle.Item>
+                <Toggle.Item value="right" testID="right">
                     R
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
         );
         const left = screen.getByTestId('left');
         const center = screen.getByTestId('center');
@@ -132,29 +132,29 @@ describe('<ToggleGroup type="single">', () => {
 
     it('uses role="radiogroup" for single selection', () => {
         render(
-            <ToggleGroup type="single" testID="g">
-                <ToggleGroupItem value="a">A</ToggleGroupItem>
-                <ToggleGroupItem value="b">B</ToggleGroupItem>
-            </ToggleGroup>
+            <Toggle.Group type="single" testID="g">
+                <Toggle.Item value="a">A</Toggle.Item>
+                <Toggle.Item value="b">B</Toggle.Item>
+            </Toggle.Group>
         );
         expect(screen.getByTestId('g').getAttribute('role')).toBe('radiogroup');
     });
 });
 
-describe('<ToggleGroup> keyboard navigation', () => {
+describe('<Toggle.Group> keyboard navigation', () => {
     it('ArrowRight on an item moves focus to the next item', () => {
         render(
-            <ToggleGroup type="multiple">
-                <ToggleGroupItem value="a" testID="a">
+            <Toggle.Group type="multiple">
+                <Toggle.Item value="a" testID="a">
                     A
-                </ToggleGroupItem>
-                <ToggleGroupItem value="b" testID="b">
+                </Toggle.Item>
+                <Toggle.Item value="b" testID="b">
                     B
-                </ToggleGroupItem>
-                <ToggleGroupItem value="c" testID="c">
+                </Toggle.Item>
+                <Toggle.Item value="c" testID="c">
                     C
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
         );
         const a = screen.getByTestId('a');
         const b = screen.getByTestId('b');
@@ -170,14 +170,14 @@ describe('<ToggleGroup> keyboard navigation', () => {
     it('Enter on a focused item toggles its pressed state', () => {
         const onValueChange = jest.fn();
         render(
-            <ToggleGroup type="multiple" onValueChange={onValueChange}>
-                <ToggleGroupItem value="a" testID="a">
+            <Toggle.Group type="multiple" onValueChange={onValueChange}>
+                <Toggle.Item value="a" testID="a">
                     A
-                </ToggleGroupItem>
-                <ToggleGroupItem value="b" testID="b">
+                </Toggle.Item>
+                <Toggle.Item value="b" testID="b">
                     B
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
         );
         const a = screen.getByTestId('a');
         act(() => a.focus());
@@ -187,18 +187,18 @@ describe('<ToggleGroup> keyboard navigation', () => {
     });
 });
 
-describe('<ToggleGroup> disabled handling', () => {
+describe('<Toggle.Group> disabled handling', () => {
     it('a disabled item does not toggle when clicked', () => {
         const onValueChange = jest.fn();
         render(
-            <ToggleGroup type="multiple" onValueChange={onValueChange}>
-                <ToggleGroupItem value="a" testID="a">
+            <Toggle.Group type="multiple" onValueChange={onValueChange}>
+                <Toggle.Item value="a" testID="a">
                     A
-                </ToggleGroupItem>
-                <ToggleGroupItem value="b" disabled testID="b">
+                </Toggle.Item>
+                <Toggle.Item value="b" disabled testID="b">
                     B
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
         );
         fireEvent.click(screen.getByTestId('b'));
         expect(onValueChange).not.toHaveBeenCalled();
@@ -208,26 +208,26 @@ describe('<ToggleGroup> disabled handling', () => {
     it('group-level disabled blocks every item from toggling', () => {
         const onValueChange = jest.fn();
         render(
-            <ToggleGroup type="multiple" disabled onValueChange={onValueChange}>
-                <ToggleGroupItem value="a" testID="a">
+            <Toggle.Group type="multiple" disabled onValueChange={onValueChange}>
+                <Toggle.Item value="a" testID="a">
                     A
-                </ToggleGroupItem>
-                <ToggleGroupItem value="b" testID="b">
+                </Toggle.Item>
+                <Toggle.Item value="b" testID="b">
                     B
-                </ToggleGroupItem>
-            </ToggleGroup>
+                </Toggle.Item>
+            </Toggle.Group>
         );
         fireEvent.click(screen.getByTestId('a'));
         expect(onValueChange).not.toHaveBeenCalled();
     });
 });
 
-describe('<ToggleGroupItem> outside <ToggleGroup>', () => {
+describe('<Toggle.Item> outside <Toggle.Group>', () => {
     it('throws a clear error when rendered standalone', () => {
         const original = console.error;
         console.error = () => {};
         try {
-            expect(() => render(<ToggleGroupItem value="x">X</ToggleGroupItem>)).toThrow(/ToggleGroup/);
+            expect(() => render(<Toggle.Item value="x">X</Toggle.Item>)).toThrow(/ToggleGroup/);
         } finally {
             console.error = original;
         }

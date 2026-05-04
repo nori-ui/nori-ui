@@ -59,8 +59,8 @@ There is a 4-pixel gap between the trigger and the content so the two don't kiss
 ```tsx
 // Uncontrolled — Popover owns its open state.
 <Popover>
-    <PopoverTrigger><Button>Open</Button></PopoverTrigger>
-    <PopoverContent>...</PopoverContent>
+    <Popover.Trigger><Button>Open</Button></Popover.Trigger>
+    <Popover.Content>...</Popover.Content>
 </Popover>
 
 // Controlled — you own the state, useful for closing from inside the content
@@ -68,8 +68,8 @@ There is a 4-pixel gap between the trigger and the content so the two don't kiss
 const [open, setOpen] = useState(false);
 
 <Popover open={open} onOpenChange={setOpen}>
-    <PopoverTrigger><Button>Open</Button></PopoverTrigger>
-    <PopoverContent>...</PopoverContent>
+    <Popover.Trigger><Button>Open</Button></Popover.Trigger>
+    <Popover.Content>...</Popover.Content>
 </Popover>
 ```
 

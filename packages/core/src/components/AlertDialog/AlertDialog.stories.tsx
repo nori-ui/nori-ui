@@ -1,15 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from '../Button';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from './AlertDialog';
+import { AlertDialog } from './AlertDialog';
 
 const meta: Meta<typeof AlertDialog> = {
     title: 'Overlays/AlertDialog',
@@ -21,24 +12,24 @@ type Story = StoryObj<typeof AlertDialog>;
 export const Destructive: Story = {
     render: () => (
         <AlertDialog>
-            <AlertDialogTrigger>
+            <AlertDialog.Trigger>
                 <Button variant="destructive">Delete account</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                <AlertDialogDescription>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+                <AlertDialog.Title>Delete your account?</AlertDialog.Title>
+                <AlertDialog.Description>
                     This permanently deletes your account, every project you own, and all associated data. This action
                     cannot be undone.
-                </AlertDialogDescription>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>
+                </AlertDialog.Description>
+                <AlertDialog.Footer>
+                    <AlertDialog.Cancel>
                         <Button variant="secondary">Cancel</Button>
-                    </AlertDialogCancel>
-                    <AlertDialogAction>
+                    </AlertDialog.Cancel>
+                    <AlertDialog.Action>
                         <Button variant="destructive">Yes, delete</Button>
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+                    </AlertDialog.Action>
+                </AlertDialog.Footer>
+            </AlertDialog.Content>
         </AlertDialog>
     ),
 };
