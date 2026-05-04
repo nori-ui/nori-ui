@@ -48,7 +48,7 @@
     "globals": "^15",
     "jest": "^29",
     "lefthook": "^2.1.6",
-    "semantic-release": "^23",
+    "semantic-release": "^25",
     "size-limit": "^12.1.0",
     "ts-jest": "^29",
     "typescript": "^5.6.0"
