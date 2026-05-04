@@ -28,7 +28,7 @@ import {
 } from 'react';
 import type { GestureResponderEvent, ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, type ScrollView, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from '../../i18n/use-translation';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
@@ -173,7 +173,11 @@ const DEFAULT_OFFSET_NATIVE = 16;
 const FloatButtonRoot = (props: FloatButtonProps) => {
     const groupCtx = useContext(FloatButtonGroupContext);
     const colors = useThemeColors();
-    const insets = useSafeAreaInsets();
+    // Read the context directly (instead of `useSafeAreaInsets()`) so the
+    // component degrades silently when no `<SafeAreaProvider>` is mounted —
+    // the canonical case on web. With a provider, real insets flow through;
+    // without one, we get zeros and no console warning.
+    const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, right: 0, bottom: 0, left: 0 };
     const { width: viewportWidth } = useWindowDimensions();
 
     const {
@@ -767,7 +771,11 @@ function GroupLayout({
     dir: 'ltr' | 'rtl';
     children: ReactNode;
 }) {
-    const insets = useSafeAreaInsets();
+    // Read the context directly (instead of `useSafeAreaInsets()`) so the
+    // component degrades silently when no `<SafeAreaProvider>` is mounted —
+    // the canonical case on web. With a provider, real insets flow through;
+    // without one, we get zeros and no console warning.
+    const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, right: 0, bottom: 0, left: 0 };
     const { width: viewportWidth } = useWindowDimensions();
     const positionStyle = resolvePositionStyle({
         placement,
