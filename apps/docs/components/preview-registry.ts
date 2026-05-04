@@ -47,6 +47,8 @@ import SelectAsync from './demos/select-async';
 import SelectBasic from './demos/select-basic';
 import SelectCustomRenderer from './demos/select-custom-renderer';
 import SelectLocale from './demos/select-locale';
+import SelectMulti from './demos/select-multi';
+import SelectMultiCapped from './demos/select-multi-capped';
 import SelectVirtualized from './demos/select-virtualized';
 import SeparatorBasic from './demos/separator-basic';
 import SeparatorVertical from './demos/separator-vertical';
@@ -146,6 +148,8 @@ export const previews = {
         ...DIR_ONLY,
     },
     'select-basic': { Component: SelectBasic, ...previewSources['select-basic'] },
+    'select-multi': { Component: SelectMulti, ...previewSources['select-multi'] },
+    'select-multi-capped': { Component: SelectMultiCapped, ...previewSources['select-multi-capped'] },
     'select-async': { Component: SelectAsync, ...previewSources['select-async'] },
     'select-virtualized': { Component: SelectVirtualized, ...previewSources['select-virtualized'] },
     'select-custom-renderer': { Component: SelectCustomRenderer, ...previewSources['select-custom-renderer'] },

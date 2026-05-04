@@ -126,3 +126,87 @@ describe('<Select>', () => {
         expect(labels[2]).toContain('Zürich');
     });
 });
+
+describe('<Select multiple>', () => {
+    it('renders chips for each selected option in the trigger', () => {
+        render(<Select multiple options={FRUITS} defaultValue={['apple', 'cherry']} placeholder="Pick" />);
+        const trigger = screen.getByRole('combobox');
+        expect(trigger.textContent).toContain('Apple');
+        expect(trigger.textContent).toContain('Cherry');
+    });
+
+    it('renders the placeholder when nothing is selected', () => {
+        render(<Select multiple options={FRUITS} placeholder="Pick fruits" />);
+        expect(screen.getByText('Pick fruits')).toBeInTheDocument();
+    });
+
+    it('toggles values without closing the popup, fires onChange with array payload', () => {
+        const onChange = jest.fn();
+        render(<Select multiple options={FRUITS} onChange={onChange} />);
+        fireEvent.click(screen.getByRole('combobox'));
+        fireEvent.click(screen.getByRole('option', { name: 'Apple' }));
+        // Popup stays open in multi-mode
+        expect(screen.queryByRole('listbox')).toBeInTheDocument();
+        expect(onChange).toHaveBeenLastCalledWith(['apple'], [expect.objectContaining({ value: 'apple' })]);
+        fireEvent.click(screen.getByRole('option', { name: 'Cherry' }));
+        expect(onChange).toHaveBeenLastCalledWith(
+            ['apple', 'cherry'],
+            [expect.objectContaining({ value: 'apple' }), expect.objectContaining({ value: 'cherry' })]
+        );
+        // Tapping a selected option deselects it
+        fireEvent.click(screen.getByRole('option', { name: 'Apple' }));
+        expect(onChange).toHaveBeenLastCalledWith(['cherry'], [expect.objectContaining({ value: 'cherry' })]);
+    });
+
+    it('respects controlled value array', () => {
+        const onChange = jest.fn();
+        render(<Select multiple options={FRUITS} value={['banana']} onChange={onChange} />);
+        const trigger = screen.getByRole('combobox');
+        expect(trigger.textContent).toContain('Banana');
+        fireEvent.click(trigger);
+        fireEvent.click(screen.getByRole('option', { name: 'Apple' }));
+        expect(onChange).toHaveBeenLastCalledWith(['banana', 'apple'], expect.any(Array));
+    });
+
+    it('honors maxSelected — extra picks are ignored', () => {
+        const onChange = jest.fn();
+        render(
+            <Select multiple options={FRUITS} maxSelected={2} defaultValue={['apple', 'banana']} onChange={onChange} />
+        );
+        fireEvent.click(screen.getByRole('combobox'));
+        fireEvent.click(screen.getByRole('option', { name: 'Cherry' }));
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('exposes aria-multiselectable on the listbox + aria-selected per option', () => {
+        render(<Select multiple options={FRUITS} defaultValue={['apple']} />);
+        fireEvent.click(screen.getByRole('combobox'));
+        const listbox = screen.getByRole('listbox');
+        expect(listbox.getAttribute('aria-multiselectable')).toBe('true');
+        const apple = screen.getByRole('option', { name: 'Apple' });
+        expect(apple.getAttribute('aria-selected')).toBe('true');
+        const banana = screen.getByRole('option', { name: 'Banana' });
+        expect(banana.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('Clear all removes every selected value', () => {
+        const onChange = jest.fn();
+        render(<Select multiple options={FRUITS} defaultValue={['apple', 'banana']} onChange={onChange} />);
+        fireEvent.click(screen.getByRole('combobox'));
+        fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+        expect(onChange).toHaveBeenLastCalledWith([], []);
+    });
+
+    it('collapses chips to "N selected" when over maxChips', () => {
+        const opts: SelectOption[] = [
+            { value: 'a', label: 'Apple' },
+            { value: 'b', label: 'Banana' },
+            { value: 'c', label: 'Cherry' },
+            { value: 'd', label: 'Date' },
+        ];
+        render(<Select multiple options={opts} defaultValue={['a', 'b', 'c', 'd']} maxChips={3} />);
+        const trigger = screen.getByRole('combobox');
+        expect(trigger.textContent).toContain('4 selected');
+        expect(trigger.textContent).not.toContain('Apple');
+    });
+});

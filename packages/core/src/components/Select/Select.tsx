@@ -53,13 +53,7 @@ export type SelectRenderOptionInfo = {
     active: boolean;
 };
 
-export type SelectProps<T = unknown> = {
-    /** Controlled value. */
-    value?: string;
-    /** Uncontrolled initial value. */
-    defaultValue?: string;
-    /** Fires when the user picks an option. */
-    onChange?: (value: string, option: SelectOption<T> | undefined) => void;
+type SelectBaseProps<T = unknown> = {
     /** Static options. Mutually exclusive with `loadOptions`. */
     options?: ReadonlyArray<SelectOption<T>>;
     /**
@@ -111,6 +105,34 @@ export type SelectProps<T = unknown> = {
     'aria-label'?: string;
 };
 
+export type SelectSingleProps<T = unknown> = SelectBaseProps<T> & {
+    /** Single-select mode (default — omit or pass `false`). */
+    multiple?: false;
+    /** Controlled value. */
+    value?: string;
+    /** Uncontrolled initial value. */
+    defaultValue?: string;
+    /** Fires when the user picks an option. */
+    onChange?: (value: string, option: SelectOption<T> | undefined) => void;
+};
+
+export type SelectMultiProps<T = unknown> = SelectBaseProps<T> & {
+    /** Multi-select mode — value/onChange become array-typed. */
+    multiple: true;
+    /** Controlled values. */
+    value?: ReadonlyArray<string>;
+    /** Uncontrolled initial values. */
+    defaultValue?: ReadonlyArray<string>;
+    /** Fires when the selection changes. Receives the full new array of values + their resolved options. */
+    onChange?: (values: ReadonlyArray<string>, options: ReadonlyArray<SelectOption<T>>) => void;
+    /** Hard cap on selected count — extra picks are ignored. */
+    maxSelected?: number;
+    /** Max chips to render in the trigger before collapsing to "N selected". @defaultValue 3 */
+    maxChips?: number;
+};
+
+export type SelectProps<T = unknown> = SelectSingleProps<T> | SelectMultiProps<T>;
+
 const DEFAULT_PAGE_SIZE = 50;
 const DEFAULT_ITEM_HEIGHT = 36;
 const DEFAULT_MAX_MENU = 320;
@@ -149,38 +171,57 @@ const defaultFilter = <T,>(option: SelectOption<T>, search: string): boolean => 
  *     Enter selects, Escape closes, Tab closes and selects.
  *   - RTL alignment via `dir="rtl"`.
  */
-export function Select<T = unknown>({
-    value,
-    defaultValue,
-    onChange,
-    options: staticOptions,
-    loadOptions,
-    pageSize = DEFAULT_PAGE_SIZE,
-    searchable: searchableProp,
-    searchPlaceholder = 'Search…',
-    filterOption,
-    renderOption,
-    placeholder = 'Select…',
-    locale,
-    sortByLocale = true,
-    noOptionsMessage = 'No options',
-    loadingMessage = 'Loading…',
-    disabled = false,
-    dir = 'ltr',
-    virtualized: virtualizedProp,
-    itemHeight = DEFAULT_ITEM_HEIGHT,
-    maxMenuHeight = DEFAULT_MAX_MENU,
-    className,
-    testID,
-    ...rest
-}: SelectProps<T>) {
-    const ariaLabel = rest['aria-label'];
+export function Select<T = unknown>(props: SelectProps<T>) {
+    const {
+        options: staticOptions,
+        loadOptions,
+        pageSize = DEFAULT_PAGE_SIZE,
+        searchable: searchableProp,
+        searchPlaceholder = 'Search…',
+        filterOption,
+        renderOption,
+        placeholder = 'Select…',
+        locale,
+        sortByLocale = true,
+        noOptionsMessage = 'No options',
+        loadingMessage = 'Loading…',
+        disabled = false,
+        dir = 'ltr',
+        virtualized: virtualizedProp,
+        itemHeight = DEFAULT_ITEM_HEIGHT,
+        maxMenuHeight = DEFAULT_MAX_MENU,
+        className,
+        testID,
+    } = props;
+    const ariaLabel = (props as { 'aria-label'?: string })['aria-label'];
+    const multiple = props.multiple === true;
+    const maxSelected = multiple ? (props as SelectMultiProps<T>).maxSelected : undefined;
+    const maxChips = multiple ? ((props as SelectMultiProps<T>).maxChips ?? 3) : undefined;
+
     const baseId = useId();
     const colors = useThemeColors();
     const [open, setOpen] = useState(false);
-    const [inner, setInner] = useState<string | undefined>(defaultValue);
-    const isControlled = value !== undefined;
-    const current = isControlled ? value : inner;
+
+    // We always store values as a ReadonlyArray<string> internally so the
+    // toggle / replace logic stays uniform; for single mode the array is
+    // either empty or has exactly one element.
+    const controlledValues: ReadonlyArray<string> | undefined = multiple
+        ? (props.value as ReadonlyArray<string> | undefined)
+        : props.value !== undefined
+          ? [props.value as string]
+          : undefined;
+    const defaultValues: ReadonlyArray<string> = multiple
+        ? (((props as SelectMultiProps<T>).defaultValue as ReadonlyArray<string> | undefined) ?? [])
+        : (props as SelectSingleProps<T>).defaultValue !== undefined
+          ? [(props as SelectSingleProps<T>).defaultValue as string]
+          : [];
+    const [innerValues, setInnerValues] = useState<ReadonlyArray<string>>(defaultValues);
+    const isControlled = controlledValues !== undefined;
+    const currentValues: ReadonlyArray<string> = isControlled
+        ? (controlledValues as ReadonlyArray<string>)
+        : innerValues;
+    /** Single-mode legacy accessor — first selected value (or undefined). */
+    const current: string | undefined = currentValues[0];
 
     const [searchInput, setSearchInput] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -286,6 +327,16 @@ export function Select<T = unknown>({
         return all.find((o) => o.value === current);
     }, [asyncItems, isAsync, staticOptions, current]);
 
+    /** Multi-mode: resolved options for every currently-selected value, in selection order. */
+    const selectedOptions = useMemo<ReadonlyArray<SelectOption<T>>>(() => {
+        if (!multiple) {
+            return [];
+        }
+        const all = isAsync ? asyncItems : (staticOptions ?? []);
+        const map = new Map(all.map((o) => [o.value, o]));
+        return currentValues.map((v) => map.get(v)).filter((o): o is SelectOption<T> => o !== undefined);
+    }, [multiple, currentValues, asyncItems, isAsync, staticOptions]);
+
     const searchable = searchableProp ?? (isAsync || (staticOptions !== undefined && staticOptions.length >= 10));
     const virtualized = virtualizedProp ?? visibleOptions.length > 100;
 
@@ -299,15 +350,54 @@ export function Select<T = unknown>({
             if (option.disabled) {
                 return;
             }
-            if (!isControlled) {
-                setInner(option.value);
+            if (multiple) {
+                const has = currentValues.includes(option.value);
+                let nextValues: string[];
+                if (has) {
+                    nextValues = currentValues.filter((v) => v !== option.value);
+                } else {
+                    if (maxSelected !== undefined && currentValues.length >= maxSelected) {
+                        return; // hit the cap
+                    }
+                    nextValues = [...currentValues, option.value];
+                }
+                if (!isControlled) {
+                    setInnerValues(nextValues);
+                }
+                // Resolve options for callback — preserves order of nextValues.
+                const allOpts: ReadonlyArray<SelectOption<T>> = [
+                    ...(staticOptions ?? []),
+                    ...(asyncItems as ReadonlyArray<SelectOption<T>>),
+                ];
+                const optMap = new Map(allOpts.map((o) => [o.value, o]));
+                const selectedOpts = nextValues
+                    .map((v) => optMap.get(v))
+                    .filter((o): o is SelectOption<T> => o !== undefined);
+                (props as SelectMultiProps<T>).onChange?.(nextValues, selectedOpts);
+                // Multi mode: keep the popup open, keep the search input — the
+                // user is likely picking more than one in a row.
+                return;
             }
-            onChange?.(option.value, option);
+            // Single mode — replace + close.
+            if (!isControlled) {
+                setInnerValues([option.value]);
+            }
+            (props as SelectSingleProps<T>).onChange?.(option.value, option);
             setOpen(false);
             setSearchInput('');
         },
-        [isControlled, onChange]
+        // biome-ignore lint/correctness/useExhaustiveDependencies: `props` is the discriminated union — destructuring it would defeat the narrowing; the asyncItems / staticOptions captures intentionally re-trigger the callback when the option pool changes
+        [multiple, isControlled, currentValues, maxSelected, staticOptions, asyncItems, props]
     );
+
+    /** Multi-mode helper to clear all selected values. */
+    const clearAll = useCallback(() => {
+        if (!isControlled) {
+            setInnerValues([]);
+        }
+        (props as SelectMultiProps<T>).onChange?.([], []);
+        // biome-ignore lint/correctness/useExhaustiveDependencies: same reason as above
+    }, [isControlled, props]);
 
     const moveActive = useCallback(
         (delta: 1 | -1) => {
@@ -567,17 +657,21 @@ export function Select<T = unknown>({
                 }}
                 style={triggerStyle}
             >
-                <RNText
-                    style={{
-                        color: selectedOption ? colors.semantic.text.default : colors.semantic.text.muted,
-                        fontFamily: colors.fontFamily.body,
-                        fontSize: px(colors.fontSize.sm),
-                        flex: 1,
-                    }}
-                    numberOfLines={1}
-                >
-                    {selectedOption?.label ?? placeholder}
-                </RNText>
+                {multiple ? (
+                    <MultiTriggerLabel options={selectedOptions} placeholder={placeholder} maxChips={maxChips ?? 3} />
+                ) : (
+                    <RNText
+                        style={{
+                            color: selectedOption ? colors.semantic.text.default : colors.semantic.text.muted,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
+                            flex: 1,
+                        }}
+                        numberOfLines={1}
+                    >
+                        {selectedOption?.label ?? placeholder}
+                    </RNText>
+                )}
                 <defaultSemanticIcons.chevronDown size={16} color={colors.semantic.text.muted} />
             </Pressable>
 
@@ -599,7 +693,11 @@ export function Select<T = unknown>({
                 ref={(node) => {
                     popupRef.current = node as unknown as HTMLDivElement | null;
                 }}
-                {...({ role: 'listbox', id: `${baseId}-listbox` } as Record<string, unknown>)}
+                {...({
+                    role: 'listbox',
+                    id: `${baseId}-listbox`,
+                    ...(multiple ? { 'aria-multiselectable': true } : {}),
+                } as Record<string, unknown>)}
                 style={popupStyle}
             >
                 {searchable ? (
@@ -611,10 +709,15 @@ export function Select<T = unknown>({
                         dir={dir}
                     />
                 ) : null}
+                {multiple && currentValues.length > 0 ? (
+                    <MultiSelectionHeader count={currentValues.length} onClearAll={clearAll} />
+                ) : null}
                 <SelectList
                     options={visibleOptions}
                     activeIndex={activeIndex}
                     currentValue={current}
+                    selectedValues={currentValues}
+                    multiple={multiple}
                     onSelect={onSelect}
                     onActiveChange={setActiveIndex}
                     {...(renderOption !== undefined ? { renderOption } : {})}
@@ -715,6 +818,8 @@ type SelectListProps<T> = {
     options: ReadonlyArray<SelectOption<T>>;
     activeIndex: number;
     currentValue: string | undefined;
+    selectedValues: ReadonlyArray<string>;
+    multiple: boolean;
     onSelect: (option: SelectOption<T>) => void;
     onActiveChange: (index: number) => void;
     renderOption?: (option: SelectOption<T>, info: SelectRenderOptionInfo) => ReactNode;
@@ -732,6 +837,8 @@ function SelectList<T>({
     options,
     activeIndex,
     currentValue,
+    selectedValues,
+    multiple,
     onSelect,
     onActiveChange,
     renderOption,
@@ -832,12 +939,12 @@ function SelectList<T>({
             );
             lastGroup = opt.group;
         }
-        const selected = opt.value === currentValue;
+        const selected = multiple ? selectedValues.includes(opt.value) : opt.value === currentValue;
         const active = i === activeIndex;
         const itemNode = renderOption ? (
             renderOption(opt, { selected, active })
         ) : (
-            <DefaultOptionRow option={opt} selected={selected} active={active} />
+            <DefaultOptionRow option={opt} selected={selected} active={active} multiple={multiple} />
         );
         items.push(
             <Pressable
@@ -890,14 +997,39 @@ function DefaultOptionRow<T>({
     option,
     selected,
     active,
+    multiple = false,
 }: {
     option: SelectOption<T>;
     selected: boolean;
     active: boolean;
+    multiple?: boolean;
 }) {
     const colors = useThemeColors();
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: px(colors.spacing['2']) }}>
+            {multiple ? (
+                // Inline checkbox-style indicator. We don't reuse <Checkbox>
+                // here because the row is already a Pressable — nesting two
+                // pressable surfaces breaks tap handling on native; this
+                // is purely visual (the Pressable parent owns the toggle).
+                <View
+                    aria-hidden
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    style={{
+                        width: 18,
+                        height: 18,
+                        borderWidth: 1,
+                        borderRadius: px(colors.radius.sm),
+                        borderColor: selected ? colors.semantic.interactive.primary : colors.semantic.border.strong,
+                        backgroundColor: selected ? colors.semantic.interactive.primary : 'transparent',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    {selected ? <defaultSemanticIcons.check size={12} color={colors.semantic.text.inverted} /> : null}
+                </View>
+            ) : null}
             <RNText
                 style={{
                     color: colors.semantic.text.default,
@@ -910,9 +1042,152 @@ function DefaultOptionRow<T>({
             >
                 {option.label}
             </RNText>
-            {selected ? <defaultSemanticIcons.check size={16} color={colors.semantic.interactive.primary} /> : null}
+            {selected && !multiple ? (
+                <defaultSemanticIcons.check size={16} color={colors.semantic.interactive.primary} />
+            ) : null}
             {/* keep `active` referenced — it's part of the public API consumers see via renderOption */}
             {active ? null : null}
+        </View>
+    );
+}
+
+// ---------- multi-select trigger label (chips with overflow) ----------
+
+function MultiTriggerLabel<T>({
+    options,
+    placeholder,
+    maxChips,
+}: {
+    options: ReadonlyArray<SelectOption<T>>;
+    placeholder: string;
+    maxChips: number;
+}) {
+    const colors = useThemeColors();
+    if (options.length === 0) {
+        return (
+            <RNText
+                style={{
+                    color: colors.semantic.text.muted,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
+                    flex: 1,
+                }}
+                numberOfLines={1}
+            >
+                {placeholder}
+            </RNText>
+        );
+    }
+    // When the selection grows beyond `maxChips`, collapse to a counter so
+    // the trigger height stays stable on narrow screens.
+    if (options.length > maxChips) {
+        return (
+            <RNText
+                style={{
+                    color: colors.semantic.text.default,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
+                    fontWeight: colors.fontWeight.medium as '500',
+                    fontVariant: ['tabular-nums'],
+                    flex: 1,
+                }}
+                numberOfLines={1}
+            >
+                {options.length} selected
+            </RNText>
+        );
+    }
+    return (
+        <View
+            style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                rowGap: px(colors.spacing['1']),
+                columnGap: px(colors.spacing['1']),
+                flex: 1,
+            }}
+        >
+            {options.map((opt) => (
+                <View
+                    key={`chip-${opt.value}`}
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: px(colors.spacing['2']),
+                        paddingVertical: 2,
+                        borderRadius: px(colors.radius.sm),
+                        backgroundColor: colors.semantic.background.subtle,
+                        borderWidth: 1,
+                        borderColor: colors.semantic.border.default,
+                    }}
+                >
+                    <RNText
+                        style={{
+                            color: colors.semantic.text.default,
+                            fontFamily: colors.fontFamily.body,
+                            fontSize: px(colors.fontSize.sm),
+                        }}
+                        numberOfLines={1}
+                    >
+                        {opt.label}
+                    </RNText>
+                </View>
+            ))}
+        </View>
+    );
+}
+
+// ---------- multi-select popup header with "Clear all" affordance ----------
+
+function MultiSelectionHeader({ count, onClearAll }: { count: number; onClearAll: () => void }) {
+    const colors = useThemeColors();
+    return (
+        <View
+            style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: px(colors.spacing['3']),
+                paddingVertical: px(colors.spacing['2']),
+                borderBottomWidth: 1,
+                borderBottomColor: colors.semantic.border.default,
+            }}
+        >
+            <RNText
+                style={{
+                    color: colors.semantic.text.muted,
+                    fontFamily: colors.fontFamily.body,
+                    fontSize: px(colors.fontSize.sm),
+                    fontVariant: ['tabular-nums'],
+                }}
+            >
+                {count} selected
+            </RNText>
+            <Pressable
+                role="button"
+                accessibilityRole="button"
+                aria-label="Clear all"
+                accessibilityLabel="Clear all"
+                onPress={onClearAll}
+                style={({ pressed }) => ({
+                    paddingHorizontal: px(colors.spacing['2']),
+                    paddingVertical: 2,
+                    borderRadius: px(colors.radius.sm),
+                    opacity: pressed ? 0.6 : 1,
+                })}
+            >
+                <RNText
+                    style={{
+                        color: colors.semantic.interactive.primary,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        fontWeight: colors.fontWeight.medium as '500',
+                    }}
+                >
+                    Clear all
+                </RNText>
+            </Pressable>
         </View>
     );
 }

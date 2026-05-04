@@ -36,6 +36,18 @@ Items with the same `group` field cluster under a header. Searchable auto-on onc
 
 <Preview name="select-basic" />
 
+## Multi-select
+
+Pass `multiple` to switch the value / `onChange` types to arrays. The trigger renders a chip per selected option (collapsing to "N selected" past `maxChips`, default 3); the popup shows a checkbox-style indicator next to each option, stays open between picks, and exposes a "Clear all" affordance plus `aria-multiselectable="true"`. Optional `maxSelected` caps the count — extra picks are silently ignored.
+
+<Preview name="select-multi" />
+
+### Capped selection
+
+Cap the number of selectable items with `maxSelected` — extra picks are ignored silently. Pair with a smaller `maxChips` so the trigger stays compact while the cap is approached. The example below caps at 3 and collapses to "N selected" past 2 chips.
+
+<Preview name="select-multi-capped" />
+
 ## Async + paginated
 
 `loadOptions` is called on every search change (debounced ~150ms) and on scroll near the bottom of the list. The component manages the loaded array and pagination cursor; consumers only return `{ items, total? }`.
