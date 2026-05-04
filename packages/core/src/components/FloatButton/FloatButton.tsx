@@ -383,38 +383,54 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
             onHoverOut={() => setTooltipVisible(false)}
             onFocus={() => setTooltipVisible(true)}
             onBlur={() => setTooltipVisible(false)}
-            style={(state) => {
-                const { pressed, hovered } = state as { pressed: boolean; hovered?: boolean };
-                const baseStyle: ViewStyle = {
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: pressed
-                        ? variantStyle.bgPressed
-                        : hovered
-                          ? variantStyle.bgHover
-                          : variantStyle.bg,
-                    ...(variantStyle.borderColor ? { borderWidth: 1, borderColor: variantStyle.borderColor } : null),
-                    ...containerDimensions,
-                    ...shadowStyle.resting,
-                    // Pressed flattens the shadow + scales down a touch.
-                    ...(pressed ? { transform: [{ scale: 0.96 }], ...shadowStyle.pressed } : null),
-                    ...(hovered && !pressed ? { transform: [{ translateY: -1 }], ...shadowStyle.hover } : null),
-                };
-                return {
-                    ...baseStyle,
-                    // Web-only motion (silently dropped on native).
-                    ...(Platform.OS === 'web'
-                        ? ({
-                              transitionProperty: 'background-color, box-shadow, transform',
-                              transitionDuration: '150ms',
-                              transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                              cursor: disabled || loading ? 'not-allowed' : 'pointer',
-                              outlineWidth: 0,
-                          } as object)
-                        : null),
-                } as ViewStyle;
-            }}
+            // Pre-compute the static style; iOS's Pressable renderer was
+            // observed to drop properties from function-form `style` returns
+            // intermittently — same bug we hit on the Pagination selected pill.
+            // The function form is web-only (where it reads `hovered`); on
+            // native we pass a plain object that always renders.
+            style={
+                Platform.OS === 'web'
+                    ? (state) => {
+                          const { pressed, hovered } = state as { pressed: boolean; hovered?: boolean };
+                          return {
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: pressed
+                                  ? variantStyle.bgPressed
+                                  : hovered
+                                    ? variantStyle.bgHover
+                                    : variantStyle.bg,
+                              ...(variantStyle.borderColor
+                                  ? { borderWidth: 1, borderColor: variantStyle.borderColor }
+                                  : null),
+                              ...containerDimensions,
+                              ...shadowStyle.resting,
+                              ...(pressed ? { transform: [{ scale: 0.96 }], ...shadowStyle.pressed } : null),
+                              ...(hovered && !pressed
+                                  ? { transform: [{ translateY: -1 }], ...shadowStyle.hover }
+                                  : null),
+                              ...({
+                                  transitionProperty: 'background-color, box-shadow, transform',
+                                  transitionDuration: '150ms',
+                                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                                  cursor: disabled || loading ? 'not-allowed' : 'pointer',
+                                  outlineWidth: 0,
+                              } as object),
+                          } as ViewStyle;
+                      }
+                    : ({
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: variantStyle.bg,
+                          ...(variantStyle.borderColor
+                              ? { borderWidth: 1, borderColor: variantStyle.borderColor }
+                              : null),
+                          ...containerDimensions,
+                          ...shadowStyle.resting,
+                      } as ViewStyle)
+            }
         >
             {contentNode}
         </Pressable>
