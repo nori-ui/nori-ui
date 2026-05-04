@@ -9,6 +9,7 @@ export * from './Button';
 export * from './Card';
 export * from './Checkbox';
 export * from './Dialog';
+export * from './FloatButton';
 export * from './HStack';
 export * from './InputGroup';
 export * from './Pagination';

@@ -20,6 +20,13 @@ import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
 import DialogBasic from './demos/dialog-basic';
+import FloatButtonBackToTop from './demos/float-button-back-to-top';
+import FloatButtonBadge from './demos/float-button-badge';
+import FloatButtonBasic from './demos/float-button-basic';
+import FloatButtonGroup from './demos/float-button-group';
+import FloatButtonGroupBackdrop from './demos/float-button-group-backdrop';
+import FloatButtonShapes from './demos/float-button-shapes';
+import FloatButtonVariants from './demos/float-button-variants';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
@@ -184,6 +191,19 @@ export const previews = {
     },
     'radio-group-basic': { Component: RadioGroupBasic, ...previewSources['radio-group-basic'] },
     'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
+    'float-button-basic': { Component: FloatButtonBasic, ...previewSources['float-button-basic'] },
+    'float-button-shapes': { Component: FloatButtonShapes, ...previewSources['float-button-shapes'] },
+    'float-button-variants': { Component: FloatButtonVariants, ...previewSources['float-button-variants'] },
+    'float-button-badge': { Component: FloatButtonBadge, ...previewSources['float-button-badge'] },
+    'float-button-group': { Component: FloatButtonGroup, ...previewSources['float-button-group'] },
+    'float-button-group-backdrop': {
+        Component: FloatButtonGroupBackdrop,
+        ...previewSources['float-button-group-backdrop'],
+    },
+    'float-button-back-to-top': {
+        Component: FloatButtonBackToTop,
+        ...previewSources['float-button-back-to-top'],
+    },
     'switch-basic': { Component: SwitchBasic, ...previewSources['switch-basic'] },
     'tabs-basic': { Component: TabsBasic, ...previewSources['tabs-basic'], ...DIR_ONLY },
     'toast-basic': { Component: ToastBasic, ...previewSources['toast-basic'] },

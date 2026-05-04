@@ -16,6 +16,7 @@
     "components/card",
     "components/checkbox",
     "components/dialog",
+    "components/float-button",
     "components/hstack",
     "components/icon",
     "components/input-group",

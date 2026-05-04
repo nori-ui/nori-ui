@@ -1,0 +1,108 @@
+---
+title: FloatButton
+description: Cross-platform Floating Action Button — standalone, grouped (speed-dial), or back-to-top — with safe-area-aware positioning, badge, and full a11y.
+since: 0.0.7
+tags: [actions, navigation]
+platform: both
+category: actions
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="FloatButton" />
+
+## At a glance
+
+- **Three sub-components**: `<FloatButton>` standalone, `<FloatButton.Group>` for click/long-press expansion, and `<FloatButton.BackToTop>` preset.
+- **Three shapes**: `circle | square | extended` (extended = pill with inline label) at three sizes (`sm` 40, `md` 56, `lg` 72).
+- **Four variants**: `primary | secondary | tertiary | surface` mapped to our semantic tokens.
+- **Cross-platform positioning**: `position: fixed` on web, `position: absolute` on native — auto-respects the **bottom safe area inset** on iOS/Android via `useSafeAreaInsets()` (opt out with `respectSafeArea={false}`).
+- **Badge slot** — `badge={{ count, dot, tone }}` forwards to our `<Badge>` and pins to the top-right of the button.
+- **Group with click or long-press trigger**, controlled or uncontrolled (`open` / `defaultOpen` / `onOpenChange`), optional `backdrop` scrim that closes on tap.
+- **`actions` array OR children** — the same dual API as Pagination / Breadcrumb. Agents reach for the array; humans reach for JSX.
+- **`onPress` is the primary handler**. `onClick` is also accepted for web-y mental models — if both are defined, `onPress` wins (and a dev warning fires).
+- **`href`** integration on web (renders an `<a>`). Optional **`positioning='absolute'`** lets you contain the FAB inside a positioned ancestor (used by these docs previews).
+- **A11y**: `role="button"` + `aria-haspopup="menu"`, `aria-expanded`, `aria-busy`; required `accessibilityLabel` for icon-only buttons (dev warning).
+
+## Preview
+
+<Preview name="float-button-basic" />
+
+## Shapes
+
+`circle` (default), `square` (rounded square — AntD parity), `extended` (capsule with inline label — auto-applies when both `icon` and `label` are present).
+
+<Preview name="float-button-shapes" />
+
+## Variants
+
+Each variant maps to semantic interactive tokens. `surface` is the canonical "less attention-grabbing" variant — used by `BackToTop`.
+
+<Preview name="float-button-variants" />
+
+## Badge
+
+`badge={{ count }}` for numeric, `badge={{ dot: true }}` for a dot indicator. Tone defaults to `'danger'` (the canonical "unread" red); pass `badge={{ tone: 'primary', count: 3 }}` to recolor.
+
+<Preview name="float-button-badge" />
+
+## Group — vertical stack
+
+`<FloatButton.Group>` clusters action items behind a single trigger. Click the trigger to reveal; click the trigger again, an action, or the backdrop (when enabled) to dismiss.
+
+<Preview name="float-button-group" />
+
+### With backdrop
+
+`backdrop` renders a soft 32%-black scrim that closes the group on tap — useful on touch devices to give a clear "outside tap to close" affordance.
+
+<Preview name="float-button-group-backdrop" />
+
+## BackToTop
+
+Preset that listens to `window.scrollY` (web) or accepts a `scrollRef` (native), fades in past `visibilityThreshold` (default 400px), and smooth-scrolls back to the top on press. Defaults to the `surface` variant.
+
+<Preview name="float-button-back-to-top" />
+
+## Positioning
+
+`positioning="fixed"` (default) pins to the viewport — the canonical FAB behavior. `positioning="absolute"` pins to the nearest positioned ancestor — used by all the previews on this page so the FAB stays inside the demo card. On native, `position: 'fixed'` doesn't exist, so we always use `'absolute'` rooted at the trigger's parent (the safe-area inset is added automatically).
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `placement` | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right'` | `'bottom-right'` | RTL flips left/right. |
+| `offset` | `{ x?: number; y?: number }` | `{ x: 24, y: 24 }` web, `{ x: 16, y: 16 }` native | Px from the placement corner. |
+| `respectSafeArea` | `boolean` | `true` | Native-only — auto-adds `useSafeAreaInsets().bottom`. |
+| `positioning` | `'fixed' \| 'absolute'` | `'fixed'` | Use `'absolute'` to contain inside a positioned parent. |
+
+## Accessibility
+
+- The button uses native `role="button"` (web) / `accessibilityRole="button"` (native).
+- `accessibilityLabel` is required for icon-only buttons — a dev-only warning fires if missing.
+- `aria-busy="true"` while `loading`; `aria-disabled="true"` while `disabled`.
+- `<FloatButton.Group>` adds `aria-haspopup="menu"` + `aria-expanded` to the trigger.
+- The backdrop is a `<Pressable>` with the localized "Close" label.
+- Touch target ≥ 40×40 (sm), 56×56 (md), 72×72 (lg) — all above WCAG 2.2 AA target-size minimum (24×24 / recommended 44×44).
+
+## Press handlers — `onPress` vs `onClick`
+
+We're React-Native-first, so `onPress` is the primary handler and works on both platforms. `onClick` is also accepted for the web-y developer mental model. **If both are defined, `onPress` wins** — and a dev-only console warning fires so the intent is unambiguous.
+
+```tsx
+<FloatButton icon={<Plus />} accessibilityLabel="New" onPress={() => …} />
+
+// Both are accepted, but onClick is silently shadowed if onPress is set:
+<FloatButton icon={<Plus />} accessibilityLabel="New" onClick={() => …} />
+```
+
+## i18n
+
+| Key | Default |
+|---|---|
+| `floatButton.backToTop` | "Back to top" |
+
+## Props
+
+<PropsTable component="FloatButton" />

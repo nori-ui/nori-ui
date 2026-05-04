@@ -41,6 +41,9 @@ export const defaultDictionary: Dictionary = {
     'pagination.jumperLabel': 'Go to page',
     'pagination.jumperPlaceholder': '#',
 
+    // floatButton
+    'floatButton.backToTop': 'Back to top',
+
     // button
     'button.loadingLabel': 'Loading',
 

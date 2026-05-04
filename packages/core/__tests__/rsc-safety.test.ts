@@ -44,6 +44,7 @@ const CLIENT_ALLOWED = [
     'components/Card/Card.tsx',
     'components/Checkbox/Checkbox.tsx',
     'components/Dialog/Dialog.tsx',
+    'components/FloatButton/FloatButton.tsx',
     'components/InputGroup/InputGroup.tsx',
     'components/Pagination/Pagination.tsx',
     'components/Pagination/use-pagination.ts',
