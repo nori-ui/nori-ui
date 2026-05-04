@@ -16,8 +16,11 @@
 
 import {
     type ComponentProps,
+    cloneElement,
     createContext,
     type FC,
+    isValidElement,
+    type ReactElement,
     type ReactNode,
     useCallback,
     useContext,
@@ -308,14 +311,22 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
                 <SmallSpinner color={variantStyle.fg} size={sizeTokens.iconSize} />
             ) : (
                 <View
-                    style={{
-                        width: sizeTokens.iconSize,
-                        height: sizeTokens.iconSize,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
+                    style={
+                        {
+                            width: sizeTokens.iconSize,
+                            height: sizeTokens.iconSize,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            // Sets CSS `color` on the wrapper div under RN-Web
+                            // so any nested SVG using `stroke="currentColor"`
+                            // or `fill="currentColor"` inherits the variant fg.
+                            // RN ignores `color` on a View (it's only valid on
+                            // Text) — silently dropped on native.
+                            color: variantStyle.fg,
+                        } as unknown as ViewStyle
+                    }
                 >
-                    {icon ?? null}
+                    {tintIcon(icon, variantStyle.fg)}
                 </View>
             )}
             {isExtended ? (
@@ -960,6 +971,21 @@ function resolvePositionStyle({
     // Suppress viewportWidth warning — reserved for future RTL/horizontal logic.
     void viewportWidth;
     return base;
+}
+
+/**
+ * Force the icon's color to match the FAB's variant fg. Works for our
+ * `IconComponentProps`-shaped icons (which accept `{ size, color }`) by
+ * cloning the element with the resolved color; raw nodes pass through
+ * unchanged and rely on the wrapper's CSS `color` for `currentColor`-based
+ * SVGs. Consumer-supplied colors are intentionally overridden — inside a
+ * primary FAB the icon should always read against the primary surface.
+ */
+function tintIcon(icon: ReactNode, color: string): ReactNode {
+    if (!isValidElement(icon)) {
+        return icon;
+    }
+    return cloneElement(icon as ReactElement<{ color?: string }>, { color });
 }
 
 function withAlpha(color: string, alpha: number): string {
