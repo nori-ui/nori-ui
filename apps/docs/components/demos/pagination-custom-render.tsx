@@ -7,7 +7,7 @@ export default function PaginationCustomRender() {
         <Pagination
             page={page}
             pageCount={10}
-            onPageChange={(info) => setPage(info.page)}
+            onPageChange={setPage}
             renderItem={({ children, ariaLabel, ariaCurrent, onPress, disabled, selected }) => (
                 <a
                     href={`?page=${page}`}

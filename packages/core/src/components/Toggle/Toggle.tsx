@@ -42,12 +42,12 @@ const SIZE_TOKENS: Record<ToggleSize, SizeTokens> = {
 // ---------- standalone <Toggle> -----------------------------------------------
 
 export type ToggleProps = {
-    /** Controlled pressed state. Pair with `onPressedChange`. */
+    /** Controlled pressed state. Pair with `onChange`. */
     pressed?: boolean;
     /** Uncontrolled initial pressed state. Ignored when `pressed` is provided. */
     defaultPressed?: boolean;
     /** Fires with the next pressed state when the user toggles. */
-    onPressedChange?: (next: boolean) => void;
+    onChange?: (next: boolean) => void;
     /**
      * Visual treatment.
      * - `default` — transparent when off, filled with `interactive.primary` when on.
@@ -79,10 +79,10 @@ export type ToggleProps = {
  * control selects a value inside a form. `<Toggle>` is for buttons that
  * carry an on/off visual.
  */
-function ToggleRoot({
+const ToggleRoot = ({
     pressed,
     defaultPressed = false,
-    onPressedChange,
+    onChange,
     variant = 'default',
     size = 'md',
     disabled = false,
@@ -91,7 +91,7 @@ function ToggleRoot({
     accessibilityLabel,
     className,
     testID,
-}: ToggleProps) {
+}: ToggleProps) => {
     const [inner, setInner] = useState<boolean>(defaultPressed);
     const isControlled = pressed !== undefined;
     const isOn = isControlled ? Boolean(pressed) : inner;
@@ -104,8 +104,8 @@ function ToggleRoot({
         if (!isControlled) {
             setInner(next);
         }
-        onPressedChange?.(next);
-    }, [disabled, isControlled, isOn, onPressedChange]);
+        onChange?.(next);
+    }, [disabled, isControlled, isOn, onChange]);
 
     return (
         <ToggleVisual
@@ -121,7 +121,7 @@ function ToggleRoot({
             {children}
         </ToggleVisual>
     );
-}
+};
 
 // ---------- shared visual -----------------------------------------------------
 
@@ -358,14 +358,14 @@ export type ToggleGroupSingleProps = ToggleGroupCommonProps & {
     // pass `undefined` as the controlled value, not just omit the prop.
     value?: string | undefined;
     defaultValue?: string | undefined;
-    onValueChange?: (next: string | undefined) => void;
+    onChange?: (next: string | undefined) => void;
 };
 
 export type ToggleGroupMultipleProps = ToggleGroupCommonProps & {
     type: 'multiple';
     value?: string[] | undefined;
     defaultValue?: string[] | undefined;
-    onValueChange?: (next: string[]) => void;
+    onChange?: (next: string[]) => void;
 };
 
 export type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps;
@@ -383,7 +383,7 @@ export type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps
  * tabindex), `Home` / `End` jump to the ends, and `Space` / `Enter`
  * toggle the focused item.
  */
-function ToggleGroup(props: ToggleGroupProps) {
+const ToggleGroup = (props: ToggleGroupProps) => {
     const {
         type,
         disabled = false,
@@ -420,7 +420,7 @@ function ToggleGroup(props: ToggleGroupProps) {
                 if (!isControlled) {
                     setInnerSingle(updated);
                 }
-                (props as ToggleGroupSingleProps).onValueChange?.(updated);
+                (props as ToggleGroupSingleProps).onChange?.(updated);
             } else {
                 const current: string[] =
                     (isControlled ? (props as ToggleGroupMultipleProps).value : innerMultiple) ?? [];
@@ -428,7 +428,7 @@ function ToggleGroup(props: ToggleGroupProps) {
                 if (!isControlled) {
                     setInnerMultiple(updated);
                 }
-                (props as ToggleGroupMultipleProps).onValueChange?.(updated);
+                (props as ToggleGroupMultipleProps).onChange?.(updated);
             }
         },
         [disabled, isSingle, isControlled, innerSingle, innerMultiple, props]
@@ -574,7 +574,7 @@ function ToggleGroup(props: ToggleGroupProps) {
             </View>
         </ToggleGroupContext.Provider>
     );
-}
+};
 
 export type ToggleGroupItemProps = {
     /** Unique identifier within the group — written into `value` when pressed. */
@@ -592,7 +592,7 @@ export type ToggleGroupItemProps = {
  * One toggle inside a `<ToggleGroup>`. Throws with a clear message when
  * rendered outside of one.
  */
-function ToggleGroupItem({
+const ToggleGroupItem = ({
     value,
     disabled,
     children,
@@ -600,7 +600,7 @@ function ToggleGroupItem({
     accessibilityLabel,
     className,
     testID,
-}: ToggleGroupItemProps) {
+}: ToggleGroupItemProps) => {
     const ctx = useToggleGroupContext();
     const ownRef = useRef<HTMLElement | null>(null);
     // Capture register/unregister in a ref so the effect's deps stay
@@ -710,7 +710,7 @@ function ToggleGroupItem({
             {children}
         </ToggleVisual>
     );
-}
+};
 
 /**
  * Public `Toggle` value — the standalone toggle plus its `.Group` and `.Item`

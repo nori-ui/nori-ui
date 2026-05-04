@@ -52,7 +52,7 @@ const THUMB_BASE_STYLE: ViewStyle = {
  * disabled state, asChild (via Slot), and a visible label that doubles as the
  * accessibility label.
  */
-export function Switch({
+export const Switch = ({
     checked,
     defaultChecked = false,
     disabled,
@@ -62,7 +62,7 @@ export function Switch({
     testID,
     asChild,
     children,
-}: SwitchProps) {
+}: SwitchProps) => {
     const colors = useThemeColors();
     const [inner, setInner] = useState<boolean>(defaultChecked);
     const isControlled = checked !== undefined;
@@ -197,4 +197,4 @@ export function Switch({
             {children}
         </Pressable>
     );
-}
+};

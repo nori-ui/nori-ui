@@ -12,7 +12,7 @@ export default function PaginationPageSize() {
                 pageCount={pageCount}
                 itemCount={total}
                 pageSize={state.pageSize}
-                onPageChange={(info) => setState({ page: info.page, pageSize: info.pageSize ?? state.pageSize })}
+                onPageChange={(page, meta) => setState({ page, pageSize: meta?.pageSize ?? state.pageSize })}
             >
                 <Pagination.Prev />
                 <Pagination.Items />

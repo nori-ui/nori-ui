@@ -1,9 +1,7 @@
 export {
     FloatButton,
-    FloatButtonBackToTop,
     type FloatButtonBackToTopProps,
     type FloatButtonBadge,
-    FloatButtonGroup,
     type FloatButtonGroupDirection,
     type FloatButtonGroupProps,
     type FloatButtonGroupTrigger,

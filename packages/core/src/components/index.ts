@@ -15,7 +15,7 @@ export * from './InputGroup';
 export * from './Pagination';
 export * from './Popover';
 export * from './Progress';
-export * from './RadioGroup';
+export * from './Radio';
 export * from './SegmentedControl';
 export * from './Select';
 export * from './Separator';

@@ -100,14 +100,14 @@ export type InputGroupProps = {
  *   <InputGroupAddon>.com</InputGroupAddon>
  * </InputGroup>
  */
-function InputGroupRoot({
+const InputGroupRoot = ({
     children,
     disabled = false,
     error: groupErrorProp = false,
     className,
     containerClassName,
     testID,
-}: InputGroupProps) {
+}: InputGroupProps) => {
     const colors = useThemeColors();
     const reactId = useId();
     const inputId = `nori-ui-input-${reactId}`;
@@ -271,14 +271,14 @@ function InputGroupRoot({
             ) : null}
         </View>
     );
-}
+};
 
 // ─── Addon slot ───────────────────────────────────────────────────────────
 //
 // Internal wrapper that paints the muted background, draws the 1px vertical
 // separator on the input-facing side, and forwards a click to the input so
 // the addon reads as decorator, not as something interactive.
-function AddonSlot({ children, side }: { children: ReactNode; side: 'left' | 'right' }) {
+const AddonSlot = ({ children, side }: { children: ReactNode; side: 'left' | 'right' }) => {
     const colors = useThemeColors();
     const ctx = useContext(InputGroupContext);
     const dim = ctx?.disabled ? 0.85 : 1;
@@ -319,7 +319,7 @@ function AddonSlot({ children, side }: { children: ReactNode; side: 'left' | 'ri
             {children}
         </Pressable>
     );
-}
+};
 
 // ─── Addon (public) ───────────────────────────────────────────────────────
 
@@ -334,7 +334,7 @@ export type InputGroupAddonProps = {
  * box that visually fuses with the input. Place before `<InputGroupInput>`
  * for a prefix, after for a suffix. Accepts strings or `ReactNode` (icons).
  */
-function InputGroupAddon({ children, className, testID }: InputGroupAddonProps) {
+const InputGroupAddon = ({ children, className, testID }: InputGroupAddonProps) => {
     const colors = useThemeColors();
     const textStyle: TextStyle = {
         color: colors.semantic.text.muted,
@@ -362,7 +362,7 @@ function InputGroupAddon({ children, className, testID }: InputGroupAddonProps) 
             {children}
         </View>
     );
-}
+};
 
 // Brand the function so the parent can locate it via Children.toArray walk.
 (InputGroupAddon as unknown as { __noriType: symbol }).__noriType = ADDON_TYPE;
@@ -389,7 +389,7 @@ export type InputGroupInputProps = TextInputProps;
  * those bits are lifted to the parent so they render OUTSIDE the bordered
  * field row, the way a normal field's label/helper sits above/below the box.
  */
-function InputGroupInput({
+const InputGroupInput = ({
     label: _label,
     helperText: _helperText,
     error,
@@ -405,7 +405,7 @@ function InputGroupInput({
     className,
     testID,
     ...rest
-}: InputGroupInputProps) {
+}: InputGroupInputProps) => {
     const colors = useThemeColors();
     const ctx = useInputGroupContext('InputGroupInput');
     const inputId = ctx.inputId;
@@ -467,7 +467,7 @@ function InputGroupInput({
             style={[inputStyle, rest.style]}
         />
     );
-}
+};
 
 (InputGroupInput as unknown as { __noriType: symbol }).__noriType = INPUT_TYPE;
 

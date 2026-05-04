@@ -19,7 +19,7 @@ import { PropsTable } from '@/components/props-table';
 - Two modes:
   - `type="single"` — at most one item open. Pass `collapsible` to allow closing the open item.
   - `type="multiple"` — any combination open. `value` and `defaultValue` are arrays.
-- Controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`).
+- Controlled (`value` + `onChange`) or uncontrolled (`defaultValue`).
 - **Keyboard nav** on triggers:
   - Arrow Down / Arrow Up → move focus between triggers (wraps)
   - Home / End → first / last
@@ -41,8 +41,8 @@ import { PropsTable } from '@/components/props-table';
 
 `type` is required and discriminates the value shape:
 
-- `type="single"` → `value?: string | null`, `defaultValue?: string`, `onValueChange?: (next: string | null) => void`, `collapsible?: boolean`.
-- `type="multiple"` → `value?: string[]`, `defaultValue?: string[]`, `onValueChange?: (next: string[]) => void`.
+- `type="single"` → `value?: string | null`, `defaultValue?: string`, `onChange?: (next: string | null) => void`, `collapsible?: boolean`.
+- `type="multiple"` → `value?: string[]`, `defaultValue?: string[]`, `onChange?: (next: string[]) => void`.
 
 <PropsTable component="Accordion" />
 

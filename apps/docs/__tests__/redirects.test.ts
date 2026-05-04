@@ -49,6 +49,7 @@ describe('legacy docs redirects', () => {
 
     test('declared categories are drawn from the known set', () => {
         const known = new Set([
+            'actions',
             'controls',
             'display',
             'feedback',

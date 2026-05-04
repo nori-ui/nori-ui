@@ -23,7 +23,7 @@
     "components/pagination",
     "components/popover",
     "components/progress",
-    "components/radio-group",
+    "components/radio",
     "components/segmented-control",
     "components/select",
     "components/separator",

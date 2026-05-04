@@ -64,7 +64,7 @@ const VARIANT_KEYS: Record<TextVariant, VariantKeys> = {
  * The `className` path keeps the Tailwind dark-mode color flip — inline
  * style provides the typographic substance, className provides the color.
  */
-export function Text({ variant = 'body-md', className, testID, children, ...rest }: TextProps) {
+export const Text = ({ variant = 'body-md', className, testID, children, ...rest }: TextProps) => {
     const colors = useThemeColors();
     const isHeading = HEADING_VARIANTS.has(variant);
     const role = isHeading ? 'header' : rest.accessibilityRole;
@@ -106,4 +106,4 @@ export function Text({ variant = 'body-md', className, testID, children, ...rest
             {children}
         </RNText>
     );
-}
+};

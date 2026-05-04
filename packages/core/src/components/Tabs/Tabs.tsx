@@ -86,7 +86,7 @@ export type TabsProps = {
  * arrow-key navigation that wraps, Home/End for first/last, and roving
  * tabindex so tabbing into the group lands on the active tab.
  */
-function TabsRoot({
+const TabsRoot = ({
     value,
     defaultValue,
     onChange,
@@ -95,7 +95,7 @@ function TabsRoot({
     children,
     className,
     testID,
-}: TabsProps) {
+}: TabsProps) => {
     const baseId = useId();
     const [inner, setInner] = useState<string | undefined>(defaultValue);
     const isControlled = value !== undefined;
@@ -194,11 +194,11 @@ function TabsRoot({
             </TabsViewport>
         </TabsContext.Provider>
     );
-}
+};
 
 // Inner view so we can call useThemeColors() to source the orientation
 // gap from the spacing token scale.
-function TabsViewport({
+const TabsViewport = ({
     orientation,
     className,
     testID,
@@ -208,7 +208,7 @@ function TabsViewport({
     className?: string;
     testID?: string;
     children?: ReactNode;
-}) {
+}) => {
     const colors = useThemeColors();
     return (
         <View
@@ -223,7 +223,7 @@ function TabsViewport({
             {children}
         </View>
     );
-}
+};
 
 export type TabsListProps = {
     children?: ReactNode;
@@ -245,7 +245,7 @@ const LIST_VERTICAL_LAYOUT_BASE: ViewStyle = {
 };
 
 /** Container for `TabsTrigger`s. Renders the underline rule on the appropriate edge. */
-function TabsList({ children, className, testID }: TabsListProps) {
+const TabsList = ({ children, className, testID }: TabsListProps) => {
     const ctx = useTabsContext('TabsList');
     const colors = useThemeColors();
     const gap = px(colors.spacing['1']);
@@ -270,7 +270,7 @@ function TabsList({ children, className, testID }: TabsListProps) {
             {children}
         </View>
     );
-}
+};
 
 export type TabsTriggerProps = {
     /** Value linking this trigger to a `<TabsContent>`. */
@@ -310,7 +310,7 @@ const TRIGGER_LAYOUT_BASE_VERTICAL: ViewStyle = {
 };
 
 /** Clickable tab. Activating it shows the matching `TabsContent`. */
-function TabsTrigger({ value, disabled, children, className, testID }: TabsTriggerProps) {
+const TabsTrigger = ({ value, disabled, children, className, testID }: TabsTriggerProps) => {
     const ctx = useTabsContext('TabsTrigger');
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
@@ -426,7 +426,7 @@ function TabsTrigger({ value, disabled, children, className, testID }: TabsTrigg
             )}
         </Pressable>
     );
-}
+};
 
 export type TabsContentProps = {
     /** Value of the trigger this panel pairs with. */
@@ -437,7 +437,7 @@ export type TabsContentProps = {
 };
 
 /** Panel content shown when its `value` matches the active tab. */
-function TabsContent({ value, children, className, testID }: TabsContentProps) {
+const TabsContent = ({ value, children, className, testID }: TabsContentProps) => {
     const ctx = useTabsContext('TabsContent');
     const active = ctx.value === value;
     if (!active) {
@@ -456,7 +456,7 @@ function TabsContent({ value, children, className, testID }: TabsContentProps) {
             {children}
         </View>
     );
-}
+};
 
 /**
  * Public `Tabs` value — the root function plus its `.List`, `.Trigger`, and

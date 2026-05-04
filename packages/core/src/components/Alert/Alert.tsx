@@ -132,7 +132,16 @@ const CONTAINER_LAYOUT_BASE: ViewStyle = {
  * Color tone flips automatically with the active color scheme — light
  * pastel surface in light mode, deep on-tone surface in dark.
  */
-export function Alert({ tone = 'info', title, description, onDismiss, icon, children, className, testID }: AlertProps) {
+export const Alert = ({
+    tone = 'info',
+    title,
+    description,
+    onDismiss,
+    icon,
+    children,
+    className,
+    testID,
+}: AlertProps) => {
     const colors = useThemeColors();
     const scheme = useColorScheme();
     const palette = tonePalettes(
@@ -227,4 +236,4 @@ export function Alert({ tone = 'info', title, description, onDismiss, icon, chil
             ) : null}
         </View>
     );
-}
+};

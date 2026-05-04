@@ -35,7 +35,7 @@ export type CardProps = Omit<ViewProps, 'children'> & {
  * `Card.Title`, `Card.Description`, `Card.Content`, and `Card.Footer` for
  * the conventional layout, or use any children directly.
  */
-function CardRoot({ children, className, style, ...rest }: CardProps) {
+const CardRoot = ({ children, className, style, ...rest }: CardProps) => {
     const colors = useThemeColors();
     return (
         <View
@@ -57,7 +57,7 @@ function CardRoot({ children, className, style, ...rest }: CardProps) {
             {children}
         </View>
     );
-}
+};
 
 export type CardSectionProps = Omit<ViewProps, 'children'> & {
     children?: ReactNode;
@@ -65,7 +65,7 @@ export type CardSectionProps = Omit<ViewProps, 'children'> & {
 };
 
 /** Header section — sits flush with the card top with comfortable padding. */
-function CardHeader({ children, className, style, ...rest }: CardSectionProps) {
+const CardHeader = ({ children, className, style, ...rest }: CardSectionProps) => {
     const colors = useThemeColors();
     const headerStyle: ViewStyle = {
         ...HEADER_LAYOUT_BASE,
@@ -79,10 +79,10 @@ function CardHeader({ children, className, style, ...rest }: CardSectionProps) {
             {children}
         </View>
     );
-}
+};
 
 /** Body content — for arbitrary content between header and footer. */
-function CardContent({ children, className, style, ...rest }: CardSectionProps) {
+const CardContent = ({ children, className, style, ...rest }: CardSectionProps) => {
     const colors = useThemeColors();
     const contentStyle: ViewStyle = {
         ...CONTENT_LAYOUT_BASE,
@@ -114,10 +114,10 @@ function CardContent({ children, className, style, ...rest }: CardSectionProps) 
             {wrapped}
         </View>
     );
-}
+};
 
 /** Footer with a top border and a row of actions (typically Buttons). */
-function CardFooter({ children, className, style, ...rest }: CardSectionProps) {
+const CardFooter = ({ children, className, style, ...rest }: CardSectionProps) => {
     const colors = useThemeColors();
     const footerStyle: ViewStyle = {
         ...FOOTER_LAYOUT_BASE,
@@ -138,7 +138,7 @@ function CardFooter({ children, className, style, ...rest }: CardSectionProps) {
             {children}
         </View>
     );
-}
+};
 
 export type CardTextProps = {
     children?: ReactNode;
@@ -147,7 +147,7 @@ export type CardTextProps = {
 };
 
 /** Card title — heading-weight text. Renders as a heading on web. */
-function CardTitle({ children, className, testID }: CardTextProps) {
+const CardTitle = ({ children, className, testID }: CardTextProps) => {
     const colors = useThemeColors();
     return (
         <RNText
@@ -166,10 +166,10 @@ function CardTitle({ children, className, testID }: CardTextProps) {
             {children}
         </RNText>
     );
-}
+};
 
 /** Muted subtitle that pairs with Card.Title. */
-function CardDescription({ children, className, testID }: CardTextProps) {
+const CardDescription = ({ children, className, testID }: CardTextProps) => {
     const colors = useThemeColors();
     return (
         <RNText
@@ -184,7 +184,7 @@ function CardDescription({ children, className, testID }: CardTextProps) {
             {children}
         </RNText>
     );
-}
+};
 
 /**
  * Public `Card` value — the root function plus its `.Header`, `.Title`,

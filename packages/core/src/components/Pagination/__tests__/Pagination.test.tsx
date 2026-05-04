@@ -34,11 +34,11 @@ describe('<Pagination> — shorthand', () => {
         expect(screen.getByLabelText('Next page').getAttribute('aria-disabled')).toBe('true');
     });
 
-    it('fires onPageChange with { page, pageSize } when a page button is clicked', () => {
+    it('fires onPageChange with (page, { pageSize }) when a page button is clicked', () => {
         const onChange = jest.fn();
         render(<Pagination pageCount={5} defaultPage={1} pageSize={10} onPageChange={onChange} />);
         fireEvent.click(screen.getByLabelText('Go to page 4'));
-        expect(onChange).toHaveBeenCalledWith({ page: 4, pageSize: 10 });
+        expect(onChange).toHaveBeenCalledWith(4, { pageSize: 10 });
     });
 
     it('respects controlled `page` and ignores internal updates without a parent reflow', () => {
@@ -90,7 +90,7 @@ describe('<Pagination> compound mode', () => {
     function CompoundDemo({ initial = 3 }: { initial?: number }) {
         const [page, setPage] = useState(initial);
         return (
-            <Pagination page={page} pageCount={10} onPageChange={(info) => setPage(info.page)}>
+            <Pagination page={page} pageCount={10} onPageChange={setPage}>
                 <Pagination.Prev />
                 <Pagination.Item page={1}>1</Pagination.Item>
                 <Pagination.Item page={2}>2</Pagination.Item>
@@ -129,7 +129,7 @@ describe('<Pagination> compound mode', () => {
         function JumperDemo() {
             const [page, setPage] = useState(1);
             return (
-                <Pagination page={page} pageCount={20} onPageChange={(info) => setPage(info.page)}>
+                <Pagination page={page} pageCount={20} onPageChange={setPage}>
                     <Pagination.Items />
                     <Pagination.Jumper testID="jumper" />
                 </Pagination>
@@ -150,7 +150,7 @@ describe('<Pagination> compound mode', () => {
         function JumperDemo() {
             const [page, setPage] = useState(5);
             return (
-                <Pagination page={page} pageCount={20} onPageChange={(info) => setPage(info.page)}>
+                <Pagination page={page} pageCount={20} onPageChange={setPage}>
                     <Pagination.Items />
                     <Pagination.Jumper testID="jumper" />
                 </Pagination>
@@ -167,7 +167,7 @@ describe('<Pagination> compound mode', () => {
         function JumperDemo() {
             const [page, setPage] = useState(3);
             return (
-                <Pagination page={page} pageCount={20} onPageChange={(info) => setPage(info.page)}>
+                <Pagination page={page} pageCount={20} onPageChange={setPage}>
                     <Pagination.Items />
                     <Pagination.Jumper testID="jumper" />
                 </Pagination>
@@ -185,7 +185,7 @@ describe('<Pagination> compound mode', () => {
         function AutoItems() {
             const [page, setPage] = useState(5);
             return (
-                <Pagination page={page} pageCount={10} onPageChange={(info) => setPage(info.page)}>
+                <Pagination page={page} pageCount={10} onPageChange={setPage}>
                     <Pagination.Items />
                 </Pagination>
             );

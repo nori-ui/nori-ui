@@ -6,7 +6,7 @@ import { useState } from 'react';
 export default function ToggleBasic() {
     const [pinned, setPinned] = useState(false);
     return (
-        <Toggle pressed={pinned} onPressedChange={setPinned} aria-label="Pin to top">
+        <Toggle pressed={pinned} onChange={setPinned} aria-label="Pin to top">
             {pinned ? 'Pinned' : 'Pin to top'}
         </Toggle>
     );

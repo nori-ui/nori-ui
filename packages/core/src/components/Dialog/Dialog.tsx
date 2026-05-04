@@ -65,7 +65,7 @@ export type DialogProps = {
  * web, additional focus-trap / scroll-lock / Escape-key effects layer on
  * top via the platform check inside `DialogContent`.
  */
-function DialogRoot({ open, defaultOpen = false, onOpenChange, children }: DialogProps) {
+const DialogRoot = ({ open, defaultOpen = false, onOpenChange, children }: DialogProps) => {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -92,7 +92,7 @@ function DialogRoot({ open, defaultOpen = false, onOpenChange, children }: Dialo
     };
 
     return <DialogContext.Provider value={ctxValue}>{children}</DialogContext.Provider>;
-}
+};
 
 export type DialogTriggerProps = {
     /** Render the child as the trigger (Slot pattern). Default true — pass `false` for an inline button. */
@@ -106,7 +106,7 @@ export type DialogTriggerProps = {
  * Element that opens the dialog when activated. Uses `asChild` by default so
  * any element (Button, Link, custom Pressable) becomes the trigger.
  */
-function DialogTrigger({ asChild = true, children, className, testID }: DialogTriggerProps) {
+const DialogTrigger = ({ asChild = true, children, className, testID }: DialogTriggerProps) => {
     const ctx = useDialogContext('DialogTrigger');
     const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
 
@@ -147,7 +147,7 @@ function DialogTrigger({ asChild = true, children, className, testID }: DialogTr
             {wrapStringChildren(children)}
         </Pressable>
     );
-}
+};
 
 // On native, raw strings rendered as children of a non-Text component
 // throw "Text strings must be rendered within a <Text> component". On
@@ -227,7 +227,7 @@ export type DialogContentProps = {
  * the parent `Dialog` is open. On web: traps focus inside, locks body
  * scroll, and dismisses on Escape or overlay click.
  */
-function DialogContent({ children, className, testID }: DialogContentProps) {
+const DialogContent = ({ children, className, testID }: DialogContentProps) => {
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -451,7 +451,7 @@ function DialogContent({ children, className, testID }: DialogContentProps) {
             </Pressable>
         </Modal>
     );
-}
+};
 
 export type DialogTextProps = {
     children?: ReactNode;
@@ -459,7 +459,7 @@ export type DialogTextProps = {
 };
 
 /** Heading inside DialogContent. Wires `aria-labelledby`. */
-function DialogTitle({ children, className }: DialogTextProps) {
+const DialogTitle = ({ children, className }: DialogTextProps) => {
     const ctx = useDialogContext('DialogTitle');
     const colors = useThemeColors();
     return (
@@ -479,10 +479,10 @@ function DialogTitle({ children, className }: DialogTextProps) {
             {children}
         </RNText>
     );
-}
+};
 
 /** Subtitle / description inside DialogContent. Wires `aria-describedby`. */
-function DialogDescription({ children, className }: DialogTextProps) {
+const DialogDescription = ({ children, className }: DialogTextProps) => {
     const ctx = useDialogContext('DialogDescription');
     const colors = useThemeColors();
     return (
@@ -500,7 +500,7 @@ function DialogDescription({ children, className }: DialogTextProps) {
             {children}
         </RNText>
     );
-}
+};
 
 export type DialogCloseProps = {
     /** Render the child as the close button (Slot pattern). Default true. */
@@ -516,7 +516,13 @@ export type DialogCloseProps = {
  * wraps the child. Without `asChild`, renders a default ✕ button — useful
  * for the canonical top-right corner close.
  */
-function DialogClose({ asChild = true, children, className, testID, accessibilityLabel = 'Close' }: DialogCloseProps) {
+const DialogClose = ({
+    asChild = true,
+    children,
+    className,
+    testID,
+    accessibilityLabel = 'Close',
+}: DialogCloseProps) => {
     const ctx = useDialogContext('DialogClose');
     const colors = useThemeColors();
     const onPress = useCallback(() => ctx.setOpen(false), [ctx]);
@@ -582,7 +588,7 @@ function DialogClose({ asChild = true, children, className, testID, accessibilit
             <defaultSemanticIcons.close size={18} color={colors.semantic.text.muted} />
         </Pressable>
     );
-}
+};
 
 export type DialogFooterProps = {
     children?: ReactNode;
@@ -590,7 +596,7 @@ export type DialogFooterProps = {
 };
 
 /** Convenience row for dialog action buttons (right-aligned). */
-function DialogFooter({ children, className }: DialogFooterProps) {
+const DialogFooter = ({ children, className }: DialogFooterProps) => {
     const colors = useThemeColors();
     return (
         <View
@@ -606,7 +612,7 @@ function DialogFooter({ children, className }: DialogFooterProps) {
             {children}
         </View>
     );
-}
+};
 
 /**
  * Public `Dialog` value — the root function plus its `.Trigger`, `.Content`,

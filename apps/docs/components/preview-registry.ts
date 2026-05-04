@@ -48,7 +48,7 @@ import PopoverForm from './demos/popover-form';
 import ProgressBasic from './demos/progress-basic';
 import ProgressIndeterminate from './demos/progress-indeterminate';
 import ProgressTones from './demos/progress-tones';
-import RadioGroupBasic from './demos/radio-group-basic';
+import RadioBasic from './demos/radio-basic';
 import SegmentedControlBasic from './demos/segmented-control-basic';
 import SelectAsync from './demos/select-async';
 import SelectBasic from './demos/select-basic';
@@ -189,7 +189,7 @@ export const previews = {
         Component: CheckboxIndeterminate,
         ...previewSources['checkbox-indeterminate'],
     },
-    'radio-group-basic': { Component: RadioGroupBasic, ...previewSources['radio-group-basic'] },
+    'radio-basic': { Component: RadioBasic, ...previewSources['radio-basic'] },
     'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
     'float-button-basic': { Component: FloatButtonBasic, ...previewSources['float-button-basic'] },
     'float-button-shapes': { Component: FloatButtonShapes, ...previewSources['float-button-shapes'] },

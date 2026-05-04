@@ -22,6 +22,6 @@ export type BlurBackdropProps = {
     style?: ViewProps['style'];
 };
 
-export function BlurBackdrop(_props: BlurBackdropProps): ReactElement | null {
+export const BlurBackdrop = (_props: BlurBackdropProps): ReactElement | null => {
     return null;
-}
+};

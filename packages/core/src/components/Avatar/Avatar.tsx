@@ -76,7 +76,7 @@ const initialsFromName = (name: string | undefined): string => {
  * the common case is a one-liner — `<Avatar src name />` — and the fallback
  * decision is internal state, not consumer-driven layout.
  */
-export function Avatar({ src, name, size = 'md', fallback, className, testID }: AvatarProps) {
+export const Avatar = ({ src, name, size = 'md', fallback, className, testID }: AvatarProps) => {
     const colors = useThemeColors();
     const [imageFailed, setImageFailed] = useState(false);
     const dim = SIZE_PX[size];
@@ -141,4 +141,4 @@ export function Avatar({ src, name, size = 'md', fallback, className, testID }: 
             )}
         </View>
     );
-}
+};

@@ -103,14 +103,14 @@ export type TooltipProps = {
  * hidden`. Native renders inline with `position: absolute` — the parent
  * needs to allow overflow for the chip to peek out.
  */
-function TooltipRoot({
+const TooltipRoot = ({
     open,
     defaultOpen = false,
     onOpenChange,
     delayMs = DEFAULT_OPEN_DELAY_MS,
     closeDelayMs = DEFAULT_CLOSE_DELAY_MS,
     children,
-}: TooltipProps) {
+}: TooltipProps) => {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -212,7 +212,7 @@ function TooltipRoot({
     };
 
     return <TooltipContext.Provider value={ctxValue}>{children}</TooltipContext.Provider>;
-}
+};
 
 export type TooltipTriggerProps = {
     /** Render the child as the trigger (Slot pattern). Default true — pass `false` for an inline pressable. */
@@ -233,7 +233,7 @@ export type TooltipTriggerProps = {
  * `blur`, both honoring the configured delays. Native: opens on
  * `onLongPress` (500ms hold) and closes on the next press anywhere.
  */
-function TooltipTrigger({ asChild = true, children, className, testID }: TooltipTriggerProps) {
+const TooltipTrigger = ({ asChild = true, children, className, testID }: TooltipTriggerProps) => {
     const ctx = useTooltipContext('TooltipTrigger');
 
     const handleMouseEnter = useCallback(() => {
@@ -321,7 +321,7 @@ function TooltipTrigger({ asChild = true, children, className, testID }: Tooltip
             {wrapStringChildren(children)}
         </Pressable>
     );
-}
+};
 
 // On native, raw strings rendered as children of a non-Text component
 // throw "Text strings must be rendered within a <Text> component". On
@@ -412,7 +412,7 @@ export type TooltipContentProps = {
  * ARIA: `role="tooltip"` plus a unique id that the trigger's
  * `aria-describedby` points at.
  */
-function TooltipContent({ side = 'top', align = 'center', children, className, testID }: TooltipContentProps) {
+const TooltipContent = ({ side = 'top', align = 'center', children, className, testID }: TooltipContentProps) => {
     const ctx = useTooltipContext('TooltipContent');
     const colors = useThemeColors();
 
@@ -600,7 +600,7 @@ function TooltipContent({ side = 'top', align = 'center', children, className, t
             </RNText>
         </View>
     );
-}
+};
 
 /**
  * Public `Tooltip` value — the root function plus its `.Trigger` and

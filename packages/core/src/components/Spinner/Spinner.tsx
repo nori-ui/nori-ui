@@ -29,7 +29,7 @@ const SIZE_MAP: Record<Exclude<SpinnerSize, number>, number> = {
  *
  * RSC-safe: pure render, no hooks.
  */
-export function Spinner({ label = 'Loading', size = 'md', testID, color, style, ...rest }: SpinnerProps) {
+export const Spinner = ({ label = 'Loading', size = 'md', testID, color, style, ...rest }: SpinnerProps) => {
     const px = typeof size === 'number' ? size : SIZE_MAP[size];
     return (
         <ActivityIndicator
@@ -42,4 +42,4 @@ export function Spinner({ label = 'Loading', size = 'md', testID, color, style, 
             style={[{ width: px, height: px }, style]}
         />
     );
-}
+};

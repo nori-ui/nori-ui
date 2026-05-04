@@ -56,14 +56,14 @@ const VERTICAL_BASE: ViewStyle = {
  * `orientation` controls the axis, `decorative` controls whether the rule
  * is announced to screen readers.
  */
-export function Separator({
+export const Separator = ({
     orientation = 'horizontal',
     decorative = true,
     className,
     style,
     testID,
     ...rest
-}: SeparatorProps) {
+}: SeparatorProps) => {
     const colors = useThemeColors();
     const baseStyle = orientation === 'horizontal' ? HORIZONTAL_BASE : VERTICAL_BASE;
     const a11yProps: Record<string, unknown> = decorative
@@ -82,4 +82,4 @@ export function Separator({
             style={[baseStyle, { backgroundColor: colors.semantic.border.default }, style]}
         />
     );
-}
+};

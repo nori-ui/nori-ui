@@ -50,7 +50,7 @@ const CLIENT_ALLOWED = [
     'components/Pagination/use-pagination.ts',
     'components/Popover/Popover.tsx',
     'components/Progress/Progress.tsx',
-    'components/RadioGroup/RadioGroup.tsx',
+    'components/Radio/Radio.tsx',
     'components/SegmentedControl/SegmentedControl.tsx',
     'components/Select/Select.tsx',
     'components/Separator/Separator.tsx',

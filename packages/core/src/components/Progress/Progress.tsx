@@ -75,7 +75,7 @@ const SHUTTLE_WIDTH_PCT = 30;
  * `aria-label`, `aria-labelledby`, or visible `label` so the bar is
  * named.
  */
-export function Progress({
+export const Progress = ({
     value,
     max = 100,
     tone = 'primary',
@@ -85,7 +85,7 @@ export function Progress({
     className,
     testID,
     ...rest
-}: ProgressProps) {
+}: ProgressProps) => {
     const colors = useThemeColors();
     const ariaLabel = rest['aria-label'];
     const ariaLabelledBy = rest['aria-labelledby'];
@@ -252,4 +252,4 @@ export function Progress({
             </View>
         </View>
     );
-}
+};

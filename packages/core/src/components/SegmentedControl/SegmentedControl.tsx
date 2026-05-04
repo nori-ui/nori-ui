@@ -83,7 +83,7 @@ const SEGMENT_SELECTED_BASE: ViewStyle = {
  * between options (selection follows focus), `Home` / `End` jump to first
  * / last, with wrap-around at the edges.
  */
-export function SegmentedControl<T extends string>({
+export const SegmentedControl = <T extends string>({
     value,
     defaultValue,
     onChange,
@@ -93,7 +93,7 @@ export function SegmentedControl<T extends string>({
     label,
     className,
     testID,
-}: SegmentedControlProps<T>) {
+}: SegmentedControlProps<T>) => {
     const colors = useThemeColors();
     const [inner, setInner] = useState<T | undefined>(defaultValue);
     const isControlled = value !== undefined;
@@ -241,4 +241,4 @@ export function SegmentedControl<T extends string>({
             })}
         </View>
     );
-}
+};

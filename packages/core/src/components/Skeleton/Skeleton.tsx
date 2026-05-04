@@ -35,7 +35,7 @@ const PULSE_MAX = 1;
  * the same code. Respects the `static` prop when you want to skip the
  * animation (e.g. when stacking many skeletons in a long list).
  */
-export function Skeleton({
+export const Skeleton = ({
     width = '100%' as const,
     height = 16,
     radius = 6,
@@ -43,7 +43,7 @@ export function Skeleton({
     className,
     style,
     testID,
-}: SkeletonProps) {
+}: SkeletonProps) => {
     const colors = useThemeColors();
     const isDark = useColorScheme() === 'dark';
     const opacity = useRef(new Animated.Value(PULSE_MAX)).current;
@@ -100,4 +100,4 @@ export function Skeleton({
             style={[baseStyle, isStatic ? null : { opacity }, style]}
         />
     );
-}
+};

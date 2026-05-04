@@ -23,11 +23,24 @@ const ICON_FILE = join(REPO_ROOT, 'packages', 'core', 'src', 'icons', 'icon.tsx'
 const OUT_FILE = join(HERE, '..', 'components', 'props.generated.ts');
 const TSCONFIG = join(REPO_ROOT, 'packages', 'core', 'tsconfig.json');
 
+// Some folders host a feature whose public component name differs from the
+// directory (e.g. `Toast/Toaster.tsx`). When the same-named file is absent,
+// fall back to the first PascalCase `.tsx` in the directory.
 const componentFiles = [];
-for (const dir of readdirSync(COMPONENTS_DIR)) {
-    const entry = join(COMPONENTS_DIR, dir, `${dir}.tsx`);
-    if (existsSync(entry)) {
-        componentFiles.push(entry);
+for (const dir of readdirSync(COMPONENTS_DIR, { withFileTypes: true })) {
+    if (!dir.isDirectory()) {
+        continue;
+    }
+    const dirName = dir.name;
+    const sameNamed = join(COMPONENTS_DIR, dirName, `${dirName}.tsx`);
+    if (existsSync(sameNamed)) {
+        componentFiles.push(sameNamed);
+        continue;
+    }
+    const dirEntries = readdirSync(join(COMPONENTS_DIR, dirName));
+    const fallback = dirEntries.find((name) => /^[A-Z][A-Za-z0-9]*\.tsx$/.test(name) && !name.endsWith('.stories.tsx'));
+    if (fallback) {
+        componentFiles.push(join(COMPONENTS_DIR, dirName, fallback));
     }
 }
 componentFiles.push(ICON_FILE);

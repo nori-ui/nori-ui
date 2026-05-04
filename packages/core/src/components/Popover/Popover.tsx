@@ -77,7 +77,7 @@ export type PopoverProps = {
  * uses `position: fixed` + a measured trigger rect so it escapes any
  * ancestor `overflow: hidden`.
  */
-function PopoverRoot({ open, defaultOpen = false, onOpenChange, children }: PopoverProps) {
+const PopoverRoot = ({ open, defaultOpen = false, onOpenChange, children }: PopoverProps) => {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -121,7 +121,7 @@ function PopoverRoot({ open, defaultOpen = false, onOpenChange, children }: Popo
     };
 
     return <PopoverContext.Provider value={ctxValue}>{children}</PopoverContext.Provider>;
-}
+};
 
 export type PopoverTriggerProps = {
     /** Render the child as the trigger (Slot pattern). Default true — pass `false` for an inline pressable. */
@@ -138,7 +138,7 @@ export type PopoverTriggerProps = {
  * The trigger element gets `aria-haspopup="dialog"` and `aria-expanded`
  * so assistive tech announces the relationship.
  */
-function PopoverTrigger({ asChild = true, children, className, testID }: PopoverTriggerProps) {
+const PopoverTrigger = ({ asChild = true, children, className, testID }: PopoverTriggerProps) => {
     const ctx = usePopoverContext('PopoverTrigger');
     const onPress = useCallback(() => {
         ctx.measureTrigger();
@@ -191,7 +191,7 @@ function PopoverTrigger({ asChild = true, children, className, testID }: Popover
             {wrapStringChildren(children)}
         </Pressable>
     );
-}
+};
 
 // On native, raw strings rendered as children of a non-Text component
 // throw "Text strings must be rendered within a <Text> component". On
@@ -288,14 +288,14 @@ export type PopoverContentProps = {
  * ARIA: `role="dialog"` (without `aria-modal`) so assistive tech
  * announces it as a grouping but doesn't suppress the rest of the page.
  */
-function PopoverContent({
+const PopoverContent = ({
     side = 'bottom',
     align = 'center',
     children,
     className,
     testID,
     ...rest
-}: PopoverContentProps) {
+}: PopoverContentProps) => {
     const ctx = usePopoverContext('PopoverContent');
     const colors = useThemeColors();
     const ariaLabel = rest['aria-label'];
@@ -505,7 +505,7 @@ function PopoverContent({
             </Pressable>
         </Modal>
     );
-}
+};
 
 /**
  * Public `Popover` value — the root function plus its `.Trigger` and `.Content`

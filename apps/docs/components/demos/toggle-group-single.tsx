@@ -6,7 +6,7 @@ import { useState } from 'react';
 export default function ToggleGroupSingle() {
     const [align, setAlign] = useState<string | undefined>('left');
     return (
-        <Toggle.Group type="single" value={align} onValueChange={setAlign} aria-label="Text alignment">
+        <Toggle.Group type="single" value={align} onChange={setAlign} aria-label="Text alignment">
             <Toggle.Item value="left" aria-label="Align left">
                 Left
             </Toggle.Item>

@@ -17,23 +17,17 @@ export default function SliderVertical() {
     return (
         <HStack gap={6} align="end">
             <VStack gap={2} align="center">
-                <Slider orientation="vertical" length={140} value={bass} onValueChange={setBass} aria-label="Bass" />
+                <Slider orientation="vertical" length={140} value={bass} onChange={setBass} aria-label="Bass" />
                 <Box>
                     <Text style={NUMERIC_LABEL}>Bass {bass[0]}</Text>
                 </Box>
             </VStack>
             <VStack gap={2} align="center">
-                <Slider orientation="vertical" length={140} value={mids} onValueChange={setMids} aria-label="Mids" />
+                <Slider orientation="vertical" length={140} value={mids} onChange={setMids} aria-label="Mids" />
                 <Text style={NUMERIC_LABEL}>Mids {mids[0]}</Text>
             </VStack>
             <VStack gap={2} align="center">
-                <Slider
-                    orientation="vertical"
-                    length={140}
-                    value={treble}
-                    onValueChange={setTreble}
-                    aria-label="Treble"
-                />
+                <Slider orientation="vertical" length={140} value={treble} onChange={setTreble} aria-label="Treble" />
                 <Text style={NUMERIC_LABEL}>Treble {treble[0]}</Text>
             </VStack>
         </HStack>

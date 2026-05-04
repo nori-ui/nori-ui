@@ -56,7 +56,7 @@ function mapPosition(p: string | undefined): 'top-center' | 'bottom-center' | 'c
     return 'center';
 }
 
-function NativeToaster(props: Record<string, unknown>) {
+const NativeToaster = (props: Record<string, unknown>) => {
     const insets = useSafeAreaInsets();
     const position = mapPosition(props.position as string | undefined);
     // Compose offset = insets + buffer so the toast clears the notch
@@ -73,7 +73,7 @@ function NativeToaster(props: Record<string, unknown>) {
         offset,
     };
     return <RawToaster {...(merged as object)} />;
-}
+};
 
 export const HAS_SONNER_NATIVE = true;
 export function getSonnerNative(): { toast: SonnerNativeToastFn; Toaster: SonnerNativeToaster } {

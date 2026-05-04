@@ -47,7 +47,7 @@ const FIELD_LAYOUT_BASE: ViewStyle = {
  * Color flips with the active scheme — the field surface, border, label, and
  * placeholder all read from the resolved palette via `useThemeColors`.
  */
-export function TextInput({
+export const TextInput = ({
     label,
     helperText,
     error,
@@ -61,7 +61,7 @@ export function TextInput({
     multiline,
     numberOfLines,
     ...rest
-}: TextInputProps) {
+}: TextInputProps) => {
     const colors = useThemeColors();
     const reactId = useId();
     const inputId = testID ?? `nori-ui-input-${reactId}`;
@@ -206,4 +206,4 @@ export function TextInput({
             ) : null}
         </View>
     );
-}
+};

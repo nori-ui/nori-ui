@@ -64,7 +64,7 @@ const GAP_PX: Record<StackGap, number> = {
  *
  * Layout is driven by inline style; see HStack for the rationale.
  */
-export function VStack({ gap, align, justify, className, children, style, ...rest }: VStackProps) {
+export const VStack = ({ gap, align, justify, className, children, style, ...rest }: VStackProps) => {
     const inline: ViewStyle = { flexDirection: 'column' };
     if (gap !== undefined && gap !== 0) {
         inline.gap = GAP_PX[gap];
@@ -91,4 +91,4 @@ export function VStack({ gap, align, justify, className, children, style, ...res
             {wrapStringChildren(children)}
         </View>
     );
-}
+};

@@ -16,7 +16,7 @@ import { PropsTable } from '@/components/props-table';
 ## At a glance
 
 - `value` and `defaultValue` are always arrays — pass `[n]` for single-thumb, `[low, high]` for range, `[a, b, c, ...]` for multi-thumb pickers.
-- `onValueChange` fires continuously while dragging; `onValueCommit` fires once when the interaction ends.
+- `onChange` fires continuously while dragging; `onValueCommit` fires once when the interaction ends.
 - Web pointer behavior: clicking the track moves the nearest thumb; dragging keeps the cursor captured even if it strays off the thumb.
 - Keyboard: arrow keys ±step (axis follows orientation; horizontal honors `dir="rtl"` and `inverted`), PageUp/Down ±10·step (or 10% of range), Home/End to min/max.
 - `minStepsBetweenThumbs` enforces a gap so adjacent thumbs can't overlap.

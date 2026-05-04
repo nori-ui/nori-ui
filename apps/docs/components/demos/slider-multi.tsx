@@ -13,7 +13,7 @@ export default function SliderMulti() {
             <Text>Gradient stops — {stops.join(', ')}</Text>
             <Slider
                 value={stops}
-                onValueChange={setStops}
+                onChange={setStops}
                 min={0}
                 max={100}
                 step={1}

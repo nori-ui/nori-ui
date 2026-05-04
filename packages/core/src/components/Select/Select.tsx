@@ -171,7 +171,7 @@ const defaultFilter = <T,>(option: SelectOption<T>, search: string): boolean => 
  *     Enter selects, Escape closes, Tab closes and selects.
  *   - RTL alignment via `dir="rtl"`.
  */
-export function Select<T = unknown>(props: SelectProps<T>) {
+export const Select = <T = unknown>(props: SelectProps<T>) => {
     const {
         options: staticOptions,
         loadOptions,
@@ -757,7 +757,7 @@ export function Select<T = unknown>(props: SelectProps<T>) {
             </Modal>
         );
     }
-}
+};
 
 // ---------- search input (web-native input wrapped in a pressable container) ----------
 
@@ -769,7 +769,7 @@ type SearchInputProps = {
     dir: 'ltr' | 'rtl';
 };
 
-function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInputProps) {
+const SearchInput = ({ value, onChange, onKeyDown, placeholder, dir }: SearchInputProps) => {
     const colors = useThemeColors();
     const inputRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
@@ -810,7 +810,7 @@ function SearchInput({ value, onChange, onKeyDown, placeholder, dir }: SearchInp
             />
         </View>
     );
-}
+};
 
 // ---------- list (with optional virtualization + group headers) ----------
 
@@ -833,7 +833,7 @@ type SelectListProps<T> = {
     onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
-function SelectList<T>({
+const SelectList = <T,>({
     options,
     activeIndex,
     currentValue,
@@ -850,7 +850,7 @@ function SelectList<T>({
     noOptionsMessage,
     listboxId,
     onScroll,
-}: SelectListProps<T>) {
+}: SelectListProps<T>) => {
     const colors = useThemeColors();
     const [scrollTop, setScrollTop] = useState(0);
 
@@ -991,9 +991,9 @@ function SelectList<T>({
             {items}
         </ScrollView>
     );
-}
+};
 
-function DefaultOptionRow<T>({
+const DefaultOptionRow = <T,>({
     option,
     selected,
     active,
@@ -1003,7 +1003,7 @@ function DefaultOptionRow<T>({
     selected: boolean;
     active: boolean;
     multiple?: boolean;
-}) {
+}) => {
     const colors = useThemeColors();
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: px(colors.spacing['2']) }}>
@@ -1049,11 +1049,11 @@ function DefaultOptionRow<T>({
             {active ? null : null}
         </View>
     );
-}
+};
 
 // ---------- multi-select trigger label (chips with overflow) ----------
 
-function MultiTriggerLabel<T>({
+const MultiTriggerLabel = <T,>({
     options,
     placeholder,
     maxChips,
@@ -1061,7 +1061,7 @@ function MultiTriggerLabel<T>({
     options: ReadonlyArray<SelectOption<T>>;
     placeholder: string;
     maxChips: number;
-}) {
+}) => {
     const colors = useThemeColors();
     if (options.length === 0) {
         return (
@@ -1136,11 +1136,11 @@ function MultiTriggerLabel<T>({
             ))}
         </View>
     );
-}
+};
 
 // ---------- multi-select popup header with "Clear all" affordance ----------
 
-function MultiSelectionHeader({ count, onClearAll }: { count: number; onClearAll: () => void }) {
+const MultiSelectionHeader = ({ count, onClearAll }: { count: number; onClearAll: () => void }) => {
     const colors = useThemeColors();
     return (
         <View
@@ -1190,4 +1190,4 @@ function MultiSelectionHeader({ count, onClearAll }: { count: number; onClearAll
             </Pressable>
         </View>
     );
-}
+};

@@ -41,7 +41,7 @@
   },
   "scripts": {
     "build": "node ../../apps/docs/scripts/generate-mcp-data.mjs && tsup",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node ../../apps/docs/scripts/generate-mcp-data.mjs && tsc --noEmit",
     "test": "echo 'no tests yet' && exit 0"
   },
   "devDependencies": {

@@ -26,7 +26,7 @@ import type { ToasterPosition, ToasterProps } from './types';
  * Both packages share the imperative `toast(...)` API, which keeps
  * userland identical across platforms.
  */
-export function Toaster(props: ToasterProps): ReturnType<typeof createElement> | null {
+export const Toaster = (props: ToasterProps): ReturnType<typeof createElement> | null => {
     const {
         position = 'top-center',
         visibleToasts = 3,
@@ -76,7 +76,7 @@ export function Toaster(props: ToasterProps): ReturnType<typeof createElement> |
         offset,
         gap,
     });
-}
+};
 
 function mapPositionForSonner(p: ToasterPosition): string {
     return p;

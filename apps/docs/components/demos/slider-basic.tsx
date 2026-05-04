@@ -10,7 +10,7 @@ export default function SliderBasic() {
         <VStack gap={5}>
             <VStack gap={2}>
                 <Text>Volume — {volume[0]}%</Text>
-                <Slider value={volume} onValueChange={setVolume} aria-label="Volume" min={0} max={100} step={1} />
+                <Slider value={volume} onChange={setVolume} aria-label="Volume" min={0} max={100} step={1} />
             </VStack>
             <VStack gap={2}>
                 <Text>
@@ -18,7 +18,7 @@ export default function SliderBasic() {
                 </Text>
                 <Slider
                     value={range}
-                    onValueChange={setRange}
+                    onChange={setRange}
                     min={0}
                     max={1000}
                     step={10}

@@ -1,9 +1,9 @@
 'use client';
 
 import type { Theme } from '@nori-ui/tokens';
-import type { ComponentType, ReactNode } from 'react';
-import { forwardRef, useCallback, useState } from 'react';
-import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
+import type { ComponentType, ReactNode, Ref } from 'react';
+import { useCallback, useState } from 'react';
+import type { PressableProps, StyleProp, View, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
@@ -28,6 +28,7 @@ export type ButtonProps = Omit<PressableProps, 'disabled' | 'children'> & {
     asChild?: boolean;
     className?: string;
     testID?: string;
+    ref?: Ref<View>;
 };
 
 // NativeWind classes — the `dark:` variants flip colors when <html> carries
@@ -83,24 +84,22 @@ const BASE_STYLE: ViewStyle = {
     justifyContent: 'center',
 };
 
-export const Button = forwardRef<unknown, ButtonProps>(function Button(
-    {
-        children,
-        variant = 'primary',
-        size = 'md',
-        disabled,
-        loading,
-        leadingIcon: LeadingIcon,
-        trailingIcon: TrailingIcon,
-        asChild,
-        className,
-        onPress,
-        testID,
-        style,
-        ...rest
-    },
-    forwardedRef
-) {
+export const Button = ({
+    children,
+    variant = 'primary',
+    size = 'md',
+    disabled,
+    loading,
+    leadingIcon: LeadingIcon,
+    trailingIcon: TrailingIcon,
+    asChild,
+    className,
+    onPress,
+    testID,
+    style,
+    ref,
+    ...rest
+}: ButtonProps) => {
     const colors = useThemeColors();
     const isInoperative = Boolean(disabled) || Boolean(loading);
     // rn-web's `Pressable` does not reliably apply a `style` callback's
@@ -254,7 +253,7 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
 
     if (asChild) {
         const slotProps: Record<string, unknown> = {
-            ref: forwardedRef,
+            ref,
             className: classes,
             style: slotStyle,
             onClick: handlePress as unknown as (...args: unknown[]) => unknown,
@@ -282,7 +281,7 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
 
     return (
         <Pressable
-            ref={forwardedRef as never}
+            ref={ref}
             {...(testID !== undefined ? { testID } : {})}
             role="button"
             accessibilityRole="button"
@@ -312,5 +311,4 @@ export const Button = forwardRef<unknown, ButtonProps>(function Button(
             {TrailingIcon ? <TrailingIcon size={ICON_SIZE[size]} color={textColor} /> : null}
         </Pressable>
     );
-});
-Button.displayName = 'Button';
+};

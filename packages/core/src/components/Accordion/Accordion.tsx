@@ -32,7 +32,7 @@ type SingleProps = {
     /** Uncontrolled initial open value. */
     defaultValue?: string;
     /** Fires when the open value changes. Receives the new value (string), or `null` if collapsed. */
-    onValueChange?: (next: string | null) => void;
+    onChange?: (next: string | null) => void;
     /** Allow closing the open item by clicking it again. @defaultValue false */
     collapsible?: boolean;
 };
@@ -45,7 +45,7 @@ type MultipleProps = {
     /** Uncontrolled initial list of open values. */
     defaultValue?: string[];
     /** Fires when the open list changes. Receives the new list. */
-    onValueChange?: (next: string[]) => void;
+    onChange?: (next: string[]) => void;
     /** No-op in `multiple` mode (items are always individually collapsible). */
     collapsible?: never;
 };
@@ -111,11 +111,11 @@ const useAccordionItemContext = (label: string): AccordionItemContextValue => {
  *     open item.
  *   - `multiple` — any combination open. `value` / `defaultValue` are arrays.
  *
- * Controlled (`value` + `onValueChange`) and uncontrolled (`defaultValue`) both
+ * Controlled (`value` + `onChange`) and uncontrolled (`defaultValue`) both
  * supported. Triggers are real `<button>`s with full keyboard nav: ArrowDown /
  * ArrowUp move focus, Home / End jump to first / last, Enter / Space toggle.
  */
-function AccordionRoot(props: AccordionProps) {
+const AccordionRoot = (props: AccordionProps) => {
     const baseId = useId();
     const refs = useRef<Map<string, RefObject<HTMLElement | null>>>(new Map());
     const orderRef = useRef<string[]>([]);
@@ -157,14 +157,14 @@ function AccordionRoot(props: AccordionProps) {
                 if (!singleControlled) {
                     setSingleInner(next);
                 }
-                props.onValueChange?.(next);
+                props.onChange?.(next);
             } else {
                 const has = multipleCurrent.includes(v);
                 const next = has ? multipleCurrent.filter((x) => x !== v) : [...multipleCurrent, v];
                 if (!multipleControlled) {
                     setMultipleInner(next);
                 }
-                props.onValueChange?.(next);
+                props.onChange?.(next);
             }
         },
         // The handler needs the latest snapshot of every prop — `props` is a
@@ -228,7 +228,7 @@ function AccordionRoot(props: AccordionProps) {
             </View>
         </AccordionContext.Provider>
     );
-}
+};
 
 export type AccordionItemProps = {
     /** Stable identifier — links the item to `value` / `defaultValue` on the parent. */
@@ -259,7 +259,7 @@ const CONTENT_INNER_LAYOUT_BASE: ViewStyle = {
 };
 
 /** A single expandable section. Wraps an `Accordion.Trigger` and `Accordion.Content`. */
-function AccordionItem({ value, disabled = false, children, className, testID }: AccordionItemProps) {
+const AccordionItem = ({ value, disabled = false, children, className, testID }: AccordionItemProps) => {
     const ctx = useAccordionContext('Accordion.Item');
     const colors = useThemeColors();
     const open = ctx.isOpen(value);
@@ -286,7 +286,7 @@ function AccordionItem({ value, disabled = false, children, className, testID }:
             </View>
         </AccordionItemContext.Provider>
     );
-}
+};
 
 export type AccordionTriggerProps = {
     children?: ReactNode;
@@ -299,7 +299,7 @@ export type AccordionTriggerProps = {
  * `<button>` (via Pressable) and wires `aria-expanded` + `aria-controls` to
  * the matching `Accordion.Content`.
  */
-function AccordionTrigger({ children, className, testID }: AccordionTriggerProps) {
+const AccordionTrigger = ({ children, className, testID }: AccordionTriggerProps) => {
     const ctx = useAccordionContext('Accordion.Trigger');
     const item = useAccordionItemContext('Accordion.Trigger');
     const colors = useThemeColors();
@@ -417,7 +417,7 @@ function AccordionTrigger({ children, className, testID }: AccordionTriggerProps
             </View>
         </Pressable>
     );
-}
+};
 
 export type AccordionContentProps = {
     children?: ReactNode;
@@ -451,7 +451,7 @@ const ACCORDION_ANIM_DURATION_MS = 200;
  * mutation bypasses that filter — same trick used by Dialog's backdrop
  * blur.
  */
-function AccordionContent({ children, className, testID, forceMount: _forceMount = false }: AccordionContentProps) {
+const AccordionContent = ({ children, className, testID, forceMount: _forceMount = false }: AccordionContentProps) => {
     const item = useAccordionItemContext('Accordion.Content');
     const colors = useThemeColors();
     const wrapperRef = useRef<HTMLElement | null>(null);
@@ -687,7 +687,7 @@ function AccordionContent({ children, className, testID, forceMount: _forceMount
             </View>
         </View>
     );
-}
+};
 
 /**
  * Public `Accordion` value — the root function plus its `.Item`, `.Trigger`,

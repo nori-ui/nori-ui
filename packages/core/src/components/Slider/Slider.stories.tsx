@@ -18,7 +18,7 @@ function Volume() {
     return (
         <VStack gap={2}>
             <Text>Volume — {v[0]}%</Text>
-            <Slider value={v} onValueChange={setV} aria-label="Volume" min={0} max={100} step={1} />
+            <Slider value={v} onChange={setV} aria-label="Volume" min={0} max={100} step={1} />
         </VStack>
     );
 }
@@ -32,7 +32,7 @@ function Range() {
             </Text>
             <Slider
                 value={r}
-                onValueChange={setR}
+                onChange={setR}
                 min={0}
                 max={1000}
                 step={10}
@@ -57,7 +57,7 @@ function VerticalFader() {
                     orientation="vertical"
                     length={200}
                     value={v}
-                    onValueChange={setV}
+                    onChange={setV}
                     onInteractionStart={() => setScrollEnabled(false)}
                     onInteractionEnd={() => setScrollEnabled(true)}
                     aria-label="Channel level"
@@ -87,7 +87,7 @@ function InsideScrollView() {
                 <Text>Slider inside a vertical ScrollView — drag should not scroll the list.</Text>
                 <Slider
                     value={v}
-                    onValueChange={setV}
+                    onChange={setV}
                     onInteractionStart={() => setScrollEnabled(false)}
                     onInteractionEnd={() => setScrollEnabled(true)}
                     aria-label="Inside scroll"

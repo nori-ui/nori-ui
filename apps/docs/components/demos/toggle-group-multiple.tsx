@@ -6,7 +6,7 @@ import { useState } from 'react';
 export default function ToggleGroupMultiple() {
     const [marks, setMarks] = useState<string[]>(['bold']);
     return (
-        <Toggle.Group type="multiple" value={marks} onValueChange={setMarks} aria-label="Text formatting">
+        <Toggle.Group type="multiple" value={marks} onChange={setMarks} aria-label="Text formatting">
             <Toggle.Item value="bold" aria-label="Bold">
                 <span style={{ fontWeight: 700 }}>B</span>
             </Toggle.Item>

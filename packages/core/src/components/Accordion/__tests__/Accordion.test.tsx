@@ -107,8 +107,8 @@ describe('<Accordion>', () => {
         expect(screen.getByText('B body')).toBeInTheDocument();
     });
 
-    it('controlled single mode fires onValueChange with the new value', () => {
-        const onValueChange = jest.fn();
+    it('controlled single mode fires onChange with the new value', () => {
+        const onChange = jest.fn();
         const Wrapper = () => {
             const [v, setV] = useState<string | null>('a');
             return (
@@ -116,8 +116,8 @@ describe('<Accordion>', () => {
                     type="single"
                     collapsible
                     value={v}
-                    onValueChange={(next) => {
-                        onValueChange(next);
+                    onChange={(next) => {
+                        onChange(next);
                         setV(next);
                     }}
                 >
@@ -134,16 +134,16 @@ describe('<Accordion>', () => {
         };
         render(<Wrapper />);
         fireEvent.click(screen.getByTestId('trig-b'));
-        expect(onValueChange).toHaveBeenCalledWith('b');
+        expect(onChange).toHaveBeenCalledWith('b');
         expect(screen.getByText('B body')).toBeInTheDocument();
         fireEvent.click(screen.getByTestId('trig-b'));
-        expect(onValueChange).toHaveBeenLastCalledWith(null);
+        expect(onChange).toHaveBeenLastCalledWith(null);
     });
 
-    it('controlled multiple mode fires onValueChange with the new array', () => {
-        const onValueChange = jest.fn();
+    it('controlled multiple mode fires onChange with the new array', () => {
+        const onChange = jest.fn();
         render(
-            <Accordion type="multiple" value={['a']} onValueChange={onValueChange}>
+            <Accordion type="multiple" value={['a']} onChange={onChange}>
                 <Accordion.Item value="a">
                     <Accordion.Trigger testID="trig-a">A</Accordion.Trigger>
                     <Accordion.Content>A body</Accordion.Content>
@@ -155,7 +155,7 @@ describe('<Accordion>', () => {
             </Accordion>
         );
         fireEvent.click(screen.getByTestId('trig-b'));
-        expect(onValueChange).toHaveBeenCalledWith(['a', 'b']);
+        expect(onChange).toHaveBeenCalledWith(['a', 'b']);
     });
 
     it('keyboard nav: ArrowDown moves focus to the next trigger; Enter toggles', () => {

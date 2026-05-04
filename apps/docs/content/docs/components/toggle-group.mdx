@@ -23,11 +23,11 @@ import { PropsTable } from '@/components/props-table';
 - ARIA: every item exposes `role="button"` + `aria-pressed`. The group is `role="group"` (multiple) or `role="radiogroup"` (single).
 - Default-variant grouped items share borders so the cluster reads as one segmented chip — first item rounds the left, last rounds the right, middle is square.
 
-<Callout title="ToggleGroup vs SegmentedControl vs RadioGroup">
+<Callout title="ToggleGroup vs SegmentedControl vs Radio.Group">
     - **ToggleGroup multiple** — toolbar-style. Several can be active at once (Bold + Italic).
     - **ToggleGroup single** — like a SegmentedControl, but the group can be cleared by re-clicking the active item.
     - **[SegmentedControl](/docs/components/segmented-control)** — exactly one is always active. Use this when "no selection" isn't a valid state.
-    - **[RadioGroup](/docs/components/radio-group)** — the form-y radio look. Use this in forms where the user is reviewing choices and submitting later.
+    - **[Radio.Group](/docs/components/radio)** — the form-y radio look. Use this in forms where the user is reviewing choices and submitting later.
 </Callout>
 
 ## Multiple selection (formatting toolbar)

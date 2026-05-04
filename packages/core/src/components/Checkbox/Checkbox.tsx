@@ -38,7 +38,7 @@ const BOX_LAYOUT_BASE: ViewStyle = {
  * Checkbox — supports controlled + uncontrolled state, indeterminate (aria-checked="mixed"),
  * asChild (via Slot), and a visible label that doubles as the accessibility label.
  */
-export function Checkbox({
+export const Checkbox = ({
     checked,
     defaultChecked = false,
     indeterminate,
@@ -49,7 +49,7 @@ export function Checkbox({
     testID,
     asChild,
     children,
-}: CheckboxProps) {
+}: CheckboxProps) => {
     const colors = useThemeColors();
     const [inner, setInner] = useState<boolean>(defaultChecked);
     const isControlled = checked !== undefined;
@@ -164,4 +164,4 @@ export function Checkbox({
                 ) : null)}
         </Pressable>
     );
-}
+};

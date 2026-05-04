@@ -55,13 +55,13 @@ describe('<Slider>', () => {
         expect(thumb.getAttribute('aria-valuenow')).toBe('40');
     });
 
-    it('controlled: respects parent value, fires onValueChange', () => {
+    it('controlled: respects parent value, fires onChange', () => {
         const Wrapper = () => {
             const [v, setV] = useState<number[]>([20]);
             return (
                 <>
                     <span data-testid="cur">{v[0]}</span>
-                    <Slider value={v} onValueChange={setV} step={5} aria-label="Volume" />
+                    <Slider value={v} onChange={setV} step={5} aria-label="Volume" />
                 </>
             );
         };

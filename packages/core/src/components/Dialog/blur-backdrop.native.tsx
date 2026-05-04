@@ -56,9 +56,9 @@ function tintToScrim(tint: BlurBackdropProps['tint']): string {
     return 'rgba(0, 0, 0, 0.32)';
 }
 
-export function BlurBackdrop({ intensity = 50, tint = 'default', style }: BlurBackdropProps): ReactElement {
+export const BlurBackdrop = ({ intensity = 50, tint = 'default', style }: BlurBackdropProps): ReactElement => {
     if (HAS_NATIVE_BLUR) {
         return <BlurView intensity={intensity} tint={tint} style={style} />;
     }
     return <View style={[style, { backgroundColor: tintToScrim(tint) }]} />;
-}
+};

@@ -75,7 +75,7 @@ const GAP_PX: Record<StackGap, number> = {
  * these on native. The matching Tailwind classes are still emitted so
  * web tooling and consumers extending the className keep working.
  */
-export function HStack({ gap, align, justify, className, children, style, ...rest }: HStackProps) {
+export const HStack = ({ gap, align, justify, className, children, style, ...rest }: HStackProps) => {
     const inline: ViewStyle = { flexDirection: 'row' };
     if (gap !== undefined && gap !== 0) {
         inline.gap = GAP_PX[gap];
@@ -102,4 +102,4 @@ export function HStack({ gap, align, justify, className, children, style, ...res
             {wrapStringChildren(children)}
         </View>
     );
-}
+};

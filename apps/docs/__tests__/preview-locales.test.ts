@@ -1,8 +1,8 @@
 import { PREVIEW_LOCALES } from '../lib/preview-locales';
 
 describe('PREVIEW_LOCALES', () => {
-    test('includes en, de, ja', () => {
-        expect(Object.keys(PREVIEW_LOCALES).sort()).toEqual(['de', 'en', 'ja']);
+    test('includes en, de, ja, ar, he', () => {
+        expect(Object.keys(PREVIEW_LOCALES).sort()).toEqual(['ar', 'de', 'en', 'he', 'ja']);
     });
 
     test('en is undefined (NoriProvider falls back to library defaults)', () => {

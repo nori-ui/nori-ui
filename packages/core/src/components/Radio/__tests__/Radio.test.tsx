@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Radio } from '../RadioGroup';
+import { Radio } from '../Radio';
 
 describe('<Radio.Group>', () => {
     it('renders all options inside a role="radiogroup"', () => {
@@ -116,7 +116,7 @@ describe('<Radio.Group>', () => {
         expect(screen.getByTestId('a').getAttribute('aria-checked')).toBe('true');
     });
 
-    it('throws a clear error when Radio is rendered outside a RadioGroup', () => {
+    it('throws a clear error when Radio is rendered outside a Radio.Group', () => {
         // Suppress React's expected error logging for cleaner test output.
         const original = console.error;
         console.error = () => {};

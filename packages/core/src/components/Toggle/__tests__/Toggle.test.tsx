@@ -17,7 +17,7 @@ describe('<Toggle>', () => {
     it('uncontrolled: defaultPressed seeds the initial state and click toggles it', () => {
         const onChange = jest.fn();
         render(
-            <Toggle testID="t" defaultPressed onPressedChange={onChange}>
+            <Toggle testID="t" defaultPressed onChange={onChange}>
                 B
             </Toggle>
         );
@@ -28,11 +28,11 @@ describe('<Toggle>', () => {
         expect(el.getAttribute('aria-pressed')).toBe('false');
     });
 
-    it('controlled: respects parent state, fires onPressedChange', () => {
+    it('controlled: respects parent state, fires onChange', () => {
         const Wrapper = () => {
             const [on, setOn] = useState(false);
             return (
-                <Toggle testID="t" pressed={on} onPressedChange={setOn}>
+                <Toggle testID="t" pressed={on} onChange={setOn}>
                     Bold
                 </Toggle>
             );
@@ -44,10 +44,10 @@ describe('<Toggle>', () => {
         expect(el.getAttribute('aria-pressed')).toBe('true');
     });
 
-    it('does not fire onPressedChange when disabled', () => {
+    it('does not fire onChange when disabled', () => {
         const onChange = jest.fn();
         render(
-            <Toggle testID="t" disabled onPressedChange={onChange}>
+            <Toggle testID="t" disabled onChange={onChange}>
                 B
             </Toggle>
         );
@@ -58,9 +58,9 @@ describe('<Toggle>', () => {
 
 describe('<Toggle.Group type="multiple">', () => {
     it('clicking adds and removes the value from the array', () => {
-        const onValueChange = jest.fn();
+        const onChange = jest.fn();
         render(
-            <Toggle.Group type="multiple" defaultValue={['bold']} onValueChange={onValueChange} aria-label="Formatting">
+            <Toggle.Group type="multiple" defaultValue={['bold']} onChange={onChange} aria-label="Formatting">
                 <Toggle.Item value="bold" testID="bold">
                     B
                 </Toggle.Item>
@@ -78,11 +78,11 @@ describe('<Toggle.Group type="multiple">', () => {
         expect(italic.getAttribute('aria-pressed')).toBe('false');
 
         fireEvent.click(italic);
-        expect(onValueChange).toHaveBeenLastCalledWith(['bold', 'italic']);
+        expect(onChange).toHaveBeenLastCalledWith(['bold', 'italic']);
         expect(italic.getAttribute('aria-pressed')).toBe('true');
 
         fireEvent.click(bold);
-        expect(onValueChange).toHaveBeenLastCalledWith(['italic']);
+        expect(onChange).toHaveBeenLastCalledWith(['italic']);
         expect(bold.getAttribute('aria-pressed')).toBe('false');
     });
 
@@ -99,9 +99,9 @@ describe('<Toggle.Group type="multiple">', () => {
 
 describe('<Toggle.Group type="single">', () => {
     it('clicking sets the value; re-clicking the active one unsets it', () => {
-        const onValueChange = jest.fn();
+        const onChange = jest.fn();
         render(
-            <Toggle.Group type="single" onValueChange={onValueChange} aria-label="Align">
+            <Toggle.Group type="single" onChange={onChange} aria-label="Align">
                 <Toggle.Item value="left" testID="left">
                     L
                 </Toggle.Item>
@@ -117,16 +117,16 @@ describe('<Toggle.Group type="single">', () => {
         const center = screen.getByTestId('center');
 
         fireEvent.click(left);
-        expect(onValueChange).toHaveBeenLastCalledWith('left');
+        expect(onChange).toHaveBeenLastCalledWith('left');
         expect(left.getAttribute('aria-pressed')).toBe('true');
 
         fireEvent.click(center);
-        expect(onValueChange).toHaveBeenLastCalledWith('center');
+        expect(onChange).toHaveBeenLastCalledWith('center');
         expect(left.getAttribute('aria-pressed')).toBe('false');
         expect(center.getAttribute('aria-pressed')).toBe('true');
 
         fireEvent.click(center);
-        expect(onValueChange).toHaveBeenLastCalledWith(undefined);
+        expect(onChange).toHaveBeenLastCalledWith(undefined);
         expect(center.getAttribute('aria-pressed')).toBe('false');
     });
 
@@ -168,9 +168,9 @@ describe('<Toggle.Group> keyboard navigation', () => {
     });
 
     it('Enter on a focused item toggles its pressed state', () => {
-        const onValueChange = jest.fn();
+        const onChange = jest.fn();
         render(
-            <Toggle.Group type="multiple" onValueChange={onValueChange}>
+            <Toggle.Group type="multiple" onChange={onChange}>
                 <Toggle.Item value="a" testID="a">
                     A
                 </Toggle.Item>
@@ -182,16 +182,16 @@ describe('<Toggle.Group> keyboard navigation', () => {
         const a = screen.getByTestId('a');
         act(() => a.focus());
         fireEvent.keyDown(a, { key: 'Enter' });
-        expect(onValueChange).toHaveBeenLastCalledWith(['a']);
+        expect(onChange).toHaveBeenLastCalledWith(['a']);
         expect(a.getAttribute('aria-pressed')).toBe('true');
     });
 });
 
 describe('<Toggle.Group> disabled handling', () => {
     it('a disabled item does not toggle when clicked', () => {
-        const onValueChange = jest.fn();
+        const onChange = jest.fn();
         render(
-            <Toggle.Group type="multiple" onValueChange={onValueChange}>
+            <Toggle.Group type="multiple" onChange={onChange}>
                 <Toggle.Item value="a" testID="a">
                     A
                 </Toggle.Item>
@@ -201,14 +201,14 @@ describe('<Toggle.Group> disabled handling', () => {
             </Toggle.Group>
         );
         fireEvent.click(screen.getByTestId('b'));
-        expect(onValueChange).not.toHaveBeenCalled();
+        expect(onChange).not.toHaveBeenCalled();
         expect(screen.getByTestId('b').getAttribute('aria-pressed')).toBe('false');
     });
 
     it('group-level disabled blocks every item from toggling', () => {
-        const onValueChange = jest.fn();
+        const onChange = jest.fn();
         render(
-            <Toggle.Group type="multiple" disabled onValueChange={onValueChange}>
+            <Toggle.Group type="multiple" disabled onChange={onChange}>
                 <Toggle.Item value="a" testID="a">
                     A
                 </Toggle.Item>
@@ -218,7 +218,7 @@ describe('<Toggle.Group> disabled handling', () => {
             </Toggle.Group>
         );
         fireEvent.click(screen.getByTestId('a'));
-        expect(onValueChange).not.toHaveBeenCalled();
+        expect(onChange).not.toHaveBeenCalled();
     });
 });
 

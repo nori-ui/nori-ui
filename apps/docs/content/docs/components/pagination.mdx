@@ -64,7 +64,7 @@ Use compound parts when you need full control over the layout (extra buttons, cu
 
 ## Page-size selector
 
-`<Pagination.PageSize options={[10, 25, 50, 100]} />` wraps the project's `Select` and reads / writes the current page size from / to the root context. Picking a new size resets the page to 1 and forwards both values through `onPageChange({ page, pageSize })`.
+`<Pagination.PageSize options={[10, 25, 50, 100]} />` wraps the project's `Select` and reads / writes the current page size from / to the root context. Picking a new size resets the page to 1 and forwards both values through `onPageChange(page, { pageSize })`.
 
 <Preview name="pagination-page-size" />
 

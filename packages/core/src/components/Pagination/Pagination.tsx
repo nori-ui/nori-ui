@@ -44,7 +44,7 @@ export type PaginationRenderItemArgs = {
     onPress: () => void;
 };
 
-export type PaginationOnPageChange = (info: { page: number; pageSize?: number }) => void;
+export type PaginationOnPageChange = (page: number, meta?: { pageSize?: number }) => void;
 
 export type PaginationProps = {
     /** Controlled current page (1-indexed). */
@@ -153,7 +153,7 @@ type ItemButtonProps = {
     testID?: string;
 };
 
-function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, onPress, testID }: ItemButtonProps) {
+const ItemButton = ({ type, selected, disabled, ariaLabel, ariaCurrent, label, onPress, testID }: ItemButtonProps) => {
     const colors = useThemeColors();
     const isChevron = type === 'prev' || type === 'next' || type === 'first' || type === 'last';
     const isInteractive = !disabled && type !== 'ellipsis';
@@ -271,13 +271,13 @@ function ItemButton({ type, selected, disabled, ariaLabel, ariaCurrent, label, o
             </RNText>
         </Pressable>
     );
-}
+};
 
 // =============================================================================
 // Live region for screen readers (web only — RN announces via accessibilityLiveRegion)
 // =============================================================================
 
-function LiveRegion({ message }: { message: string }) {
+const LiveRegion = ({ message }: { message: string }) => {
     if (Platform.OS === 'web') {
         return (
             <View
@@ -301,7 +301,7 @@ function LiveRegion({ message }: { message: string }) {
             <RNText>{message}</RNText>
         </View>
     );
-}
+};
 
 // =============================================================================
 // Items renderer (the shorthand UI)
@@ -312,7 +312,7 @@ type ItemsRendererProps = {
     onItemPress: (item: PaginationItemDescriptor) => void;
 };
 
-function ItemsRenderer({ items, onItemPress }: ItemsRendererProps) {
+const ItemsRenderer = ({ items, onItemPress }: ItemsRendererProps) => {
     const { labels, renderItem, dir } = usePaginationContext('Pagination.Items');
 
     const elements = items.map((item, idx) => {
@@ -355,7 +355,7 @@ function ItemsRenderer({ items, onItemPress }: ItemsRendererProps) {
     });
 
     return <>{elements}</>;
-}
+};
 
 function ariaLabelFor(item: PaginationItemDescriptor, labels: PaginationContextValue['labels']): string {
     switch (item.type) {
@@ -400,7 +400,7 @@ function displayLabelFor(
 // Compact variant
 // =============================================================================
 
-function CompactView({
+const CompactView = ({
     onPrev,
     onNext,
     canPrev,
@@ -412,7 +412,7 @@ function CompactView({
     canPrev: boolean;
     canNext: boolean;
     pageLabel: string;
-}) {
+}) => {
     const colors = useThemeColors();
     const { labels, dir } = usePaginationContext('Pagination(compact)');
     const flip = dir === 'rtl';
@@ -465,7 +465,7 @@ function CompactView({
             />
         </View>
     );
-}
+};
 
 // =============================================================================
 // Root (the `<Pagination>` symbol — also serves as the shorthand)
@@ -473,7 +473,7 @@ function CompactView({
 
 const ANNOUNCE_DEBOUNCE_MS = 150;
 
-function PaginationRoot(props: PaginationProps) {
+const PaginationRoot = (props: PaginationProps) => {
     const {
         page: controlledPage,
         defaultPage = 1,
@@ -546,9 +546,7 @@ function PaginationRoot(props: PaginationProps) {
 
     const handlePageChange = useCallback(
         (next: number) => {
-            onPageChange?.(
-                effectivePageSize !== undefined ? { page: next, pageSize: effectivePageSize } : { page: next }
-            );
+            onPageChange?.(next, effectivePageSize !== undefined ? { pageSize: effectivePageSize } : undefined);
             if (announceTimer.current) {
                 clearTimeout(announceTimer.current);
             }
@@ -564,7 +562,7 @@ function PaginationRoot(props: PaginationProps) {
             if (pageSizeProp === undefined) {
                 setInternalPageSize(next);
             }
-            onPageChange?.({ page: 1, pageSize: next });
+            onPageChange?.(1, { pageSize: next });
         },
         [onPageChange, pageSizeProp]
     );
@@ -698,7 +696,7 @@ function PaginationRoot(props: PaginationProps) {
             <LiveRegion message={announcement} />
         </PaginationContext.Provider>
     );
-}
+};
 
 // =============================================================================
 // Compound parts
@@ -710,12 +708,12 @@ type CompoundButtonProps = {
     testID?: string;
 };
 
-function CompoundActionButton({
+const CompoundActionButton = ({
     actionType,
     asChild,
     children,
     testID,
-}: CompoundButtonProps & { actionType: 'prev' | 'next' | 'first' | 'last' }) {
+}: CompoundButtonProps & { actionType: 'prev' | 'next' | 'first' | 'last' }) => {
     const ctx = usePaginationContext(`Pagination.${actionType[0]!.toUpperCase() + actionType.slice(1)}`);
     const disabled = actionType === 'prev' || actionType === 'first' ? ctx.page <= 1 : ctx.page >= ctx.pageCount;
     const onPress = () => {
@@ -771,7 +769,7 @@ function CompoundActionButton({
             {...(testID !== undefined ? { testID } : {})}
         />
     );
-}
+};
 
 const PaginationPrev: FC<CompoundButtonProps> = ({ asChild, children, testID }) =>
     CompoundActionButton({
@@ -1109,47 +1107,18 @@ export type { PaginationJumperProps };
 // Public symbol — Pagination + compound parts
 // =============================================================================
 
-type PaginationCompound = FC<PaginationProps> & {
-    Root: FC<PaginationProps>;
-    Items: FC<{ children?: ReactNode }>;
-    Item: FC<{ page: number; asChild?: boolean; children?: ReactNode; testID?: string }>;
-    Prev: FC<CompoundButtonProps>;
-    Next: FC<CompoundButtonProps>;
-    First: FC<CompoundButtonProps>;
-    Last: FC<CompoundButtonProps>;
-    Ellipsis: FC<{ children?: ReactNode }>;
-    Range: FC;
-    PageSize: FC<{ options: ReadonlyArray<number>; testID?: string }>;
-    Jumper: FC<PaginationJumperProps>;
-};
-
-export const Pagination = PaginationRoot as PaginationCompound;
-Pagination.Root = PaginationRoot;
-Pagination.Items = PaginationItems;
-Pagination.Item = PaginationItem;
-Pagination.Prev = PaginationPrev;
-Pagination.Next = PaginationNext;
-Pagination.First = PaginationFirst;
-Pagination.Last = PaginationLast;
-Pagination.Ellipsis = PaginationEllipsis;
-Pagination.Range = PaginationRange;
-Pagination.PageSize = PaginationPageSize;
-Pagination.Jumper = PaginationJumper;
-
-// Re-exports under nominal compound names for tree-shake-friendly imports.
-export {
-    PaginationEllipsis,
-    PaginationFirst,
-    PaginationItem,
-    PaginationItems,
-    PaginationJumper,
-    PaginationLast,
-    PaginationNext,
-    PaginationPageSize,
-    PaginationPrev,
-    PaginationRange,
-    PaginationRoot,
-};
+export const Pagination = Object.assign(PaginationRoot, {
+    Items: PaginationItems,
+    Item: PaginationItem,
+    Prev: PaginationPrev,
+    Next: PaginationNext,
+    First: PaginationFirst,
+    Last: PaginationLast,
+    Ellipsis: PaginationEllipsis,
+    Range: PaginationRange,
+    PageSize: PaginationPageSize,
+    Jumper: PaginationJumper,
+});
 
 // Suppress unused — ReactElement / KeyboardEvent are reserved for future kbd-nav extension.
 type _Unused = ReactElement | KeyboardEvent;

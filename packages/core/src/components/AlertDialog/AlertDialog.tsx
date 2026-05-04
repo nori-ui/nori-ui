@@ -66,7 +66,7 @@ export type AlertDialogProps = {
  * it allows Escape and click-outside to dismiss, which is the expected
  * affordance for forgettable interactions.
  */
-function AlertDialogRoot({ open, defaultOpen = false, onOpenChange, children }: AlertDialogProps) {
+const AlertDialogRoot = ({ open, defaultOpen = false, onOpenChange, children }: AlertDialogProps) => {
     const [inner, setInner] = useState<boolean>(defaultOpen);
     const isControlled = open !== undefined;
     const current = isControlled ? open : inner;
@@ -95,7 +95,7 @@ function AlertDialogRoot({ open, defaultOpen = false, onOpenChange, children }: 
     };
 
     return <AlertDialogContext.Provider value={ctxValue}>{children}</AlertDialogContext.Provider>;
-}
+};
 
 export type AlertDialogTriggerProps = {
     /** Render the child as the trigger (Slot pattern). Default true. */
@@ -109,7 +109,7 @@ export type AlertDialogTriggerProps = {
  * Element that opens the alert dialog when activated. `asChild` by default
  * so any element (Button, Link, custom Pressable) becomes the trigger.
  */
-function AlertDialogTrigger({ asChild = true, children, className, testID }: AlertDialogTriggerProps) {
+const AlertDialogTrigger = ({ asChild = true, children, className, testID }: AlertDialogTriggerProps) => {
     const ctx = useAlertDialogContext('AlertDialogTrigger');
     const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
 
@@ -149,7 +149,7 @@ function AlertDialogTrigger({ asChild = true, children, className, testID }: Ale
             {wrapStringChildren(children)}
         </Pressable>
     );
-}
+};
 
 // On native, raw strings rendered as children of a non-Text component
 // throw "Text strings must be rendered within a <Text> component". On
@@ -269,7 +269,7 @@ export type AlertDialogContentProps = {
  * on close. Crucially, neither overlay click nor Escape closes — the user
  * MUST press an explicit Cancel/Action button.
  */
-function AlertDialogContent({ children, className, testID }: AlertDialogContentProps) {
+const AlertDialogContent = ({ children, className, testID }: AlertDialogContentProps) => {
     const ctx = useAlertDialogContext('AlertDialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -485,7 +485,7 @@ function AlertDialogContent({ children, className, testID }: AlertDialogContentP
             </View>
         </Modal>
     );
-}
+};
 
 export type AlertDialogTextProps = {
     children?: ReactNode;
@@ -493,7 +493,7 @@ export type AlertDialogTextProps = {
 };
 
 /** Heading inside AlertDialogContent. Wires `aria-labelledby`. */
-function AlertDialogTitle({ children, className }: AlertDialogTextProps) {
+const AlertDialogTitle = ({ children, className }: AlertDialogTextProps) => {
     const ctx = useAlertDialogContext('AlertDialogTitle');
     const colors = useThemeColors();
     return (
@@ -513,10 +513,10 @@ function AlertDialogTitle({ children, className }: AlertDialogTextProps) {
             {children}
         </RNText>
     );
-}
+};
 
 /** Body description inside AlertDialogContent. Wires `aria-describedby`. */
-function AlertDialogDescription({ children, className }: AlertDialogTextProps) {
+const AlertDialogDescription = ({ children, className }: AlertDialogTextProps) => {
     const ctx = useAlertDialogContext('AlertDialogDescription');
     const colors = useThemeColors();
     return (
@@ -534,7 +534,7 @@ function AlertDialogDescription({ children, className }: AlertDialogTextProps) {
             {children}
         </RNText>
     );
-}
+};
 
 export type AlertDialogActionProps = {
     /** Render the child as the action (Slot pattern). Default true. */
@@ -550,7 +550,7 @@ export type AlertDialogActionProps = {
  * The destructive / confirming action. Closes the dialog AND forwards
  * `onPress` to the consumer's handler so they can run the side effect.
  */
-function AlertDialogAction({ asChild = true, children, className, testID, onPress }: AlertDialogActionProps) {
+const AlertDialogAction = ({ asChild = true, children, className, testID, onPress }: AlertDialogActionProps) => {
     const ctx = useAlertDialogContext('AlertDialogAction');
     const handle = useCallback(
         (event?: unknown) => {
@@ -592,7 +592,7 @@ function AlertDialogAction({ asChild = true, children, className, testID, onPres
             {wrapStringChildren(children)}
         </Pressable>
     );
-}
+};
 
 export type AlertDialogCancelProps = {
     /** Render the child as the cancel button (Slot pattern). Default true. */
@@ -610,7 +610,7 @@ export type AlertDialogCancelProps = {
  * least destructive default, so a stray Enter keypress can't fire the
  * destructive action.
  */
-function AlertDialogCancel({ asChild = true, children, className, testID, onPress }: AlertDialogCancelProps) {
+const AlertDialogCancel = ({ asChild = true, children, className, testID, onPress }: AlertDialogCancelProps) => {
     const ctx = useAlertDialogContext('AlertDialogCancel');
     const handle = useCallback(
         (event?: unknown) => {
@@ -655,7 +655,7 @@ function AlertDialogCancel({ asChild = true, children, className, testID, onPres
             {wrapStringChildren(children)}
         </Pressable>
     );
-}
+};
 
 export type AlertDialogFooterProps = {
     children?: ReactNode;
@@ -663,7 +663,7 @@ export type AlertDialogFooterProps = {
 };
 
 /** Convenience row for action buttons (right-aligned). */
-function AlertDialogFooter({ children, className }: AlertDialogFooterProps) {
+const AlertDialogFooter = ({ children, className }: AlertDialogFooterProps) => {
     const colors = useThemeColors();
     return (
         <View
@@ -679,7 +679,7 @@ function AlertDialogFooter({ children, className }: AlertDialogFooterProps) {
             {children}
         </View>
     );
-}
+};
 
 /**
  * Public `AlertDialog` value — the root function plus its `.Trigger`,

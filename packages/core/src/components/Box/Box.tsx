@@ -22,7 +22,7 @@ export type BoxProps = ViewProps & {
  * Generic layout primitive. Wraps react-native's `<View>` with className
  * support and a `flex` prop for proportional layouts. RSC-safe.
  */
-export function Box({ className, children, flex, style, ...rest }: BoxProps) {
+export const Box = ({ className, children, flex, style, ...rest }: BoxProps) => {
     const flexStyle: ViewStyle | undefined = flex === undefined ? undefined : { flex };
     const merged = flexStyle === undefined ? style : style === undefined ? flexStyle : [flexStyle, style];
     return (
@@ -30,4 +30,4 @@ export function Box({ className, children, flex, style, ...rest }: BoxProps) {
             {wrapStringChildren(children)}
         </View>
     );
-}
+};

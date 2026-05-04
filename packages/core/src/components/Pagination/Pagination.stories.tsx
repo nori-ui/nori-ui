@@ -16,7 +16,7 @@ export const Default: Story = {
     render: () => {
         function Demo() {
             const [page, setPage] = useState(1);
-            return <Pagination page={page} pageCount={12} onPageChange={(info) => setPage(info.page)} />;
+            return <Pagination page={page} pageCount={12} onPageChange={setPage} />;
         }
         return <Demo />;
     },
@@ -27,7 +27,7 @@ export const WithFirstLast: Story = {
     render: () => {
         function Demo() {
             const [page, setPage] = useState(1);
-            return <Pagination page={page} pageCount={50} showFirstLast onPageChange={(info) => setPage(info.page)} />;
+            return <Pagination page={page} pageCount={50} showFirstLast onPageChange={setPage} />;
         }
         return <Demo />;
     },
@@ -42,9 +42,7 @@ export const Compact: Story = {
     render: () => {
         function Demo() {
             const [page, setPage] = useState(1);
-            return (
-                <Pagination page={page} pageCount={12} variant="compact" onPageChange={(info) => setPage(info.page)} />
-            );
+            return <Pagination page={page} pageCount={12} variant="compact" onPageChange={setPage} />;
         }
         return <Demo />;
     },
@@ -55,15 +53,7 @@ export const SiblingsAndBoundaries: Story = {
     render: () => {
         function Demo() {
             const [page, setPage] = useState(15);
-            return (
-                <Pagination
-                    page={page}
-                    pageCount={30}
-                    siblingCount={2}
-                    boundaryCount={2}
-                    onPageChange={(info) => setPage(info.page)}
-                />
-            );
+            return <Pagination page={page} pageCount={30} siblingCount={2} boundaryCount={2} onPageChange={setPage} />;
         }
         return <Demo />;
     },
@@ -82,7 +72,7 @@ export const WithRange: Story = {
                         itemCount={103}
                         pageSize={10}
                         showRange
-                        onPageChange={(info) => setPage(info.page)}
+                        onPageChange={setPage}
                     />
                 </VStack>
             );
@@ -97,7 +87,7 @@ export const CompoundAPI: Story = {
         function Demo() {
             const [page, setPage] = useState(3);
             return (
-                <Pagination page={page} pageCount={10} onPageChange={(info) => setPage(info.page)}>
+                <Pagination page={page} pageCount={10} onPageChange={setPage}>
                     <Pagination.Prev />
                     <Pagination.Items />
                     <Pagination.Next />
@@ -127,9 +117,7 @@ export const WithPageSize: Story = {
                         itemCount={total}
                         pageSize={state.pageSize}
                         showRange
-                        onPageChange={(info) =>
-                            setState({ page: info.page, pageSize: info.pageSize ?? state.pageSize })
-                        }
+                        onPageChange={(page, meta) => setState({ page, pageSize: meta?.pageSize ?? state.pageSize })}
                     >
                         <Pagination.Prev />
                         <Pagination.Items />
@@ -157,7 +145,7 @@ export const CustomRender: Story = {
                 <Pagination
                     page={page}
                     pageCount={10}
-                    onPageChange={(info) => setPage(info.page)}
+                    onPageChange={setPage}
                     renderItem={({ children, ariaLabel, ariaCurrent, onPress, disabled }) => (
                         <a
                             href={`?page=${page}`}
@@ -190,7 +178,7 @@ export const WithJumper: Story = {
         function Demo() {
             const [page, setPage] = useState(1);
             return (
-                <Pagination page={page} pageCount={50} onPageChange={(info) => setPage(info.page)}>
+                <Pagination page={page} pageCount={50} onPageChange={setPage}>
                     <Pagination.Prev />
                     <Pagination.Items />
                     <Pagination.Next />
@@ -207,7 +195,7 @@ export const RTL: Story = {
     render: () => {
         function Demo() {
             const [page, setPage] = useState(3);
-            return <Pagination dir="rtl" page={page} pageCount={10} onPageChange={(info) => setPage(info.page)} />;
+            return <Pagination dir="rtl" page={page} pageCount={10} onPageChange={setPage} />;
         }
         return <Demo />;
     },

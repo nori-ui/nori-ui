@@ -21,11 +21,11 @@ export type TextAreaProps = TextInputProps & {
  * to lock it. On native, the prop is a no-op since RN's `<TextInput multiline>`
  * sizes from `numberOfLines`.
  */
-export function TextArea({ numberOfLines = 4, resize = 'vertical', style, ...rest }: TextAreaProps) {
+export const TextArea = ({ numberOfLines = 4, resize = 'vertical', style, ...rest }: TextAreaProps) => {
     // `resize` isn't part of RN's TextStyle but react-native-web passes
     // unknown style props through to the DOM <textarea>, so this lands
     // on the right element on web and is silently ignored on native.
     const resizeStyle = { resize } as unknown as TextStyle;
     const merged = style === undefined ? resizeStyle : [resizeStyle, style];
     return <TextInput multiline numberOfLines={numberOfLines} {...rest} style={merged} />;
-}
+};

@@ -245,7 +245,7 @@ function getCompoundKind(node: ReactNode): CompoundChildKind | undefined {
 // Default chevron separator
 // =============================================================================
 
-function DefaultChevron({ dir }: { dir: 'ltr' | 'rtl' }) {
+const DefaultChevron = ({ dir }: { dir: 'ltr' | 'rtl' }) => {
     const colors = useThemeColors();
     const flipped = dir === 'rtl';
     if (Platform.OS === 'web') {
@@ -280,9 +280,9 @@ function DefaultChevron({ dir }: { dir: 'ltr' | 'rtl' }) {
             ›
         </RNText>
     );
-}
+};
 
-function SeparatorText({ children }: { children: ReactNode }) {
+const SeparatorText = ({ children }: { children: ReactNode }) => {
     const colors = useThemeColors();
     return (
         <RNText
@@ -299,7 +299,7 @@ function SeparatorText({ children }: { children: ReactNode }) {
             {children}
         </RNText>
     );
-}
+};
 
 function renderSeparator(separator: BreadcrumbSeparatorValue | undefined, ctx: BreadcrumbSeparatorContext): ReactNode {
     if (separator === undefined) {
@@ -619,7 +619,7 @@ function truncateString(input: string, max: number): string {
 // Root
 // =============================================================================
 
-export function Breadcrumb({
+const BreadcrumbRoot = ({
     items,
     separator,
     maxItems,
@@ -638,7 +638,7 @@ export function Breadcrumb({
     children,
     className,
     testID,
-}: BreadcrumbProps) {
+}: BreadcrumbProps) => {
     const { t } = useTranslation();
     const colors = useThemeColors();
     const resolvedAriaLabel = ariaLabel ?? t('breadcrumb.ariaLabel', { defaultValue: 'Breadcrumb' });
@@ -707,7 +707,7 @@ export function Breadcrumb({
             </View>
         </BreadcrumbContext.Provider>
     );
-}
+};
 
 // =============================================================================
 // Items-mode renderer
@@ -733,7 +733,7 @@ type ItemsRendererProps = {
     testID?: string;
 };
 
-function BreadcrumbItemsRenderer({
+const BreadcrumbItemsRenderer = ({
     items,
     separator,
     maxItems,
@@ -751,7 +751,7 @@ function BreadcrumbItemsRenderer({
     maxLabelLength,
     className,
     testID,
-}: ItemsRendererProps) {
+}: ItemsRendererProps) => {
     const [inlineExpanded, setInlineExpanded] = useState(false);
 
     // Auto-flag the last item as current when nobody else claims it.
@@ -1005,7 +1005,7 @@ function BreadcrumbItemsRenderer({
             ) : null}
         </View>
     );
-}
+};
 
 // =============================================================================
 // Item renderer (items-mode)
@@ -1018,7 +1018,7 @@ type ItemRendererProps = {
     maxLabelLength: number;
 };
 
-function BreadcrumbItemRenderer({ item, currentPageLabel, siblingMenuLabel, maxLabelLength }: ItemRendererProps) {
+const BreadcrumbItemRenderer = ({ item, currentPageLabel, siblingMenuLabel, maxLabelLength }: ItemRendererProps) => {
     const colors = useThemeColors();
     const Icon = item.icon;
     const isLink = !item.current && (item.href !== undefined || item.onSelect !== undefined);
@@ -1120,9 +1120,9 @@ function BreadcrumbItemRenderer({ item, currentPageLabel, siblingMenuLabel, maxL
             {inner}
         </View>
     );
-}
+};
 
-function BreadcrumbInteractive({ item, children }: { item: BreadcrumbItemData; children: ReactNode }) {
+const BreadcrumbInteractive = ({ item, children }: { item: BreadcrumbItemData; children: ReactNode }) => {
     const colors = useThemeColors();
     const handlePress = useCallback(() => {
         item.onSelect?.();
@@ -1159,9 +1159,9 @@ function BreadcrumbInteractive({ item, children }: { item: BreadcrumbItemData; c
             {children}
         </Pressable>
     );
-}
+};
 
-function BreadcrumbSiblingMenu({ item, siblingMenuLabel }: { item: BreadcrumbItemData; siblingMenuLabel: string }) {
+const BreadcrumbSiblingMenu = ({ item, siblingMenuLabel }: { item: BreadcrumbItemData; siblingMenuLabel: string }) => {
     const colors = useThemeColors();
     const siblings = item.siblings ?? [];
     return (
@@ -1194,9 +1194,9 @@ function BreadcrumbSiblingMenu({ item, siblingMenuLabel }: { item: BreadcrumbIte
             </Popover.Content>
         </Popover>
     );
-}
+};
 
-function SiblingRow({ sibling }: { sibling: BreadcrumbSibling }) {
+const SiblingRow = ({ sibling }: { sibling: BreadcrumbSibling }) => {
     const colors = useThemeColors();
     const Icon = sibling.icon;
     const handlePress = useCallback(() => {
@@ -1249,7 +1249,7 @@ function SiblingRow({ sibling }: { sibling: BreadcrumbSibling }) {
             {inner}
         </Pressable>
     );
-}
+};
 
 // =============================================================================
 // Ellipsis (internal — used by the items-mode renderer)
@@ -1263,13 +1263,13 @@ type EllipsisProps = {
     onExpandInline: () => void;
 };
 
-function BreadcrumbEllipsisInternal({
+const BreadcrumbEllipsisInternal = ({
     ellipsisLabel,
     expandLabel,
     expandBehavior,
     hiddenItems,
     onExpandInline,
-}: EllipsisProps) {
+}: EllipsisProps) => {
     const colors = useThemeColors();
     const renderDots = () => (
         <RNText
@@ -1349,7 +1349,7 @@ function BreadcrumbEllipsisInternal({
             </Popover.Content>
         </Popover>
     );
-}
+};
 
 // =============================================================================
 // Compound subcomponents
@@ -1361,7 +1361,7 @@ export type BreadcrumbListProps = {
     testID?: string;
 };
 
-function BreadcrumbList({ children, className, testID }: BreadcrumbListProps) {
+const BreadcrumbList = ({ children, className, testID }: BreadcrumbListProps) => {
     useBreadcrumbContext('Breadcrumb.List');
     // Auto-insert separators between consecutive `Breadcrumb.Item`s
     // unless the user provided their own. Lets users write the terse form:
@@ -1399,7 +1399,7 @@ function BreadcrumbList({ children, className, testID }: BreadcrumbListProps) {
             {out}
         </View>
     );
-}
+};
 
 export type BreadcrumbItemProps = {
     children?: ReactNode;
@@ -1407,7 +1407,7 @@ export type BreadcrumbItemProps = {
     testID?: string;
 };
 
-function BreadcrumbItem({ children, className, testID }: BreadcrumbItemProps) {
+const BreadcrumbItem = ({ children, className, testID }: BreadcrumbItemProps) => {
     useBreadcrumbContext('Breadcrumb.Item');
     return (
         <View
@@ -1420,7 +1420,7 @@ function BreadcrumbItem({ children, className, testID }: BreadcrumbItemProps) {
             {children}
         </View>
     );
-}
+};
 tagComponent(BreadcrumbItem, 'item');
 
 export type BreadcrumbLinkProps = {
@@ -1432,7 +1432,7 @@ export type BreadcrumbLinkProps = {
     testID?: string;
 };
 
-function BreadcrumbLink({ href, onPress, asChild, children, className, testID }: BreadcrumbLinkProps) {
+const BreadcrumbLink = ({ href, onPress, asChild, children, className, testID }: BreadcrumbLinkProps) => {
     const colors = useThemeColors();
 
     if (asChild) {
@@ -1503,7 +1503,7 @@ function BreadcrumbLink({ href, onPress, asChild, children, className, testID }:
             )}
         </Pressable>
     );
-}
+};
 
 export type BreadcrumbPageProps = {
     children?: ReactNode;
@@ -1511,7 +1511,7 @@ export type BreadcrumbPageProps = {
     testID?: string;
 };
 
-function BreadcrumbPage({ children, className, testID }: BreadcrumbPageProps) {
+const BreadcrumbPage = ({ children, className, testID }: BreadcrumbPageProps) => {
     const ctx = useBreadcrumbContext('Breadcrumb.Page');
     const colors = useThemeColors();
     return (
@@ -1550,7 +1550,7 @@ function BreadcrumbPage({ children, className, testID }: BreadcrumbPageProps) {
             )}
         </View>
     );
-}
+};
 
 export type BreadcrumbSeparatorProps = {
     children?: ReactNode;
@@ -1558,7 +1558,7 @@ export type BreadcrumbSeparatorProps = {
     testID?: string;
 };
 
-function BreadcrumbSeparator({ children, className, testID }: BreadcrumbSeparatorProps) {
+const BreadcrumbSeparator = ({ children, className, testID }: BreadcrumbSeparatorProps) => {
     const ctx = useBreadcrumbContext('Breadcrumb.Separator');
     const node = children ?? renderSeparator(ctx.separator, { fromIndex: 0, visibleCount: 0, dir: ctx.dir });
     return (
@@ -1574,7 +1574,7 @@ function BreadcrumbSeparator({ children, className, testID }: BreadcrumbSeparato
             {node}
         </View>
     );
-}
+};
 tagComponent(BreadcrumbSeparator, 'separator');
 
 export type BreadcrumbEllipsisProps = {
@@ -1583,7 +1583,7 @@ export type BreadcrumbEllipsisProps = {
     testID?: string;
 };
 
-function BreadcrumbEllipsis({ ellipsisLabel, className, testID }: BreadcrumbEllipsisProps) {
+const BreadcrumbEllipsis = ({ ellipsisLabel, className, testID }: BreadcrumbEllipsisProps) => {
     useBreadcrumbContext('Breadcrumb.Ellipsis');
     const { t } = useTranslation();
     const colors = useThemeColors();
@@ -1607,23 +1607,17 @@ function BreadcrumbEllipsis({ ellipsisLabel, className, testID }: BreadcrumbElli
             </RNText>
         </View>
     );
-}
+};
 
 // =============================================================================
 // Public surface
 // =============================================================================
 
-// Attach the compound subcomponents on the function as static members.
-// Namespace declaration merging gives us:
-//   - Type-side: `Breadcrumb.List` is recognised as `typeof BreadcrumbList`
-//   - Runtime-side: TS compiles the namespace block to `Breadcrumb.List = ...`
-// Consumers can write `<Breadcrumb.Item>` or import `BreadcrumbItem`
-// standalone; both refer to the same component.
-export namespace Breadcrumb {
-    export const List = BreadcrumbList;
-    export const Item = BreadcrumbItem;
-    export const Link = BreadcrumbLink;
-    export const Page = BreadcrumbPage;
-    export const Separator = BreadcrumbSeparator;
-    export const Ellipsis = BreadcrumbEllipsis;
-}
+export const Breadcrumb = Object.assign(BreadcrumbRoot, {
+    List: BreadcrumbList,
+    Item: BreadcrumbItem,
+    Link: BreadcrumbLink,
+    Page: BreadcrumbPage,
+    Separator: BreadcrumbSeparator,
+    Ellipsis: BreadcrumbEllipsis,
+});

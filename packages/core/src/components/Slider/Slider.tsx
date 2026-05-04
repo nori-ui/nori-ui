@@ -24,7 +24,7 @@ export type SliderProps = {
     /** Uncontrolled initial value(s). @defaultValue [0] */
     defaultValue?: ReadonlyArray<number>;
     /** Fires continuously while a thumb moves. */
-    onValueChange?: (next: number[]) => void;
+    onChange?: (next: number[]) => void;
     /** Fires when interaction ends (pointer up, key release). */
     onValueCommit?: (next: number[]) => void;
     /**
@@ -99,7 +99,7 @@ const updateAt = (values: ReadonlyArray<number>, index: number, next: number, ga
 /**
  * Continuous-value slider. Single-thumb, range (two thumbs), or N-thumb
  * for multi-handle pickers. Mirrors Radix's Slider API: `value`/`defaultValue`
- * is always an array, `onValueChange` fires continuously while dragging,
+ * is always an array, `onChange` fires continuously while dragging,
  * and `onValueCommit` fires when interaction ends.
  *
  * Keyboard nav (per-thumb):
@@ -118,10 +118,10 @@ const updateAt = (values: ReadonlyArray<number>, index: number, next: number, ga
  * RTL: when `dir="rtl"` (horizontal only), the visual mapping flips so
  * the higher value sits on the left, matching Radix and shadcn.
  */
-export function Slider({
+export const Slider = ({
     value,
     defaultValue,
-    onValueChange,
+    onChange,
     onValueCommit,
     onInteractionStart,
     onInteractionEnd,
@@ -138,7 +138,7 @@ export function Slider({
     className,
     testID,
     ...rest
-}: SliderProps) {
+}: SliderProps) => {
     const colors = useThemeColors();
     const ariaLabel = rest['aria-label'];
     const isVertical = orientation === 'vertical';
@@ -197,9 +197,9 @@ export function Slider({
             if (!isControlled) {
                 setInner(next);
             }
-            onValueChange?.(next);
+            onChange?.(next);
         },
-        [isControlled, onValueChange]
+        [isControlled, onChange]
     );
 
     const commitValues = useCallback(
@@ -642,4 +642,4 @@ export function Slider({
             </View>
         </View>
     );
-}
+};

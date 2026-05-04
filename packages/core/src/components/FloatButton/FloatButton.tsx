@@ -509,7 +509,7 @@ export type FloatButtonGroupProps = Omit<FloatButtonProps, 'onPress' | 'onClick'
     actions?: ReadonlyArray<FloatButtonProps>;
 };
 
-export const FloatButtonGroup: FC<FloatButtonGroupProps> = ({
+const FloatButtonGroup: FC<FloatButtonGroupProps> = ({
     trigger = 'click',
     open: openProp,
     defaultOpen = false,
@@ -602,7 +602,7 @@ export type FloatButtonBackToTopProps = Omit<FloatButtonProps, 'icon' | 'onPress
     visibilityThreshold?: number;
 };
 
-export const FloatButtonBackToTop: FC<FloatButtonBackToTopProps> = ({
+const FloatButtonBackToTop: FC<FloatButtonBackToTopProps> = ({
     scrollRef,
     visibilityThreshold = 400,
     variant = 'surface',
@@ -660,7 +660,7 @@ export const FloatButton = Object.assign(FloatButtonRoot, {
 // Subcomponents
 // =============================================================================
 
-function TooltipChip({ text }: { text: string }) {
+const TooltipChip = ({ text }: { text: string }) => {
     const colors = useThemeColors();
     return (
         <View
@@ -688,9 +688,9 @@ function TooltipChip({ text }: { text: string }) {
             </RNText>
         </View>
     );
-}
+};
 
-function BadgeOverlay({ badge, size }: { badge: FloatButtonBadge; size: FloatButtonSize }) {
+const BadgeOverlay = ({ badge, size }: { badge: FloatButtonBadge; size: FloatButtonSize }) => {
     const offsetTop = size === 'large' ? -6 : -4;
     const offsetRight = size === 'large' ? -6 : -4;
     return (
@@ -714,9 +714,9 @@ function BadgeOverlay({ badge, size }: { badge: FloatButtonBadge; size: FloatBut
             )}
         </View>
     );
-}
+};
 
-function SmallSpinner({ color, size }: { color: string; size: number }) {
+const SmallSpinner = ({ color, size }: { color: string; size: number }) => {
     // Tiny CSS spinner on web; on native, defer to an opacity pulse for v1
     // (avoids importing the spinner component into the FloatButton bundle).
     if (Platform.OS === 'web') {
@@ -751,9 +751,9 @@ function SmallSpinner({ color, size }: { color: string; size: number }) {
             }}
         />
     );
-}
+};
 
-function Backdrop({ onPress, positioning }: { onPress: () => void; positioning: 'fixed' | 'absolute' }) {
+const Backdrop = ({ onPress, positioning }: { onPress: () => void; positioning: 'fixed' | 'absolute' }) => {
     return (
         <Pressable
             onPress={onPress}
@@ -770,9 +770,9 @@ function Backdrop({ onPress, positioning }: { onPress: () => void; positioning: 
             }}
         />
     );
-}
+};
 
-function RotatedIcon({ node, color }: { node: ReactNode; color?: string }) {
+const RotatedIcon = ({ node, color }: { node: ReactNode; color?: string }) => {
     // Forward the color from the outer `tintIcon` clone down to the inner
     // node — otherwise the morph-to-X icon stays at its default tint while
     // the surrounding FAB icons inherit the variant fg.
@@ -798,9 +798,9 @@ function RotatedIcon({ node, color }: { node: ReactNode; color?: string }) {
             {tintedNode}
         </View>
     );
-}
+};
 
-function GroupLayout({
+const GroupLayout = ({
     direction,
     placement,
     positioning,
@@ -814,7 +814,7 @@ function GroupLayout({
     offset: { x?: number; y?: number };
     dir: 'ltr' | 'rtl';
     children: ReactNode;
-}) {
+}) => {
     // Read the context directly (instead of `useSafeAreaInsets()`) so the
     // component degrades silently when no `<SafeAreaProvider>` is mounted —
     // the canonical case on web. With a provider, real insets flow through;
@@ -846,7 +846,7 @@ function GroupLayout({
                   : children}
         </View>
     );
-}
+};
 
 function groupActionsLayoutStyle(direction: FloatButtonGroupDirection): ViewStyle {
     const isVertical = direction === 'up' || direction === 'down';

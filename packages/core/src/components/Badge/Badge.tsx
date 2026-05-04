@@ -50,7 +50,7 @@ const BASE_CONTAINER_LAYOUT: ViewStyle = {
  * 950/700/100 scale so a soft success badge reads as a calm tinted chip
  * on either surface, never as a glaring pastel on a dark page.
  */
-export function Badge({ tone = 'neutral', appearance = 'soft', children, className, testID }: BadgeProps) {
+export const Badge = ({ tone = 'neutral', appearance = 'soft', children, className, testID }: BadgeProps) => {
     const colors = useThemeColors();
     const isDark = useColorScheme() === 'dark';
     const invertedText = colors.semantic.text.inverted;
@@ -147,4 +147,4 @@ export function Badge({ tone = 'neutral', appearance = 'soft', children, classNa
             <RNText style={{ ...baseText, color: textColor }}>{children}</RNText>
         </View>
     );
-}
+};

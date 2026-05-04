@@ -20,7 +20,7 @@ type Story = StoryObj<typeof Toggle.Group>;
 function Alignment() {
     const [align, setAlign] = useState<string | undefined>('left');
     return (
-        <Toggle.Group type="single" value={align} onValueChange={setAlign} aria-label="Text alignment">
+        <Toggle.Group type="single" value={align} onChange={setAlign} aria-label="Text alignment">
             <Toggle.Item value="left" aria-label="Align left">
                 Left
             </Toggle.Item>
@@ -41,7 +41,7 @@ function TextFormatting() {
     const has = (m: string) => marks.includes(m);
     return (
         <VStack gap={3}>
-            <Toggle.Group type="multiple" value={marks} onValueChange={setMarks} aria-label="Text formatting">
+            <Toggle.Group type="multiple" value={marks} onChange={setMarks} aria-label="Text formatting">
                 <Toggle.Item value="bold" aria-label="Bold">
                     <RNText style={{ fontWeight: '700' }}>B</RNText>
                 </Toggle.Item>
@@ -79,7 +79,7 @@ function ViewMode() {
     const [view, setView] = useState<string | undefined>('grid');
     return (
         <VStack gap={2}>
-            <Toggle.Group type="single" value={view} onValueChange={setView} aria-label="View mode">
+            <Toggle.Group type="single" value={view} onChange={setView} aria-label="View mode">
                 <Toggle.Item value="list" aria-label="List view">
                     List
                 </Toggle.Item>

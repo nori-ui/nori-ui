@@ -109,7 +109,7 @@ const DOT_INNER_BASE: ViewStyle = {
  *   - Selection follows focus, so an arrow key both moves focus and
  *     activates the option (the standard radiogroup behavior).
  */
-function RadioGroup({
+const RadioGroup = ({
     value,
     defaultValue,
     onChange,
@@ -119,7 +119,7 @@ function RadioGroup({
     children,
     className,
     testID,
-}: RadioGroupProps) {
+}: RadioGroupProps) => {
     const [inner, setInner] = useState<string | undefined>(defaultValue);
     const isControlled = value !== undefined;
     const current = isControlled ? value : inner;
@@ -246,11 +246,11 @@ function RadioGroup({
             </RadioGroupViewport>
         </RadioGroupContext.Provider>
     );
-}
+};
 
 // Inner view so we can call useThemeColors() to source the orientation
 // gap from the spacing token scale (the parent owns hooks for state).
-function RadioGroupViewport({
+const RadioGroupViewport = ({
     groupProps,
     orientation,
     disabled,
@@ -262,7 +262,7 @@ function RadioGroupViewport({
     disabled: boolean;
     className?: string;
     children?: ReactNode;
-}) {
+}) => {
     const colors = useThemeColors();
     return (
         <View
@@ -282,13 +282,13 @@ function RadioGroupViewport({
             {children}
         </View>
     );
-}
+};
 
 /**
- * One option inside a `<RadioGroup>`. Must be rendered inside one — throws
+ * One option inside a `<Radio.Group>`. Must be rendered inside one — throws
  * with a clear message if not.
  */
-function RadioOption({ value, label, disabled, children, className, testID }: RadioProps) {
+const RadioOption = ({ value, label, disabled, children, className, testID }: RadioProps) => {
     const ctx = useRadioGroupContext();
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
@@ -360,7 +360,7 @@ function RadioOption({ value, label, disabled, children, className, testID }: Ra
                 ) : null)}
         </Pressable>
     );
-}
+};
 
 // Tiny helper: when no value is selected yet, the first registered Radio is
 // the tabbable one. This is computed inside Radio (not the context) so we
