@@ -94,7 +94,15 @@ type FloatButtonBaseProps = {
     positioning?: 'fixed' | 'absolute';
     /** Additional offset from the placement corner (px). @defaultValue { x: 24, y: 24 } web; { x: 16, y: 16 } native */
     offset?: { x?: number; y?: number };
-    /** Auto-add the device's bottom safe-area inset on native. Ignored on web. @defaultValue true */
+    /**
+     * On native, auto-add the device's bottom safe-area inset to the offset.
+     * **Default is `false`** because RN has no `position: 'fixed'` — every
+     * `FloatButton` is parent-relative, and adding the screen-bottom inset
+     * to a card-relative offset pushes the button up by ~34pt for no reason.
+     * Set this to `true` only when you're certain the FAB's parent reaches
+     * the screen edge (e.g. a root-level container without `SafeAreaView`).
+     * @defaultValue false
+     */
     respectSafeArea?: boolean;
     /** Anchor link — renders as an `<a>` on web. */
     href?: string;
@@ -198,7 +206,7 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
         placement = 'bottom-right',
         positioning = 'fixed',
         offset,
-        respectSafeArea = true,
+        respectSafeArea = false,
         href,
         dir = 'ltr',
         onLongPress,
@@ -764,21 +772,30 @@ function Backdrop({ onPress, positioning }: { onPress: () => void; positioning: 
     );
 }
 
-function RotatedIcon({ node }: { node: ReactNode }) {
+function RotatedIcon({ node, color }: { node: ReactNode; color?: string }) {
+    // Forward the color from the outer `tintIcon` clone down to the inner
+    // node — otherwise the morph-to-X icon stays at its default tint while
+    // the surrounding FAB icons inherit the variant fg.
+    const tintedNode =
+        color && isValidElement(node) ? cloneElement(node as ReactElement<{ color?: string }>, { color }) : node;
     return (
         <View
-            style={{
-                transform: [{ rotate: '45deg' }],
-                ...(Platform.OS === 'web'
-                    ? ({
-                          transitionProperty: 'transform',
-                          transitionDuration: '200ms',
-                          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                      } as object)
-                    : null),
-            }}
+            style={
+                {
+                    transform: [{ rotate: '45deg' }],
+                    // CSS `color` cascades to nested `currentColor` SVGs on web.
+                    ...(color ? { color } : null),
+                    ...(Platform.OS === 'web'
+                        ? {
+                              transitionProperty: 'transform',
+                              transitionDuration: '200ms',
+                              transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                          }
+                        : null),
+                } as unknown as ViewStyle
+            }
         >
-            {node}
+            {tintedNode}
         </View>
     );
 }
@@ -811,7 +828,7 @@ function GroupLayout({
         dir,
         insets,
         viewportWidth,
-        respectSafeArea: true,
+        respectSafeArea: false,
     });
     return (
         <View
