@@ -44,6 +44,15 @@ export const defaultDictionary: Dictionary = {
     // floatButton
     'floatButton.backToTop': 'Back to top',
 
+    // calendar
+    'calendar.header.previous': 'Previous',
+    'calendar.header.next': 'Next',
+    'calendar.header.openMonthView': 'Open month picker',
+    'calendar.header.openYearView': 'Open year picker',
+    'calendar.header.openDayView': 'Open day picker',
+    'calendar.today': 'Today',
+    'calendar.clear': 'Clear',
+
     // button
     'button.loadingLabel': 'Loading',
 
