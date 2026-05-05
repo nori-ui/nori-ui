@@ -4722,6 +4722,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nori-ui/plugin@workspace:packages/plugin":
+  version: 0.0.0-use.local
+  resolution: "@nori-ui/plugin@workspace:packages/plugin"
+  bin:
+    nori-ui-skills: ./bin/install.mjs
+  languageName: unknown
+  linkType: soft
+
 "@nori-ui/tailwindcss-stub@workspace:packages/tailwindcss-stub":
   version: 0.0.0-use.local
   resolution: "@nori-ui/tailwindcss-stub@workspace:packages/tailwindcss-stub"
