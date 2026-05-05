@@ -75,6 +75,8 @@ const CLIENT_ALLOWED = [
     'components/Calendar/view/DayCell.tsx',
     'components/Calendar/view/DayGrid.tsx',
     'components/Calendar/view/Header.tsx',
+    'components/Calendar/view/MonthGrid.tsx',
+    'components/Calendar/view/YearGrid.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {
