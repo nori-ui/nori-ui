@@ -4,7 +4,6 @@ import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform, Text as RNText, View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
-import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import type { CalendarBaseProps, CalendarMode, CalendarValue, CalendarView, DateRange } from './Calendar.types';
 import { type DayOfWeek, formatMonthYearTitle, getFirstDayOfWeek, getWeekendDays } from './state/locale-utils';
@@ -109,7 +108,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
             style={{
-                padding: px('4'),
+                padding: 16,
                 backgroundColor: colors.semantic.background.elevated,
                 borderRadius: 16,
                 borderWidth: 1,
@@ -130,11 +129,11 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                 onTitlePress={onTitlePress}
             />
             {state.view === 'day' && (
-                <View style={{ flexDirection: 'row', gap: px('4') }}>
+                <View style={{ flexDirection: 'row', gap: 16 }}>
                     {months.map((m, i) => (
                         <View key={`${m.year}-${m.month}`}>
                             {visibleMonths > 1 && i > 0 && (
-                                <RNText style={{ fontWeight: '600', marginBottom: px('1') }}>
+                                <RNText style={{ fontWeight: '600', marginBottom: 4 }}>
                                     {formatMonthYearTitle(m, locale)}
                                 </RNText>
                             )}
@@ -256,7 +255,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
             style={{
-                padding: px('4'),
+                padding: 16,
                 backgroundColor: colors.semantic.background.elevated,
                 borderRadius: 16,
                 borderWidth: 1,
@@ -277,7 +276,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
                 onTitlePress={onTitlePress}
             />
             {view === 'day' && (
-                <View style={{ flexDirection: 'row', gap: px('4') }}>
+                <View style={{ flexDirection: 'row', gap: 16 }}>
                     {months.map((m) => (
                         <DayGrid<'range'>
                             key={`${m.year}-${m.month}`}
