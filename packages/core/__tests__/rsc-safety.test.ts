@@ -28,6 +28,7 @@ const CLIENT_ALLOWED = [
     'animation/animated-view.ts',
     'animation/animated-view.web.ts',
     'i18n/context.tsx',
+    'i18n/locale.tsx',
     'i18n/use-translation.ts',
     'icons/semantic-context.tsx',
     'icons/use-semantic-icon.ts',
