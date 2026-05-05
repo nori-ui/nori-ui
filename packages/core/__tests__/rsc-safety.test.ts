@@ -72,6 +72,7 @@ const CLIENT_ALLOWED = [
     'components/Calendar/state/use-calendar-keyboard.ts',
     'components/Calendar/state/use-calendar-state.ts',
     'components/Calendar/state/use-range-state.ts',
+    'components/Calendar/view/DayCell.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {
