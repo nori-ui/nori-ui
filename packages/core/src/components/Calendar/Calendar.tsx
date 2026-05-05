@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Platform, Text as RNText, View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
 import { px } from '../../theme/px';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import type { CalendarBaseProps, CalendarMode, CalendarValue, CalendarView, DateRange } from './Calendar.types';
 import { type DayOfWeek, formatMonthYearTitle, getFirstDayOfWeek, getWeekendDays } from './state/locale-utils';
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
@@ -63,6 +64,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
     props: CalendarBaseProps<M> & { locale: string }
 ) => {
     const { locale, renderDay } = props;
+    const colors = useThemeColors();
     const firstDayOfWeek = props.firstDayOfWeek ?? getFirstDayOfWeek(locale);
     const weekendDays = (props.weekendDays as [DayOfWeek, DayOfWeek] | undefined) ?? getWeekendDays(locale);
 
@@ -106,7 +108,18 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
-            style={{ padding: px('3') }}
+            style={{
+                padding: px('4'),
+                backgroundColor: colors.semantic.background.elevated,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: colors.semantic.border.default,
+                shadowColor: '#000',
+                shadowOpacity: 0.04,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 4 },
+                alignSelf: 'flex-start',
+            }}
         >
             <Header
                 visibleMonth={state.focusedDate}
@@ -167,6 +180,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
 
 const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) => {
     const { locale, renderDay } = props;
+    const colors = useThemeColors();
     const firstDayOfWeek = props.firstDayOfWeek ?? getFirstDayOfWeek(locale);
     const weekendDays = (props.weekendDays as [DayOfWeek, DayOfWeek] | undefined) ?? getWeekendDays(locale);
 
@@ -241,7 +255,18 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
-            style={{ padding: px('3') }}
+            style={{
+                padding: px('4'),
+                backgroundColor: colors.semantic.background.elevated,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: colors.semantic.border.default,
+                shadowColor: '#000',
+                shadowOpacity: 0.04,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 4 },
+                alignSelf: 'flex-start',
+            }}
         >
             <Header
                 visibleMonth={focusedDate}

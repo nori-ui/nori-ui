@@ -1,9 +1,9 @@
 'use client';
 
 import type { CalendarDate } from '@internationalized/date';
+import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useTranslation } from '../../../i18n/use-translation';
-import { px } from '../../../theme/px';
 import { useThemeColors } from '../../../theme/use-theme-colors';
 import type { CalendarView } from '../Calendar.types';
 import { formatMonthYearTitle } from '../state/locale-utils';
@@ -24,15 +24,34 @@ const NavButton = ({ label, onPress, children }: { label: string; onPress: () =>
             accessibilityRole="button"
             accessibilityLabel={label}
             onPress={onPress}
-            style={{
-                width: 32,
-                height: 32,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: px('2'),
+            style={({ pressed, hovered, focused }: { pressed: boolean; hovered?: boolean; focused?: boolean }) => {
+                const base: ViewStyle = {
+                    width: 32,
+                    height: 32,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 8,
+                };
+                const transition = {
+                    transitionProperty: 'background-color, border-color, transform',
+                    transitionDuration: '140ms',
+                    transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+                    outlineStyle: 'none',
+                } as unknown as ViewStyle;
+                const bg = pressed
+                    ? colors.color.primary['200']
+                    : hovered
+                      ? colors.color.primary['100']
+                      : 'transparent';
+                const border = focused
+                    ? { borderWidth: 2, borderColor: colors.semantic.interactive.primary }
+                    : { borderWidth: 0 };
+                return [base, transition, { backgroundColor: bg, transform: [{ scale: pressed ? 0.94 : 1 }] }, border];
             }}
         >
-            <RNText style={{ color: colors.semantic.text.default, fontSize: 18 }}>{children}</RNText>
+            <RNText style={{ color: colors.semantic.text.default, fontSize: 16, lineHeight: 16, fontWeight: '500' }}>
+                {children}
+            </RNText>
         </Pressable>
     );
 };
@@ -65,7 +84,7 @@ export const Header = ({ visibleMonth, locale, view, onPrev, onNext, onTitlePres
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                paddingBottom: px('2'),
+                paddingBottom: 10,
             }}
         >
             <NavButton label={t('calendar.header.previous', { defaultValue: 'Previous' })} onPress={onPrev}>
@@ -75,14 +94,59 @@ export const Header = ({ visibleMonth, locale, view, onPrev, onNext, onTitlePres
                 accessibilityRole="button"
                 accessibilityLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
                 onPress={onTitlePress}
-                style={{
-                    paddingHorizontal: px('3'),
-                    paddingVertical: px('2'),
-                    borderRadius: px('2'),
+                style={({ pressed, hovered, focused }: { pressed: boolean; hovered?: boolean; focused?: boolean }) => {
+                    const base: ViewStyle = {
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 6,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                    };
+                    const transition = {
+                        transitionProperty: 'background-color, transform',
+                        transitionDuration: '140ms',
+                        transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+                        outlineStyle: 'none',
+                    } as unknown as ViewStyle;
+                    const bg = pressed
+                        ? colors.color.primary['200']
+                        : hovered
+                          ? colors.color.primary['100']
+                          : 'transparent';
+                    const border = focused
+                        ? { borderWidth: 2, borderColor: colors.semantic.interactive.primary }
+                        : { borderWidth: 0 };
+                    return [
+                        base,
+                        transition,
+                        { backgroundColor: bg, transform: [{ scale: pressed ? 0.97 : 1 }] },
+                        border,
+                    ];
                 }}
             >
-                <RNText style={{ color: colors.semantic.text.default, fontSize: 16, fontWeight: '600' }}>
+                <RNText
+                    style={{
+                        color: colors.semantic.text.default,
+                        fontSize: 15,
+                        fontWeight: '600',
+                        letterSpacing: -0.1,
+                    }}
+                >
                     {title}
+                </RNText>
+                {/* Chevron sibling — hints that the title is interactive (drilldown).
+                    Kept as a separate text node so test queries like
+                    getByText(/May 2026/) and getByText('2026') still match. */}
+                <RNText
+                    aria-hidden
+                    style={{
+                        color: colors.semantic.text.muted,
+                        fontSize: 10,
+                        opacity: 0.7,
+                    }}
+                >
+                    ▾
                 </RNText>
             </Pressable>
             <NavButton label={t('calendar.header.next', { defaultValue: 'Next' })} onPress={onNext}>

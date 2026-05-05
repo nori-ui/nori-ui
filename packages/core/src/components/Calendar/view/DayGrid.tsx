@@ -3,10 +3,12 @@
 import type { CalendarDate } from '@internationalized/date';
 import { getLocalTimeZone, startOfMonth, today } from '@internationalized/date';
 import { type ReactNode, useMemo } from 'react';
+import type { ViewStyle } from 'react-native';
 import { Text as RNText, View } from 'react-native';
+import { useThemeColors } from '../../../theme/use-theme-colors';
 import type { CalendarMode, CalendarValue, DateRange, DayContext } from '../Calendar.types';
 import { type DayOfWeek, formatWeekdayNames, getFirstDayOfWeek } from '../state/locale-utils';
-import { DayCell } from './DayCell';
+import { CELL_SIZE, DayCell } from './DayCell';
 
 type DayGridProps<M extends CalendarMode> = {
     visibleMonth: CalendarDate;
@@ -101,6 +103,7 @@ export const DayGrid = <M extends CalendarMode>(props: DayGridProps<M>) => {
         renderDay,
     } = props;
 
+    const colors = useThemeColors();
     const fdow = firstDayOfWeek ?? getFirstDayOfWeek(locale);
 
     const cells = useMemo<CalendarDate[]>(() => {
@@ -115,16 +118,28 @@ export const DayGrid = <M extends CalendarMode>(props: DayGridProps<M>) => {
     const weekdayNames = useMemo(() => formatWeekdayNames(locale), [locale]);
     const todayDate = useMemo(() => today(getLocalTimeZone()), []);
 
+    const gridWidth = 7 * CELL_SIZE;
+
     return (
-        <View role="grid" style={{ width: 7 * 36 }}>
-            <View role="row" style={{ flexDirection: 'row' }}>
+        <View role="grid" style={{ width: gridWidth }}>
+            <View role="row" style={{ flexDirection: 'row', marginBottom: 4 }}>
                 {weekdayNames.map((name) => (
-                    // Weekday short-names are unique within a locale (7 distinct values).
-                    // role="columnheader" is the required child of role="row" inside a grid.
-                    <View key={name} role="columnheader" style={{ width: 36, alignItems: 'center' }}>
-                        <View style={{ paddingVertical: 4 }}>
-                            <RNText style={{ fontSize: 12, opacity: 0.7 }}>{name}</RNText>
-                        </View>
+                    <View
+                        key={name}
+                        role="columnheader"
+                        style={{ width: CELL_SIZE, alignItems: 'center', paddingVertical: 6 }}
+                    >
+                        <RNText
+                            style={{
+                                fontSize: 11,
+                                fontWeight: '500',
+                                letterSpacing: 0.6,
+                                color: colors.semantic.text.muted,
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {name}
+                        </RNText>
                     </View>
                 ))}
             </View>
@@ -142,16 +157,61 @@ export const DayGrid = <M extends CalendarMode>(props: DayGridProps<M>) => {
                             todayDate,
                         });
                         const isSelectedLike = ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd;
-                        // role="gridcell" is the required ARIA child of role="row" inside role="grid".
-                        // "gridcell" is not yet in RN's Role union (only "cell" is), so we cast to
-                        // satisfy TypeScript while emitting the correct DOM attribute on web.
-                        // aria-selected on role="button" violates ARIA spec; it belongs on the gridcell.
+                        const isInsideRange = ctx.isInRange || ctx.isInPreviewRange;
+
+                        // Range continuity: middle cells get a flat full-width
+                        // background. Endpoints get a half-fill on the side
+                        // facing the range so the bar visually connects with
+                        // the adjacent cell. Single-day ranges get no spillover.
+                        const wrapperStyle: ViewStyle = {
+                            width: CELL_SIZE,
+                            height: CELL_SIZE,
+                            position: 'relative',
+                        };
+                        const rangeFillTint = colors.color.primary['100'];
+                        let rangeFillStyle: ViewStyle | null = null;
+
+                        if (ctx.isRangeStart && !ctx.isRangeEnd) {
+                            rangeFillStyle = {
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                left: '50%',
+                                right: 0,
+                                backgroundColor: rangeFillTint,
+                            };
+                        } else if (ctx.isRangeEnd && !ctx.isRangeStart) {
+                            rangeFillStyle = {
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                right: '50%',
+                                backgroundColor: rangeFillTint,
+                            };
+                        } else if (isInsideRange && !isSelectedLike) {
+                            rangeFillStyle = {
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                backgroundColor: rangeFillTint,
+                            };
+                        }
+
                         const gridcellProps = {
                             role: 'gridcell' as 'cell',
                             ...(isSelectedLike ? { 'aria-selected': true as const } : {}),
                         };
+
                         return (
-                            <View key={`${date.year}-${date.month}-${date.day}`} {...gridcellProps}>
+                            <View
+                                key={`${date.year}-${date.month}-${date.day}`}
+                                {...gridcellProps}
+                                style={wrapperStyle}
+                            >
+                                {rangeFillStyle ? <View style={rangeFillStyle} /> : null}
                                 <DayCell
                                     ctx={ctx}
                                     onPress={() => onDayPress(date)}

@@ -1,9 +1,10 @@
 'use client';
 
 import type { CalendarDate } from '@internationalized/date';
+import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
-import { px } from '../../../theme/px';
 import { useThemeColors } from '../../../theme/use-theme-colors';
+import { CELL_SIZE } from './DayCell';
 
 type YearGridProps = {
     visibleMonth: CalendarDate;
@@ -17,47 +18,87 @@ export const YearGrid = ({ visibleMonth, onSelect }: YearGridProps) => {
     const decadeStart = visibleMonth.year - (visibleMonth.year % 10);
     // Show 12 cells: 1 from previous decade, the 10 of this decade, 1 from next.
     const years = Array.from({ length: 12 }, (_, i) => decadeStart + i - 1);
+    const gridWidth = 7 * CELL_SIZE;
+    const cellHeight = 60;
 
     return (
-        <View style={{ width: 7 * 36, paddingVertical: px('2') }}>
+        <View style={{ width: gridWidth, paddingVertical: 8 }}>
             {ROW_KEYS.map((rowKey, row) => (
-                <View
-                    key={rowKey}
-                    style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-around',
-                        marginBottom: px('1'),
-                    }}
-                >
+                <View key={rowKey} style={{ flexDirection: 'row', marginBottom: 4 }}>
                     {[0, 1, 2, 3].map((col) => {
                         const year = years[row * 4 + col];
                         if (year === undefined) {
                             return null;
                         }
                         const isCurrent = year === visibleMonth.year;
+                        const isAdjacentDecade = year < decadeStart || year >= decadeStart + 10;
                         return (
-                            <Pressable
-                                key={year}
-                                accessibilityRole="button"
-                                accessibilityLabel={String(year)}
-                                onPress={() => onSelect(year)}
-                                style={{
-                                    paddingHorizontal: px('3'),
-                                    paddingVertical: px('2'),
-                                    borderRadius: px('2'),
-                                    backgroundColor: isCurrent ? colors.semantic.interactive.primary : 'transparent',
-                                    minWidth: 50,
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <RNText
-                                    style={{
-                                        color: isCurrent ? colors.semantic.text.inverted : colors.semantic.text.default,
+                            <View key={year} style={{ flex: 1, paddingHorizontal: 2 }}>
+                                <Pressable
+                                    accessibilityRole="button"
+                                    accessibilityLabel={String(year)}
+                                    onPress={() => onSelect(year)}
+                                    style={({
+                                        pressed,
+                                        hovered,
+                                        focused,
+                                    }: {
+                                        pressed: boolean;
+                                        hovered?: boolean;
+                                        focused?: boolean;
+                                    }) => {
+                                        const base: ViewStyle = {
+                                            height: cellHeight,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            borderRadius: 10,
+                                        };
+                                        const transition = {
+                                            transitionProperty: 'background-color, transform, border-color',
+                                            transitionDuration: '140ms',
+                                            transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+                                            outlineStyle: 'none',
+                                        } as unknown as ViewStyle;
+                                        let bg: string;
+                                        if (isCurrent) {
+                                            bg = pressed
+                                                ? colors.semantic.interactive.primaryPressed
+                                                : hovered
+                                                  ? colors.semantic.interactive.primaryHover
+                                                  : colors.semantic.interactive.primary;
+                                        } else if (pressed) {
+                                            bg = colors.color.primary['200'];
+                                        } else if (hovered) {
+                                            bg = colors.color.primary['100'];
+                                        } else {
+                                            bg = 'transparent';
+                                        }
+                                        const border =
+                                            focused && !isCurrent
+                                                ? { borderWidth: 2, borderColor: colors.semantic.interactive.primary }
+                                                : { borderWidth: 0 };
+                                        return [
+                                            base,
+                                            transition,
+                                            { backgroundColor: bg, transform: [{ scale: pressed ? 0.96 : 1 }] },
+                                            border,
+                                        ];
                                     }}
                                 >
-                                    {year}
-                                </RNText>
-                            </Pressable>
+                                    <RNText
+                                        style={{
+                                            color: isCurrent
+                                                ? colors.semantic.text.inverted
+                                                : colors.semantic.text.default,
+                                            fontSize: 14,
+                                            fontWeight: isCurrent ? '600' : '500',
+                                            opacity: isAdjacentDecade ? 0.45 : 1,
+                                        }}
+                                    >
+                                        {year}
+                                    </RNText>
+                                </Pressable>
+                            </View>
                         );
                     })}
                 </View>
