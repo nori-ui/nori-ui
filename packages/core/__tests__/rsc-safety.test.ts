@@ -70,6 +70,7 @@ const CLIENT_ALLOWED = [
     'components/Toggle/Toggle.tsx',
     'components/Tooltip/Tooltip.tsx',
     'components/Calendar/state/use-calendar-state.ts',
+    'components/Calendar/state/use-range-state.ts',
 ];
 
 function isClientAllowed(relPath: string): boolean {
