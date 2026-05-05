@@ -64,7 +64,8 @@ export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay }: DayC
         <Pressable
             accessibilityRole="button"
             accessibilityState={{
-                selected: isSelectedLike,
+                // aria-selected is not allowed on role="button"; selection is conveyed by the
+                // parent gridcell wrapper (aria-selected on role="gridcell" in DayGrid).
                 disabled: ctx.isUnavailable,
             }}
             disabled={ctx.isUnavailable}

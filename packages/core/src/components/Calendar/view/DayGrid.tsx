@@ -120,7 +120,8 @@ export const DayGrid = <M extends CalendarMode>(props: DayGridProps<M>) => {
             <View role="row" style={{ flexDirection: 'row' }}>
                 {weekdayNames.map((name) => (
                     // Weekday short-names are unique within a locale (7 distinct values).
-                    <View key={name} style={{ width: 36, alignItems: 'center' }}>
+                    // role="columnheader" is the required child of role="row" inside a grid.
+                    <View key={name} role="columnheader" style={{ width: 36, alignItems: 'center' }}>
                         <View style={{ paddingVertical: 4 }}>
                             <RNText style={{ fontSize: 12, opacity: 0.7 }}>{name}</RNText>
                         </View>
@@ -140,19 +141,29 @@ export const DayGrid = <M extends CalendarMode>(props: DayGridProps<M>) => {
                             weekendDays,
                             todayDate,
                         });
+                        const isSelectedLike = ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd;
+                        // role="gridcell" is the required ARIA child of role="row" inside role="grid".
+                        // "gridcell" is not yet in RN's Role union (only "cell" is), so we cast to
+                        // satisfy TypeScript while emitting the correct DOM attribute on web.
+                        // aria-selected on role="button" violates ARIA spec; it belongs on the gridcell.
+                        const gridcellProps = {
+                            role: 'gridcell' as 'cell',
+                            ...(isSelectedLike ? { 'aria-selected': true as const } : {}),
+                        };
                         return (
-                            <DayCell
-                                key={`${date.year}-${date.month}-${date.day}`}
-                                ctx={ctx}
-                                onPress={() => onDayPress(date)}
-                                {...(onDayHover
-                                    ? {
-                                          onHoverIn: () => onDayHover(date),
-                                          onHoverOut: () => onDayHover(null),
-                                      }
-                                    : {})}
-                                {...(renderDay ? { renderDay } : {})}
-                            />
+                            <View key={`${date.year}-${date.month}-${date.day}`} {...gridcellProps}>
+                                <DayCell
+                                    ctx={ctx}
+                                    onPress={() => onDayPress(date)}
+                                    {...(onDayHover
+                                        ? {
+                                              onHoverIn: () => onDayHover(date),
+                                              onHoverOut: () => onDayHover(null),
+                                          }
+                                        : {})}
+                                    {...(renderDay ? { renderDay } : {})}
+                                />
+                            </View>
                         );
                     })}
                 </View>
