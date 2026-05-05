@@ -69,6 +69,7 @@ const CLIENT_ALLOWED = [
     'components/Toast/sonner-native-bridge.native.tsx',
     'components/Toggle/Toggle.tsx',
     'components/Tooltip/Tooltip.tsx',
+    'components/Calendar/state/use-calendar-state.ts',
 ];
 
 function isClientAllowed(relPath: string): boolean {
