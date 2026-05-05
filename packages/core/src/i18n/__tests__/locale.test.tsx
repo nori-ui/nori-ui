@@ -2,9 +2,13 @@ import { render } from '@testing-library/react';
 import { detectLocale, LocaleProvider, useLocale } from '../locale';
 
 describe('detectLocale', () => {
-    it('returns the resolved Intl locale by default', () => {
+    it('returns a parseable BCP 47 locale tag', () => {
         const tag = detectLocale();
-        expect(tag).toMatch(/^[a-z]{2,3}(-[A-Z][a-zA-Z0-9-]*)?$/);
+        expect(tag).toBeTruthy();
+        // Round-trip parse — accepts plain tags AND Unicode-extension forms
+        // like "en-US-u-hc-h12" or "th-TH-u-nu-thai" that Intl may emit on
+        // some Node/ICU configurations.
+        expect(() => new Intl.Locale(tag)).not.toThrow();
     });
 });
 

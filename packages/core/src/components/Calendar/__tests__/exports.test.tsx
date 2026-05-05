@@ -1,11 +1,9 @@
 import type { CalendarProps, DateRange, DayContext } from '../index';
 import { Calendar } from '../index';
 
-it('Calendar barrel exports the component and compound slots', () => {
+it('Calendar barrel exports the component', () => {
     expect(Calendar).toBeDefined();
     expect(typeof Calendar).toBe('function');
-    expect(Calendar.Header).toBeDefined();
-    expect(Calendar.Footer).toBeDefined();
 });
 
 it('Calendar barrel re-exports public types', () => {

@@ -1,11 +1,11 @@
 'use client';
 
-import { CalendarDate } from '@internationalized/date';
-import { type ReactNode, useEffect, useState } from 'react';
+import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform, Text as RNText, View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
 import { px } from '../../theme/px';
-import type { CalendarBaseProps, CalendarMode, CalendarValue, DateRange } from './Calendar.types';
+import type { CalendarBaseProps, CalendarMode, CalendarValue, CalendarView, DateRange } from './Calendar.types';
 import { type DayOfWeek, formatMonthYearTitle, getFirstDayOfWeek, getWeekendDays } from './state/locale-utils';
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
 import { useCalendarState } from './state/use-calendar-state';
@@ -181,28 +181,75 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
         ...(props.maxNights !== undefined ? { maxNights: props.maxNights } : {}),
     });
 
-    const initialFocus =
-        range.value?.start ??
-        new CalendarDate(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate());
+    const initialFocus = range.value?.start ?? today(getLocalTimeZone());
     const [focusedDate, setFocusedDate] = useState<CalendarDate>(initialFocus);
-    const [view, setView] = useState<'day' | 'month' | 'year'>(props.defaultView ?? 'day');
+
+    const [internalView, setInternalView] = useState<CalendarView>(props.defaultView ?? 'day');
+    const isViewControlled = props.view !== undefined;
+    const view: CalendarView = isViewControlled ? (props.view as CalendarView) : internalView;
+    const setView = useCallback(
+        (next: CalendarView) => {
+            if (!isViewControlled) {
+                setInternalView(next);
+            }
+            props.onViewChange?.(next);
+        },
+        [isViewControlled, props.onViewChange]
+    );
 
     const visibleMonths = useResolvedVisibleMonths(props.visibleMonths);
     const months = Array.from({ length: visibleMonths }, (_, i) => focusedDate.add({ months: i }));
+
+    const onPrev = () => {
+        const delta = view === 'year' ? { years: -10 } : view === 'month' ? { years: -1 } : { months: -1 };
+        setFocusedDate((f) => f.add(delta));
+    };
+    const onNext = () => {
+        const delta = view === 'year' ? { years: 10 } : view === 'month' ? { years: 1 } : { months: 1 };
+        setFocusedDate((f) => f.add(delta));
+    };
+    const onTitlePress = () => setView(view === 'day' ? 'month' : view === 'month' ? 'year' : 'day');
+
+    const keyboard = useCalendarKeyboard({
+        focusedDate,
+        moveFocus: (delta) =>
+            setFocusedDate((f) => {
+                let next = f;
+                if (delta.days) {
+                    next = next.add({ days: delta.days });
+                }
+                if (delta.weeks) {
+                    next = next.add({ weeks: delta.weeks });
+                }
+                if (delta.months) {
+                    next = next.add({ months: delta.months });
+                }
+                if (delta.years) {
+                    next = next.add({ years: delta.years });
+                }
+                return next;
+            }),
+        selectDate: (date, _source) => range.selectDate(date, 'keyboard'),
+        setView,
+        view,
+        firstDayOfWeek,
+    });
 
     return (
         <View
             ref={props.ref}
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
+            // @ts-expect-error onKeyDown is supported by react-native-web on View
+            onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
             style={{ padding: px('3') }}
         >
             <Header
                 visibleMonth={focusedDate}
                 locale={locale}
                 view={view}
-                onPrev={() => setFocusedDate((f) => f.add({ months: -1 }))}
-                onNext={() => setFocusedDate((f) => f.add({ months: 1 }))}
-                onTitlePress={() => setView((v) => (v === 'day' ? 'month' : v === 'month' ? 'year' : 'day'))}
+                onPrev={onPrev}
+                onNext={onNext}
+                onTitlePress={onTitlePress}
             />
             {view === 'day' && (
                 <View style={{ flexDirection: 'row', gap: px('4') }}>
@@ -249,14 +296,4 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
     );
 };
 
-// Compound slot stubs (consumers can pass arbitrary children for header/footer override).
-const CalendarHeaderSlot = ({ children }: { children?: ReactNode }) => <>{children}</>;
-CalendarHeaderSlot.displayName = 'Calendar.Header';
-
-const CalendarFooterSlot = ({ children }: { children?: ReactNode }) => <>{children}</>;
-CalendarFooterSlot.displayName = 'Calendar.Footer';
-
-export const Calendar = Object.assign(CalendarRoot, {
-    Header: CalendarHeaderSlot,
-    Footer: CalendarFooterSlot,
-});
+export const Calendar = CalendarRoot;
