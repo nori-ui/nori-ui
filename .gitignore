@@ -73,3 +73,6 @@ apps/*/android/
 
 # project-local MCP config — per-developer
 .mcp.json
+
+# git worktrees (per-developer; never committed)
+.worktrees/
