@@ -77,6 +77,8 @@ const CLIENT_ALLOWED = [
     'components/Calendar/view/Header.tsx',
     'components/Calendar/view/MonthGrid.tsx',
     'components/Calendar/view/YearGrid.tsx',
+    'components/Calendar/Calendar.tsx',
+    'components/Calendar/view/Footer.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {
