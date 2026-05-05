@@ -13,6 +13,7 @@
     "components/box",
     "components/breadcrumb",
     "components/button",
+    "components/calendar",
     "components/card",
     "components/checkbox",
     "components/dialog",
