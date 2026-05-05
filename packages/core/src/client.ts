@@ -7,6 +7,8 @@
 
 // Providers + hooks (client-only)
 export { I18nProvider, type I18nProviderProps } from './i18n/context';
+export type { LocaleInput, LocaleProviderProps } from './i18n/locale';
+export { detectLocale, LocaleProvider, useLocale } from './i18n/locale';
 export { useTranslation } from './i18n/use-translation';
 export { SemanticIconsProvider, type SemanticIconsProviderProps } from './icons/semantic-context';
 export { useSemanticIcon } from './icons/use-semantic-icon';
