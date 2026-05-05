@@ -1,0 +1,80 @@
+---
+title: Calendar
+description: Inline visual calendar for picking dates, ranges, or multiple selections — with locale-aware first day of week, weekend marking, and drill-down navigation.
+since: 1.0.0
+tags: [date, picker, range, i18n, a11y]
+platform: both
+category: inputs
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Calendar" />
+
+The `<Calendar>` component is an inline date picker. It supports single, range,
+and multi-select modes; click the title to drill down through month and year
+views; and respects the active locale's first day of week, weekend days, and
+weekday names.
+
+## Basic usage
+
+<Preview name="calendar-basic" />
+
+```tsx
+import { useState } from 'react';
+import { Calendar } from '@nori-ui/core';
+import type { CalendarDate } from '@internationalized/date';
+
+const [value, setValue] = useState<CalendarDate | null>(null);
+
+<Calendar value={value} onChange={(v) => setValue(v)} />
+```
+
+## Range selection
+
+Two-month layout on desktop (`visibleMonths={2}`), single-month on mobile by default.
+
+<Preview name="calendar-range" />
+
+## Multiple selection
+
+<Preview name="calendar-multiple" />
+
+## Drill-down navigation
+
+Click the title to toggle between day, month, and year views. `defaultView="year"` opens directly into the decade picker.
+
+<Preview name="calendar-drilldown" />
+
+## Controlled
+
+<Preview name="calendar-controlled" />
+
+## Custom day rendering
+
+Use the `renderDay` slot to overlay availability dots, prices, or per-day decorations.
+
+<Preview name="calendar-custom-render" />
+
+## Internationalization
+
+Calendar reads its locale from `NoriProvider.locale`, falling back to `new Intl.DateTimeFormat().resolvedOptions().locale`. You can also override per-component with the `locale` prop.
+
+The `firstDayOfWeek` and `weekendDays` are derived from the locale via CLDR; both are overridable.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `←` / `→` | Move focus by 1 day |
+| `↑` / `↓` | Move focus by 1 week |
+| `PgUp` / `PgDn` | Move focus by 1 month |
+| `Shift + PgUp/Dn` | Move focus by 1 year |
+| `Home` / `End` | Move to start/end of week |
+| `Enter` / `Space` | Select focused date |
+
+## Props
+
+<PropsTable name="Calendar" />
