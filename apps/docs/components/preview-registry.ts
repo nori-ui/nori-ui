@@ -16,6 +16,12 @@ import BreadcrumbSeparators from './demos/breadcrumb-separators';
 import BreadcrumbSiblingMenu from './demos/breadcrumb-sibling-menu';
 import BreadcrumbWidthCollapse from './demos/breadcrumb-width-collapse';
 import ButtonBasic from './demos/button-basic';
+import CalendarBasic from './demos/calendar-basic';
+import CalendarControlled from './demos/calendar-controlled';
+import CalendarCustomRender from './demos/calendar-custom-render';
+import CalendarDrilldown from './demos/calendar-drilldown';
+import CalendarMultiple from './demos/calendar-multiple';
+import CalendarRange from './demos/calendar-range';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
@@ -243,6 +249,12 @@ export const previews = {
         Component: AlertDialogDestructive,
         ...previewSources['alert-dialog-destructive'],
     },
+    'calendar-basic': { Component: CalendarBasic, ...previewSources['calendar-basic'] },
+    'calendar-range': { Component: CalendarRange, ...previewSources['calendar-range'] },
+    'calendar-multiple': { Component: CalendarMultiple, ...previewSources['calendar-multiple'] },
+    'calendar-drilldown': { Component: CalendarDrilldown, ...previewSources['calendar-drilldown'] },
+    'calendar-controlled': { Component: CalendarControlled, ...previewSources['calendar-controlled'] },
+    'calendar-custom-render': { Component: CalendarCustomRender, ...previewSources['calendar-custom-render'] },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.
