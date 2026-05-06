@@ -1,0 +1,33 @@
+{
+  "name": "@nori-ui/plugin",
+  "version": "0.0.1",
+  "description": "Agent integration package for nori-ui — installs skills and the @nori-ui/mcp server into Claude Code, Cursor, Cline, Codex, Copilot, Windsurf, Gemini CLI, and other AI coding agents.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nori-ui/nori-ui.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "nori-ui-skills": "./bin/install.mjs"
+  },
+  "files": [
+    ".claude-plugin",
+    "bin",
+    "skills",
+    ".mcp.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "test": "echo 'no tests' && exit 0",
+    "typecheck": "echo 'no typecheck' && exit 0"
+  }
+}

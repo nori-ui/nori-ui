@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "nori-ui": {
+      "command": "npx",
+      "args": ["-y", "@nori-ui/mcp"]
+    }
+  }
+}

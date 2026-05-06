@@ -73,6 +73,8 @@ apps/*/android/
 
 # project-local MCP config — per-developer
 .mcp.json
+# …except the plugin package's shipped .mcp.json (declared in its `files` field).
+!packages/plugin/.mcp.json
 
 # git worktrees (per-developer; never committed)
 .worktrees/
