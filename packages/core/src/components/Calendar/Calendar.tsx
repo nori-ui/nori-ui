@@ -210,7 +210,25 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
 
     const keyboard = useCalendarKeyboard({
         focusedDate: state.focusedDate,
-        moveFocus: state.moveFocus,
+        moveFocus: (delta: import('./state/use-calendar-state').FocusDelta) => {
+            state.moveFocus(delta);
+            // PgDn/PgUp (months) and Shift+PgDn/PgUp (years) feel like
+            // "scroll the view by N" — shift the anchor by the same delta so
+            // the focused cell stays in its current slot. Day/week deltas
+            // leave the anchor alone; the snap effect handles overflow.
+            if (delta.months || delta.years) {
+                setAnchor((a) => {
+                    let next = a;
+                    if (delta.months) {
+                        next = next.add({ months: delta.months });
+                    }
+                    if (delta.years) {
+                        next = next.add({ years: delta.years });
+                    }
+                    return next;
+                });
+            }
+        },
         selectDate: state.selectDate,
         setView: state.setView,
         view: state.view,
@@ -378,7 +396,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
 
     const keyboard = useCalendarKeyboard({
         focusedDate,
-        moveFocus: (delta) =>
+        moveFocus: (delta) => {
             setFocusedDate((f) => {
                 let next = f;
                 if (delta.days) {
@@ -394,7 +412,20 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                     next = next.add({ years: delta.years });
                 }
                 return next;
-            }),
+            });
+            if (delta.months || delta.years) {
+                setAnchor((a) => {
+                    let next = a;
+                    if (delta.months) {
+                        next = next.add({ months: delta.months });
+                    }
+                    if (delta.years) {
+                        next = next.add({ years: delta.years });
+                    }
+                    return next;
+                });
+            }
+        },
         selectDate: (date) => range.selectDate(date, 'keyboard'),
         setView,
         view,
