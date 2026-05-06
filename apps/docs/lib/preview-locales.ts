@@ -98,3 +98,16 @@ export const PREVIEW_DIRECTION_OPTIONS: readonly PreviewDirection[] = ['ltr', 'r
  * to toggle two controls.
  */
 export const RTL_LOCALES: ReadonlySet<PreviewLocale> = new Set<PreviewLocale>(['ar', 'he']);
+
+/**
+ * BCP 47 tag for each preview locale — used to drive locale-aware
+ * components (Calendar's firstDayOfWeek, Number/Currency formatting, etc.)
+ * when the locale switcher in the Preview frame is flipped.
+ */
+export const PREVIEW_LOCALE_TAGS: Record<PreviewLocale, string> = {
+    en: 'en-US',
+    de: 'de-DE',
+    ja: 'ja-JP',
+    ar: 'ar-SA',
+    he: 'he-IL',
+};

@@ -8,6 +8,7 @@ import { HighlightedCode } from '@/lib/highlight';
 import {
     PREVIEW_DIRECTION_OPTIONS,
     PREVIEW_LOCALE_OPTIONS,
+    PREVIEW_LOCALE_TAGS,
     PREVIEW_LOCALES,
     type PreviewDirection,
     type PreviewLocale,
@@ -119,7 +120,11 @@ export function Preview({ name, padding = 24 }: PreviewProps) {
                         dir={direction}
                     >
                         {mounted ? (
-                            <NoriProvider theme={docsTheme} {...(dictionary !== undefined ? { i18n: dictionary } : {})}>
+                            <NoriProvider
+                                theme={docsTheme}
+                                locale={PREVIEW_LOCALE_TAGS[locale]}
+                                {...(dictionary !== undefined ? { i18n: dictionary } : {})}
+                            >
                                 <Component />
                             </NoriProvider>
                         ) : null}
