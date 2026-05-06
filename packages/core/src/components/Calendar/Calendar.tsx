@@ -270,10 +270,14 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                 onNext={onNext}
                 onTitlePress={onTitlePress}
                 onSetMonth={(slot, m) => {
-                    setAnchor(months[slot]?.set({ month: m, day: 1 }) ?? new CalendarDate(anchor.year, m, 1));
+                    const picked = (months[slot] ?? anchor).set({ month: m, day: 1 });
+                    // Subtract slot offset so the picked month stays in the
+                    // SAME visible slot the user clicked (not the leftmost).
+                    setAnchor(picked.subtract({ months: slot }));
                 }}
                 onSetYear={(slot, y) => {
-                    setAnchor(months[slot]?.set({ year: y, day: 1 }) ?? new CalendarDate(y, anchor.month, 1));
+                    const picked = (months[slot] ?? anchor).set({ year: y, day: 1 });
+                    setAnchor(picked.subtract({ months: slot }));
                 }}
             >
                 {props.children}
@@ -454,10 +458,14 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                 onNext={onNext}
                 onTitlePress={onTitlePress}
                 onSetMonth={(slot, m) => {
-                    setAnchor(months[slot]?.set({ month: m, day: 1 }) ?? new CalendarDate(anchor.year, m, 1));
+                    const picked = (months[slot] ?? anchor).set({ month: m, day: 1 });
+                    // Subtract slot offset so the picked month stays in the
+                    // SAME visible slot the user clicked (not the leftmost).
+                    setAnchor(picked.subtract({ months: slot }));
                 }}
                 onSetYear={(slot, y) => {
-                    setAnchor(months[slot]?.set({ year: y, day: 1 }) ?? new CalendarDate(y, anchor.month, 1));
+                    const picked = (months[slot] ?? anchor).set({ year: y, day: 1 });
+                    setAnchor(picked.subtract({ months: slot }));
                 }}
             >
                 {props.children}
