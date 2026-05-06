@@ -23,7 +23,9 @@ type HeaderProps = {
     monthGap: number;
     onPrev: () => void;
     onNext: () => void;
-    onTitlePress: () => void;
+    /** Fires with the CalendarDate of the clicked title (the focused month
+     *  in single-month mode, or the specific clicked month in multi-month). */
+    onTitlePress: (clicked: CalendarDate) => void;
 };
 
 const ARROW_BUTTON_GAP = 8;
@@ -203,13 +205,13 @@ export const Header = ({
             </NavButton>
             <View style={{ flexDirection: 'row', gap: monthGap, width: titleRowWidth }}>
                 {monthsToTitle ? (
-                    monthsToTitle.map((m, i) => (
+                    monthsToTitle.map((m) => (
                         <View key={`${m.year}-${m.month}`} style={{ width: gridWidth, alignItems: 'center' }}>
                             <TitleButton
                                 text={titleText(m)}
                                 ariaLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
-                                {...(i === 0 ? { onPress: onTitlePress } : {})}
-                                drilldown={i === 0}
+                                onPress={() => onTitlePress(m)}
+                                drilldown
                             />
                         </View>
                     ))
@@ -218,7 +220,7 @@ export const Header = ({
                         <TitleButton
                             text={titleText(visibleMonth)}
                             ariaLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
-                            onPress={onTitlePress}
+                            onPress={() => onTitlePress(visibleMonth)}
                             drilldown
                         />
                     </View>

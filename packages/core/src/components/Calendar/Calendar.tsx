@@ -62,14 +62,19 @@ const FadeIn = ({ children }: { children: ReactNode }) => {
  * overflow on first paint.
  */
 const pickVisibleMonths = (input: number | 'auto' | undefined, measuredWidth: number | null): number => {
-    if (typeof input === 'number') {
-        return input;
+    // `visibleMonths` is treated as a *maximum*: when the parent container
+    // is too narrow to fit `target` months side-by-side, we drop to the
+    // largest count that fits. `auto` defaults to 2.
+    const target = typeof input === 'number' ? input : 2;
+    if (measuredWidth == null || measuredWidth === 0) {
+        // Pre-measurement (e.g. SSR / jsdom). Trust an explicit number;
+        // fall back to 1 for `auto` so we don't overflow on first paint.
+        return typeof input === 'number' ? input : 1;
     }
-    if (measuredWidth == null) {
-        return 1;
-    }
-    if (measuredWidth >= requiredOuterWidth(2)) {
-        return 2;
+    for (let n = target; n >= 1; n--) {
+        if (measuredWidth >= requiredOuterWidth(n)) {
+            return n;
+        }
     }
     return 1;
 };
@@ -379,7 +384,12 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             setAnchor((a) => a.add({ months: 1 }));
         }
     };
-    const onTitlePress = () => setView(view === 'day' ? 'month' : view === 'month' ? 'year' : 'day');
+    const onTitlePress = (clicked: CalendarDate) => {
+        if (clicked.compare(anchor) !== 0) {
+            setAnchor(clicked);
+        }
+        setView(view === 'day' ? 'month' : view === 'month' ? 'year' : 'day');
+    };
 
     return (
         <View
