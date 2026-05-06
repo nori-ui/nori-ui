@@ -1,7 +1,8 @@
 'use client';
 
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import type { ViewStyle } from 'react-native';
 import { Platform, View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -18,6 +19,34 @@ import { YearGrid } from './view/YearGrid';
 
 const DEFAULT_VISIBLE_MONTHS = 1;
 const DESKTOP_BREAKPOINT = 768;
+
+// Body fade-up on view/month change. The wrapper's `key` flips on every
+// navigation (prev/next, drilldown), forcing a fresh mount; FadeIn starts
+// at opacity 0 + 4px down, then bumps to 1 / 0 in an effect so the
+// inline transition runs. Cross-platform: web uses CSS transitions
+// (RN-Web honors transition* style props); native ignores them.
+const FadeIn = ({ children }: { children: ReactNode }) => {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        const id = requestAnimationFrame(() => setMounted(true));
+        return () => cancelAnimationFrame(id);
+    }, []);
+    return (
+        <View
+            style={
+                {
+                    opacity: mounted ? 1 : 0,
+                    transform: [{ translateY: mounted ? 0 : 4 }],
+                    transitionProperty: 'opacity, transform',
+                    transitionDuration: '220ms',
+                    transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+                } as ViewStyle
+            }
+        >
+            {children}
+        </View>
+    );
+};
 
 const useResolvedVisibleMonths = (input: number | 'auto' | undefined): number => {
     // Hooks must be called unconditionally — call useState/useEffect every render.
@@ -129,45 +158,47 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                 onNext={onNext}
                 onTitlePress={onTitlePress}
             />
-            {state.view === 'day' && (
-                <View style={{ flexDirection: 'row', gap: 16 }}>
-                    {months.map((m) => (
-                        <DayGrid<M>
-                            key={`${m.year}-${m.month}`}
-                            visibleMonth={m}
-                            locale={locale}
-                            mode={(props.mode ?? 'single') as M}
-                            value={state.value as CalendarValue<M>}
-                            focusedDate={state.focusedDate}
-                            isUnavailable={state.isUnavailable}
-                            weekendDays={weekendDays}
-                            firstDayOfWeek={firstDayOfWeek}
-                            onDayPress={(date) => state.selectDate(date, 'click')}
-                            {...(renderDay ? { renderDay } : {})}
-                        />
-                    ))}
-                </View>
-            )}
-            {state.view === 'month' && (
-                <MonthGrid
-                    visibleMonth={state.focusedDate}
-                    locale={locale}
-                    onSelect={(month) => {
-                        state.setFocusedDate(new CalendarDate(state.focusedDate.year, month, 1));
-                        state.setView('day');
-                    }}
-                />
-            )}
-            {state.view === 'year' && (
-                <YearGrid
-                    visibleMonth={state.focusedDate}
-                    onSelect={(year) => {
-                        state.setFocusedDate(new CalendarDate(year, state.focusedDate.month, 1));
-                        state.setView('month');
-                    }}
-                />
-            )}
-            {props.children ? <Footer>{props.children}</Footer> : null}
+            <FadeIn key={`smc-${state.view}-${state.focusedDate.year}-${state.focusedDate.month}`}>
+                {state.view === 'day' && (
+                    <View style={{ flexDirection: 'row', gap: 16 }}>
+                        {months.map((m) => (
+                            <DayGrid<M>
+                                key={`${m.year}-${m.month}`}
+                                visibleMonth={m}
+                                locale={locale}
+                                mode={(props.mode ?? 'single') as M}
+                                value={state.value as CalendarValue<M>}
+                                focusedDate={state.focusedDate}
+                                isUnavailable={state.isUnavailable}
+                                weekendDays={weekendDays}
+                                firstDayOfWeek={firstDayOfWeek}
+                                onDayPress={(date) => state.selectDate(date, 'click')}
+                                {...(renderDay ? { renderDay } : {})}
+                            />
+                        ))}
+                    </View>
+                )}
+                {state.view === 'month' && (
+                    <MonthGrid
+                        visibleMonth={state.focusedDate}
+                        locale={locale}
+                        onSelect={(month) => {
+                            state.setFocusedDate(new CalendarDate(state.focusedDate.year, month, 1));
+                            state.setView('day');
+                        }}
+                    />
+                )}
+                {state.view === 'year' && (
+                    <YearGrid
+                        visibleMonth={state.focusedDate}
+                        onSelect={(year) => {
+                            state.setFocusedDate(new CalendarDate(year, state.focusedDate.month, 1));
+                            state.setView('month');
+                        }}
+                    />
+                )}
+                {props.children ? <Footer>{props.children}</Footer> : null}
+            </FadeIn>
         </View>
     );
 };
@@ -271,47 +302,49 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
                 onNext={onNext}
                 onTitlePress={onTitlePress}
             />
-            {view === 'day' && (
-                <View style={{ flexDirection: 'row', gap: 16 }}>
-                    {months.map((m) => (
-                        <DayGrid<'range'>
-                            key={`${m.year}-${m.month}`}
-                            visibleMonth={m}
-                            locale={locale}
-                            mode="range"
-                            value={range.value as DateRange | null}
-                            previewRange={range.previewRange}
-                            focusedDate={focusedDate}
-                            isUnavailable={range.isUnavailable}
-                            weekendDays={weekendDays}
-                            firstDayOfWeek={firstDayOfWeek}
-                            onDayPress={(date) => range.selectDate(date)}
-                            onDayHover={(date) => range.setHoveredDate(date)}
-                            {...(renderDay ? { renderDay } : {})}
-                        />
-                    ))}
-                </View>
-            )}
-            {view === 'month' && (
-                <MonthGrid
-                    visibleMonth={focusedDate}
-                    locale={locale}
-                    onSelect={(month) => {
-                        setFocusedDate(new CalendarDate(focusedDate.year, month, 1));
-                        setView('day');
-                    }}
-                />
-            )}
-            {view === 'year' && (
-                <YearGrid
-                    visibleMonth={focusedDate}
-                    onSelect={(year) => {
-                        setFocusedDate(new CalendarDate(year, focusedDate.month, 1));
-                        setView('month');
-                    }}
-                />
-            )}
-            {props.children ? <Footer>{props.children}</Footer> : null}
+            <FadeIn key={`range-${view}-${focusedDate.year}-${focusedDate.month}`}>
+                {view === 'day' && (
+                    <View style={{ flexDirection: 'row', gap: 16 }}>
+                        {months.map((m) => (
+                            <DayGrid<'range'>
+                                key={`${m.year}-${m.month}`}
+                                visibleMonth={m}
+                                locale={locale}
+                                mode="range"
+                                value={range.value as DateRange | null}
+                                previewRange={range.previewRange}
+                                focusedDate={focusedDate}
+                                isUnavailable={range.isUnavailable}
+                                weekendDays={weekendDays}
+                                firstDayOfWeek={firstDayOfWeek}
+                                onDayPress={(date) => range.selectDate(date)}
+                                onDayHover={(date) => range.setHoveredDate(date)}
+                                {...(renderDay ? { renderDay } : {})}
+                            />
+                        ))}
+                    </View>
+                )}
+                {view === 'month' && (
+                    <MonthGrid
+                        visibleMonth={focusedDate}
+                        locale={locale}
+                        onSelect={(month) => {
+                            setFocusedDate(new CalendarDate(focusedDate.year, month, 1));
+                            setView('day');
+                        }}
+                    />
+                )}
+                {view === 'year' && (
+                    <YearGrid
+                        visibleMonth={focusedDate}
+                        onSelect={(year) => {
+                            setFocusedDate(new CalendarDate(year, focusedDate.month, 1));
+                            setView('month');
+                        }}
+                    />
+                )}
+                {props.children ? <Footer>{props.children}</Footer> : null}
+            </FadeIn>
         </View>
     );
 };
