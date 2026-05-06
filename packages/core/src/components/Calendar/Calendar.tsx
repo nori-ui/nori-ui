@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 import { View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
@@ -160,16 +160,22 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
 
     const [anchor, setAnchor] = useState<CalendarDate>(state.focusedDate);
 
-    // Snap the anchor when the focused date moves outside visible months
-    // (keyboard nav can do this; selecting a day cannot because we don't
-    // shift focus to selected anymore — see useCalendarState).
+    // Snap the anchor when the focused date moves OUTSIDE visible months
+    // (only triggered by keyboard nav). We must not re-fire when the
+    // anchor changes (prev/next), or arrow navigation would snap right
+    // back to the focused month. anchorRef gives us the current value
+    // without putting `anchor` in the dependency array.
+    const anchorRef = useRef(anchor);
     useEffect(() => {
-        const start = anchor;
-        const end = anchor.add({ months: visibleMonths });
+        anchorRef.current = anchor;
+    }, [anchor]);
+    useEffect(() => {
+        const start = anchorRef.current;
+        const end = start.add({ months: visibleMonths });
         if (state.focusedDate.compare(start) < 0 || state.focusedDate.compare(end) >= 0) {
             setAnchor(state.focusedDate);
         }
-    }, [state.focusedDate, anchor, visibleMonths]);
+    }, [state.focusedDate, visibleMonths]);
 
     const months = useMemo(
         () => Array.from({ length: visibleMonths }, (_, i) => anchor.add({ months: i })),
