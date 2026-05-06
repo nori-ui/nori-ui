@@ -2,11 +2,11 @@
 
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import { useCallback, useEffect, useState } from 'react';
-import { Platform, Text as RNText, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import type { CalendarBaseProps, CalendarMode, CalendarValue, CalendarView, DateRange } from './Calendar.types';
-import { type DayOfWeek, formatMonthYearTitle, getFirstDayOfWeek, getWeekendDays } from './state/locale-utils';
+import { type DayOfWeek, getFirstDayOfWeek, getWeekendDays } from './state/locale-utils';
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
 import { useCalendarState } from './state/use-calendar-state';
 import { useRangeState } from './state/use-range-state';
@@ -122,6 +122,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
         >
             <Header
                 visibleMonth={state.focusedDate}
+                visibleMonths={months}
                 locale={locale}
                 view={state.view}
                 onPrev={onPrev}
@@ -130,26 +131,20 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             />
             {state.view === 'day' && (
                 <View style={{ flexDirection: 'row', gap: 16 }}>
-                    {months.map((m, i) => (
-                        <View key={`${m.year}-${m.month}`}>
-                            {visibleMonths > 1 && i > 0 && (
-                                <RNText style={{ fontWeight: '600', marginBottom: 4 }}>
-                                    {formatMonthYearTitle(m, locale)}
-                                </RNText>
-                            )}
-                            <DayGrid<M>
-                                visibleMonth={m}
-                                locale={locale}
-                                mode={(props.mode ?? 'single') as M}
-                                value={state.value as CalendarValue<M>}
-                                focusedDate={state.focusedDate}
-                                isUnavailable={state.isUnavailable}
-                                weekendDays={weekendDays}
-                                firstDayOfWeek={firstDayOfWeek}
-                                onDayPress={(date) => state.selectDate(date, 'click')}
-                                {...(renderDay ? { renderDay } : {})}
-                            />
-                        </View>
+                    {months.map((m) => (
+                        <DayGrid<M>
+                            key={`${m.year}-${m.month}`}
+                            visibleMonth={m}
+                            locale={locale}
+                            mode={(props.mode ?? 'single') as M}
+                            value={state.value as CalendarValue<M>}
+                            focusedDate={state.focusedDate}
+                            isUnavailable={state.isUnavailable}
+                            weekendDays={weekendDays}
+                            firstDayOfWeek={firstDayOfWeek}
+                            onDayPress={(date) => state.selectDate(date, 'click')}
+                            {...(renderDay ? { renderDay } : {})}
+                        />
                     ))}
                 </View>
             )}
@@ -269,6 +264,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
         >
             <Header
                 visibleMonth={focusedDate}
+                visibleMonths={months}
                 locale={locale}
                 view={view}
                 onPrev={onPrev}
