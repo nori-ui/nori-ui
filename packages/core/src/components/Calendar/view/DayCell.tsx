@@ -116,7 +116,12 @@ export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay }: DayC
                     },
                 ];
             }}
-            {...(dataState ? { 'data-state': dataState } : {})}
+            {...({
+                dataSet: {
+                    dayKey: `${ctx.date.year}-${ctx.date.month}-${ctx.date.day}`,
+                    ...(dataState ? { state: dataState } : {}),
+                },
+            } as unknown as { dataSet: Record<string, string> })}
         >
             {renderDay ? (
                 renderDay(ctx)

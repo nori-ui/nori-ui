@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 import { View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
@@ -32,6 +32,25 @@ const requiredOuterWidth = (n: number) =>
 // navigation (prev/next, drilldown), forcing a fresh mount; FadeIn starts
 // at opacity 0 + 4px down, then bumps to 1 / 0 in an effect so the inline
 // transition runs. RN-Web honors transition* style props; native ignores.
+const focusDayCell = (root: HTMLElement | null, date: CalendarDate, force: boolean) => {
+    if (!root) {
+        return;
+    }
+    // Without `force`, only redirect if focus is already inside this calendar
+    // — never steal focus from elsewhere on the page on initial render. With
+    // `force`, restore focus into the calendar even if a re-mount briefly
+    // moved focus to <body> (anchor changes from PgDn / arrow nav can do
+    // this when DayGrids unmount).
+    if (!force && !root.contains(document.activeElement)) {
+        return;
+    }
+    const sel = `[data-day-key="${date.year}-${date.month}-${date.day}"]`;
+    const cell = root.querySelector(sel) as HTMLElement | null;
+    if (cell && cell !== document.activeElement) {
+        cell.focus();
+    }
+};
+
 const FadeIn = ({ children }: { children: ReactNode }) => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -170,6 +189,8 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
     // Anchor month: what the user sees. Decoupled from `state.focusedDate`
     // so selecting a day in the rightmost grid does NOT shift the view.
     // Prev/Next buttons mutate this anchor; selectDate does not.
+    const containerRef = useRef<HTMLElement | null>(null);
+
     const state = useCalendarState<M>({
         ...(props.mode !== undefined ? { mode: props.mode } : {}),
         locale,
@@ -202,6 +223,13 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             setAnchor(state.focusedDate);
         }
     }, [state.focusedDate, visibleMonths]);
+
+    const keyboardNavRef = useRef(false);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: state.value is intentional — re-fire focus after a selection re-renders the cell
+    useLayoutEffect(() => {
+        focusDayCell(containerRef.current, state.focusedDate, keyboardNavRef.current);
+        keyboardNavRef.current = false;
+    }, [state.focusedDate, state.value]);
 
     const months = useMemo(
         () => Array.from({ length: visibleMonths }, (_, i) => anchor.add({ months: i })),
@@ -257,10 +285,20 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
 
     return (
         <View
-            ref={props.ref}
+            ref={(node) => {
+                containerRef.current = node as unknown as HTMLElement | null;
+                if (typeof props.ref === 'function') {
+                    props.ref(node);
+                } else if (props.ref) {
+                    (props.ref as { current: View | null }).current = node;
+                }
+            }}
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
             // @ts-expect-error onKeyDown is supported by react-native-web on View
-            onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
+            onKeyDown={(e: React.KeyboardEvent) => {
+                keyboardNavRef.current = true;
+                keyboard.onKeyDown(e);
+            }}
             tabIndex={0}
             style={{
                 padding: SURFACE_PADDING,
@@ -301,7 +339,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             >
                 {props.children}
             </Caption>
-            <FadeIn key={`smc-${state.view}-${anchor.year}-${anchor.month}`}>
+            <FadeIn key={`smc-${state.view}`}>
                 {state.view === 'day' && (
                     <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
                         {months.map((m) => (
@@ -361,6 +399,8 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
     const visibleMonths = pickVisibleMonths(props.visibleMonths, containerWidth);
     const { innerWidth, gridsRowWidth } = surfaceMetrics(visibleMonths);
 
+    const containerRef = useRef<HTMLElement | null>(null);
+
     const range = useRangeState({
         ...(props.value !== undefined ? { value: props.value } : {}),
         ...(props.defaultValue !== undefined ? { defaultValue: props.defaultValue } : {}),
@@ -374,6 +414,12 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
 
     const initialFocus = range.value?.start ?? today(getLocalTimeZone());
     const [focusedDate, setFocusedDate] = useState<CalendarDate>(initialFocus);
+    const keyboardNavRef = useRef(false);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: range.value is intentional — re-fire focus after a selection re-renders the cell
+    useLayoutEffect(() => {
+        focusDayCell(containerRef.current, focusedDate, keyboardNavRef.current);
+        keyboardNavRef.current = false;
+    }, [focusedDate, range.value]);
     const [anchor, setAnchor] = useState<CalendarDate>(initialFocus);
 
     const [internalView, setInternalView] = useState<CalendarView>(props.defaultView ?? 'day');
@@ -462,10 +508,20 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
 
     return (
         <View
-            ref={props.ref}
+            ref={(node) => {
+                containerRef.current = node as unknown as HTMLElement | null;
+                if (typeof props.ref === 'function') {
+                    props.ref(node);
+                } else if (props.ref) {
+                    (props.ref as { current: View | null }).current = node;
+                }
+            }}
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
             // @ts-expect-error onKeyDown is supported by react-native-web on View
-            onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
+            onKeyDown={(e: React.KeyboardEvent) => {
+                keyboardNavRef.current = true;
+                keyboard.onKeyDown(e);
+            }}
             tabIndex={0}
             style={{
                 padding: SURFACE_PADDING,
@@ -506,7 +562,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             >
                 {props.children}
             </Caption>
-            <FadeIn key={`range-${view}-${anchor.year}-${anchor.month}`}>
+            <FadeIn key={`range-${view}`}>
                 {view === 'day' && (
                     <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
                         {months.map((m) => (
