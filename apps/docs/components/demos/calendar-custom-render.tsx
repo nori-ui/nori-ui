@@ -22,25 +22,33 @@ export default function CalendarCustomRender() {
             onChange={(v) => setValue(v)}
             renderDay={(ctx) => {
                 const isPrimary = ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd;
-                // Text auto-themes via useThemeColors; we override color only
-                // when the cell sits on the primary fill (selected/range
-                // endpoints) so the number stays readable on both schemes.
-                const dayColor = isPrimary ? colors.semantic.text.inverted : undefined;
-                const priceColor = isPrimary ? colors.semantic.text.inverted : colors.semantic.text.muted;
+                // Day cell is 40×40. Default `<Text>` lineHeight (22.4) would
+                // push 2 stacked lines past the cell bounds — override with
+                // tight per-line heights so the day + price fit comfortably.
                 return (
                     <VStack className="h-full w-full items-center justify-center" gap={0}>
                         <Text
                             style={{
                                 fontSize: 13,
+                                lineHeight: 14,
                                 fontWeight: ctx.isToday ? '600' : '400',
                                 opacity: ctx.isOutsideMonth ? 0.55 : 1,
-                                ...(dayColor ? { color: dayColor } : {}),
+                                ...(isPrimary ? { color: colors.semantic.text.inverted } : {}),
                             }}
                         >
                             {String(ctx.date.day)}
                         </Text>
                         {ctx.isOutsideMonth ? null : (
-                            <Text style={{ fontSize: 9, color: priceColor }}>{`$${priceFor(ctx.date)}`}</Text>
+                            <Text
+                                style={{
+                                    fontSize: 9,
+                                    lineHeight: 11,
+                                    marginTop: 1,
+                                    color: isPrimary ? colors.semantic.text.inverted : colors.semantic.text.muted,
+                                }}
+                            >
+                                {`$${priceFor(ctx.date)}`}
+                            </Text>
                         )}
                     </VStack>
                 );
