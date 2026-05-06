@@ -351,6 +351,7 @@ const DropdownPair = ({ month, year, monthOptions, yearOptions, onMonthChange, o
                     disabled: o.disabled,
                 }))}
                 aria-label="Month"
+                searchable={false}
             />
             <Select
                 value={String(year)}
@@ -361,6 +362,7 @@ const DropdownPair = ({ month, year, monthOptions, yearOptions, onMonthChange, o
                     disabled: o.disabled,
                 }))}
                 aria-label="Year"
+                searchable={false}
             />
         </View>
     );
