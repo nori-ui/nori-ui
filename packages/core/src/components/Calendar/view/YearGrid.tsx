@@ -4,25 +4,24 @@ import type { CalendarDate } from '@internationalized/date';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useThemeColors } from '../../../theme/use-theme-colors';
-import { CELL_SIZE } from './DayCell';
 
 type YearGridProps = {
     visibleMonth: CalendarDate;
+    /** Width to fill (calendar inner width). */
+    availableWidth: number;
     onSelect: (year: number) => void;
 };
 
 const ROW_KEYS = ['r0', 'r1', 'r2'] as const;
 
-export const YearGrid = ({ visibleMonth, onSelect }: YearGridProps) => {
+export const YearGrid = ({ visibleMonth, availableWidth, onSelect }: YearGridProps) => {
     const colors = useThemeColors();
     const decadeStart = visibleMonth.year - (visibleMonth.year % 10);
-    // Show 12 cells: 1 from previous decade, the 10 of this decade, 1 from next.
     const years = Array.from({ length: 12 }, (_, i) => decadeStart + i - 1);
-    const gridWidth = 7 * CELL_SIZE;
     const cellHeight = 60;
 
     return (
-        <View style={{ width: gridWidth, paddingVertical: 8 }}>
+        <View style={{ width: availableWidth, paddingVertical: 8 }}>
             {ROW_KEYS.map((rowKey, row) => (
                 <View key={rowKey} style={{ flexDirection: 'row', marginBottom: 4 }}>
                     {[0, 1, 2, 3].map((col) => {
@@ -33,7 +32,7 @@ export const YearGrid = ({ visibleMonth, onSelect }: YearGridProps) => {
                         const isCurrent = year === visibleMonth.year;
                         const isAdjacentDecade = year < decadeStart || year >= decadeStart + 10;
                         return (
-                            <View key={year} style={{ flex: 1, paddingHorizontal: 2 }}>
+                            <View key={year} style={{ flex: 1, paddingHorizontal: 4 }}>
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel={String(year)}

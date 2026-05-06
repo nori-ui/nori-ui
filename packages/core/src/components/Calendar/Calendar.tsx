@@ -1,9 +1,9 @@
 'use client';
 
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
-import type { ViewStyle } from 'react-native';
-import { Platform, View } from 'react-native';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import type { LayoutChangeEvent, ViewStyle } from 'react-native';
+import { View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import type { CalendarBaseProps, CalendarMode, CalendarValue, CalendarView, DateRange } from './Calendar.types';
@@ -11,20 +11,27 @@ import { type DayOfWeek, getFirstDayOfWeek, getWeekendDays } from './state/local
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
 import { useCalendarState } from './state/use-calendar-state';
 import { useRangeState } from './state/use-range-state';
+import { CELL_SIZE } from './view/DayCell';
 import { DayGrid } from './view/DayGrid';
 import { Footer } from './view/Footer';
 import { Header } from './view/Header';
 import { MonthGrid } from './view/MonthGrid';
 import { YearGrid } from './view/YearGrid';
 
-const DEFAULT_VISIBLE_MONTHS = 1;
-const DESKTOP_BREAKPOINT = 768;
+// Width constants used to compute the calendar's natural content width and
+// to pick a responsive `visibleMonths` based on the parent container width.
+const GRID_WIDTH = 7 * CELL_SIZE; // single month grid (7 cols)
+const MONTH_GAP = 16;
+const ARROW_AREA = 32 + 8; // nav button width + gap to first/last grid edge
+const SURFACE_PADDING = 16;
+const SURFACE_BORDER = 1;
+const requiredOuterWidth = (n: number) =>
+    2 * (ARROW_AREA + SURFACE_PADDING + SURFACE_BORDER) + n * GRID_WIDTH + (n - 1) * MONTH_GAP;
 
 // Body fade-up on view/month change. The wrapper's `key` flips on every
 // navigation (prev/next, drilldown), forcing a fresh mount; FadeIn starts
-// at opacity 0 + 4px down, then bumps to 1 / 0 in an effect so the
-// inline transition runs. Cross-platform: web uses CSS transitions
-// (RN-Web honors transition* style props); native ignores them.
+// at opacity 0 + 4px down, then bumps to 1 / 0 in an effect so the inline
+// transition runs. RN-Web honors transition* style props; native ignores.
 const FadeIn = ({ children }: { children: ReactNode }) => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -48,54 +55,95 @@ const FadeIn = ({ children }: { children: ReactNode }) => {
     );
 };
 
-const useResolvedVisibleMonths = (input: number | 'auto' | undefined): number => {
-    // Hooks must be called unconditionally — call useState/useEffect every render.
-    const [count, setCount] = useState<number>(() => {
-        if (typeof input === 'number') {
-            return input;
-        }
-        if (Platform.OS !== 'web' || typeof window === 'undefined') {
-            return DEFAULT_VISIBLE_MONTHS;
-        }
-        return window.innerWidth >= DESKTOP_BREAKPOINT ? 2 : 1;
-    });
-
-    useEffect(() => {
-        if (typeof input === 'number') {
-            setCount(input);
-            return;
-        }
-        if (Platform.OS !== 'web' || typeof window === 'undefined') {
-            setCount(DEFAULT_VISIBLE_MONTHS);
-            return;
-        }
-        const handler = () => setCount(window.innerWidth >= DESKTOP_BREAKPOINT ? 2 : 1);
-        handler();
-        window.addEventListener('resize', handler);
-        return () => window.removeEventListener('resize', handler);
-    }, [input]);
-
-    return count;
+/**
+ * Picks a responsive number of visible months from a measured container
+ * width. Used when the consumer doesn't pin `visibleMonths`. Falls back
+ * to 1 month while measurement is in flight (initial render) so we never
+ * overflow on first paint.
+ */
+const pickVisibleMonths = (input: number | 'auto' | undefined, measuredWidth: number | null): number => {
+    if (typeof input === 'number') {
+        return input;
+    }
+    if (measuredWidth == null) {
+        return 1;
+    }
+    if (measuredWidth >= requiredOuterWidth(2)) {
+        return 2;
+    }
+    return 1;
 };
 
+/**
+ * Outer wrapper that measures the available container width and renders
+ * the actual Calendar root once the measurement is in. Renders nothing on
+ * the first paint to avoid the 1-month → 2-month flash; this is one
+ * synchronous re-render after layout, imperceptible in practice.
+ */
 const CalendarRoot = <M extends CalendarMode = 'single'>(props: CalendarBaseProps<M>) => {
+    const [containerWidth, setContainerWidth] = useState<number | null>(null);
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        const next = e.nativeEvent.layout.width;
+        setContainerWidth((prev) => (prev === next ? prev : next));
+    }, []);
+
+    return (
+        <View onLayout={onLayout} style={{ width: '100%' }}>
+            <CalendarSurface<M> containerWidth={containerWidth ?? 0} {...props} />
+        </View>
+    );
+};
+
+const CalendarSurface = <M extends CalendarMode = 'single'>(
+    props: CalendarBaseProps<M> & { containerWidth: number }
+) => {
     const providerLocale = useLocale();
     const locale = props.locale ?? providerLocale;
 
     if ((props.mode ?? 'single') === 'range') {
-        return <RangeCalendar {...(props as CalendarBaseProps<'range'>)} locale={locale} />;
+        return (
+            <RangeCalendar
+                {...(props as unknown as CalendarBaseProps<'range'> & { containerWidth: number })}
+                locale={locale}
+            />
+        );
     }
-    return <SingleOrMultiCalendar {...(props as CalendarBaseProps<Exclude<CalendarMode, 'range'>>)} locale={locale} />;
+    return (
+        <SingleOrMultiCalendar
+            {...(props as unknown as CalendarBaseProps<Exclude<CalendarMode, 'range'>> & { containerWidth: number })}
+            locale={locale}
+        />
+    );
+};
+
+/**
+ * Computes both the inner content width (for centering the body) and the
+ * outer surface width (for the bordered card). Both depend on
+ * visibleMonths only.
+ */
+const surfaceMetrics = (visibleMonths: number) => {
+    const innerWidth = 2 * ARROW_AREA + visibleMonths * GRID_WIDTH + (visibleMonths - 1) * MONTH_GAP;
+    return {
+        innerWidth,
+        // Body grids row width (excludes arrow area)
+        gridsRowWidth: visibleMonths * GRID_WIDTH + (visibleMonths - 1) * MONTH_GAP,
+    };
 };
 
 const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
-    props: CalendarBaseProps<M> & { locale: string }
+    props: CalendarBaseProps<M> & { locale: string; containerWidth: number }
 ) => {
-    const { locale, renderDay } = props;
+    const { locale, renderDay, containerWidth } = props;
     const colors = useThemeColors();
     const firstDayOfWeek = props.firstDayOfWeek ?? getFirstDayOfWeek(locale);
     const weekendDays = (props.weekendDays as [DayOfWeek, DayOfWeek] | undefined) ?? getWeekendDays(locale);
 
+    const visibleMonths = pickVisibleMonths(props.visibleMonths, containerWidth);
+    const { innerWidth, gridsRowWidth } = surfaceMetrics(visibleMonths);
+
+    // Anchor month: what the user sees. Decoupled from `state.focusedDate`
+    // so selecting a day in the rightmost grid does NOT shift the view.
+    // Prev/Next buttons mutate this anchor; selectDate does not.
     const state = useCalendarState<M>({
         ...(props.mode !== undefined ? { mode: props.mode } : {}),
         locale,
@@ -110,6 +158,24 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
         ...(props.isDateUnavailable !== undefined ? { isDateUnavailable: props.isDateUnavailable } : {}),
     });
 
+    const [anchor, setAnchor] = useState<CalendarDate>(state.focusedDate);
+
+    // Snap the anchor when the focused date moves outside visible months
+    // (keyboard nav can do this; selecting a day cannot because we don't
+    // shift focus to selected anymore — see useCalendarState).
+    useEffect(() => {
+        const start = anchor;
+        const end = anchor.add({ months: visibleMonths });
+        if (state.focusedDate.compare(start) < 0 || state.focusedDate.compare(end) >= 0) {
+            setAnchor(state.focusedDate);
+        }
+    }, [state.focusedDate, anchor, visibleMonths]);
+
+    const months = useMemo(
+        () => Array.from({ length: visibleMonths }, (_, i) => anchor.add({ months: i })),
+        [anchor, visibleMonths]
+    );
+
     const keyboard = useCalendarKeyboard({
         focusedDate: state.focusedDate,
         moveFocus: state.moveFocus,
@@ -119,15 +185,24 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
         firstDayOfWeek,
     });
 
-    const visibleMonths = useResolvedVisibleMonths(props.visibleMonths);
-    const months = Array.from({ length: visibleMonths }, (_, i) => state.focusedDate.add({ months: i }));
-
-    const onPrev = () =>
-        state.moveFocus(
-            state.view === 'year' ? { years: -10 } : state.view === 'month' ? { years: -1 } : { months: -1 }
-        );
-    const onNext = () =>
-        state.moveFocus(state.view === 'year' ? { years: 10 } : state.view === 'month' ? { years: 1 } : { months: 1 });
+    const onPrev = () => {
+        if (state.view === 'year') {
+            setAnchor((a) => a.add({ years: -10 }));
+        } else if (state.view === 'month') {
+            setAnchor((a) => a.add({ years: -1 }));
+        } else {
+            setAnchor((a) => a.add({ months: -1 }));
+        }
+    };
+    const onNext = () => {
+        if (state.view === 'year') {
+            setAnchor((a) => a.add({ years: 10 }));
+        } else if (state.view === 'month') {
+            setAnchor((a) => a.add({ years: 1 }));
+        } else {
+            setAnchor((a) => a.add({ months: 1 }));
+        }
+    };
     const onTitlePress = () => state.setView(state.view === 'day' ? 'month' : state.view === 'month' ? 'year' : 'day');
 
     return (
@@ -137,30 +212,34 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
             style={{
-                padding: 16,
+                padding: SURFACE_PADDING,
                 backgroundColor: colors.semantic.background.elevated,
                 borderRadius: 16,
-                borderWidth: 1,
+                borderWidth: SURFACE_BORDER,
                 borderColor: colors.semantic.border.default,
                 shadowColor: '#000',
                 shadowOpacity: 0.04,
                 shadowRadius: 12,
                 shadowOffset: { width: 0, height: 4 },
-                alignSelf: 'flex-start',
+                width: innerWidth + 2 * SURFACE_PADDING + 2 * SURFACE_BORDER,
+                maxWidth: '100%',
+                alignSelf: 'center',
             }}
         >
             <Header
-                visibleMonth={state.focusedDate}
-                visibleMonths={months}
+                visibleMonth={anchor}
+                {...(state.view === 'day' ? { visibleMonths: months } : {})}
                 locale={locale}
                 view={state.view}
+                gridWidth={GRID_WIDTH}
+                monthGap={MONTH_GAP}
                 onPrev={onPrev}
                 onNext={onNext}
                 onTitlePress={onTitlePress}
             />
-            <FadeIn key={`smc-${state.view}-${state.focusedDate.year}-${state.focusedDate.month}`}>
+            <FadeIn key={`smc-${state.view}-${anchor.year}-${anchor.month}`}>
                 {state.view === 'day' && (
-                    <View style={{ flexDirection: 'row', gap: 16 }}>
+                    <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
                         {months.map((m) => (
                             <DayGrid<M>
                                 key={`${m.year}-${m.month}`}
@@ -179,23 +258,29 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                     </View>
                 )}
                 {state.view === 'month' && (
-                    <MonthGrid
-                        visibleMonth={state.focusedDate}
-                        locale={locale}
-                        onSelect={(month) => {
-                            state.setFocusedDate(new CalendarDate(state.focusedDate.year, month, 1));
-                            state.setView('day');
-                        }}
-                    />
+                    <View style={{ alignItems: 'center' }}>
+                        <MonthGrid
+                            visibleMonth={anchor}
+                            locale={locale}
+                            availableWidth={gridsRowWidth}
+                            onSelect={(month) => {
+                                setAnchor(new CalendarDate(anchor.year, month, 1));
+                                state.setView('day');
+                            }}
+                        />
+                    </View>
                 )}
                 {state.view === 'year' && (
-                    <YearGrid
-                        visibleMonth={state.focusedDate}
-                        onSelect={(year) => {
-                            state.setFocusedDate(new CalendarDate(year, state.focusedDate.month, 1));
-                            state.setView('month');
-                        }}
-                    />
+                    <View style={{ alignItems: 'center' }}>
+                        <YearGrid
+                            visibleMonth={anchor}
+                            availableWidth={gridsRowWidth}
+                            onSelect={(year) => {
+                                setAnchor(new CalendarDate(year, anchor.month, 1));
+                                state.setView('month');
+                            }}
+                        />
+                    </View>
                 )}
                 {props.children ? <Footer>{props.children}</Footer> : null}
             </FadeIn>
@@ -203,11 +288,14 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
     );
 };
 
-const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) => {
-    const { locale, renderDay } = props;
+const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; containerWidth: number }) => {
+    const { locale, renderDay, containerWidth } = props;
     const colors = useThemeColors();
     const firstDayOfWeek = props.firstDayOfWeek ?? getFirstDayOfWeek(locale);
     const weekendDays = (props.weekendDays as [DayOfWeek, DayOfWeek] | undefined) ?? getWeekendDays(locale);
+
+    const visibleMonths = pickVisibleMonths(props.visibleMonths, containerWidth);
+    const { innerWidth, gridsRowWidth } = surfaceMetrics(visibleMonths);
 
     const range = useRangeState({
         ...(props.value !== undefined ? { value: props.value } : {}),
@@ -222,6 +310,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
 
     const initialFocus = range.value?.start ?? today(getLocalTimeZone());
     const [focusedDate, setFocusedDate] = useState<CalendarDate>(initialFocus);
+    const [anchor, setAnchor] = useState<CalendarDate>(initialFocus);
 
     const [internalView, setInternalView] = useState<CalendarView>(props.defaultView ?? 'day');
     const isViewControlled = props.view !== undefined;
@@ -236,18 +325,10 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
         [isViewControlled, props.onViewChange]
     );
 
-    const visibleMonths = useResolvedVisibleMonths(props.visibleMonths);
-    const months = Array.from({ length: visibleMonths }, (_, i) => focusedDate.add({ months: i }));
-
-    const onPrev = () => {
-        const delta = view === 'year' ? { years: -10 } : view === 'month' ? { years: -1 } : { months: -1 };
-        setFocusedDate((f) => f.add(delta));
-    };
-    const onNext = () => {
-        const delta = view === 'year' ? { years: 10 } : view === 'month' ? { years: 1 } : { months: 1 };
-        setFocusedDate((f) => f.add(delta));
-    };
-    const onTitlePress = () => setView(view === 'day' ? 'month' : view === 'month' ? 'year' : 'day');
+    const months = useMemo(
+        () => Array.from({ length: visibleMonths }, (_, i) => anchor.add({ months: i })),
+        [anchor, visibleMonths]
+    );
 
     const keyboard = useCalendarKeyboard({
         focusedDate,
@@ -268,11 +349,31 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
                 }
                 return next;
             }),
-        selectDate: (date, _source) => range.selectDate(date, 'keyboard'),
+        selectDate: (date) => range.selectDate(date, 'keyboard'),
         setView,
         view,
         firstDayOfWeek,
     });
+
+    const onPrev = () => {
+        if (view === 'year') {
+            setAnchor((a) => a.add({ years: -10 }));
+        } else if (view === 'month') {
+            setAnchor((a) => a.add({ years: -1 }));
+        } else {
+            setAnchor((a) => a.add({ months: -1 }));
+        }
+    };
+    const onNext = () => {
+        if (view === 'year') {
+            setAnchor((a) => a.add({ years: 10 }));
+        } else if (view === 'month') {
+            setAnchor((a) => a.add({ years: 1 }));
+        } else {
+            setAnchor((a) => a.add({ months: 1 }));
+        }
+    };
+    const onTitlePress = () => setView(view === 'day' ? 'month' : view === 'month' ? 'year' : 'day');
 
     return (
         <View
@@ -281,30 +382,34 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
             style={{
-                padding: 16,
+                padding: SURFACE_PADDING,
                 backgroundColor: colors.semantic.background.elevated,
                 borderRadius: 16,
-                borderWidth: 1,
+                borderWidth: SURFACE_BORDER,
                 borderColor: colors.semantic.border.default,
                 shadowColor: '#000',
                 shadowOpacity: 0.04,
                 shadowRadius: 12,
                 shadowOffset: { width: 0, height: 4 },
-                alignSelf: 'flex-start',
+                width: innerWidth + 2 * SURFACE_PADDING + 2 * SURFACE_BORDER,
+                maxWidth: '100%',
+                alignSelf: 'center',
             }}
         >
             <Header
-                visibleMonth={focusedDate}
-                visibleMonths={months}
+                visibleMonth={anchor}
+                {...(view === 'day' ? { visibleMonths: months } : {})}
                 locale={locale}
                 view={view}
+                gridWidth={GRID_WIDTH}
+                monthGap={MONTH_GAP}
                 onPrev={onPrev}
                 onNext={onNext}
                 onTitlePress={onTitlePress}
             />
-            <FadeIn key={`range-${view}-${focusedDate.year}-${focusedDate.month}`}>
+            <FadeIn key={`range-${view}-${anchor.year}-${anchor.month}`}>
                 {view === 'day' && (
-                    <View style={{ flexDirection: 'row', gap: 16 }}>
+                    <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
                         {months.map((m) => (
                             <DayGrid<'range'>
                                 key={`${m.year}-${m.month}`}
@@ -325,23 +430,29 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string }) =
                     </View>
                 )}
                 {view === 'month' && (
-                    <MonthGrid
-                        visibleMonth={focusedDate}
-                        locale={locale}
-                        onSelect={(month) => {
-                            setFocusedDate(new CalendarDate(focusedDate.year, month, 1));
-                            setView('day');
-                        }}
-                    />
+                    <View style={{ alignItems: 'center' }}>
+                        <MonthGrid
+                            visibleMonth={anchor}
+                            locale={locale}
+                            availableWidth={gridsRowWidth}
+                            onSelect={(month) => {
+                                setAnchor(new CalendarDate(anchor.year, month, 1));
+                                setView('day');
+                            }}
+                        />
+                    </View>
                 )}
                 {view === 'year' && (
-                    <YearGrid
-                        visibleMonth={focusedDate}
-                        onSelect={(year) => {
-                            setFocusedDate(new CalendarDate(year, focusedDate.month, 1));
-                            setView('month');
-                        }}
-                    />
+                    <View style={{ alignItems: 'center' }}>
+                        <YearGrid
+                            visibleMonth={anchor}
+                            availableWidth={gridsRowWidth}
+                            onSelect={(year) => {
+                                setAnchor(new CalendarDate(year, anchor.month, 1));
+                                setView('month');
+                            }}
+                        />
+                    </View>
                 )}
                 {props.children ? <Footer>{props.children}</Footer> : null}
             </FadeIn>

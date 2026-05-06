@@ -10,21 +10,23 @@ import type { CalendarView } from '../Calendar.types';
 import { formatMonthYearTitle } from '../state/locale-utils';
 
 type HeaderProps = {
-    /** The focused month (used when no `visibleMonths` array is given). */
     visibleMonth: CalendarDate;
-    /**
-     * Full array of months displayed when in day view. When length > 1,
-     * the header renders one centered title per month — the first is a
-     * drilldown trigger, the rest are inert labels. Falls back to
-     * `[visibleMonth]` if omitted.
-     */
+    /** Day-view multi-month title array. When length > 1, one centered
+     *  title is rendered over each visible grid; the first is the
+     *  drilldown trigger. */
     visibleMonths?: CalendarDate[];
     locale: string;
     view: CalendarView;
+    /** Width of a single month grid; titles are centered over these slots. */
+    gridWidth: number;
+    /** Gap between month grids; mirrored in the title row so titles align. */
+    monthGap: number;
     onPrev: () => void;
     onNext: () => void;
     onTitlePress: () => void;
 };
+
+const ARROW_BUTTON_GAP = 8;
 
 const NavButton = ({ label, onPress, children }: { label: string; onPress: () => void; children: ReactNode }) => {
     const colors = useThemeColors();
@@ -77,9 +79,7 @@ const TitleButton = ({
     drilldown: boolean;
 }) => {
     const colors = useThemeColors();
-    const interactive = !!onPress;
-    if (!interactive) {
-        // Inert label — no Pressable, just centered text.
+    if (!onPress) {
         return (
             <View style={{ paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' }}>
                 <RNText
@@ -152,7 +152,17 @@ const TitleButton = ({
     );
 };
 
-export const Header = ({ visibleMonth, visibleMonths, locale, view, onPrev, onNext, onTitlePress }: HeaderProps) => {
+export const Header = ({
+    visibleMonth,
+    visibleMonths,
+    locale,
+    view,
+    gridWidth,
+    monthGap,
+    onPrev,
+    onNext,
+    onTitlePress,
+}: HeaderProps) => {
     const { t } = useTranslation();
 
     const titleText = (m: CalendarDate) => {
@@ -173,8 +183,10 @@ export const Header = ({ visibleMonth, visibleMonths, locale, view, onPrev, onNe
               ? 'calendar.header.openYearView'
               : 'calendar.header.openDayView';
 
-    // Multi-month day view: render one title per visible month, evenly distributed.
     const monthsToTitle = view === 'day' && visibleMonths && visibleMonths.length > 1 ? visibleMonths : null;
+    const titleRowWidth = monthsToTitle
+        ? monthsToTitle.length * gridWidth + (monthsToTitle.length - 1) * monthGap
+        : gridWidth;
 
     return (
         <View
@@ -182,37 +194,34 @@ export const Header = ({ visibleMonth, visibleMonths, locale, view, onPrev, onNe
                 flexDirection: 'row',
                 alignItems: 'center',
                 paddingBottom: 10,
+                gap: ARROW_BUTTON_GAP,
+                alignSelf: 'center',
             }}
         >
             <NavButton label={t('calendar.header.previous', { defaultValue: 'Previous' })} onPress={onPrev}>
                 ‹
             </NavButton>
-            <View
-                style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                    alignItems: 'center',
-                }}
-            >
+            <View style={{ flexDirection: 'row', gap: monthGap, width: titleRowWidth }}>
                 {monthsToTitle ? (
                     monthsToTitle.map((m, i) => (
-                        <TitleButton
-                            key={`${m.year}-${m.month}`}
-                            text={titleText(m)}
-                            ariaLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
-                            // First month is the drilldown trigger; the rest are inert labels.
-                            {...(i === 0 ? { onPress: onTitlePress } : {})}
-                            drilldown={i === 0}
-                        />
+                        <View key={`${m.year}-${m.month}`} style={{ width: gridWidth, alignItems: 'center' }}>
+                            <TitleButton
+                                text={titleText(m)}
+                                ariaLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
+                                {...(i === 0 ? { onPress: onTitlePress } : {})}
+                                drilldown={i === 0}
+                            />
+                        </View>
                     ))
                 ) : (
-                    <TitleButton
-                        text={titleText(visibleMonth)}
-                        ariaLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
-                        onPress={onTitlePress}
-                        drilldown
-                    />
+                    <View style={{ width: gridWidth, alignItems: 'center' }}>
+                        <TitleButton
+                            text={titleText(visibleMonth)}
+                            ariaLabel={t(titleAriaKey, { defaultValue: 'Change view' })}
+                            onPress={onTitlePress}
+                            drilldown
+                        />
+                    </View>
                 )}
             </View>
             <NavButton label={t('calendar.header.next', { defaultValue: 'Next' })} onPress={onNext}>

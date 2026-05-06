@@ -5,24 +5,24 @@ import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useThemeColors } from '../../../theme/use-theme-colors';
 import { formatMonthNames } from '../state/locale-utils';
-import { CELL_SIZE } from './DayCell';
 
 type MonthGridProps = {
     visibleMonth: CalendarDate;
     locale: string;
+    /** Width to fill (calendar inner width). Cells distribute across this. */
+    availableWidth: number;
     onSelect: (month: number) => void; // 1..12
 };
 
 const ROW_KEYS = ['r0', 'r1', 'r2', 'r3'] as const;
 
-export const MonthGrid = ({ visibleMonth, locale, onSelect }: MonthGridProps) => {
+export const MonthGrid = ({ visibleMonth, locale, availableWidth, onSelect }: MonthGridProps) => {
     const colors = useThemeColors();
     const names = formatMonthNames(locale);
-    const gridWidth = 7 * CELL_SIZE;
     const cellHeight = 56;
 
     return (
-        <View style={{ width: gridWidth, paddingVertical: 8 }}>
+        <View style={{ width: availableWidth, paddingVertical: 8 }}>
             {ROW_KEYS.map((rowKey, row) => (
                 <View key={rowKey} style={{ flexDirection: 'row', marginBottom: 4 }}>
                     {[0, 1, 2].map((col) => {
@@ -31,7 +31,7 @@ export const MonthGrid = ({ visibleMonth, locale, onSelect }: MonthGridProps) =>
                         const isCurrent = monthNumber === visibleMonth.month;
                         const name = names[idx] ?? '';
                         return (
-                            <View key={monthNumber} style={{ flex: 1, paddingHorizontal: 2 }}>
+                            <View key={monthNumber} style={{ flex: 1, paddingHorizontal: 4 }}>
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel={name}
