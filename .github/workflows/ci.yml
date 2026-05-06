@@ -211,7 +211,10 @@ jobs:
             .dependencies.react = $k
           ' apps/playground-native/package.json > /tmp/pkg.json
           mv /tmp/pkg.json apps/playground-native/package.json
-          yarn install
+          # CI defaults yarn to immutable — but we just rewrote package.json
+          # to swap the Expo/RN/React versions for this tier, so the lockfile
+          # MUST be regenerated. Override the immutable default for this step.
+          YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
       # Build core + mcp before typecheck/test — apps/docs's
       # generate-bundle-sizes script imports from @nori-ui/core's dist
       # exports, and apps/docs's app/mcp/route.ts imports @nori-ui/mcp.
