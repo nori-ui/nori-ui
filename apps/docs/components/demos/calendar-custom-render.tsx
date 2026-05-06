@@ -1,5 +1,5 @@
 import type { CalendarDate } from '@internationalized/date';
-import { Calendar } from '@nori-ui/core';
+import { Calendar, Text, VStack } from '@nori-ui/core';
 import { useState } from 'react';
 
 /**
@@ -22,39 +22,28 @@ export default function CalendarCustomRender() {
             renderDay={(ctx) => {
                 const isPrimary = ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd;
                 return (
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '100%',
-                            height: '100%',
-                            lineHeight: 1,
-                            gap: 2,
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontSize: 13,
-                                fontWeight: ctx.isToday ? 600 : 400,
-                                color: isPrimary ? '#fff' : ctx.isOutsideMonth ? '#a1a1aa' : '#18181b',
-                            }}
+                    <VStack className="h-full w-full items-center justify-center" gap={0}>
+                        <Text
+                            className={
+                                isPrimary
+                                    ? 'text-semantic-text-inverted'
+                                    : ctx.isOutsideMonth
+                                      ? 'text-semantic-text-muted'
+                                      : 'text-semantic-text-default'
+                            }
+                            style={{ fontSize: 13, fontWeight: ctx.isToday ? '600' : '400' }}
                         >
-                            {ctx.date.day}
-                        </span>
+                            {String(ctx.date.day)}
+                        </Text>
                         {ctx.isOutsideMonth ? null : (
-                            <span
-                                style={{
-                                    fontSize: 9,
-                                    fontVariantNumeric: 'tabular-nums',
-                                    color: isPrimary ? 'rgba(255,255,255,0.85)' : '#71717a',
-                                }}
+                            <Text
+                                className={isPrimary ? 'text-semantic-text-inverted/85' : 'text-semantic-text-muted'}
+                                style={{ fontSize: 9 }}
                             >
                                 {`$${priceFor(ctx.date)}`}
-                            </span>
+                            </Text>
                         )}
-                    </div>
+                    </VStack>
                 );
             }}
         />

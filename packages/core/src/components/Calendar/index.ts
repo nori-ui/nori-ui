@@ -1,6 +1,7 @@
 export { Calendar } from './Calendar';
 export type {
     CalendarBehavior,
+    CalendarCaption,
     CalendarMode,
     CalendarProps,
     CalendarValue,
@@ -9,3 +10,5 @@ export type {
     DateRange,
     DayContext,
 } from './Calendar.types';
+export type { CaptionContextValue, CaptionOption } from './state/use-caption';
+export { useCalendarCaption } from './state/use-caption';

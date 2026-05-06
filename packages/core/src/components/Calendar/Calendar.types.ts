@@ -6,6 +6,7 @@ import type { DayOfWeek } from './state/locale-utils';
 export type CalendarMode = 'single' | 'range' | 'multiple';
 export type CalendarView = 'day' | 'month' | 'year';
 export type CalendarBehavior = 'paged' | 'scroll';
+export type CalendarCaption = 'title' | 'dropdown' | 'custom';
 
 export type DateRange = { start: CalendarDate; end: CalendarDate | null };
 
@@ -62,6 +63,22 @@ export type CalendarBaseProps<M extends CalendarMode = 'single'> = {
     maxValue?: CalendarDate;
     /** Predicate marking a date unavailable (cannot be focused or selected). */
     isDateUnavailable?: (date: CalendarDate) => boolean;
+
+    /**
+     * Header layout. `'title'` (default) shows a centered "May 2026 ▾"
+     * drilldown button. `'dropdown'` replaces it with `[ May ▾ ] [ 2026 ▾ ]`
+     * pickers powered by `Select`. `'custom'` hides the built-in caption
+     * and renders `Calendar.Caption` children with full slot composition
+     * via `useCalendarCaption()`.
+     */
+    caption?: CalendarCaption;
+    /**
+     * Year-dropdown bounds, inclusive. Only honored when
+     * `caption !== 'title'`. Defaults derive from `minValue` / `maxValue`
+     * if set, else `[focused.year - 100, focused.year + 10]` — covers the
+     * common birthday-picker and short-term-booking ranges.
+     */
+    yearRange?: [min: number, max: number];
 
     /** Override locale firstDayOfWeek (0=Sun..6=Sat). */
     firstDayOfWeek?: DayOfWeek;

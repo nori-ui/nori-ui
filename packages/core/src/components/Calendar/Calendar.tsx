@@ -11,10 +11,10 @@ import { type DayOfWeek, getFirstDayOfWeek, getWeekendDays } from './state/local
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
 import { useCalendarState } from './state/use-calendar-state';
 import { useRangeState } from './state/use-range-state';
+import { Caption } from './view/Caption';
 import { CELL_SIZE } from './view/DayCell';
 import { DayGrid } from './view/DayGrid';
 import { Footer } from './view/Footer';
-import { Header } from './view/Header';
 import { MonthGrid } from './view/MonthGrid';
 import { YearGrid } from './view/YearGrid';
 
@@ -61,6 +61,27 @@ const FadeIn = ({ children }: { children: ReactNode }) => {
  * to 1 month while measurement is in flight (initial render) so we never
  * overflow on first paint.
  */
+const resolveYearRange = (
+    input: [number, number] | undefined,
+    minValue: import('@internationalized/date').CalendarDate | undefined,
+    maxValue: import('@internationalized/date').CalendarDate | undefined,
+    focusedYear: number
+): [number, number] => {
+    if (input) {
+        return input;
+    }
+    if (minValue && maxValue) {
+        return [minValue.year, maxValue.year];
+    }
+    if (minValue) {
+        return [minValue.year, Math.max(minValue.year, focusedYear + 10)];
+    }
+    if (maxValue) {
+        return [Math.min(maxValue.year, focusedYear - 100), maxValue.year];
+    }
+    return [focusedYear - 100, focusedYear + 10];
+};
+
 const pickVisibleMonths = (input: number | 'auto' | undefined, measuredWidth: number | null): number => {
     // `visibleMonths` is treated as a *maximum*: when the parent container
     // is too narrow to fit `target` months side-by-side, we drop to the
@@ -237,17 +258,26 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                 alignSelf: 'center',
             }}
         >
-            <Header
-                visibleMonth={anchor}
-                {...(state.view === 'day' ? { visibleMonths: months } : {})}
+            <Caption
+                months={months}
                 locale={locale}
                 view={state.view}
+                caption={props.caption ?? 'title'}
                 gridWidth={GRID_WIDTH}
                 monthGap={MONTH_GAP}
+                yearRange={resolveYearRange(props.yearRange, props.minValue, props.maxValue, anchor.year)}
                 onPrev={onPrev}
                 onNext={onNext}
                 onTitlePress={onTitlePress}
-            />
+                onSetMonth={(slot, m) => {
+                    setAnchor(months[slot]?.set({ month: m, day: 1 }) ?? new CalendarDate(anchor.year, m, 1));
+                }}
+                onSetYear={(slot, y) => {
+                    setAnchor(months[slot]?.set({ year: y, day: 1 }) ?? new CalendarDate(y, anchor.month, 1));
+                }}
+            >
+                {props.children}
+            </Caption>
             <FadeIn key={`smc-${state.view}-${anchor.year}-${anchor.month}`}>
                 {state.view === 'day' && (
                     <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
@@ -293,7 +323,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                         />
                     </View>
                 )}
-                {props.children ? <Footer>{props.children}</Footer> : null}
+                {props.children && (props.caption ?? 'title') !== 'custom' ? <Footer>{props.children}</Footer> : null}
             </FadeIn>
         </View>
     );
@@ -412,17 +442,26 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                 alignSelf: 'center',
             }}
         >
-            <Header
-                visibleMonth={anchor}
-                {...(view === 'day' ? { visibleMonths: months } : {})}
+            <Caption
+                months={months}
                 locale={locale}
                 view={view}
+                caption={props.caption ?? 'title'}
                 gridWidth={GRID_WIDTH}
                 monthGap={MONTH_GAP}
+                yearRange={resolveYearRange(props.yearRange, props.minValue, props.maxValue, anchor.year)}
                 onPrev={onPrev}
                 onNext={onNext}
                 onTitlePress={onTitlePress}
-            />
+                onSetMonth={(slot, m) => {
+                    setAnchor(months[slot]?.set({ month: m, day: 1 }) ?? new CalendarDate(anchor.year, m, 1));
+                }}
+                onSetYear={(slot, y) => {
+                    setAnchor(months[slot]?.set({ year: y, day: 1 }) ?? new CalendarDate(y, anchor.month, 1));
+                }}
+            >
+                {props.children}
+            </Caption>
             <FadeIn key={`range-${view}-${anchor.year}-${anchor.month}`}>
                 {view === 'day' && (
                     <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
@@ -470,7 +509,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                         />
                     </View>
                 )}
-                {props.children ? <Footer>{props.children}</Footer> : null}
+                {props.children && (props.caption ?? 'title') !== 'custom' ? <Footer>{props.children}</Footer> : null}
             </FadeIn>
         </View>
     );

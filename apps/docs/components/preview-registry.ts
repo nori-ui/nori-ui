@@ -21,6 +21,7 @@ import CalendarControlled from './demos/calendar-controlled';
 import CalendarCustomRender from './demos/calendar-custom-render';
 import CalendarDisabledDates from './demos/calendar-disabled-dates';
 import CalendarDrilldown from './demos/calendar-drilldown';
+import CalendarDropdownCaption from './demos/calendar-dropdown-caption';
 import CalendarMinMax from './demos/calendar-min-max';
 import CalendarMultiple from './demos/calendar-multiple';
 import CalendarRange from './demos/calendar-range';
@@ -259,6 +260,7 @@ export const previews = {
     'calendar-custom-render': { Component: CalendarCustomRender, ...previewSources['calendar-custom-render'] },
     'calendar-min-max': { Component: CalendarMinMax, ...previewSources['calendar-min-max'] },
     'calendar-disabled-dates': { Component: CalendarDisabledDates, ...previewSources['calendar-disabled-dates'] },
+    'calendar-dropdown-caption': { Component: CalendarDropdownCaption, ...previewSources['calendar-dropdown-caption'] },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.
