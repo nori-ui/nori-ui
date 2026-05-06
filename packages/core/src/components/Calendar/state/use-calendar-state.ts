@@ -98,24 +98,43 @@ export const useCalendarState = <M extends CalendarMode = 'single'>(
         [isViewControlled, props.onViewChange]
     );
 
-    const moveFocus = useCallback((delta: FocusDelta) => {
-        setFocusedDate((cur) => {
-            let next = cur;
-            if (delta.days) {
-                next = next.add({ days: delta.days });
-            }
-            if (delta.weeks) {
-                next = next.add({ weeks: delta.weeks });
-            }
-            if (delta.months) {
-                next = next.add({ months: delta.months });
-            }
-            if (delta.years) {
-                next = next.add({ years: delta.years });
-            }
-            return next;
-        });
-    }, []);
+    const moveFocus = useCallback(
+        (delta: FocusDelta) => {
+            setFocusedDate((cur) => {
+                let next = cur;
+                if (delta.days) {
+                    next = next.add({ days: delta.days });
+                }
+                if (delta.weeks) {
+                    next = next.add({ weeks: delta.weeks });
+                }
+                if (delta.months) {
+                    next = next.add({ months: delta.months });
+                }
+                if (delta.years) {
+                    next = next.add({ years: delta.years });
+                }
+                if (!isUnavailable(next)) {
+                    return next;
+                }
+                // Target is disabled — scan in the direction of motion for
+                // the next available date. Cap at ~100 days so a wide
+                // disabled range doesn't loop forever; if nothing's
+                // available within the cap, leave focus where it was.
+                const totalDelta =
+                    (delta.days ?? 0) + (delta.weeks ?? 0) * 7 + (delta.months ?? 0) * 30 + (delta.years ?? 0) * 365;
+                const sign = totalDelta >= 0 ? 1 : -1;
+                for (let i = 1; i <= 100; i++) {
+                    const candidate = next.add({ days: sign * i });
+                    if (!isUnavailable(candidate)) {
+                        return candidate;
+                    }
+                }
+                return cur;
+            });
+        },
+        [isUnavailable]
+    );
 
     const selectDate = useCallback(
         (date: CalendarDate, source: ChangeMeta['source']) => {

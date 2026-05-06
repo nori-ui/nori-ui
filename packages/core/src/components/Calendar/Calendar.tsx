@@ -36,18 +36,23 @@ const focusDayCell = (root: HTMLElement | null, date: CalendarDate, force: boole
     if (!root) {
         return;
     }
-    // Without `force`, only redirect if focus is already inside this calendar
-    // — never steal focus from elsewhere on the page on initial render. With
-    // `force`, restore focus into the calendar even if a re-mount briefly
-    // moved focus to <body> (anchor changes from PgDn / arrow nav can do
-    // this when DayGrids unmount).
     if (!force && !root.contains(document.activeElement)) {
         return;
     }
     const sel = `[data-day-key="${date.year}-${date.month}-${date.day}"]`;
     const cell = root.querySelector(sel) as HTMLElement | null;
-    if (cell && cell !== document.activeElement) {
-        cell.focus();
+    const isDisabled = (cell as HTMLButtonElement | null)?.disabled === true;
+    if (cell && !isDisabled) {
+        if (cell !== document.activeElement) {
+            cell.focus();
+        }
+        return;
+    }
+    // Cell is missing or disabled — fall back to focusing the calendar root
+    // so subsequent keyboard navigation continues to fire onKeyDown
+    // (otherwise focus drops to <body> and arrow keys go to the page).
+    if (force && !root.contains(document.activeElement)) {
+        root.focus();
     }
 };
 
