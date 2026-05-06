@@ -52,6 +52,43 @@ Click the title to toggle between day, month, and year views. `defaultView="year
 
 <Preview name="calendar-controlled" />
 
+## Constraining selection
+
+Use `minValue` / `maxValue` to bound the selectable range, and
+`isDateUnavailable` to disable arbitrary dates (weekends, holidays,
+server-fetched blackout periods). Disabled cells render dimmed and
+cannot be focused or selected.
+
+### Min / max
+
+<Preview name="calendar-min-max" />
+
+```tsx
+import { Calendar } from '@nori-ui/core';
+import { today, getLocalTimeZone } from '@internationalized/date';
+
+const start = today(getLocalTimeZone());
+const end = start.add({ days: 30 });
+
+<Calendar minValue={start} maxValue={end} />
+```
+
+### Disabled dates and ranges
+
+`isDateUnavailable` is a synchronous predicate the Calendar calls for
+every visible cell. Combine it freely with bounds.
+
+<Preview name="calendar-disabled-dates" />
+
+```tsx
+<Calendar
+    isDateUnavailable={(date) => {
+        const dow = date.toDate('UTC').getUTCDay();
+        return dow === 0 || dow === 6; // disable weekends
+    }}
+/>
+```
+
 ## Custom day rendering
 
 Use the `renderDay` slot to overlay availability dots, prices, or per-day decorations.
