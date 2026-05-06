@@ -98,6 +98,89 @@ describe('<Select>', () => {
         expect(screen.queryByRole('option')).toBeNull();
     });
 
+    describe('keyboard nav without a search field', () => {
+        const MONTHS: SelectOption[] = [
+            { value: '01', label: 'January' },
+            { value: '02', label: 'February' },
+            { value: '03', label: 'March' },
+            { value: '04', label: 'April' },
+            { value: '05', label: 'May' },
+            { value: '06', label: 'June' },
+            { value: '07', label: 'July' },
+            { value: '08', label: 'August' },
+            { value: '09', label: 'September' },
+            { value: '10', label: 'October' },
+            { value: '11', label: 'November' },
+            { value: '12', label: 'December' },
+        ];
+
+        it('arrow keys + Enter work on the popup itself when searchable=false', () => {
+            render(<Select options={MONTHS} searchable={false} testID="sel" />);
+            fireEvent.click(screen.getByRole('combobox'));
+            const popup = screen.getByRole('listbox');
+            // Active starts at index 0 (January). ArrowDown twice → March.
+            fireEvent.keyDown(popup, { key: 'ArrowDown' });
+            fireEvent.keyDown(popup, { key: 'ArrowDown' });
+            fireEvent.keyDown(popup, { key: 'Enter' });
+            expect(screen.getByTestId('sel')).toHaveTextContent('March');
+        });
+
+        it('Escape on a no-search popup closes without selecting', () => {
+            render(<Select options={MONTHS} defaultValue="01" searchable={false} testID="sel" />);
+            fireEvent.click(screen.getByRole('combobox'));
+            fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' });
+            expect(screen.queryByRole('option')).toBeNull();
+            expect(screen.getByTestId('sel')).toHaveTextContent('January');
+        });
+
+        it('type-ahead "Sep" jumps to September even without a search field', () => {
+            const onChange = jest.fn();
+            render(<Select options={MONTHS} searchable={false} onChange={onChange} testID="sel" />);
+            fireEvent.click(screen.getByRole('combobox'));
+            const popup = screen.getByRole('listbox');
+            fireEvent.keyDown(popup, { key: 'S' });
+            fireEvent.keyDown(popup, { key: 'e' });
+            fireEvent.keyDown(popup, { key: 'p' });
+            fireEvent.keyDown(popup, { key: 'Enter' });
+            expect(onChange).toHaveBeenCalledWith('09', expect.objectContaining({ label: 'September' }));
+        });
+
+        it('type-ahead with a single char cycles through matches on repeat', () => {
+            // Two M-months: March (idx 2) and May (idx 4). Pressing "m" twice
+            // within the reset window should move March → May rather than
+            // sticking on March, because "mm" is all-same → cycle mode.
+            const onChange = jest.fn();
+            render(<Select options={MONTHS} searchable={false} onChange={onChange} testID="sel" />);
+            fireEvent.click(screen.getByRole('combobox'));
+            const popup = screen.getByRole('listbox');
+            fireEvent.keyDown(popup, { key: 'm' });
+            fireEvent.keyDown(popup, { key: 'm' });
+            fireEvent.keyDown(popup, { key: 'Enter' });
+            expect(onChange).toHaveBeenCalledWith('05', expect.objectContaining({ label: 'May' }));
+        });
+
+        it('type-ahead from the closed trigger opens the popup and pre-selects', () => {
+            const onChange = jest.fn();
+            render(<Select options={MONTHS} searchable={false} onChange={onChange} testID="sel" />);
+            const trigger = screen.getByRole('combobox');
+            fireEvent.keyDown(trigger, { key: 'A' });
+            // Popup should now be open with April active (first 'A' match
+            // after activeIndex 0 in cycle mode).
+            expect(screen.getByRole('listbox')).toBeInTheDocument();
+            fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Enter' });
+            expect(onChange).toHaveBeenCalledWith('04', expect.objectContaining({ label: 'April' }));
+        });
+
+        it('Home / End jump to the first / last option', () => {
+            render(<Select options={MONTHS} searchable={false} testID="sel" />);
+            fireEvent.click(screen.getByRole('combobox'));
+            const popup = screen.getByRole('listbox');
+            fireEvent.keyDown(popup, { key: 'End' });
+            fireEvent.keyDown(popup, { key: 'Enter' });
+            expect(screen.getByTestId('sel')).toHaveTextContent('December');
+        });
+    });
+
     it('grouped options render group headers', () => {
         const grouped: SelectOption[] = [
             { value: 'a', label: 'Apple', group: 'Fruits' },

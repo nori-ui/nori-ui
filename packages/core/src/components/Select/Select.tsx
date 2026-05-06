@@ -138,6 +138,10 @@ const DEFAULT_ITEM_HEIGHT = 36;
 const DEFAULT_MAX_MENU = 320;
 const SEARCH_DEBOUNCE_MS = 150;
 const VIRTUAL_OVERSCAN = 4;
+// Reset window for the type-ahead buffer. Matches native <select> on macOS
+// closely enough that typing "Sep" lands on September even without a search
+// field. Shorter than the WAI-ARIA suggested 500ms feels jumpy on slow typists.
+const TYPE_AHEAD_RESET_MS = 500;
 
 const defaultFilter = <T,>(option: SelectOption<T>, search: string): boolean => {
     if (!search) {
@@ -168,7 +172,10 @@ const defaultFilter = <T,>(option: SelectOption<T>, search: string): boolean => 
  *   - Virtualized list when item count > 100 (or set `virtualized`
  *     explicitly). Only the visible window is rendered.
  *   - Keyboard navigation: ArrowDown / ArrowUp move the active option,
- *     Enter selects, Escape closes, Tab closes and selects.
+ *     Home / End jump to the first / last, Enter selects, Escape closes,
+ *     Tab closes. Type-ahead works whether or not a search field is shown
+ *     (typing "Sep" lands on September; repeating a single char like
+ *     "m","m" cycles through M-options).
  *   - RTL alignment via `dir="rtl"`.
  */
 export const Select = <T = unknown>(props: SelectProps<T>) => {
@@ -419,47 +426,172 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
         [visibleOptions]
     );
 
-    const handleSearchKeyDown = useCallback(
-        (event: KeyboardEvent<HTMLInputElement>) => {
+    // Type-ahead buffer — shared across the trigger (closed state) and the
+    // popup container (open without search field). Mutable ref so we don't
+    // re-render on every keystroke.
+    const typeAheadRef = useRef<{ buffer: string; timer: ReturnType<typeof setTimeout> | null }>({
+        buffer: '',
+        timer: null,
+    });
+    useEffect(() => {
+        // Clear any pending type-ahead timer on unmount so we don't leak it.
+        return () => {
+            if (typeAheadRef.current.timer) {
+                clearTimeout(typeAheadRef.current.timer);
+                typeAheadRef.current.timer = null;
+            }
+        };
+    }, []);
+
+    const handleTypeAhead = useCallback(
+        (char: string) => {
+            if (visibleOptions.length === 0) {
+                return;
+            }
+            if (typeAheadRef.current.timer) {
+                clearTimeout(typeAheadRef.current.timer);
+            }
+            const nextBuffer = typeAheadRef.current.buffer + char.toLowerCase();
+            typeAheadRef.current.buffer = nextBuffer;
+            typeAheadRef.current.timer = setTimeout(() => {
+                typeAheadRef.current.buffer = '';
+                typeAheadRef.current.timer = null;
+            }, TYPE_AHEAD_RESET_MS);
+
+            // Cycle mode: a single char OR repeated same char (e.g. "aa") cycles
+            // through options whose label starts with that char, advancing past
+            // the current activeIndex. Otherwise the buffer is treated as a
+            // prefix and we search from the top — refining the match as the
+            // user keeps typing ("S" → "Se" → "Sep" → September).
+            const allSame = nextBuffer.length > 1 && nextBuffer.split('').every((c) => c === nextBuffer[0]);
+            const cycleMode = nextBuffer.length === 1 || allSame;
+            const needle = cycleMode ? nextBuffer.charAt(0) : nextBuffer;
+            const len = visibleOptions.length;
+            const startFrom = cycleMode ? (activeIndex + 1) % len : 0;
+            for (let i = 0; i < len; i += 1) {
+                const idx = (startFrom + i) % len;
+                const opt = visibleOptions[idx];
+                if (!opt || opt.disabled) {
+                    continue;
+                }
+                if (opt.label.toLowerCase().startsWith(needle)) {
+                    setActiveIndex(idx);
+                    return;
+                }
+            }
+        },
+        [visibleOptions, activeIndex]
+    );
+
+    // Shared list-navigation handler — used by the search input, the
+    // popup container (when no search field is shown), and as the basis for
+    // trigger handling. Returns true if the event was consumed so callers
+    // can fall through to type-ahead handling for unhandled keys.
+    const handleListKeyDown = useCallback(
+        (event: KeyboardEvent<HTMLElement>): boolean => {
             switch (event.key) {
                 case 'ArrowDown':
                     event.preventDefault();
                     moveActive(1);
-                    return;
+                    return true;
                 case 'ArrowUp':
                     event.preventDefault();
                     moveActive(-1);
-                    return;
+                    return true;
+                case 'Home': {
+                    event.preventDefault();
+                    const idx = visibleOptions.findIndex((o) => !o.disabled);
+                    if (idx >= 0) {
+                        setActiveIndex(idx);
+                    }
+                    return true;
+                }
+                case 'End': {
+                    event.preventDefault();
+                    for (let i = visibleOptions.length - 1; i >= 0; i -= 1) {
+                        if (!visibleOptions[i]?.disabled) {
+                            setActiveIndex(i);
+                            break;
+                        }
+                    }
+                    return true;
+                }
                 case 'Enter': {
                     const opt = visibleOptions[activeIndex];
                     if (opt) {
                         event.preventDefault();
                         onSelect(opt);
                     }
-                    return;
+                    return true;
                 }
                 case 'Escape':
                     event.preventDefault();
                     setOpen(false);
-                    return;
+                    // Restore focus to the trigger so the next Tab keeps the
+                    // user inside the same widget instead of jumping to <body>.
+                    if (Platform.OS === 'web') {
+                        const trigger = triggerRef.current as unknown as { focus?: () => void } | null;
+                        trigger?.focus?.();
+                    }
+                    return true;
                 case 'Tab':
                     setOpen(false);
-                    return;
+                    return true;
             }
+            return false;
         },
         [moveActive, activeIndex, visibleOptions, onSelect]
     );
 
-    const handleTriggerKeyDown = useCallback((event: KeyboardEvent<HTMLElement>) => {
-        switch (event.key) {
-            case ' ':
-            case 'Enter':
-            case 'ArrowDown':
+    const handleSearchKeyDown = useCallback(
+        (event: KeyboardEvent<HTMLInputElement>) => {
+            handleListKeyDown(event);
+        },
+        [handleListKeyDown]
+    );
+
+    // Popup-container handler — only attached when there's no search input,
+    // so we own type-ahead here. Falls through to the shared list handler
+    // for arrow keys / Enter / Escape / Tab.
+    const handlePopupKeyDown = useCallback(
+        (event: KeyboardEvent<HTMLElement>) => {
+            if (handleListKeyDown(event)) {
+                return;
+            }
+            // Single printable character without modifiers → feed the
+            // type-ahead buffer. Modifier-combos (Cmd-A, Ctrl-K) are left
+            // alone so browser/OS shortcuts keep working.
+            if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey && event.key !== ' ') {
+                event.preventDefault();
+                handleTypeAhead(event.key);
+            }
+        },
+        [handleListKeyDown, handleTypeAhead]
+    );
+
+    const handleTriggerKeyDown = useCallback(
+        (event: KeyboardEvent<HTMLElement>) => {
+            switch (event.key) {
+                case ' ':
+                case 'Enter':
+                case 'ArrowDown':
+                case 'ArrowUp':
+                    event.preventDefault();
+                    setOpen(true);
+                    return;
+            }
+            // Type-ahead on the closed trigger: open the popup and jump to
+            // the matching option. Mirrors native <select> behaviour where
+            // typing a letter while the control has focus changes the
+            // highlighted choice without an explicit "open" gesture.
+            if (!disabled && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
                 event.preventDefault();
                 setOpen(true);
-                return;
-        }
-    }, []);
+                handleTypeAhead(event.key);
+            }
+        },
+        [disabled, handleTypeAhead]
+    );
 
     // Close when clicking outside (web only). The outside check considers
     // BOTH the container (trigger area) and the popup ref because the popup
@@ -544,6 +676,21 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
             window.removeEventListener('resize', measureTrigger);
         };
     }, [open, measureTrigger]);
+
+    // Auto-focus the popup container when it opens without a search field —
+    // otherwise key events have nowhere to land and the user gets a popup
+    // they can only operate with the mouse. With a search field, the input's
+    // own auto-focus effect already handles this.
+    useEffect(() => {
+        if (!open || searchable || Platform.OS !== 'web') {
+            return;
+        }
+        const id = requestAnimationFrame(() => {
+            const node = popupRef.current as unknown as { focus?: () => void } | null;
+            node?.focus?.();
+        });
+        return () => cancelAnimationFrame(id);
+    }, [open, searchable]);
 
     // Scroll handler for async pagination. ScrollView's onScroll event shape
     // works across both react-native-web (HTMLDivElement under the hood) and
@@ -697,6 +844,11 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                     role: 'listbox',
                     id: `${baseId}-listbox`,
                     ...(multiple ? { 'aria-multiselectable': true } : {}),
+                    // Without a search field there's no input to capture
+                    // keystrokes — make the popup itself focusable and own
+                    // arrow / Enter / Escape / type-ahead. With a search
+                    // field these belong to the input below.
+                    ...(searchable ? {} : { tabIndex: -1, onKeyDown: handlePopupKeyDown }),
                 } as Record<string, unknown>)}
                 style={popupStyle}
             >
