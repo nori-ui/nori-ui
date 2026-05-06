@@ -24,6 +24,12 @@ export default defineConfig({
                 find: /^react-native\/Libraries\/Utilities\/codegenNativeComponent$/,
                 replacement: path.resolve(__dirname, 'src/shims/codegenNativeComponent.js'),
             },
+            // ReactFabric is the native fabric renderer — react-native-web has no
+            // equivalent. react-native-reanimated eagerly requires it; stub it.
+            {
+                find: /^react-native\/Libraries\/Renderer\/shims\/ReactFabric$/,
+                replacement: path.resolve(__dirname, 'src/shims/ReactFabric.js'),
+            },
             { find: /^react-native$/, replacement: 'react-native-web' },
             { find: /^react-native\/(.*)$/, replacement: 'react-native-web/$1' },
         ],
