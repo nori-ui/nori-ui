@@ -243,6 +243,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
+            tabIndex={0}
             style={{
                 padding: SURFACE_PADDING,
                 backgroundColor: colors.semantic.background.elevated,
@@ -434,6 +435,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             {...(props.testID !== undefined ? { testID: props.testID } : {})}
             // @ts-expect-error onKeyDown is supported by react-native-web on View
             onKeyDown={(e: React.KeyboardEvent) => keyboard.onKeyDown(e)}
+            tabIndex={0}
             style={{
                 padding: SURFACE_PADDING,
                 backgroundColor: colors.semantic.background.elevated,

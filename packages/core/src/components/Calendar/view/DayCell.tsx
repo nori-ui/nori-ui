@@ -93,7 +93,7 @@ export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay }: DayC
                     transform = [{ scale: pressed ? 0.94 : 1 }];
                 }
 
-                if (focused && !isSelectedLike) {
+                if ((ctx.isFocused || focused) && !isSelectedLike) {
                     borderWidth = 2;
                     borderColor = colors.semantic.interactive.primary;
                 }
