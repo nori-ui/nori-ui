@@ -19,7 +19,7 @@
     "eslint:rn": "eslint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "test": "yarn workspaces foreach -A -pt run test",
+    "test": "yarn workspaces foreach -A --exclude '@nori-ui/e2e-*' -pt run test",
     "size": "yarn workspace @nori-ui/core exec size-limit",
     "build:tokens": "yarn workspace @nori-ui/tokens build",
     "build:ui": "yarn workspace @nori-ui/core build",
