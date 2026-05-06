@@ -33,6 +33,13 @@ jobs:
       - name: Build design tokens
         run: yarn build:tokens
 
+      - name: Build UI library
+        # apps/docs's typecheck/test runs generate-bundle-sizes.mjs, which
+        # esbuild-bundles each component import from @nori-ui/core. Core's
+        # exports map points at dist/, so the dist must exist before docs
+        # runs anything that touches that script.
+        run: yarn build:ui
+
       - name: Verify tokens/build is up to date
         run: |
           if [[ -n "$(git status --porcelain packages/tokens/build/)" ]]; then
@@ -80,6 +87,11 @@ jobs:
       - name: Build design tokens
         run: yarn build:tokens
 
+      - name: Build UI library
+        # The docs server (started by the e2e suite) generates bundle-size
+        # data from @nori-ui/core's dist exports map.
+        run: yarn build:ui
+
       - name: Install Playwright browsers
         run: yarn e2e:browsers
 
@@ -117,6 +129,11 @@ jobs:
 
       - name: Build design tokens
         run: yarn build:tokens
+
+      - name: Build UI library
+        # Required by apps/docs's generate-bundle-sizes.mjs (resolves
+        # @nori-ui/core via its dist/ exports map).
+        run: yarn build:ui
 
       - name: Build docs
         run: yarn build:docs
@@ -182,6 +199,8 @@ jobs:
           ' apps/playground-native/package.json > /tmp/pkg.json
           mv /tmp/pkg.json apps/playground-native/package.json
           yarn install
+      # Build core before typecheck/test — apps/docs's generate-bundle-sizes
+      # script needs the @nori-ui/core dist to resolve.
+      - run: yarn build:ui
       - run: yarn typecheck
       - run: yarn test
-      - run: yarn build:ui
