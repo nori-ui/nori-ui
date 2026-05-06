@@ -418,7 +418,10 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             setAnchor((a) => a.add({ months: 1 }));
         }
     };
+    const [drilldownSlot, setDrilldownSlot] = useState(0);
     const onTitlePress = (clicked: CalendarDate) => {
+        const slot = months.findIndex((m) => m.year === clicked.year && m.month === clicked.month);
+        setDrilldownSlot(slot >= 0 ? slot : 0);
         if (clicked.compare(anchor) !== 0) {
             setAnchor(clicked);
         }
@@ -499,7 +502,8 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                             locale={locale}
                             availableWidth={gridsRowWidth}
                             onSelect={(month) => {
-                                setAnchor(new CalendarDate(anchor.year, month, 1));
+                                const picked = new CalendarDate(anchor.year, month, 1);
+                                setAnchor(picked.subtract({ months: drilldownSlot }));
                                 setView('day');
                             }}
                         />
@@ -511,7 +515,8 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                             visibleMonth={anchor}
                             availableWidth={gridsRowWidth}
                             onSelect={(year) => {
-                                setAnchor(new CalendarDate(year, anchor.month, 1));
+                                const picked = new CalendarDate(year, anchor.month, 1);
+                                setAnchor(picked.subtract({ months: drilldownSlot }));
                                 setView('month');
                             }}
                         />
