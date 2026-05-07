@@ -27,7 +27,7 @@
     "dev:native": "yarn workspace playground-native start",
     "dev:storybook": "yarn workspace playground-web storybook",
     "build:storybook": "yarn workspace playground-web build:storybook",
-    "dev:docs": "yarn workspace @nori-ui/docs dev",
+    "dev:docs": "yarn build:ui && yarn workspace @nori-ui/docs dev",
     "build:docs": "yarn workspace @nori-ui/docs build",
     "test:mcp-eval": "yarn workspace @nori-ui/e2e-web test tests/mcp-eval.spec.ts",
     "test:e2e:web": "yarn workspace @nori-ui/e2e-web test",
