@@ -37,7 +37,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "node ../../apps/docs/scripts/generate-mcp-data.mjs && tsup",
