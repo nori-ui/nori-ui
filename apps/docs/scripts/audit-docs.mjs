@@ -137,10 +137,13 @@ for (const file of docsFiles.sort()) {
             .map((p) => p.name)
             .filter((p) => p !== 'className' && p !== 'testID' && p !== 'ref' && p !== 'children')
             .filter((name) => {
-                // Backtick-quoted prop alone OR followed by `=` (attribute use)
-                // OR `:` (type field). Catches `prop`, `prop=`, `prop:` styles.
+                // A prop is "documented" if it's mentioned anywhere a reader
+                // would notice: as backtick `prop`, as a JSX attribute
+                // `prop=`, or as a type field `prop:`. We don't try to be
+                // strict — the goal is to surface obvious silence, not to
+                // grade prose quality.
                 const escaped = name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-                const re = new RegExp(`\\\`${escaped}[=:` + `]?\\\`|\\\`${escaped}=`);
+                const re = new RegExp(`\\\`${escaped}[\`=:]|\\b${escaped}=`);
                 return !re.test(mdx);
             });
         if (undocumented.length > 0) {
@@ -166,11 +169,14 @@ for (const file of docsFiles.sort()) {
 
 if (reports.length === 0) {
     console.log('No issues found.');
-} else {
-    for (const r of reports) {
-        console.log(`\n## ${r.slug}.mdx`);
-        for (const i of r.issues) {
-            console.log(`  - ${i}`);
-        }
+    process.exit(0);
+}
+
+for (const r of reports) {
+    console.log(`\n## ${r.slug}.mdx`);
+    for (const i of r.issues) {
+        console.log(`  - ${i}`);
     }
 }
+console.error(`\nFound documentation gaps in ${reports.length} page(s). See list above.`);
+process.exit(1);

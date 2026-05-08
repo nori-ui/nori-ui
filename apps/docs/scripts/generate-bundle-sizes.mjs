@@ -10,7 +10,7 @@
 // Run via the predev/prebuild package.json hooks alongside the other
 // generators.
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,46 +22,33 @@ const DOCS_ROOT = join(HERE, '..');
 const REPO_ROOT = join(HERE, '..', '..', '..');
 const OUT_FILE = join(HERE, '..', 'components', 'bundle-sizes.generated.ts');
 
-// One named export per docs page. Must cover every public component
-// — missing entries silently produce no <BundleSize> pill on that
-// component's docs page.
-const TARGETS = [
-    'Accordion',
-    'Alert',
-    'AlertDialog',
-    'Avatar',
-    'Badge',
-    'Box',
-    'Breadcrumb',
-    'Button',
-    'Calendar',
-    'Card',
-    'Checkbox',
-    'Dialog',
-    'FloatButton',
-    'HStack',
-    'Icon',
-    'InputGroup',
-    'Pagination',
-    'Popover',
-    'Progress',
-    'Radio',
-    'SegmentedControl',
-    'Select',
-    'Separator',
-    'Skeleton',
-    'Slider',
-    'Spinner',
-    'Switch',
-    'Tabs',
-    'Text',
-    'TextArea',
-    'TextInput',
-    'Toaster',
-    'Toggle',
-    'Tooltip',
-    'VStack',
-];
+// Source of truth for the target list is the docs site itself: every
+// component MDX page declares the component to measure with its
+// <BundleSize component="X" /> tag (always near the top of the file).
+// Walking the MDX directory means adding a docs page automatically
+// pulls the component into the size table — no hand-curated list to
+// drift out of sync.
+const DOCS_COMPONENTS_DIR = join(REPO_ROOT, 'apps', 'docs', 'content', 'docs', 'components');
+const BUNDLE_SIZE_TAG = /<BundleSize\s+component=["']([^"']+)["']\s*\/>/;
+
+const TARGETS = (() => {
+    const seen = new Set();
+    for (const entry of readdirSync(DOCS_COMPONENTS_DIR, { withFileTypes: true })) {
+        if (!entry.isFile() || !entry.name.endsWith('.mdx')) {
+            continue;
+        }
+        const src = readFileSync(join(DOCS_COMPONENTS_DIR, entry.name), 'utf8');
+        const match = src.match(BUNDLE_SIZE_TAG);
+        if (!match) {
+            throw new Error(
+                `apps/docs/content/docs/components/${entry.name} is missing the <BundleSize component="…" /> tag. ` +
+                    `Every component docs page must declare which component to measure.`
+            );
+        }
+        seen.add(match[1]);
+    }
+    return [...seen].sort();
+})();
 
 // Treat real consumer-side dependencies as externals. These are loaded
 // regardless of nori-ui usage; counting them would inflate every number

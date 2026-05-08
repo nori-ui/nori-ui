@@ -1,51 +1,37 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { bundleSizes } from '../components/bundle-sizes.generated';
 import { previewSources } from '../components/preview-sources.generated';
 import { componentProps } from '../components/props.generated';
 
-// Single source of truth for "what nori-ui ships today". When you add or
-// remove a component, update this list — the failing test points you at
-// every registry that needs the matching entry.
-//
-// Tuple form: [PascalCase component name, kebab demo key prefix].
-// We need both because component names like `HStack` don't round-trip
-// through naive kebab conversion.
-const EXPECTED_COMPONENTS: ReadonlyArray<readonly [pascal: string, kebab: string]> = [
-    ['Accordion', 'accordion'],
-    ['Alert', 'alert'],
-    ['AlertDialog', 'alert-dialog'],
-    ['Avatar', 'avatar'],
-    ['Badge', 'badge'],
-    ['Box', 'box'],
-    ['Breadcrumb', 'breadcrumb'],
-    ['Button', 'button'],
-    ['Calendar', 'calendar'],
-    ['Card', 'card'],
-    ['Checkbox', 'checkbox'],
-    ['Dialog', 'dialog'],
-    ['FloatButton', 'float-button'],
-    ['HStack', 'hstack'],
-    ['Icon', 'icon'],
-    ['InputGroup', 'input-group'],
-    ['Pagination', 'pagination'],
-    ['Popover', 'popover'],
-    ['Progress', 'progress'],
-    ['Radio', 'radio'],
-    ['SegmentedControl', 'segmented-control'],
-    ['Select', 'select'],
-    ['Separator', 'separator'],
-    ['Skeleton', 'skeleton'],
-    ['Slider', 'slider'],
-    ['Spinner', 'spinner'],
-    ['Switch', 'switch'],
-    ['Tabs', 'tabs'],
-    ['Text', 'text'],
-    ['TextArea', 'text-area'],
-    ['TextInput', 'text-input'],
-    ['Toaster', 'toast'],
-    ['Toggle', 'toggle'],
-    ['Tooltip', 'tooltip'],
-    ['VStack', 'vstack'],
-];
+// Source of truth for "what nori-ui ships today" is the docs surface
+// itself. Every component MDX declares its target component name with
+// a `<BundleSize component="X" />` tag; the slug is the filename. We
+// read both off disk so adding a component is purely a content change
+// — no hand-maintained list anywhere.
+const DOCS_COMPONENTS_DIR = join(__dirname, '..', 'content', 'docs', 'components');
+const BUNDLE_SIZE_TAG = /<BundleSize\s+component=["']([^"']+)["']\s*\/>/;
+
+function readExpectedComponents(): ReadonlyArray<readonly [pascal: string, kebab: string]> {
+    const files = readdirSync(DOCS_COMPONENTS_DIR, { withFileTypes: true })
+        .filter((entry) => entry.isFile() && entry.name.endsWith('.mdx'))
+        .map((entry) => entry.name);
+    return files
+        .map((file) => {
+            const slug = file.replace(/\.mdx$/, '');
+            const src = readFileSync(join(DOCS_COMPONENTS_DIR, file), 'utf8');
+            const match = src.match(BUNDLE_SIZE_TAG);
+            if (!match) {
+                throw new Error(
+                    `components/${file} is missing the <BundleSize component="…" /> tag — every docs page must declare its target.`
+                );
+            }
+            return [match[1] as string, slug] as const;
+        })
+        .sort((a, b) => a[0].localeCompare(b[0]));
+}
+
+const EXPECTED_COMPONENTS = readExpectedComponents();
 
 const expectedPascal = EXPECTED_COMPONENTS.map(([p]) => p).sort();
 

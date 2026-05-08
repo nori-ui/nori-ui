@@ -65,6 +65,14 @@ jobs:
       - name: Tests
         run: yarn test
 
+      - name: Docs audit
+        # Enforces that every component MDX page declares a
+        # <BundleSize component="X" /> tag and mentions every prop in
+        # body prose. Drift here means the docs are silently out of date,
+        # which is how Calendar.Caption became a fictional component
+        # earlier in this branch — never again.
+        run: node apps/docs/scripts/audit-docs.mjs
+
       - name: Size limit
         run: yarn size
 
