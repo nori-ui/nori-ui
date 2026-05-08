@@ -68,9 +68,102 @@ Pass a thousand items in. Only the visible window is rendered (auto-on once the 
 
 ## Locale-aware sort
 
-`locale="de"` (or any BCP 47) re-sorts the list via `Intl.Collator`. Switch the locale and the order updates so the alphabet matches the language a reader is in.
+`locale="de"` (or any BCP 47) re-sorts the list via `Intl.Collator`. Switch the locale and the order updates so the alphabet matches the language a reader is in. Pair with `sortByLocale={false}` to keep your preferred order while still benefiting from a locale-tagged accessibility tree.
 
 <Preview name="select-locale" />
+
+## `value` and `defaultValue`
+
+Controlled via `value` (paired with `onChange`); uncontrolled via
+`defaultValue`. Single-mode types are `string`; multi-mode (`multiple`)
+types are `string[]`. Mixing the two prefers controlled.
+
+```tsx
+// Controlled single
+<Select value={planId} onChange={setPlanId} options={…} />
+
+// Uncontrolled multi
+<Select multiple defaultValue={['a', 'b']} options={…} />
+```
+
+## `placeholder`, `searchPlaceholder`, `noOptionsMessage`, `loadingMessage`
+
+Each of the user-visible labels is overridable. Use them to localize
+or to write copy that matches your product voice.
+
+| Prop                | Default       | Where it shows                                |
+|---------------------|---------------|-----------------------------------------------|
+| `placeholder`       | "Select…"     | Trigger when nothing is selected              |
+| `searchPlaceholder` | "Search…"     | Search input when `searchable` is on          |
+| `noOptionsMessage`  | "No options"  | Popup body when the filtered list is empty    |
+| `loadingMessage`    | "Loading…"    | Popup body while async results are pending    |
+
+```tsx
+<Select
+    placeholder="Pick a country"
+    searchPlaceholder="Type to filter…"
+    noOptionsMessage="No matches"
+    options={…}
+/>
+```
+
+## `disabled`
+
+Greys the trigger, blocks pointer + keyboard interaction, and
+forwards `aria-disabled`. Individual options can also be disabled via
+`disabled: true` on the option.
+
+```tsx
+<Select disabled defaultValue="locked" options={[{ value: 'locked', label: 'Locked' }]} />
+```
+
+## `dir`
+
+Right-to-left layout. Flips the popup alignment, text direction, and
+icon sides so the field reads naturally in Arabic / Hebrew / RTL
+locales.
+
+```tsx
+<Select dir="rtl" options={…} />
+```
+
+## `aria-label`
+
+Accessibility label for the trigger when there's no visible label
+elsewhere. Forwarded to the `combobox` role.
+
+```tsx
+<Select aria-label="Country" options={…} />
+```
+
+## Performance — `virtualized`, `itemHeight`, `maxMenuHeight`, `pageSize`
+
+Knobs for tuning the popup with large datasets:
+
+- `virtualized` — render only the visible window of options. Auto-on for lists > 100 items; pass `false` to force off, `true` to force on.
+- `itemHeight` — fixed pixel height per row. Default 36. Required input for the virtualization math; bump it if you render taller custom rows via `renderOption`.
+- `maxMenuHeight` — popup height in px before it scrolls. Default 320.
+- `pageSize` — async-only; how many items to fetch per `loadOptions` call. Default 50.
+
+```tsx
+<Select
+    virtualized
+    itemHeight={48}
+    maxMenuHeight={400}
+    pageSize={100}
+    loadOptions={fetchPage}
+/>
+```
+
+## `sortByLocale`
+
+When `locale` is set the picker auto-sorts via `Intl.Collator`. Pass
+`sortByLocale={false}` to keep your incoming option order while still
+exposing the locale to assistive tech and to per-row formatting.
+
+```tsx
+<Select locale="de" sortByLocale={false} options={…} />
+```
 
 ## Props
 

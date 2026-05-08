@@ -16,12 +16,74 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Wraps RN `<TextInput>` / web `<input>` with a unified label + helper text layout.
-- Supports `variant: 'default' | 'error' | 'success'` for validation feedback.
+- Wraps RN `<TextInput>` / web `<input>` with a unified label + helper-text layout.
+- Forwards every native TextInput prop (`value`, `onChangeText`, `placeholder`, `keyboardType`, `secureTextEntry`, …) untouched.
+- Compose with [`InputGroup`](/docs/components/input-group) when you need fixed prefix / suffix decorators (@username, https://, USD).
 
 ## Preview
 
 <Preview name="text-input-basic" />
+
+## `label`
+
+Renders above the field. Wires `id` + `htmlFor` on web and ties the
+field to the label so click focuses the input. When you render without
+a `label`, pair the field with `aria-label` or `aria-labelledby` so
+assistive tech can name it.
+
+```tsx
+<TextInput label="Email" placeholder="you@example.com" />
+```
+
+## `helperText` and `error`
+
+`helperText` renders below the field as muted body copy (format hints,
+character limits, expectations). `error` is the same slot at the same
+spot, but rendered in the danger tone and forwarded as `aria-invalid`
++ `aria-describedby` on the underlying input. When both are set,
+`error` wins.
+
+```tsx
+<TextInput label="Username" helperText="3–20 characters, no spaces." />
+<TextInput label="Email" error="That doesn't look like a valid email address." />
+```
+
+## `disabled`
+
+Greys the field, blocks input, and forwards `aria-disabled`. The label
+keeps its color so the disabled control still reads as a labeled
+field.
+
+```tsx
+<TextInput label="Email" defaultValue="locked@example.com" disabled />
+```
+
+## `leading` and `trailing`
+
+Inline visual decorations *inside* the field — typically icons or short
+labels. Unlike [`InputGroup`](/docs/components/input-group) addons,
+these don't get their own border; they sit flush in the same rounded
+box as the input.
+
+```tsx
+import { Search, X } from 'lucide-react-native';
+
+<TextInput leading={<Search size={16} />} placeholder="Search…" />
+<TextInput trailing={<X size={16} />} value={value} />
+```
+
+For interactive trailing content (a clear button, a visibility
+toggle), wrap it in a `Pressable` — the slot accepts any React node.
+
+## `containerClassName`
+
+Tailwind classes for the *outer wrapper* (label + field + helper
+text) as opposed to `className` which targets the bordered field row
+only. Use it to size the field within a form grid.
+
+```tsx
+<TextInput containerClassName="w-full md:w-80" label="Subject" />
+```
 
 ## Native preview
 

@@ -51,6 +51,71 @@ Higher values sit at the top. Arrow Up / Arrow Down change the value (axis follo
 
 <Preview name="slider-disabled" />
 
+## `min`, `max`, `step`
+
+The slider's value space. `min` (default `0`) and `max` (default `100`)
+bound the legal range; `step` (default `1`) is the increment that
+arrow-key changes and snap-on-drag honor. `step` must divide
+`max - min` cleanly — non-integer steps work for currency / fractional
+sliders.
+
+```tsx
+<Slider defaultValue={[50]} min={0} max={100} step={5} />
+<Slider defaultValue={[1.5]} min={0} max={5} step={0.25} />
+```
+
+## `orientation` and `length`
+
+`orientation="horizontal"` (default) lays the track left-to-right;
+`vertical` runs bottom-to-top. `length` sets the track size in pixels
+along its axis — width for horizontal, height for vertical.
+
+```tsx
+<Slider orientation="vertical" length={200} defaultValue={[50]} />
+```
+
+## `disabled`
+
+Greys the track + thumb, blocks pointer + keyboard interaction, and
+forwards `aria-disabled`.
+
+```tsx
+<Slider disabled defaultValue={[42]} />
+```
+
+## `onInteractionStart` and `onInteractionEnd`
+
+Bracket the user's drag / keyboard interaction. `onInteractionStart`
+fires once when the user begins driving the slider (pointer down,
+first arrow key); `onInteractionEnd` fires once when they stop. Pair
+with `onChange` (continuous, every step) and `onValueCommit` (final
+value at end of interaction) when the change is expensive enough to
+debounce.
+
+```tsx
+<Slider
+    defaultValue={[50]}
+    onInteractionStart={() => analytics.track('slider:start')}
+    onInteractionEnd={() => analytics.track('slider:end')}
+    onValueCommit={(values) => save(values[0])}
+/>
+```
+
+## `aria-label` and `ariaLabelForThumb`
+
+Slider tracks need an accessible name (`aria-label` or
+`aria-labelledby` on the slider). For multi-thumb sliders, label each
+thumb individually via `ariaLabelForThumb` — a function that receives
+the thumb's index and returns the label string.
+
+```tsx
+<Slider
+    aria-label="Price range"
+    ariaLabelForThumb={(i) => i === 0 ? 'Minimum price' : 'Maximum price'}
+    defaultValue={[20, 80]}
+/>
+```
+
 ## Props
 
 <PropsTable component="Slider" />

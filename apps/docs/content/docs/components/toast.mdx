@@ -72,3 +72,30 @@ toast.promise(p, { loading, success, error })
 ```
 
 `options` accepts `description`, `duration`, `action`, `cancel`, `tone`, `id`, `position`, `icon`, `className`. Each call returns the toast's id — pass it to `toast.dismiss(id)` later or to `toast(title, { id })` to update the existing entry.
+
+## `<Toaster>` props
+
+The mount point is configured once near your app root. The most common knobs:
+
+- `position` — global default anchor.
+- `expand` — keep stacked toasts visible at full size instead of collapsing them. Default `false`.
+- `gap` — vertical gap between stacked toasts in pixels. Default `14`.
+- `offset` — distance from the chosen edge of the screen. Accepts a number (px) or a CSS string. Default `16`.
+- `visibleToasts` — maximum number of toasts shown at once. Older ones queue and pop in as space frees up. Default `3`.
+- `closeButton` — render a small ✕ on every toast. Default `false`. Per-call swipe-to-dismiss still works either way.
+- `richColors` — saturated tone surfaces (used on this docs site). Default `false`.
+
+```tsx
+<Toaster
+    position="bottom-right"
+    expand
+    gap={8}
+    offset={24}
+    visibleToasts={5}
+    closeButton
+/>
+```
+
+## Props
+
+<PropsTable component="Toaster" />

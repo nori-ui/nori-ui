@@ -30,6 +30,18 @@ import { PropsTable } from '@/components/props-table';
 
 <Preview name="float-button-basic" />
 
+## Quick props reference
+
+| Prop                | Values                                                  |
+|---------------------|---------------------------------------------------------|
+| `shape`             | `circle` (default), `square`, `extended` (auto-pill with label) |
+| `size`              | `sm` (40 px), `md` (56 px, default), `lg` (72 px)       |
+| `variant`           | `primary`, `secondary`, `tertiary`, `surface`           |
+| `tooltip`           | String shown next to the trigger on hover (web) / long-press (native) |
+| `dir`               | `ltr` (default) / `rtl` — flips placement left/right    |
+| `visible`           | Controls render — when `false` the FAB exits with a fade |
+| `onLongPress`       | Long-press handler — fires after the configured hold    |
+
 ## Shapes
 
 `circle` (default), `square` (rounded square — AntD parity), `extended` (capsule with inline label — auto-applies when both `icon` and `label` are present).

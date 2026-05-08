@@ -18,10 +18,79 @@ import { PropsTable } from '@/components/props-table';
 - Compact "iOS UISegmentedControl" pattern — a row of segments inside a single rounded container, only one selected.
 - Use for binary or small (3–5) inline choices that sit next to their content. Reach for [Tabs](/docs/components/tabs) when each option owns a distinct content region.
 - Keyboard nav follows the WAI-ARIA radiogroup pattern: arrow keys move between segments (selection follows focus), `Home` / `End` jump to first / last, with wrap-around. Disabled segments are skipped.
+- Always exactly one selection. If "no selection" is a valid state, use [`Toggle.Group`](/docs/components/toggle-group) with `type="single"` instead.
 
 ## Preview
 
 <Preview name="segmented-control-basic" />
+
+## `options`
+
+Array of segment descriptors. Each option has at least `value` and
+`label`; pass `disabled: true` to skip an option (it's still rendered,
+greyed out, and skipped by arrow-key navigation).
+
+```tsx
+<SegmentedControl
+    label="View"
+    defaultValue="grid"
+    options={[
+        { value: 'grid', label: 'Grid' },
+        { value: 'list', label: 'List' },
+        { value: 'map', label: 'Map', disabled: true },
+    ]}
+/>
+```
+
+## `value` and `defaultValue`
+
+Controlled via `value` (paired with `onChange`); uncontrolled via
+`defaultValue`. The Segmented Control never falls back to "no
+selection" — the initial value must match one of the option `value`s.
+
+```tsx
+const [view, setView] = useState<'grid' | 'list'>('grid');
+<SegmentedControl value={view} onChange={setView} options={…} />
+```
+
+## `onChange`
+
+Fires with the next `value` whenever the user picks a segment. Pair
+with `value` for controlled, omit for uncontrolled — the control
+calls it either way.
+
+## `size`
+
+Density. Aligned with Button / Toggle.
+
+| Value             | Min height |
+|-------------------|------------|
+| `sm`              | 32 px      |
+| `md` (default)    | 36 px      |
+| `lg`              | 44 px      |
+
+```tsx
+<SegmentedControl size="sm" options={…} />
+```
+
+## `disabled`
+
+Disables every segment in the control. Individual segments can also
+opt out via `disabled` on the option.
+
+```tsx
+<SegmentedControl disabled defaultValue="grid" options={…} />
+```
+
+## `label`
+
+Accessible name for the control. Required for screen readers — it's
+forwarded to the `radiogroup` / `group` ARIA role and announced when
+focus enters the control.
+
+```tsx
+<SegmentedControl label="View mode" options={…} />
+```
 
 ## Props
 

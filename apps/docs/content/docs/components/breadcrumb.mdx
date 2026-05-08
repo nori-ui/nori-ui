@@ -87,6 +87,55 @@ export async function generateMetadata() {
 
 Pass `schemaOrg={false}` on the component to opt out of the client-side injection if you're already emitting JSON-LD via your metadata pipeline.
 
+## Localization — `ariaLabel`, `currentPageLabel`, `ellipsisLabel`, `expandLabel`, `siblingMenuLabel`
+
+Every user-visible string is overridable per-instance. Defaults come
+from the active i18n dictionary (`breadcrumb.*` keys); pass props to
+override one Breadcrumb without touching the global translations.
+
+| Prop                  | Purpose                                              |
+|-----------------------|------------------------------------------------------|
+| `ariaLabel`           | `<nav>` landmark label                               |
+| `currentPageLabel`    | Visually-hidden prefix on the current item ("Current page:") |
+| `ellipsisLabel`       | Accessible name for the collapsed-middle ellipsis    |
+| `expandLabel`         | Tooltip / aria-label on the click-to-expand affordance |
+| `siblingMenuLabel`    | Accessible name for the sibling-pages chevron toggle |
+
+```tsx
+<Breadcrumb ariaLabel="Site navigation" items={[…]} />
+```
+
+## `separator`
+
+Customize the per-item separator. Accepts a string, a ReactNode, or a
+function `(ctx) => ReactNode` that gets the surrounding item context.
+Default is a chevron that flips for `dir="rtl"`.
+
+```tsx
+<Breadcrumb separator="/" items={…} />
+<Breadcrumb separator={<SlashIcon />} items={…} />
+```
+
+## `maxLabelLength`
+
+Cap individual item labels at N characters; the component truncates
+with an ellipsis and exposes the full label on hover (web `title`)
+and to assistive tech. Useful for file-path breadcrumbs where one
+segment can be unboundedly long.
+
+```tsx
+<Breadcrumb maxLabelLength={24} items={…} />
+```
+
+## `dir`
+
+`rtl` flips the chevron direction *and* the DOM order of the trail so
+the start of the path sits on the right.
+
+```tsx
+<Breadcrumb dir="rtl" items={…} />
+```
+
 ## Props
 
 ### Breadcrumb

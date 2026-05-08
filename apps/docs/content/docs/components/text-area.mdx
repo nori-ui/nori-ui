@@ -16,12 +16,65 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Multi-line variant of [TextInput](/docs/components/text-input) with matching API.
-- Configure minimum height via `rows`.
+- Multi-line variant of [TextInput](/docs/components/text-input) — same `label` / `helperText` / `error` / `disabled` / `leading` / `trailing` API, vertical instead of horizontal.
+- Forwards every native TextInput prop (`value`, `onChangeText`, `placeholder`, `multiline` is set automatically, `numberOfLines`, …).
 
 ## Preview
 
 <Preview name="text-area-basic" />
+
+## `label`, `helperText`, `error`, `disabled`
+
+Identical semantics to [`TextInput`](/docs/components/text-input). The
+label sits above the field; `helperText` and `error` render below;
+`error` flips the border to danger tone and forwards `aria-invalid`
+to the underlying input. `disabled` greys the field and blocks input.
+
+```tsx
+<TextArea label="Notes" helperText="Markdown supported." />
+<TextArea label="Notes" error="Notes can't be empty." />
+<TextArea label="Notes" disabled defaultValue="Locked" />
+```
+
+## `rows` and `resize`
+
+`rows` sets the field's minimum height in lines (web maps to the
+native `rows` attribute; native maps to a computed minHeight from the
+line height). `resize` controls the resize affordance on web —
+`'none'` to lock the size, `'vertical'` to allow vertical drag,
+`'both'` for free resize. Native is always size-locked.
+
+| `resize`              | Web behavior               | Native behavior |
+|-----------------------|----------------------------|-----------------|
+| `none` (default)      | No resize handle           | Fixed height    |
+| `vertical`            | Drag-resize bottom edge    | Fixed height    |
+| `both`                | Drag-resize corner         | Fixed height    |
+
+```tsx
+<TextArea label="Bio" rows={4} resize="vertical" />
+```
+
+## `leading` and `trailing`
+
+Inline decorations inside the field — pinned to the top-left
+(`leading`) and top-right (`trailing`) corners so they don't fight the
+text content as it grows.
+
+```tsx
+import { Sparkles } from 'lucide-react-native';
+
+<TextArea leading={<Sparkles size={16} />} label="Prompt" />
+```
+
+## `containerClassName`
+
+Tailwind classes for the outer wrapper (label + field + helper text)
+rather than the bordered field row. Useful for sizing within a form
+grid.
+
+```tsx
+<TextArea containerClassName="w-full" label="Description" rows={6} />
+```
 
 ## Native preview
 
