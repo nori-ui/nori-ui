@@ -126,3 +126,21 @@ The full chain that had to be right, end to end:
 9. **Workflow YAML step names with colons quoted** so the file parses.
 
 Re-enable provenance once the repo is made public.
+
+## Post-mortem: 0.0.5 → 1.0.0 → 1.0.1 (unwanted major bump)
+
+**What happened:** earlier commits had used `feat(x)!:` / `refactor(x)!:` to mark internal API consolidations during pre-release work. semantic-release's default conventional-commits preset interprets `!` as `release: "major"`, so it bumped 0.0.5 → 1.0.0 on the first release attempt. The 1.0.0 publish itself failed (the provenance-on-private-repo issue, see #7 above), but the `v1.0.0` tag + `chore(release): 1.0.0` commit were written before the publish step. The next successful run saw the existing tag, computed the next version → 1.0.1, and that's what's on npm.
+
+**Why it's a problem:** the project is **pre-public-launch with zero consumers**. There are no semver-protected consumers, so there are no "breaking changes" in the consumer-protection sense. The first published version was supposed to be a deliberate `1.0.0`, decided by the user — not automatically jumped to by CI on internal refactors.
+
+**Fix:** added an override at the front of `.releaserc.json` `releaseRules`:
+```json
+{ "breaking": true, "release": "patch" }
+```
+This overrides the conventional-commits preset's `{ breaking: true, release: "major" }` default. From now until the user explicitly says "we're going 1.0.0":
+- `feat!:` → patch
+- `BREAKING CHANGE:` footer → patch
+- `feat:` → patch (everything is patch)
+- only `feat:` / `fix:` / `perf:` / `refactor:` produce a release at all (per existing rules)
+
+**Standing rule #10:** while a project is pre-public-launch, configure semantic-release so NO commit pattern can auto-bump major. Manual major bumps only, decided by the user. See also memory: `feedback_pre_release_no_major_bumps.md`.

@@ -13,6 +13,10 @@
         "preset": "conventionalcommits",
         "releaseRules": [
           {
+            "breaking": true,
+            "release": "patch"
+          },
+          {
             "type": "docs",
             "release": false
           },
