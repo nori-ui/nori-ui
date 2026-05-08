@@ -1,9 +1,30 @@
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { defineConfig } from 'tsup';
+
+// One entry per component directory in addition to the root barrels.
+// Without per-component entries, tsup reaches every component from a
+// single `src/index.ts` and packs them all into one shared chunk —
+// which kills tree-shaking at consumer build time. Even
+// `sideEffects: false` + `treeshake: true` can't peel one component
+// out of a 350 KB blob, because the file's top-level `createContext`
+// calls etc. get treated as side effects of the whole module. With one
+// entry per folder, esbuild emits a per-component chunk and shared
+// helpers (`cn`, `useThemeColors`, `px`, …) land in their own small
+// chunks that every component pulls in. `import { Text }` then pays
+// for Text + the shared chunks, not for every other component.
+const COMPONENTS_DIR = new URL('./src/components/', import.meta.url).pathname;
+const componentEntries = Object.fromEntries(
+    readdirSync(COMPONENTS_DIR, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && existsSync(join(COMPONENTS_DIR, d.name, 'index.ts')))
+        .map((d) => [`components/${d.name}/index`, `src/components/${d.name}/index.ts`])
+);
 
 export default defineConfig({
     entry: {
         index: 'src/index.ts',
         client: 'src/client.ts',
+        ...componentEntries,
         'theme/index': 'src/theme/index.ts',
         'i18n/index': 'src/i18n/index.ts',
         'icons/index': 'src/icons/index.ts',

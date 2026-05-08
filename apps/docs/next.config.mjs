@@ -46,7 +46,16 @@ const legacyDocsRedirects = buildLegacyDocsRedirects();
 const nextConfig = {
     reactStrictMode: true,
     async redirects() {
-        return legacyDocsRedirects;
+        return [
+            ...legacyDocsRedirects,
+            // toggle-group merged into the toggle page (Toggle.Group is a
+            // compound subcomponent of Toggle, like Card.Header on Card).
+            {
+                source: '/docs/components/toggle-group',
+                destination: '/docs/components/toggle#togglegroup',
+                permanent: true,
+            },
+        ];
     },
     // NativeWind + react-native-css-interop must be transpiled by Next so
     // their JSX runtime is applied uniformly across the app.

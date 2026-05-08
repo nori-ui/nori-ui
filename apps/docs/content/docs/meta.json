@@ -38,7 +38,6 @@
     "components/text-input",
     "components/toast",
     "components/toggle",
-    "components/toggle-group",
     "components/tooltip",
     "components/vstack",
     "---Hooks---",

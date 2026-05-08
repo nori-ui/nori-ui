@@ -22,20 +22,29 @@ const DOCS_ROOT = join(HERE, '..');
 const REPO_ROOT = join(HERE, '..', '..', '..');
 const OUT_FILE = join(HERE, '..', 'components', 'bundle-sizes.generated.ts');
 
-// One named export per docs page. Keep in sync with `componentProps`
-// (props.generated.ts) — both should cover every public component.
+// One named export per docs page. Must cover every public component
+// — missing entries silently produce no <BundleSize> pill on that
+// component's docs page.
 const TARGETS = [
+    'Accordion',
     'Alert',
+    'AlertDialog',
     'Avatar',
     'Badge',
     'Box',
     'Breadcrumb',
     'Button',
+    'Calendar',
     'Card',
     'Checkbox',
     'Dialog',
+    'FloatButton',
     'HStack',
     'Icon',
+    'InputGroup',
+    'Pagination',
+    'Popover',
+    'Progress',
     'Radio',
     'SegmentedControl',
     'Select',
@@ -49,13 +58,31 @@ const TARGETS = [
     'TextArea',
     'TextInput',
     'Toaster',
+    'Toggle',
+    'Tooltip',
     'VStack',
 ];
 
 // Treat real consumer-side dependencies as externals. These are loaded
 // regardless of nori-ui usage; counting them would inflate every number
-// and obscure what the library itself contributes.
-const EXTERNALS = ['react', 'react-dom', 'react-native', 'react-native-web', 'nativewind', 'react-native-css-interop'];
+// and obscure what the library itself contributes. The list mirrors the
+// `external` array in packages/core/tsup.config.ts plus the optional /
+// platform-only peers consumers are expected to install themselves.
+const EXTERNALS = [
+    'react',
+    'react-dom',
+    'react-native',
+    'react-native-web',
+    'react-native-reanimated',
+    'react-native-safe-area-context',
+    'react-native-svg',
+    'nativewind',
+    'react-native-css-interop',
+    'sonner',
+    'sonner-native',
+    'expo-blur',
+    '@internationalized/date',
+];
 
 const tmpDir = mkdtempSync(join(tmpdir(), 'nori-bundle-'));
 
