@@ -105,3 +105,24 @@ Multiple `release.yml` runs failed in a row with confusingly different errors th
 
 8. **`@semantic-release/git`'s `assets` list is the only thing semantic-release will commit.** Anything in there is at risk of capturing accidental runner-side mutations. Keep it minimal: `CHANGELOG.md` + the `package.json` files of the actually-published packages. Never include the root `package.json`, `yarn.lock`, or any file modified by CI prep steps.
 9. **Runner-only mutations to the working tree must NEVER end up in a commit semantic-release pushes.** Audit every workflow step that writes to a tracked file: confirm it's outside `.releaserc.json` `assets` AND outside any glob that semantic-release evaluates.
+
+### ✅ `f7b654e` — first successful publish
+
+After 7 failed attempts (each with a distinct root cause, see #1-#8 above), `f7b654e` published cleanly:
+
+- `@nori-ui/core@1.0.1` and `@nori-ui/mcp@1.0.1` on npm
+- Tag `v1.0.1` on GitHub, GitHub release created
+- semantic-release pushed `chore(release): 1.0.1` (commit `e228725`) — and this time it ONLY touched `CHANGELOG.md` + `packages/{core,mcp}/package.json` (the trimmed assets list held).
+
+The full chain that had to be right, end to end:
+1. **`actions/setup-node`** WITHOUT `registry-url` (else `.npmrc` poisons OIDC).
+2. **Node 24** for npm 11.5.1+ (OIDC support).
+3. **OIDC env vars read from shell**, not workflow expressions.
+4. **`publishConfig.registry` ends with `/`** (strict-equality gate in `@semantic-release/npm`).
+5. **`workspaces` field stripped from root `package.json` on the runner** (so npm doesn't walk).
+6. **All Yarn-only protocols (`workspace:`, `patch:`, `portal:`, `link:`) rewritten in publishable packages** on the runner.
+7. **`NPM_CONFIG_PROVENANCE=false`** because the repo is private.
+8. **`@semantic-release/git` `assets` trimmed** to `CHANGELOG.md` + the published packages' `package.json` only — never root, never lockfile.
+9. **Workflow YAML step names with colons quoted** so the file parses.
+
+Re-enable provenance once the repo is made public.
