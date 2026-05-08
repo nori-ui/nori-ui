@@ -1,6 +1,6 @@
 {
   "name": "@nori-ui/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Native + React Native Web UI component library. Expo-first, NativeWind v4, Figma design tokens, AI-queryable docs.",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@nori-ui/mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Local MCP server for nori-ui — bundles the docs corpus so AI agents can query components offline without hitting the docs site.",
   "license": "MIT",
   "repository": {

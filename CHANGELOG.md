@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/nori-ui/nori-ui/compare/v1.0.0...v1.0.1) (2026-05-08)
+
+### Bug Fixes
+
+* **ci:** disable npm provenance on private repos (oidc still active) ([387e556](https://github.com/nori-ui/nori-ui/commit/387e5561338d68e0072035dc3a0c6999effc529a))
+* **release:** restore root workspaces + stop semantic-release from committing root files ([f7b654e](https://github.com/nori-ui/nori-ui/commit/f7b654e82d4f8897d809e66314afc280ce9d7c00))
+
 ## 1.0.0 (2026-05-08)
 
 ### ⚠ BREAKING CHANGES
