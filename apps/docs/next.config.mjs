@@ -1,62 +1,10 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createMDX } from 'fumadocs-mdx/next';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const COMPONENTS_DIR = join(HERE, 'content', 'docs', 'components');
-
-// Tiny `category:` extractor — the front-matter schema is fixed in
-// `source.config.ts`, so a regex is appropriate here (no YAML parser
-// dependency at the top of the Next config).
-const CATEGORY_LINE = /^category:\s*([a-z-]+)\s*$/m;
-
-/**
- * Generate `/docs/<old-category>/<slug>` → `/docs/components/<slug>` 301s
- * once per build. Source of truth is each MDX's `category:` front-matter,
- * so adding a component or moving it across categories is a content-only
- * change that needs no edits here.
- */
-function buildLegacyDocsRedirects() {
-    const slugs = readdirSync(COMPONENTS_DIR, { withFileTypes: true })
-        .filter((entry) => entry.isFile() && entry.name.endsWith('.mdx'))
-        .map((entry) => entry.name.replace(/\.mdx$/, ''))
-        .sort();
-    const redirects = [];
-    for (const slug of slugs) {
-        const src = readFileSync(join(COMPONENTS_DIR, `${slug}.mdx`), 'utf8');
-        const match = src.match(CATEGORY_LINE);
-        if (!match) {
-            throw new Error(`components/${slug}.mdx is missing the \`category:\` front-matter field`);
-        }
-        const category = match[1];
-        redirects.push({
-            source: `/docs/${category}/${slug}`,
-            destination: `/docs/components/${slug}`,
-            permanent: true,
-        });
-    }
-    return redirects;
-}
-
 const withMDX = createMDX();
-const legacyDocsRedirects = buildLegacyDocsRedirects();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    async redirects() {
-        return [
-            ...legacyDocsRedirects,
-            // toggle-group merged into the toggle page (Toggle.Group is a
-            // compound subcomponent of Toggle, like Card.Header on Card).
-            {
-                source: '/docs/components/toggle-group',
-                destination: '/docs/components/toggle#togglegroup',
-                permanent: true,
-            },
-        ];
-    },
     // NativeWind + react-native-css-interop must be transpiled by Next so
     // their JSX runtime is applied uniformly across the app.
     transpilePackages: [
