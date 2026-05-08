@@ -17,8 +17,6 @@ import { PropsTable } from '@/components/props-table';
 ## At a glance
 
 - Clusters several [`<Toggle>`](/docs/components/toggle)-style buttons with shared selection semantics.
-- `type="multiple"` — any-of-N (formatting marks). `value` is `string[]`.
-- `type="single"` — one-of-N, optionally none (text alignment). `value` is `string | undefined`. Re-clicking the active item clears the selection.
 - Roving-tabindex keyboard nav follows the WAI-ARIA radiogroup pattern: `Arrow` keys move focus, `Home` / `End` jump to the ends, `Space` / `Enter` toggles the focused item.
 - ARIA: every item exposes `role="button"` + `aria-pressed`. The group is `role="group"` (multiple) or `role="radiogroup"` (single).
 - Default-variant grouped items share borders so the cluster reads as one segmented chip — first item rounds the left, last rounds the right, middle is square.
@@ -30,17 +28,95 @@ import { PropsTable } from '@/components/props-table';
     - **[Radio.Group](/docs/components/radio)** — the form-y radio look. Use this in forms where the user is reviewing choices and submitting later.
 </Callout>
 
-## Multiple selection (formatting toolbar)
+## `type`
+
+Selection cardinality. The shape of `value` follows from this:
+
+| `type`         | `value` type           | Re-click behavior                        |
+|----------------|------------------------|------------------------------------------|
+| `multiple`     | `string[]`             | Toggles the item in / out of the array   |
+| `single`       | `string \| undefined`  | Re-clicking the active item clears it    |
+
+### Multiple selection (formatting toolbar)
 
 `type="multiple"` — `value` is `string[]`. Clicking adds or removes an item from the array.
 
 <Preview name="toggle-group-multiple" />
 
-## Single selection (alignment)
+### Single selection (alignment)
 
 `type="single"` — `value` is `string | undefined`. Clicking sets it; clicking the active item again clears it.
 
 <Preview name="toggle-group-single" />
+
+## `value` and `defaultValue`
+
+`value` puts the group in controlled mode (pair with `onChange`).
+`defaultValue` puts it in uncontrolled mode (the group tracks state
+itself). Their shapes follow `type`:
+
+```tsx
+<Toggle.Group type="multiple" value={['bold', 'italic']} onChange={setMarks}>
+    {/* … */}
+</Toggle.Group>
+
+<Toggle.Group type="single" defaultValue="left">
+    {/* … */}
+</Toggle.Group>
+```
+
+## `onChange`
+
+Fires with the next `value` whenever the user toggles an item. Pair
+with `value` for controlled mode, omit for uncontrolled — the group
+calls it either way so analytics / side effects work in both shapes.
+
+```tsx
+<Toggle.Group type="multiple" onChange={(marks) => editor.setMarks(marks)}>
+    {/* … */}
+</Toggle.Group>
+```
+
+## `disabled`
+
+Disables every item in the group. Individual items can also opt out
+with their own `disabled` prop.
+
+```tsx
+<Toggle.Group disabled type="single" defaultValue="bold">
+    <Toggle.Item value="bold">B</Toggle.Item>
+    <Toggle.Item value="italic">I</Toggle.Item>
+</Toggle.Group>
+```
+
+## `variant` and `size`
+
+Forwarded to every item by default — set the group's look once and
+items inherit. Per-item `variant` / `size` overrides the group value.
+
+| Knob           | Values                              |
+|----------------|-------------------------------------|
+| `variant`      | `default` (segmented), `outline`    |
+| `size`         | `sm`, `md` (default), `lg`          |
+
+```tsx
+<Toggle.Group variant="outline" size="sm" type="single">
+    {/* items inherit outline + sm */}
+</Toggle.Group>
+```
+
+## `aria-label` / `accessibilityLabel`
+
+The group's accessible name. Required for assistive tech to announce
+the cluster as a unit ("Text formatting, group"). For icon-only items
+inside, give each item its own `aria-label` too.
+
+```tsx
+<Toggle.Group aria-label="Text formatting" type="multiple">
+    <Toggle.Item value="bold" aria-label="Bold">B</Toggle.Item>
+    <Toggle.Item value="italic" aria-label="Italic">I</Toggle.Item>
+</Toggle.Group>
+```
 
 ## Props
 

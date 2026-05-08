@@ -24,12 +24,75 @@ import { PropsTable } from '@/components/props-table';
 
 <Preview name="radio-basic" />
 
+## `<Radio.Group>` `value` and `defaultValue`
+
+Controlled vs. uncontrolled selection. The Group fires `onChange(next)`
+whenever the user moves through the options.
+
+```tsx
+// Controlled
+const [plan, setPlan] = useState<'free' | 'pro' | 'team'>('free');
+<Radio.Group value={plan} onChange={setPlan} aria-label="Plan">
+    <Radio value="free" label="Free" />
+    <Radio value="pro" label="Pro" />
+    <Radio value="team" label="Team" />
+</Radio.Group>
+
+// Uncontrolled
+<Radio.Group defaultValue="free" aria-label="Plan">{/* … */}</Radio.Group>
+```
+
+## `<Radio.Group>` `disabled`
+
+Disables every option in the group. Individual options can also opt
+out with their own `disabled`.
+
+```tsx
+<Radio.Group disabled value="pro">{/* … */}</Radio.Group>
+```
+
+## `<Radio>` `label`
+
+Renders a clickable label next to the dot. Pressing the label is the
+same target as pressing the dot. For richer label content (a price
+tag, helper text), pass `children` instead — the children slot
+replaces the auto-rendered label.
+
+```tsx
+<Radio value="pro" label="Pro — $12 / month" />
+<Radio value="team">
+    <YourCustomPlanRow />
+</Radio>
+```
+
+## `<Radio>` `disabled`
+
+Greys an individual option out and skips it during arrow-key
+navigation.
+
+```tsx
+<Radio value="enterprise" label="Enterprise" disabled />
+```
+
+## Naming the group
+
+Always name the group via `aria-label`, `aria-labelledby`, or a visible
+heading wrapped in `aria-labelledby`. An un-named radiogroup is hard
+for assistive tech to announce as a unit.
+
+```tsx
+<>
+    <Text variant="body-sm" id="plan-heading">Choose a plan</Text>
+    <Radio.Group aria-labelledby="plan-heading" defaultValue="free">{/* … */}</Radio.Group>
+</>
+```
+
 ## Props
 
-### Radio.Group
+### `<Radio.Group>`
 
-<PropsTable component="Radio.Group" />
+<PropsTable component="RadioGroup" />
 
-### Radio
+### `<Radio>`
 
 <PropsTable component="Radio" />

@@ -17,9 +17,6 @@ import { PropsTable } from '@/components/props-table';
 ## At a glance
 
 - A single bistable button — think of the **B** / **I** / **U** buttons in a rich-text toolbar, where each one carries its own on/off visual.
-- Controlled (`pressed` + `onChange`) and uncontrolled (`defaultPressed`) usage.
-- Two visual variants: `default` (bordered chip with subtle resting bg) and `outline` (1px border, no fill).
-- Three sizes: `sm`, `md` (default), `lg`.
 - ARIA: `role="button"` + `aria-pressed`.
 - Need a clustered set of toggles instead? Use [`<Toggle.Group>`](/docs/components/toggle-group).
 
@@ -36,6 +33,67 @@ import { PropsTable } from '@/components/props-table';
 ## Standalone Toggle
 
 <Preview name="toggle-basic" />
+
+## `pressed` and `defaultPressed`
+
+Controlled mode: pass `pressed` and pair with `onChange`. Uncontrolled
+mode: pass `defaultPressed` and let the Toggle track state.
+
+```tsx
+// Controlled
+const [bold, setBold] = useState(false);
+<Toggle pressed={bold} onChange={setBold}>B</Toggle>
+
+// Uncontrolled
+<Toggle defaultPressed>I</Toggle>
+```
+
+## `variant`
+
+Visual treatment of the toggle when off and on.
+
+| Value             | Off state                  | On state                                     |
+|-------------------|-----------------------------|----------------------------------------------|
+| `default` (default) | Subtle border + bg        | Tinted background + accent border            |
+| `outline`         | 1px border, no fill         | Tinted background + accent border            |
+
+```tsx
+<Toggle variant="outline">Pin</Toggle>
+```
+
+## `size`
+
+Density. Aligned with Button's scale.
+
+| Value             | Min height |
+|-------------------|------------|
+| `sm`              | 32 px      |
+| `md` (default)    | 36 px      |
+| `lg`              | 44 px      |
+
+```tsx
+<Toggle size="sm">B</Toggle>
+```
+
+## `disabled`
+
+Greys the toggle out and blocks press handling. Forwarded as
+`aria-disabled`.
+
+```tsx
+<Toggle disabled>Locked</Toggle>
+```
+
+## `aria-label` / `accessibilityLabel`
+
+When the visible content is just an icon, pass `aria-label` (web) or
+`accessibilityLabel` (native) so screen readers say something
+meaningful. Both props accept the same string and apply to whichever
+platform the component renders on.
+
+```tsx
+<Toggle aria-label="Bold"><BoldIcon /></Toggle>
+```
 
 ## Props
 

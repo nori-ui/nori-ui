@@ -15,28 +15,88 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- **Determinate**: pass `value` (`0..max`, default `max=100`). The fill width is `(value / max) * 100%`.
-- **Indeterminate**: omit `value` to render a 30%-wide shuttle that loops across the track every ~1.5s. Use this when the operation has no measurable progress.
-- **Tones**: `primary` (default, theme interactive color), `info`, `success`, `warning`, `danger` map to semantic status colors.
-- **Sizes**: `sm` 4px, `md` 8px (default), `lg` 12px. The track is always pill-shaped.
-- **Label**: pass `label` to render text above the bar; the percentage is auto-rendered on the right for determinate progress (set `hidePercentage` to suppress).
-- Maps to `role="progressbar"` with `aria-valuemin`/`aria-valuemax`/`aria-valuenow`. Always pass `label`, `aria-label`, or `aria-labelledby` so the bar is named.
+- Maps to `role="progressbar"` with `aria-valuemin` / `aria-valuemax` / `aria-valuenow`. Always pass `label`, `aria-label`, or `aria-labelledby` so the bar is named.
+- The track is always pill-shaped (border-radius = height/2).
 
 ## Preview
 
 <Preview name="progress-basic" />
 
+## `value` and `max`
+
+`value` runs from `0` to `max` (default `100`). The fill width is
+`(value / max) * 100%`. Omit `value` to switch to indeterminate (see
+below).
+
+```tsx
+<Progress value={42} />              // 42 / 100
+<Progress value={3} max={5} />       // step 3 of 5 — 60%
+```
+
 ## Indeterminate
 
-Use the indeterminate form when you can't measure progress — an initial fetch, a streaming response, an upload before headers arrive.
+Omit `value` to render a 30%-wide shuttle that loops across the track
+every ~1.5s. Use this when the operation has no measurable progress
+— an initial fetch, a streaming response, an upload before headers
+arrive.
 
 <Preview name="progress-indeterminate" />
 
-## Tones
+## `tone`
 
-The fill color signals what kind of work is happening — `success` for confirmations, `warning` for risky operations, `danger` for failure recovery.
+Color of the fill / shuttle. Pick by what kind of work is happening
+— `success` after a confirmation, `warning` during risky operations,
+`danger` while recovering from a failure.
+
+| Value             | Use for                                    |
+|-------------------|--------------------------------------------|
+| `primary` (default) | Generic progress, brand-color fill       |
+| `info`            | Neutral status                             |
+| `success`         | "Almost done" / completion phases          |
+| `warning`         | Slow / pending operations                  |
+| `danger`          | Failure recovery, retry phases             |
 
 <Preview name="progress-tones" />
+
+```tsx
+<Progress value={80} tone="success" />
+```
+
+## `size`
+
+Track height. Width always fills the parent.
+
+| Value          | Track height |
+|----------------|--------------|
+| `sm`           | 4 px         |
+| `md` (default) | 8 px         |
+| `lg`           | 12 px        |
+
+```tsx
+<Progress value={42} size="lg" />
+```
+
+## `label` and `hidePercentage`
+
+`label` renders text above the bar. For determinate progress the
+percentage is auto-rendered on the right; pass `hidePercentage` to
+suppress it (useful when the label itself already conveys the number,
+e.g. "Step 3 of 5").
+
+```tsx
+<Progress value={42} label="Uploading photos" />
+<Progress value={3} max={5} label="Step 3 of 5" hidePercentage />
+```
+
+## `aria-label` / `aria-labelledby`
+
+When you don't render a visible `label`, name the bar via `aria-label`
+or `aria-labelledby` so screen readers announce it. Without one of
+those three, an unnamed progressbar is a silent progressbar.
+
+```tsx
+<Progress value={42} aria-label="Upload progress" />
+```
 
 ## Props
 

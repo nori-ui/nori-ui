@@ -16,12 +16,66 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Renders with `role="switch"` on web; maps to RN `<Switch>` on native.
-- Controlled via `checked` or uncontrolled via `defaultChecked`.
+- Renders with `role="switch"` on web; maps to RN `<Switch>` on native, so the platform's native motion + haptics carry over on iOS / Android.
+- Use Switch for **immediate** state flips (settings that take effect on toggle). Reach for [Checkbox](/docs/components/checkbox) when the user is choosing items in a form they'll submit later.
 
 ## Preview
 
 <Preview name="switch-basic" />
+
+## `checked` and `defaultChecked`
+
+Controlled vs. uncontrolled — same shape as Checkbox.
+
+```tsx
+// Controlled — parent owns the truth
+const [enabled, setEnabled] = useState(false);
+<Switch checked={enabled} onChange={setEnabled} label="Email digest" />
+
+// Uncontrolled — Switch tracks state itself
+<Switch defaultChecked label="Sync on Wi-Fi only" />
+```
+
+## `label`
+
+Renders a clickable label next to the track. Pressing the label is the
+same target as pressing the track itself, with a wider hit area.
+
+```tsx
+<Switch label="Show advanced options" />
+```
+
+## `onChange`
+
+Fires with the next boolean. Pair with `checked` for controlled mode,
+omit for uncontrolled — the Switch calls it either way.
+
+```tsx
+<Switch onChange={(next) => savePreference(next)} />
+```
+
+## `disabled`
+
+Greys out the track and blocks `onChange`. Forwarded as
+`aria-disabled` so assistive tech narrates "switch, disabled".
+
+```tsx
+<Switch disabled label="Requires Pro plan" />
+```
+
+## `asChild`
+
+Renders a supplied element as the interactive root. Same composition
+pattern as Checkbox / Button — pass any focusable element to inherit
+the Switch's behavior while keeping your own DOM shape.
+
+```tsx
+<Switch asChild>
+    <Pressable>
+        <YourCustomRow />
+    </Pressable>
+</Switch>
+```
 
 ## Native preview
 

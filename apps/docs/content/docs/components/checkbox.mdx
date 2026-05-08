@@ -16,19 +16,84 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- **States:** unchecked, checked, indeterminate, disabled.
-- Emits semantic icon via `checkmark` key from `SemanticIconsProvider`.
-- `asChild` passes control to a supplied root element.
+- Resolves the check icon through `SemanticIconsProvider` (key: `checkmark`).
+- Forwards every `Pressable` prop, plus `asChild` for custom roots.
 
 ## Preview
 
 <Preview name="checkbox-basic" />
 
-## Indeterminate (parent / child)
+## `checked` and `defaultChecked`
 
-A common "select all" pattern: the parent is `indeterminate` when some — but not all — children are checked. `indeterminate` is a controlled prop; toggle the parent yourself in response to the children's selection set.
+Controlled mode: pass `checked` and pair with `onChange`. Uncontrolled
+mode: pass `defaultChecked` and let the Checkbox track state itself.
+Mixing the two — passing both `checked` and `defaultChecked` — picks
+controlled and ignores `defaultChecked` (with a warning in dev).
+
+```tsx
+// Controlled
+const [done, setDone] = useState(false);
+<Checkbox checked={done} onChange={setDone} label="Mark complete" />
+
+// Uncontrolled
+<Checkbox defaultChecked label="Send weekly digest" />
+```
+
+## `indeterminate`
+
+A controlled-only third state for "some but not all children checked".
+Render a parent `Checkbox` with `indeterminate={true}` when its children
+have a mixed selection, and let it flip back to `checked` /
+`!checked` when the user toggles the parent.
 
 <Preview name="checkbox-indeterminate" />
+
+## `label`
+
+Renders a clickable label next to the box. Pressing the label toggles
+the Checkbox — same target as the box itself, with a wider hit area
+that's friendlier on touch.
+
+```tsx
+<Checkbox label="I accept the terms" />
+```
+
+When you need richer label content (a link inside the label, an icon),
+pass `children` instead — the Checkbox treats the children as the
+label slot.
+
+## `disabled`
+
+Greys out the box and blocks `onChange`. Forwarded as
+`aria-disabled` so screen readers announce the state.
+
+```tsx
+<Checkbox disabled label="Locked option" />
+```
+
+## `onChange`
+
+Fires with the next boolean checked value (or `false` when leaving
+indeterminate via toggle). Pair with `checked` for controlled, omit
+for uncontrolled — the Checkbox calls it either way so you can react
+to the user's input.
+
+```tsx
+<Checkbox onChange={(next) => analytics.track('opt-in', { next })} />
+```
+
+## `asChild`
+
+Renders a supplied element as the interactive root. Useful when wrapping
+the entire row of label + helper text in a single press target.
+
+```tsx
+<Checkbox asChild>
+    <Pressable>
+        <YourCustomRow />
+    </Pressable>
+</Checkbox>
+```
 
 ## Native preview
 
