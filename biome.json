@@ -75,7 +75,7 @@
       "formatter": { "indentWidth": 2 }
     },
     {
-      "includes": ["docs/**/*.md", "README.md", "RUNBOOK.md"],
+      "includes": ["docs/**/*.md", "README.md", "RUNBOOK.md", "CHANGELOG.md"],
       "formatter": { "enabled": false }
     },
     {
