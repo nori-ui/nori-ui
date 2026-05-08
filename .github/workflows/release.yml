@@ -25,13 +25,43 @@ jobs:
           persist-credentials: false
 
       - run: corepack enable
+      # Intentionally NO `registry-url` here: passing it makes
+      # `actions/setup-node` write `~/.npmrc` containing
+      #   //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+      # With `NODE_AUTH_TOKEN` unset (the whole point of OIDC trusted
+      # publishing), npm sees that `_authToken` line, treats the empty
+      # string as a configured token, and skips the OIDC handshake — which
+      # is what produced the "invalid token" failures.
+      #
+      # Node 24 ships npm 11.x, which has native OIDC trusted-publishing
+      # support. Node 22 ships npm 10.x and would need a manual
+      # `npm install -g npm@latest` step.
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org
+          node-version: 24
           cache: yarn
 
       - run: yarn install --immutable
+
+      # Belt-and-braces guard: surface a clear error if anything in the
+      # chain regresses to token auth or an OIDC-incapable npm.
+      - name: Verify OIDC publish prerequisites
+        env:
+          ID_TOKEN_PRESENT: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL != '' && 'yes' || 'no' }}
+        run: |
+          set -e
+          NPM_VERSION="$(npm --version)"
+          echo "npm $NPM_VERSION"
+          node -e "const v=process.argv[1].split('.').map(Number);if(v[0]<11||(v[0]===11&&v[1]<5)||(v[0]===11&&v[1]===5&&v[2]<1)){console.error('npm too old for OIDC trusted publishing (need >= 11.5.1)');process.exit(1);}" "$NPM_VERSION"
+          if [ "$ID_TOKEN_PRESENT" != "yes" ]; then
+            echo "OIDC ID-token request URL is missing — id-token: write is not granted"; exit 1
+          fi
+          # Any leftover auth in .npmrc would override the OIDC handshake.
+          AUTH_LINES="$(grep -h '_authToken\|_password' ~/.npmrc /github/home/.npmrc 2>/dev/null || true)"
+          if [ -n "$AUTH_LINES" ]; then
+            echo "Found stale auth in .npmrc — would override OIDC:"; echo "$AUTH_LINES"; exit 1
+          fi
+          echo "All OIDC prerequisites OK."
 
       - run: yarn build:tokens
       - run: yarn build:ui
@@ -53,11 +83,15 @@ jobs:
           test -f packages/mcp/dist/index.js
           test -f packages/mcp/dist/index.d.ts
 
-      # semantic-release handles version bump + publish + changelog + github release.
-      # npm publish is invoked by @semantic-release/npm; we ensure provenance is on
-      # via the publishConfig in packages/core/package.json and NPM_CONFIG_PROVENANCE
-      # below, and id-token: write above authorizes OIDC trusted-publisher auth.
-      # No NPM_TOKEN secret is used.
+      # semantic-release runs version bump + publish + changelog + github release.
+      # `npm publish` is invoked by @semantic-release/npm. With:
+      #   - id-token: write granted (above)
+      #   - npmjs.org "Trusted publisher" configured for this repo + this
+      #     workflow file (release.yml on main/next)
+      #   - npm 11.5.1+ on PATH (Node 24 ships it natively)
+      #   - no `_authToken` in any .npmrc (verified above)
+      # …`npm publish` performs the OIDC handshake automatically. No
+      # NPM_TOKEN secret is used.
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
