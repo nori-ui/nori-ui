@@ -1,154 +1,153 @@
 {
-    "name": "@nori-ui/core",
-    "version": "1.0.0",
-    "description": "React Native + React Native Web UI component library. Expo-first, NativeWind v4, Figma design tokens, AI-queryable docs.",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "git+ssh://git@github.com:nori-ui/nori-ui.git"
+  "name": "@nori-ui/core",
+  "version": "1.0.0",
+  "description": "React Native + React Native Web UI component library. Expo-first, NativeWind v4, Figma design tokens, AI-queryable docs.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nori-ui/nori-ui.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
-    "engines": {
-        "node": ">=20"
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "react-native": "./src/client.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
     },
-    "sideEffects": false,
-    "type": "module",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "files": [
-        "dist",
-        "README.md",
-        "LICENSE"
-    ],
-    "exports": {
-        "./package.json": "./package.json",
-        ".": {
-            "types": "./dist/index.d.ts",
-            "react-native": "./src/index.ts",
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
-        },
-        "./client": {
-            "types": "./dist/client.d.ts",
-            "react-native": "./src/client.ts",
-            "import": "./dist/client.js",
-            "require": "./dist/client.cjs"
-        },
-        "./theme": {
-            "types": "./dist/theme/index.d.ts",
-            "import": "./dist/theme/index.js",
-            "require": "./dist/theme/index.cjs"
-        },
-        "./i18n": {
-            "types": "./dist/i18n/index.d.ts",
-            "import": "./dist/i18n/index.js",
-            "require": "./dist/i18n/index.cjs"
-        },
-        "./icons": {
-            "types": "./dist/icons/index.d.ts",
-            "import": "./dist/icons/index.js",
-            "require": "./dist/icons/index.cjs"
-        },
-        "./slot": {
-            "types": "./dist/slot/index.d.ts",
-            "import": "./dist/slot/index.js",
-            "require": "./dist/slot/index.cjs"
-        },
-        "./utils/cn": {
-            "types": "./dist/utils/cn.d.ts",
-            "import": "./dist/utils/cn.js",
-            "require": "./dist/utils/cn.cjs"
-        },
-        "./stories/csf-slugs": {
-            "types": "./src/stories/csf-slugs.ts",
-            "source": "./src/stories/csf-slugs.ts",
-            "default": "./src/stories/csf-slugs.ts"
-        },
-        "./stories": {
-            "types": "./dist/stories/index.d.ts",
-            "source": "./src/stories/index.ts",
-            "react-native": "./src/stories/index.ts",
-            "import": "./dist/stories/index.js",
-            "require": "./dist/stories/index.cjs"
-        }
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme/index.js",
+      "require": "./dist/theme/index.cjs"
     },
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/",
-        "provenance": true
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js",
+      "require": "./dist/i18n/index.cjs"
     },
-    "scripts": {
-        "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
-        "typecheck": "tsc --noEmit",
-        "test": "jest --passWithNoTests"
+    "./icons": {
+      "types": "./dist/icons/index.d.ts",
+      "import": "./dist/icons/index.js",
+      "require": "./dist/icons/index.cjs"
     },
-    "devDependencies": {
-        "@nori-ui/tokens": "*",
-        "@size-limit/preset-small-lib": "^12.1.0",
-        "@storybook/react": "^8.4",
-        "@testing-library/dom": "^10.4.1",
-        "@testing-library/jest-dom": "^6",
-        "@testing-library/react": "^16",
-        "@testing-library/react-native": "^12",
-        "@types/jest": "^30.0.0",
-        "@types/jest-axe": "^3.5.9",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
-        "@types/react-native-web": "^0",
-        "jest": "^29",
-        "jest-axe": "^10.0.0",
-        "jest-environment-jsdom": "^29",
-        "nativewind": "^4",
-        "react-native-css-interop": "^0.2.3",
-        "react-native-reanimated": "~4.3.0",
-        "react-native-web": "^0.21",
-        "react-native-worklets": "^0.8.1",
-        "size-limit": "^12.1.0",
-        "ts-jest": "^29",
-        "tsup": "^8.5.1",
-        "typescript": "^5.6.0"
+    "./slot": {
+      "types": "./dist/slot/index.d.ts",
+      "import": "./dist/slot/index.js",
+      "require": "./dist/slot/index.cjs"
     },
-    "dependencies": {
-        "@internationalized/date": "^3.5.6",
-        "react": "^19",
-        "react-dom": "^19",
-        "sonner": "^2.0.7"
+    "./utils/cn": {
+      "types": "./dist/utils/cn.d.ts",
+      "import": "./dist/utils/cn.js",
+      "require": "./dist/utils/cn.cjs"
     },
-    "peerDependencies": {
-        "expo-blur": ">=14",
-        "nativewind": "^4.2.0",
-        "react": "^19",
-        "react-dom": "^19",
-        "react-native": "^0.83",
-        "react-native-css-interop": ">=0.2.3",
-        "react-native-reanimated": ">=4.3.0",
-        "react-native-worklets": ">=0.8.0",
-        "sonner-native": ">=0.20"
+    "./stories/csf-slugs": {
+      "types": "./src/stories/csf-slugs.ts",
+      "source": "./src/stories/csf-slugs.ts",
+      "default": "./src/stories/csf-slugs.ts"
     },
-    "peerDependenciesMeta": {
-        "expo-blur": {
-            "optional": true
-        },
-        "nativewind": {
-            "optional": false
-        },
-        "react-dom": {
-            "optional": true
-        },
-        "react-native": {
-            "optional": true
-        },
-        "react-native-css-interop": {
-            "optional": false
-        },
-        "react-native-reanimated": {
-            "optional": false
-        },
-        "react-native-worklets": {
-            "optional": false
-        },
-        "sonner-native": {
-            "optional": true
-        }
+    "./stories": {
+      "types": "./dist/stories/index.d.ts",
+      "source": "./src/stories/index.ts",
+      "react-native": "./src/stories/index.ts",
+      "import": "./dist/stories/index.js",
+      "require": "./dist/stories/index.cjs"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --passWithNoTests"
+  },
+  "devDependencies": {
+    "@nori-ui/tokens": "*",
+    "@size-limit/preset-small-lib": "^12.1.0",
+    "@storybook/react": "^8.4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6",
+    "@testing-library/react": "^16",
+    "@testing-library/react-native": "^12",
+    "@types/jest": "^30.0.0",
+    "@types/jest-axe": "^3.5.9",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-native-web": "^0",
+    "jest": "^29",
+    "jest-axe": "^10.0.0",
+    "jest-environment-jsdom": "^29",
+    "nativewind": "^4",
+    "react-native-css-interop": "^0.2.3",
+    "react-native-reanimated": "~4.3.0",
+    "react-native-web": "^0.21",
+    "react-native-worklets": "^0.8.1",
+    "size-limit": "^12.1.0",
+    "ts-jest": "^29",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "@internationalized/date": "^3.5.6",
+    "react": "^19",
+    "react-dom": "^19",
+    "sonner": "^2.0.7"
+  },
+  "peerDependencies": {
+    "expo-blur": ">=14",
+    "nativewind": "^4.2.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-native": "^0.83",
+    "react-native-css-interop": ">=0.2.3",
+    "react-native-reanimated": ">=4.3.0",
+    "react-native-worklets": ">=0.8.0",
+    "sonner-native": ">=0.20"
+  },
+  "peerDependenciesMeta": {
+    "expo-blur": {
+      "optional": true
+    },
+    "nativewind": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    },
+    "react-native-css-interop": {
+      "optional": false
+    },
+    "react-native-reanimated": {
+      "optional": false
+    },
+    "react-native-worklets": {
+      "optional": false
+    },
+    "sonner-native": {
+      "optional": true
+    }
+  }
 }

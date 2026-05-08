@@ -148,5 +148,11 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+          # Provenance requires a PUBLIC source repository — npm rejects
+          # provenance attestations from private repos with 422
+          # "Unsupported GitHub Actions source repository visibility:
+          # 'private'". OIDC trusted publishing itself works fine on
+          # private repos; provenance is the extra layer that doesn't.
+          # Re-enable (set to "true") once this repo goes public.
+          NPM_CONFIG_PROVENANCE: "false"
         run: yarn semantic-release

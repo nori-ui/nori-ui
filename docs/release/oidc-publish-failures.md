@@ -71,3 +71,19 @@ Multiple `release.yml` runs failed in a row with confusingly different errors th
 - The workflow now has a **"Verify OIDC publish prerequisites"** step that fails LOUDLY if any of these regress: npm too old, no `id-token: write`, stale `_authToken` in `.npmrc`. **DO NOT REMOVE.**
 - If `@semantic-release/npm` ever bumps and changes its OIDC code, re-read `lib/verify-auth.js` and `lib/trusted-publishing/oidc-context.js` to confirm the URL-equality check semantics. The strict `===` against `OFFICIAL_REGISTRY` (with trailing slash) is brittle.
 - Consider replacing the two-step "drop workspaces + rewrite specs" hack with a single proper publish path (e.g., `yarn npm publish`, `@sebbo2002/semantic-release-yarn`, or an explicit `npm pack` + `npm publish <tarball>` flow). The current setup is fragile and silently drifts as Yarn protocols evolve.
+
+### 7 · `dca8f63` (drop root workspaces)
+
+- **Symptom:** OIDC handshake succeeded, `npm version` succeeded, build succeeded — then `npm publish` failed with HTTP 422:
+  ```
+  Error verifying sigstore provenance bundle: Unsupported GitHub Actions
+  source repository visibility: "private". Only public source
+  repositories are supported when publishing with provenance.
+  ```
+- **Root cause:** OIDC trusted publishing works on private repos; **npm provenance does not**. Provenance attestations require the source repo to be public so consumers can independently verify the build trail. Our repo is private, so the `--provenance` flag (set via `NPM_CONFIG_PROVENANCE=true` and `publishConfig.provenance: true`) made npm reject the upload at the registry.
+- **Fix:** disable provenance — set `NPM_CONFIG_PROVENANCE=false` in the workflow and remove `provenance: true` from `publishConfig`. Re-enable when the repo is made public. Commit `<TBD>`.
+- **Rule learned:** **`OIDC ≠ provenance`.** Two independent features. OIDC = "who is allowed to publish" (works on private repos). Provenance = "this build is attested" (requires public repo). When `id-token: write` is granted, npm publish runs OIDC trusted publishing automatically; provenance is the extra opt-in.
+
+## Updated standing rule
+
+7. **Provenance only works on public repos.** With a private repo, set `NPM_CONFIG_PROVENANCE=false` and omit `publishConfig.provenance`. OIDC trusted publishing remains active.
