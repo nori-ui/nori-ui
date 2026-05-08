@@ -10,6 +10,21 @@ export default defineConfig({
     // react-native-css-interop instead of being swallowed by RN-Web's
     // internal CSS-in-JS StyleSheet system.
     plugins: [react({ jsxImportSource: 'nativewind' })],
+    // Some RN-ecosystem packages (react-native-worklets, parts of
+    // reanimated) read `process.env.NODE_ENV` / `process.env.JEST_WORKER_ID`
+    // at module-evaluation time. Vite doesn't shim arbitrary `process.*`
+    // accesses on the browser target, so without these defines the page
+    // dies with `ReferenceError: process is not defined` before any
+    // playground story can render.
+    define: {
+        // The RN bundler injects a handful of globals that vite doesn't;
+        // RN-ecosystem packages (reanimated, worklets, css-interop) crash
+        // at module-evaluation time without them. Map each to a browser-
+        // friendly equivalent.
+        'process.env': '{}',
+        __DEV__: 'true',
+        global: 'globalThis',
+    },
     resolve: {
         // Pick `source` over `import` for `@nori-ui/core/stories` so Vite's
         // `import.meta.glob` runs against the live `src/components/` tree
@@ -44,9 +59,14 @@ export default defineConfig({
     server: {
         port: 5173,
     },
-    // Let Vite prebundle workspace packages to speed up cold starts.
     optimizeDeps: {
-        include: ['@nori-ui/core', '@nori-ui/core/client', '@nori-ui/tokens', 'nativewind', 'react-native-css-interop'],
+        // Workspace `@nori-ui/*` packages are intentionally NOT prebundled.
+        // The `source` condition in resolve.conditions points at
+        // `packages/core/src/...` so vite's normal HMR pipeline reads the
+        // live source. Esbuild's prebundler ignores `resolve.conditions`
+        // and would pick the `import` condition (= `dist/`) instead, which
+        // bypasses the source `import.meta.glob` that discovers stories.
+        include: ['nativewind', 'react-native-css-interop'],
         // react-native-css-interop and some RN-ecosystem deps ship JSX inside .js files.
         // Tell esbuild to parse them as JSX during prebundling.
         esbuildOptions: {

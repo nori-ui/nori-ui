@@ -16,19 +16,21 @@ declare const require: {
 };
 
 export function discoverCsfModules(): Record<string, CsfModule> {
-    // Vite / Rollup — `import.meta.glob` statically transformed at build time.
+    // Vite / Rollup — `import.meta.glob` is rewritten statically at build
+    // time into a literal modules map. We don't gate on a runtime check
+    // for `meta.glob` being a function (it isn't — only the static call
+    // site is transformed). Vite returns an empty object when the call
+    // sees no matches; bundlers that don't recognise the call (Metro)
+    // either tree-shake it out or throw, and the catch falls through to
+    // the require.context branch below.
     try {
-        // biome-ignore lint/suspicious/noExplicitAny: `glob` is a Vite extension to ImportMeta
-        const meta = import.meta as any;
-        if (meta && typeof meta.glob === 'function') {
-            // biome-ignore lint/suspicious/noExplicitAny: Vite types live in `vite/client` which we don't pull in
-            const modules = (import.meta as any).glob('../components/**/*.stories.tsx', { eager: true }) as Record<
-                string,
-                CsfModule
-            >;
-            if (modules && Object.keys(modules).length > 0) {
-                return modules;
-            }
+        // biome-ignore lint/suspicious/noExplicitAny: Vite types live in `vite/client` which we don't pull in
+        const modules = (import.meta as any).glob('../components/**/*.stories.tsx', { eager: true }) as Record<
+            string,
+            CsfModule
+        >;
+        if (modules && Object.keys(modules).length > 0) {
+            return modules;
         }
     } catch {
         // import.meta access can throw in non-ESM contexts — fall through.
