@@ -68,8 +68,8 @@ export type CalendarBaseProps<M extends CalendarMode = 'single'> = {
      * Header layout. `'title'` (default) shows a centered "May 2026 ▾"
      * drilldown button. `'dropdown'` replaces it with `[ May ▾ ] [ 2026 ▾ ]`
      * pickers powered by `Select`. `'custom'` hides the built-in caption
-     * and renders `Calendar.Caption` children with full slot composition
-     * via `useCalendarCaption()`.
+     * and renders the Calendar's children — typically wrapped in
+     * `<Calendar.Caption>` — driving them via `useCalendarCaption()`.
      */
     caption?: CalendarCaption;
     /**

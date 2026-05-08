@@ -43,14 +43,15 @@ export const CaptionProvider = ({ value, children }: CaptionProviderProps) => (
 
 /**
  * Returns the current caption state and setters for a Calendar. Use inside
- * a custom `Calendar.Caption` slot to render your own dropdowns / nav.
+ * a `<Calendar.Caption>` slot (or any direct child of a Calendar with
+ * `caption="custom"`) to render your own dropdowns / navigation.
  *
  * @throws if called outside a Calendar with `caption="custom"`.
  */
 export const useCalendarCaption = (): CaptionContextValue => {
     const ctx = useContext(CaptionContext);
     if (!ctx) {
-        throw new Error('useCalendarCaption must be used inside <Calendar.Caption>.');
+        throw new Error('useCalendarCaption must be called inside a <Calendar caption="custom"> subtree.');
     }
     return ctx;
 };

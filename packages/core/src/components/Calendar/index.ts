@@ -1,4 +1,4 @@
-export { Calendar } from './Calendar';
+export { Calendar, type CalendarCaptionProps } from './Calendar';
 export type {
     CalendarBehavior,
     CalendarCaption,

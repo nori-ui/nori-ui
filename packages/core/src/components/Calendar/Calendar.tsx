@@ -622,4 +622,40 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
     );
 };
 
-export const Calendar = CalendarRoot;
+/**
+ * Slot wrapper for Calendar's `caption="custom"` mode. Use it to mark the
+ * subtree that renders your own month/year pickers (or any other header
+ * UI). Inside, call {@link useCalendarCaption} to read the current
+ * month/year and trigger changes.
+ *
+ * `<Calendar.Caption>` is a transparent passthrough — Calendar renders
+ * any direct children when `caption="custom"`. The wrapper exists to
+ * make the intent explicit at call sites and to give static analysis
+ * something to introspect.
+ *
+ * @example
+ * ```tsx
+ * <Calendar caption="custom">
+ *     <Calendar.Caption>
+ *         <MyMonthSelect />
+ *         <MyYearSelect />
+ *     </Calendar.Caption>
+ * </Calendar>
+ * ```
+ */
+export const CalendarCaption = ({ children }: CalendarCaptionProps): ReactNode => <>{children}</>;
+// react-docgen-typescript keys the generated props table by displayName,
+// and dotted names like 'Calendar.Caption' would force odd index lookups
+// downstream. Keep the registered name flat; consumers still access it
+// at call sites as `Calendar.Caption`.
+CalendarCaption.displayName = 'CalendarCaption';
+
+export type CalendarCaptionProps = {
+    /** Custom caption content — typically your own month / year selects. */
+    children?: ReactNode;
+};
+
+type CalendarComponent = typeof CalendarRoot & { Caption: typeof CalendarCaption };
+
+export const Calendar = CalendarRoot as CalendarComponent;
+Calendar.Caption = CalendarCaption;

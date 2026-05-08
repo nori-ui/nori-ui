@@ -1,6 +1,6 @@
 ---
 title: Calendar
-description: Inline visual calendar for picking dates, ranges, or multiple selections — with locale-aware first day of week, weekend marking, and drill-down navigation.
+description: Inline visual calendar for picking dates, ranges, or multiple selections — with locale-aware first day of week, weekend marking, drill-down navigation, and slot-composable headers.
 since: 1.0.0
 tags: [date, picker, range, i18n, a11y]
 platform: both
@@ -32,30 +32,128 @@ const [value, setValue] = useState<CalendarDate | null>(null);
 <Calendar value={value} onChange={(v) => setValue(v)} />
 ```
 
-## Range selection
+## Selection modes
+
+Calendar's selection shape is controlled by the `mode` prop. The
+`value` / `defaultValue` / `onChange` types are inferred from `mode`:
+
+| `mode`       | `value` type                          |
+|--------------|---------------------------------------|
+| `'single'` (default) | `CalendarDate \| null`        |
+| `'range'`    | `{ start: CalendarDate; end: CalendarDate \| null } \| null` |
+| `'multiple'` | `CalendarDate[]`                      |
+
+### Range selection
 
 Two-month layout on desktop (`visibleMonths={2}`), single-month on mobile by default.
 
 <Preview name="calendar-range" />
 
-## Multiple selection
+Use `minNights` / `maxNights` to constrain the gap between start and end —
+useful for hotel bookings (minimum stay) or short-term rental floors / caps.
+
+```tsx
+<Calendar mode="range" minNights={2} maxNights={14} />
+```
+
+### Multiple selection
 
 <Preview name="calendar-multiple" />
 
+## Visible months
+
+`visibleMonths` controls how many month grids render side-by-side. Pass an
+explicit number, or `'auto'` (default for range mode) to render two on
+viewports ≥ 768px and one on smaller screens.
+
+```tsx
+<Calendar visibleMonths={3} />          // always three months
+<Calendar mode="range" visibleMonths="auto" /> // 2 on desktop, 1 on mobile
+```
+
 ## Drill-down navigation
 
-Click the title to toggle between day, month, and year views. `defaultView="year"` opens directly into the decade picker.
+Click the title to toggle between day, month, and year views.
+`defaultView="year"` opens directly into the decade picker — handy for
+birthday inputs.
 
 <Preview name="calendar-drilldown" />
 
-## Controlled
+The view is controllable via `view` + `onViewChange`:
 
-<Preview name="calendar-controlled" />
+```tsx
+const [view, setView] = useState<CalendarView>('day');
+<Calendar view={view} onViewChange={setView} />
+```
+
+## Header layout: `caption`
+
+The header has three layouts:
+
+- `caption="title"` (default) — centered title, click to drill down.
+- `caption="dropdown"` — `[ May ▾ ] [ 2026 ▾ ]` Select pills.
+- `caption="custom"` — render your own header via `<Calendar.Caption>`.
+
+### Dropdown captions
+
+Replaces the title-click drilldown with two `Select` pills — one for
+the month, one for the year. Useful when the user is likely to jump
+across years (birthdays, far-future bookings).
+
+<Preview name="calendar-dropdown-caption" />
+
+```tsx
+<Calendar caption="dropdown" yearRange={[2020, 2030]} />
+```
+
+`yearRange` defaults derive from `minValue` / `maxValue` if set, else
+`[focused.year - 100, focused.year + 10]` — covers birthday-pickers
+and short-term-booking ranges.
+
+### Custom captions (slot composition)
+
+Switch to `caption="custom"` to drop the built-in caption entirely
+and render your own dropdowns or nav. Wrap them in `<Calendar.Caption>`
+to make the slot intent explicit:
+
+```tsx
+<Calendar caption="custom">
+    <Calendar.Caption>
+        <MyMonthSelect />
+        <MyYearSelect />
+    </Calendar.Caption>
+</Calendar>
+```
+
+Inside any descendant, call `useCalendarCaption()` for state + setters:
+
+```tsx
+import { useCalendarCaption } from '@nori-ui/core';
+
+const MyMonthSelect = () => {
+    const { month, monthOptions, setMonth } = useCalendarCaption();
+    return <YourSelect value={month} onChange={setMonth} options={monthOptions} />;
+};
+```
+
+The full hook return shape:
+
+| Field            | Type                                | Notes                                              |
+|------------------|-------------------------------------|----------------------------------------------------|
+| `month`          | `number`                            | 1..12, currently visible month                     |
+| `year`           | `number`                            | Currently visible year                             |
+| `visibleMonth`   | `CalendarDate`                      | First day of the visible month                     |
+| `monthOptions`   | `ReadonlyArray<CaptionOption>`      | All months; `disabled` set if outside min/max      |
+| `yearOptions`    | `ReadonlyArray<CaptionOption>`      | Years inside `yearRange`                           |
+| `setMonth`       | `(month: number) => void`           | Snap to a specific month (1..12)                   |
+| `setYear`        | `(year: number) => void`            | Snap to a specific year                            |
+| `goPrev`         | `() => void`                        | Page back (month/year/decade per current view)     |
+| `goNext`         | `() => void`                        | Page forward (month/year/decade per current view)  |
 
 ## Constraining selection
 
 Use `minValue` / `maxValue` to bound the selectable range, and
-`isDateUnavailable` to disable arbitrary dates (weekends, holidays,
+`isDateUnavailable` for arbitrary disables (weekends, holidays,
 server-fetched blackout periods). Disabled cells render dimmed and
 cannot be focused or selected.
 
@@ -73,7 +171,7 @@ const end = start.add({ days: 30 });
 <Calendar minValue={start} maxValue={end} />
 ```
 
-### Disabled dates and ranges
+### Disabled dates
 
 `isDateUnavailable` is a synchronous predicate the Calendar calls for
 every visible cell. Combine it freely with bounds.
@@ -89,56 +187,87 @@ every visible cell. Combine it freely with bounds.
 />
 ```
 
-## Header dropdowns
-
-Set `caption="dropdown"` to replace the title-click drilldown with two
-`Select` pills — one for the month, one for the year. Useful when the
-user is likely to jump across years (birthdays, far-future bookings).
-
-<Preview name="calendar-dropdown-caption" />
-
-```tsx
-<Calendar caption="dropdown" yearRange={[2020, 2030]} />
-```
-
-The `yearRange` defaults are derived from `minValue` / `maxValue` if
-set, or `[focused.year - 100, focused.year + 10]` otherwise. To use
-your own dropdown components (e.g. a styled native `<select>` or a
-third-party library), switch to slot composition:
-
-```tsx
-<Calendar caption="custom">
-    <Calendar.Caption>
-        <MyMonthSelect />
-        <MyYearSelect />
-    </Calendar.Caption>
-</Calendar>
-```
-
-Inside your custom select, call `useCalendarCaption()` to read state
-and trigger month/year changes:
-
-```tsx
-import { useCalendarCaption } from '@nori-ui/core';
-
-const MyMonthSelect = () => {
-    const { month, monthOptions, setMonth } = useCalendarCaption();
-    // monthOptions: [{ value: 1, label: 'January', disabled: false }, ...]
-    return <YourSelect value={month} onChange={setMonth} options={monthOptions} />;
-};
-```
-
 ## Custom day rendering
 
-Use the `renderDay` slot to overlay availability dots, prices, or per-day decorations.
+Use the `renderDay` slot to overlay availability dots, prices, or
+per-day decorations. The renderer receives a `DayContext`:
+
+| Field               | Type            | When true                                    |
+|---------------------|-----------------|----------------------------------------------|
+| `date`              | `CalendarDate`  | The cell's date                              |
+| `isOutsideMonth`    | `boolean`       | Cell belongs to the previous / next month    |
+| `isToday`           | `boolean`       | Matches `today()` in the local timezone      |
+| `isSelected`        | `boolean`       | Selected (single / multi) or range endpoint  |
+| `isRangeStart`      | `boolean`       | Range-mode start                             |
+| `isRangeEnd`        | `boolean`       | Range-mode end                               |
+| `isInRange`         | `boolean`       | Strictly between start and end               |
+| `isInPreviewRange`  | `boolean`       | Hover preview between start and pointer      |
+| `isUnavailable`     | `boolean`       | Outside min/max or `isDateUnavailable` true  |
+| `isFocused`         | `boolean`       | Has keyboard focus                           |
+| `isWeekend`         | `boolean`       | Locale-derived weekend day                   |
 
 <Preview name="calendar-custom-render" />
 
+## Display options
+
+A handful of small toggles that don't fit elsewhere:
+
+```tsx
+<Calendar showWeekNumbers />     // adds an ISO week-number column
+<Calendar highlightToday={false} /> // disables today's accent (default: on)
+```
+
 ## Internationalization
 
-Calendar reads its locale from `NoriProvider.locale`, falling back to `new Intl.DateTimeFormat().resolvedOptions().locale`. You can also override per-component with the `locale` prop.
+Calendar reads its locale from `NoriProvider.locale`, falling back to
+`new Intl.DateTimeFormat().resolvedOptions().locale`. You can also
+override per-component:
 
-The `firstDayOfWeek` and `weekendDays` are derived from the locale via CLDR; both are overridable.
+```tsx
+<Calendar locale="de-DE" />
+```
+
+The active locale drives weekday names, weekday order, weekend marking,
+and (via `Select`'s locale-aware sort) the dropdown captions.
+
+### Overriding locale defaults
+
+`firstDayOfWeek` and `weekendDays` are derived from the locale via
+CLDR; both are overridable when you need to match a specific
+business calendar:
+
+```tsx
+// Always start the week on Monday, regardless of locale
+<Calendar firstDayOfWeek={1} />
+
+// Treat Friday + Saturday as the weekend (e.g., MENA defaults)
+<Calendar weekendDays={[5, 6]} />
+```
+
+`firstDayOfWeek` and `weekendDays` are `0..6` where `0 = Sunday`.
+
+## `onChange` metadata
+
+Every change fires `onChange(value, meta)` where `meta` describes how the
+change happened:
+
+```tsx
+type ChangeMeta = {
+    view: 'day' | 'month' | 'year';
+    source: 'click' | 'keyboard' | 'scroll';
+};
+```
+
+Use it to decide whether to dismiss a popover (`source === 'click'`)
+versus keep it open during keyboard navigation, or to know if a year-view
+selection completed a date pick.
+
+## Behavior: paged vs scroll
+
+`behavior="paged"` (web default) advances by month with prev/next arrows
+and PageUp/PageDown. `behavior="scroll"` is the native default on
+React Native — month-by-month scrolling without arrows. Phase 2 work
+exposes this on web for touch surfaces.
 
 ## Keyboard
 
@@ -151,6 +280,15 @@ The `firstDayOfWeek` and `weekendDays` are derived from the locale via CLDR; bot
 | `Home` / `End` | Move to start/end of week |
 | `Enter` / `Space` | Select focused date |
 
+Disabled cells are skipped during keyboard navigation. If every cell in
+the direction of motion is disabled, focus stays put.
+
 ## Props
 
-<PropsTable name="Calendar" />
+### `<Calendar>`
+
+<PropsTable component="Calendar" />
+
+### `<Calendar.Caption>`
+
+<PropsTable component="CalendarCaption" />
