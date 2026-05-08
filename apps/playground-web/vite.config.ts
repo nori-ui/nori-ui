@@ -30,7 +30,14 @@ export default defineConfig({
                 find: /^react-native\/Libraries\/Renderer\/shims\/ReactFabric$/,
                 replacement: path.resolve(__dirname, 'src/shims/ReactFabric.js'),
             },
-            { find: /^react-native$/, replacement: 'react-native-web' },
+            // Augmented react-native — re-exports react-native-web plus
+            // stubs for the native-only APIs reanimated et al. import
+            // (TurboModuleRegistry, etc.). Must come before the bare
+            // react-native → react-native-web alias.
+            {
+                find: /^react-native$/,
+                replacement: path.resolve(__dirname, 'src/shims/react-native-rn-stubs.js'),
+            },
             { find: /^react-native\/(.*)$/, replacement: 'react-native-web/$1' },
         ],
     },
