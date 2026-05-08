@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/nori-ui/nori-ui/compare/v1.0.2...v1.0.3) (2026-05-08)
+
+### Bug Fixes
+
+* **playground-web:** correct optimizeDeps id for the client subpath ([655ce45](https://github.com/nori-ui/nori-ui/commit/655ce45f3eb2419dc9cf5048bc405d81adcdcf05))
+
 ## [1.0.2](https://github.com/nori-ui/nori-ui/compare/v1.0.1...v1.0.2) (2026-05-08)
 
 ### Bug Fixes
