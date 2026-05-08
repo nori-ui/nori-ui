@@ -1,3 +1,9 @@
+## [1.0.6](https://github.com/nori-ui/nori-ui/compare/v1.0.5...v1.0.6) (2026-05-08)
+
+### Bug Fixes
+
+* **ci:** unblock playwright e2e — resolve .web.* extensions + realign story testIDs ([70cba41](https://github.com/nori-ui/nori-ui/commit/70cba41bf86d149b1eb10286d65f649d0e1e34f4))
+
 ## [1.0.5](https://github.com/nori-ui/nori-ui/compare/v1.0.4...v1.0.5) (2026-05-08)
 
 ### Bug Fixes
