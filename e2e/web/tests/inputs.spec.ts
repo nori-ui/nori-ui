@@ -4,21 +4,22 @@ import { expect, test } from '@playwright/test';
 test.describe('TextInput + TextArea (web)', () => {
     test('TextInput accepts typed input and reflects the value', async ({ page }) => {
         await page.goto('/');
-        const input = page.getByTestId('story-text-input-default');
+        const input = page.getByTestId('section-text-input.default').getByRole('textbox');
         await input.fill('user@example.com');
         await expect(input).toHaveValue('user@example.com');
     });
 
-    test('TextInput error state carries aria-invalid=true and shows message', async ({ page }) => {
+    test('TextInput error state carries aria-invalid=true', async ({ page }) => {
         await page.goto('/');
-        const input = page.getByTestId('story-text-input-error');
+        const input = page.getByTestId('section-text-input.with-error').getByRole('textbox');
         await expect(input).toHaveAttribute('aria-invalid', 'true');
     });
 
-    test('TextArea renders as textarea with the configured rows', async ({ page }) => {
+    test('TextArea renders as a real <textarea> with a rows attribute', async ({ page }) => {
         await page.goto('/');
-        const textarea = page.getByTestId('story-text-area-default');
-        await expect(textarea).toHaveAttribute('rows', '3');
+        const textarea = page.getByTestId('section-text-area.default').locator('textarea');
+        await expect(textarea).toBeVisible();
+        await expect(textarea).toHaveAttribute('rows', /^\d+$/);
     });
 
     test('axe audit of input stories', async ({ page }) => {

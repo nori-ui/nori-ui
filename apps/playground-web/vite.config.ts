@@ -32,6 +32,15 @@ export default defineConfig({
         // the tsup-built dist/stories/index.js and the glob (already
         // executed at lib-build time, against an empty fs) returns nothing.
         conditions: ['source', 'browser', 'module', 'import', 'default'],
+        // Prefer `.web.*` over the bare extensions — Metro/Expo's
+        // platform-split convention. Without this, Vite reads
+        // `animated-view.ts` (which exports reanimated's `Animated.View`)
+        // instead of `animated-view.web.ts` (a plain RN `View`), and the
+        // first time any story renders an `AnimatedView`, reanimated's
+        // web parser chokes on our `cubic-bezier(...)` transition strings
+        // and unmounts the entire React tree — causing every `getByTestId`
+        // in Playwright to fail with "element(s) not found".
+        extensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
         alias: [
             // Specific overrides MUST come before the wildcard `react-native/*` so they win.
             // codegenNativeComponent is RN-codegen only — stub it on web.

@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Checkbox + Switch (web)', () => {
     test('Checkbox toggles aria-checked on click', async ({ page }) => {
         await page.goto('/');
-        const cb = page.getByTestId('story-checkbox-default');
+        const cb = page.getByTestId('section-checkbox.default').getByRole('checkbox');
         await expect(cb).toHaveAttribute('aria-checked', 'false');
         await cb.click();
         await expect(cb).toHaveAttribute('aria-checked', 'true');
@@ -12,7 +12,8 @@ test.describe('Checkbox + Switch (web)', () => {
 
     test('Switch has role=switch', async ({ page }) => {
         await page.goto('/');
-        await expect(page.getByTestId('story-switch-default')).toHaveAttribute('role', 'switch');
+        const sw = page.getByTestId('section-switch.default').getByRole('switch');
+        await expect(sw).toBeVisible();
     });
 
     test('axe audit of toggle stories', async ({ page }) => {
