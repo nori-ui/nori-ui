@@ -16,10 +16,9 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- **Body variants:** `body-xs`, `body-sm`, `body-md` (default), `body-lg`.
-- **Heading variants:** `heading-1`, `heading-2`, `heading-3` — render with semantic heading tags + `aria-level` on web.
-- Maps to RN `<Text>` on native and `<span>` / heading elements on web.
-- Accepts `className` for NativeWind-driven overrides.
+- Maps to RN `<Text>` on native and `<span>` / heading elements on web. Heading variants render with the right semantic tag plus `aria-level` so SEO and assistive tech see the hierarchy.
+- Token-driven — `fontFamily`, `fontSize`, `fontWeight`, `lineHeight` all flow through the active theme.
+- Accepts every RN `Text` prop (`numberOfLines`, `selectable`, `accessibilityRole`, …) plus `className` for NativeWind-driven overrides.
 
 ## Preview
 
@@ -28,6 +27,31 @@ import { PropsTable } from '@/components/props-table';
 ## Native preview
 
 <ExpoSnack component="Text" height={300} />
+
+## `variant`
+
+The variant decides font family, size, weight, and line-height in one
+go. Pass `style` if you need to override a specific property without
+leaving the variant behind.
+
+| Variant         | Tag (web)   | Use for                                              |
+|-----------------|-------------|------------------------------------------------------|
+| `heading-1`     | `<h1>`      | Page title — one per route, top of the page          |
+| `heading-2`     | `<h2>`      | Section heading                                      |
+| `heading-3`     | `<h3>`      | Subsection heading                                   |
+| `body-lg`       | `<span>`    | Lead paragraphs, intros                              |
+| `body-md` (default) | `<span>` | Default body copy                                    |
+| `body-sm`       | `<span>`    | Helper text, captions                                |
+| `body-xs`       | `<span>`    | Microcopy — labels in dense layouts                  |
+
+```tsx
+<Text variant="heading-1">Welcome</Text>
+<Text variant="body-sm">Last updated five minutes ago.</Text>
+```
+
+Variants pull from the **display** font for headings and the **body**
+font for body variants. Override the family for an entire app via
+`NoriProvider`'s theme, or per-instance via `style`.
 
 ## Props
 

@@ -15,13 +15,46 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- **Tones:** `neutral`, `primary`, `success`, `warning`, `danger`.
-- **Appearances:** `soft` (default), `solid`, `outline`. Soft is calm and readable; solid is loud and used sparingly.
 - Use sparingly. Every badge draws the eye, so a row of five stops being a row of badges.
+- Pair with `Button.leadingIcon` / Avatar for status overlays.
 
 ## Preview
 
 <Preview name="badge-basic" />
+
+## `tone`
+
+Semantic color. Choose by the meaning of the label, not the color you
+want — the theme decides the actual hue.
+
+| Value             | Use for                                           |
+|-------------------|---------------------------------------------------|
+| `neutral` (default) | Counts, plain category labels                   |
+| `primary`         | Brand-relevant labels, "New", "Pro"               |
+| `success`         | Healthy / done states                             |
+| `warning`         | Pending / needs-attention states                  |
+| `danger`          | Errors, expired, blocked                          |
+
+```tsx
+<Badge tone="success">Active</Badge>
+<Badge tone="danger">Expired</Badge>
+```
+
+## `appearance`
+
+Visual weight of the same `tone`. Pick by how loud the badge needs to
+be in its row.
+
+| Value             | Look                                                       |
+|-------------------|------------------------------------------------------------|
+| `soft` (default)  | Tinted background, tone-colored text. Calm, readable.      |
+| `solid`           | Filled tone background, white text. Loud — used sparingly. |
+| `outline`         | Border in tone, transparent background, tone-colored text. |
+
+```tsx
+<Badge tone="primary" appearance="solid">PRO</Badge>
+<Badge tone="warning" appearance="outline">Beta</Badge>
+```
 
 ## Props
 

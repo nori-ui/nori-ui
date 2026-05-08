@@ -16,8 +16,8 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Icon-library-agnostic — pass any component matching `{ size?: number; color?: string }`.
-- Pair with `SemanticIconsProvider` to alias semantic keys (`checkmark`, `close`, `spinner`) to your chosen icons.
+- Icon-library-agnostic — pass any component matching `{ size?: number; color?: string }` (lucide, RN-vector-icons, Heroicons, your own SVGs).
+- Pair with [`SemanticIconsProvider`](/docs/foundations/icons) to alias semantic keys (`checkmark`, `close`, `spinner`, …) to concrete icons. Components like `Alert` and `Checkbox` resolve their default icons through this provider, so swapping the icon set in one place updates the whole library.
 
 ## Preview
 
@@ -28,6 +28,42 @@ The example below uses the library's built-in `defaultSemanticIcons`. Drop in yo
 ## Native preview
 
 <ExpoSnack component="Icon" height={250} />
+
+## `as`
+
+The icon component to render. Anything with the shape
+`(props: { size?: number; color?: string }) => ReactNode` works.
+
+```tsx
+import { Star } from 'lucide-react-native';
+import { Icon } from '@nori-ui/core';
+
+<Icon as={Star} />
+```
+
+If you're using the semantic icon registry, you usually won't pass
+`as` directly — the components that need icons resolve them via
+`SemanticIconsProvider`.
+
+## `size`
+
+Pixel size. Defaults to 16. Pass a number; the icon component itself
+chooses how to scale (most lucide / Heroicons render `width={size}`
+`height={size}`).
+
+```tsx
+<Icon as={Star} size={24} />
+```
+
+## `color`
+
+CSS color string forwarded to the underlying icon component. Defaults
+to the active theme's `text.default`. Override per-instance for
+accents.
+
+```tsx
+<Icon as={Star} color="#facc15" />     // amber star
+```
 
 ## Props
 

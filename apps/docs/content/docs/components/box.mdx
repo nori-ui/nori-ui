@@ -16,8 +16,9 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Thin wrapper over RN `<View>` / web `<div>` with className pass-through.
-- Use for ad-hoc containers; reach for `HStack` / `VStack` for aligned rows/columns.
+- Thin wrapper over RN `<View>` / web `<div>` with `className` pass-through.
+- Reach for `HStack` / `VStack` for aligned rows/columns; use Box for ad-hoc containers.
+- Forwards every `View` prop (style, accessibility, layout, ref) untouched.
 
 ## Preview
 
@@ -26,6 +27,23 @@ import { PropsTable } from '@/components/props-table';
 ## Native preview
 
 <ExpoSnack component="Box" height={300} />
+
+## `flex`
+
+Shortcut for the most common flexbox sizing knob — `flex={1}` is a
+fill-the-parent container, `flex={0}` shrinks to its content. Anything
+you'd write as `style={{ flex: n }}` works as `flex={n}` on the prop
+surface, with the same Yoga layout semantics on RN and web.
+
+```tsx
+<HStack>
+    <Box flex={1}>{/* takes whatever's left */}</Box>
+    <Avatar size="sm" />
+</HStack>
+```
+
+Pass `style` if you need cross-axis or basis options too — they merge
+with the `flex` shortcut, with `style` winning on conflict.
 
 ## Props
 

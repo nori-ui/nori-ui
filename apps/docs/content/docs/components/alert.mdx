@@ -15,14 +15,65 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- **Tones:** `info`, `success`, `warning`, `danger`. Each picks a default icon from the semantic icon set.
 - Use Alert for messages the reader should *notice* but doesn't need to act on right away. Reach for [Dialog](/docs/components/dialog) when the user must acknowledge before continuing.
 - `role="alert"` is set automatically so screen readers announce the message.
-- Pass `onDismiss` to render a close button. The Alert never tracks dismissed state itself — the parent decides what to render after.
+- The Alert never tracks dismissed state itself — the parent decides what to render after `onDismiss` fires.
 
 ## Preview
 
 <Preview name="alert-basic" />
+
+## `tone`
+
+Severity. Drives the color treatment and the default icon picked from
+`SemanticIconsProvider`.
+
+| Value       | Default icon | Use for                                        |
+|-------------|--------------|------------------------------------------------|
+| `info` (default) | info icon | Neutral context — "FYI", new feature notes |
+| `success`   | check        | Confirmations after an action                  |
+| `warning`   | warning      | Recoverable issues — slow network, retry hints |
+| `danger`    | error        | Failures, destructive consequences             |
+
+```tsx
+<Alert tone="warning" title="Connection unstable" />
+```
+
+## `title` and `description`
+
+`title` renders bold; `description` renders below as muted body copy.
+Either is optional; an Alert with only a `title` reads as a single-line
+banner.
+
+```tsx
+<Alert tone="info" title="Payment in review" />
+<Alert tone="info" title="Payment in review" description="We'll email you within 24 hours." />
+```
+
+## `icon`
+
+By default the Alert pulls the icon for its `tone` from the active
+`SemanticIconsProvider`. Pass `icon` to override per-instance with any
+icon component matching `{ size?: number; color?: string }`.
+
+```tsx
+import { Sparkles } from 'lucide-react-native';
+
+<Alert tone="info" icon={Sparkles} title="New feature" />
+```
+
+Pass `icon={null}` to render no icon at all.
+
+## `onDismiss`
+
+When provided, a close button renders in the top-right and fires
+`onDismiss` on press. The Alert never hides itself — the parent owns
+that state.
+
+```tsx
+const [shown, setShown] = useState(true);
+{shown ? <Alert tone="info" title="Heads up" onDismiss={() => setShown(false)} /> : null}
+```
 
 ## Props
 

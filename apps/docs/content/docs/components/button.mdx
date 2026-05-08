@@ -16,10 +16,9 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- **Variants:** `primary`, `secondary`, `ghost`, `destructive`
-- **Sizes:** `sm`, `md`, `lg`
-- **States:** default, pressed, disabled, loading
-- **Composition:** `asChild` renders a supplied element (e.g. `<Link>`) as the interactive root.
+- Click target with full keyboard / RN `Pressable` semantics — focus ring on web, press feedback on native.
+- Forwards every `Pressable` prop (`onPress`, `onLongPress`, `accessibilityLabel`, …) untouched.
+- Use [`Toggle`](/docs/components/toggle) for two-state buttons and [`FloatButton`](/docs/components/float-button) for the floating-action-button pattern.
 
 ## Preview
 
@@ -29,23 +28,86 @@ import { PropsTable } from '@/components/props-table';
 
 <ExpoSnack component="Button" height={400} />
 
-## Props
+## `variant`
 
-<PropsTable component="Button" />
+Visual emphasis. Pick by hierarchy, not color.
 
-## asChild
+| Value                | Use for                                                  |
+|----------------------|----------------------------------------------------------|
+| `primary` (default)  | The single most-important action on a screen             |
+| `secondary`          | Equally relevant actions, paired with a primary          |
+| `ghost`              | Tertiary actions in dense layouts (cards, toolbars)      |
+| `destructive`        | Irreversible actions — delete, leave, discard            |
 
-`asChild` makes the supplied child the interactive root, so a Button can render as a Next.js `<Link>` (or any other element) while keeping all of its styles and accessibility behavior.
+```tsx
+<Button variant="primary">Save</Button>
+<Button variant="destructive">Delete account</Button>
+```
+
+## `size`
+
+Density. `md` is the default and matches the rest of the form
+controls; `sm` for dense toolbars, `lg` for hero CTAs.
+
+| Value          | Min height | Padding (horizontal) |
+|----------------|------------|----------------------|
+| `sm`           | 32 px      | 12 px                |
+| `md` (default) | 36 px      | 16 px                |
+| `lg`           | 44 px      | 20 px                |
+
+```tsx
+<Button size="lg">Get started</Button>
+```
+
+## `loading` and `disabled`
+
+`loading` swaps the leading icon (or label, in icon-only buttons) for a
+[`Spinner`](/docs/components/spinner) and disables interaction. The
+button keeps its width so the layout doesn't jump when the request
+returns. `disabled` greys the button out and blocks press handling
+without showing a spinner.
+
+```tsx
+<Button loading>Saving…</Button>
+<Button disabled>Save</Button>
+```
+
+Both forward `aria-busy` / `aria-disabled` so screen readers narrate
+the state correctly.
+
+## `leadingIcon` and `trailingIcon`
+
+Two icon slots — pass any component matching
+`{ size?: number; color?: string }`. Sized automatically to match the
+button's `size`. The Button renders nothing for an empty slot, so a
+text-only button stays text-only.
+
+```tsx
+import { Save, ArrowRight } from 'lucide-react-native';
+
+<Button leadingIcon={Save}>Save changes</Button>
+<Button trailingIcon={ArrowRight}>Continue</Button>
+```
+
+In `loading` state the `leadingIcon` is replaced by a Spinner; the
+`trailingIcon` stays so the right-edge layout doesn't jump.
+
+## `asChild`
+
+Renders the supplied child as the interactive root, so a Button can
+render as a Next.js `<Link>` (or any other element) while keeping all
+of its styles and accessibility behavior. Common for full-card
+clickable areas and routed actions.
 
 ```tsx
 import { Button } from '@nori-ui/core';
 import Link from 'next/link';
 
-export default function Demo() {
-    return (
-        <Button asChild variant="primary">
-            <Link href="/somewhere">Go</Link>
-        </Button>
-    );
-}
+<Button asChild variant="primary">
+    <Link href="/billing">Manage billing</Link>
+</Button>
 ```
+
+## Props
+
+<PropsTable component="Button" />

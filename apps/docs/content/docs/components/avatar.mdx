@@ -17,11 +17,60 @@ import { PropsTable } from '@/components/props-table';
 
 - One-liner usage: `<Avatar src="..." name="..." />`. The image renders when it loads cleanly; otherwise initials derived from `name` take over.
 - Always pass `name` — it doubles as the accessibility label and the source of fallback initials.
-- Sizes `sm` / `md` / `lg` / `xl` match common avatar diameters (32 / 40 / 56 / 72 px).
 
 ## Preview
 
 <Preview name="avatar-basic" />
+
+## `src`
+
+Image URL. When omitted, or when the image fails to load, the fallback
+renders instead. The Avatar tracks the load failure internally; you don't
+have to manage it.
+
+```tsx
+<Avatar src="https://i.pravatar.cc/96" name="Manuel Bieh" />
+```
+
+## `name`
+
+Required when there is no `src`, and recommended even when there is —
+it's the accessibility label and the source of fallback initials.
+Initials are derived from the first letters of up to two name parts:
+"Ada Lovelace" → "AL", "Madonna" → "M".
+
+```tsx
+<Avatar name="Ada Lovelace" />     // initials "AL"
+<Avatar name="Madonna" />          // initials "M"
+```
+
+## `size`
+
+Visual diameter. Maps to fixed pixel values that align with the rest
+of the library's compact / standard / generous spacing rhythm.
+
+| Value         | Diameter |
+|---------------|----------|
+| `sm`          | 32 px    |
+| `md` (default)| 40 px    |
+| `lg`          | 56 px    |
+| `xl`          | 72 px    |
+
+```tsx
+<Avatar size="lg" name="Ada Lovelace" />
+```
+
+## `fallback`
+
+Override the auto-derived initials with custom content — an icon, an
+emoji, or a different string.
+
+```tsx
+import { User } from 'lucide-react-native';
+
+<Avatar fallback={<User size={20} />} />
+<Avatar fallback="?" />
+```
 
 ## Props
 

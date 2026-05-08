@@ -16,14 +16,53 @@ import { PropsTable } from '@/components/props-table';
 ## At a glance
 
 - Pulses opacity between 100% and 55% over ~900ms — calm enough to use throughout a list without flashing.
-- `width` accepts a number (px) or any RN dimension string like `'40%'`. `height` is px-only.
-- `radius="full"` for circular skeletons (avatars).
-- `static` opts out of the animation when stacking many skeletons in a long list.
 - Decorative — `aria-hidden` is set automatically. Pair with a real `aria-busy` indicator on the loading region.
 
 ## Preview
 
 <Preview name="skeleton-basic" />
+
+## `width` and `height`
+
+`width` accepts a number (px) or any RN dimension string like `'40%'`
+or `'auto'`. `height` is px-only because RN doesn't accept percentage
+heights without a parent height.
+
+```tsx
+<Skeleton width={120} height={16} />     // 120 × 16 px
+<Skeleton width="40%" height={16} />     // 40% of parent width, 16 px tall
+```
+
+## `radius`
+
+Border radius in px, or `'full'` for circular skeletons (avatars,
+icon buttons). Default `6`.
+
+```tsx
+<Skeleton width={40} height={40} radius="full" />     // avatar placeholder
+<Skeleton width={120} height={32} radius={8} />       // button placeholder
+```
+
+## `static`
+
+Set `static` to opt out of the pulse animation. Use it when you stack
+many skeletons in a long list — a hundred independent animations can
+feel busier than helpful, and a static placeholder is still recognized
+as "loading state" by users.
+
+```tsx
+{rows.map((_, i) => <Skeleton key={i} static height={20} />)}
+```
+
+## `style`
+
+Forwarded to the underlying RN `<View>` so you can layer in margins,
+absolute positioning, or any other layout style without leaving the
+component.
+
+```tsx
+<Skeleton width={120} height={16} style={{ marginBottom: 8 }} />
+```
 
 ## Props
 

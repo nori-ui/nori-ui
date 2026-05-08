@@ -17,7 +17,7 @@ import { PropsTable } from '@/components/props-table';
 ## At a glance
 
 - Wraps RN `<ActivityIndicator>` on native; CSS animation on web.
-- Three sizes and optional `label` for a11y.
+- Pair with a visible `label` whenever the spinner is the only signal that work is happening — short waits get away with the icon, long ones don't.
 
 ## Preview
 
@@ -26,6 +26,44 @@ import { PropsTable } from '@/components/props-table';
 ## Native preview
 
 <ExpoSnack component="Spinner" height={250} />
+
+## `size`
+
+Diameter. Token sizes map to fixed pixel values; pass a number to
+escape the scale.
+
+| Value             | Diameter |
+|-------------------|----------|
+| `sm`              | 16 px    |
+| `md` (default)    | 24 px    |
+| `lg`              | 32 px    |
+| `<number>`        | Exact px |
+
+```tsx
+<Spinner size="sm" />
+<Spinner size={48} />          // arbitrary
+```
+
+## `label`
+
+Visible (or screen-reader-only via i18n default) accessibility label.
+Defaults to "Loading" — override when the context demands a more
+specific phrase ("Saving…", "Submitting form…") so screen readers say
+the right thing.
+
+```tsx
+<Spinner label="Submitting…" />
+```
+
+## `color`
+
+Override the default theme color. Forwarded to the underlying
+`ActivityIndicator` (native) or CSS `border-color` (web). Pass a CSS
+color string.
+
+```tsx
+<Spinner color="#9333ea" />
+```
 
 ## Props
 
