@@ -334,7 +334,7 @@ export type InputGroupAddonProps = {
  * box that visually fuses with the input. Place before `<InputGroupInput>`
  * for a prefix, after for a suffix. Accepts strings or `ReactNode` (icons).
  */
-const InputGroupAddon = ({ children, className, testID }: InputGroupAddonProps) => {
+export const InputGroupAddon = ({ children, className, testID }: InputGroupAddonProps) => {
     const colors = useThemeColors();
     const textStyle: TextStyle = {
         color: colors.semantic.text.muted,
@@ -389,7 +389,7 @@ export type InputGroupInputProps = TextInputProps;
  * those bits are lifted to the parent so they render OUTSIDE the bordered
  * field row, the way a normal field's label/helper sits above/below the box.
  */
-const InputGroupInput = ({
+export const InputGroupInput = ({
     label: _label,
     helperText: _helperText,
     error,

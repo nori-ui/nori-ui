@@ -245,7 +245,7 @@ const LIST_VERTICAL_LAYOUT_BASE: ViewStyle = {
 };
 
 /** Container for `TabsTrigger`s. Renders the underline rule on the appropriate edge. */
-const TabsList = ({ children, className, testID }: TabsListProps) => {
+export const TabsList = ({ children, className, testID }: TabsListProps) => {
     const ctx = useTabsContext('TabsList');
     const colors = useThemeColors();
     const gap = px(colors.spacing['1']);
@@ -310,7 +310,7 @@ const TRIGGER_LAYOUT_BASE_VERTICAL: ViewStyle = {
 };
 
 /** Clickable tab. Activating it shows the matching `TabsContent`. */
-const TabsTrigger = ({ value, disabled, children, className, testID }: TabsTriggerProps) => {
+export const TabsTrigger = ({ value, disabled, children, className, testID }: TabsTriggerProps) => {
     const ctx = useTabsContext('TabsTrigger');
     const colors = useThemeColors();
     const ownRef = useRef<HTMLElement | null>(null);
@@ -437,7 +437,7 @@ export type TabsContentProps = {
 };
 
 /** Panel content shown when its `value` matches the active tab. */
-const TabsContent = ({ value, children, className, testID }: TabsContentProps) => {
+export const TabsContent = ({ value, children, className, testID }: TabsContentProps) => {
     const ctx = useTabsContext('TabsContent');
     const active = ctx.value === value;
     if (!active) {

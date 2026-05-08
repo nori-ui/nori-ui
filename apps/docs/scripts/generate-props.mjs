@@ -11,7 +11,7 @@
 // Run via the predev/prebuild package.json hooks alongside the other
 // generators.
 
-import { existsSync, readdirSync, writeFileSync } from 'node:fs';
+import { readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import docgen from 'react-docgen-typescript';
@@ -23,24 +23,30 @@ const ICON_FILE = join(REPO_ROOT, 'packages', 'core', 'src', 'icons', 'icon.tsx'
 const OUT_FILE = join(HERE, '..', 'components', 'props.generated.ts');
 const TSCONFIG = join(REPO_ROOT, 'packages', 'core', 'tsconfig.json');
 
-// Some folders host a feature whose public component name differs from the
-// directory (e.g. `Toast/Toaster.tsx`). When the same-named file is absent,
-// fall back to the first PascalCase `.tsx` in the directory.
+// Walk every PascalCase `.tsx` file in every component directory — this
+// catches both the primary component (`Tabs/Tabs.tsx`) and any sibling
+// subcomponents in the same folder (`Tabs/TabsList.tsx`,
+// `Tabs/TabsTrigger.tsx`, etc.). docgen-typescript only emits an entry
+// per file for files that export a React component with a Props type, so
+// non-component utilities are filtered out automatically downstream.
 const componentFiles = [];
 for (const dir of readdirSync(COMPONENTS_DIR, { withFileTypes: true })) {
     if (!dir.isDirectory()) {
         continue;
     }
     const dirName = dir.name;
-    const sameNamed = join(COMPONENTS_DIR, dirName, `${dirName}.tsx`);
-    if (existsSync(sameNamed)) {
-        componentFiles.push(sameNamed);
-        continue;
-    }
-    const dirEntries = readdirSync(join(COMPONENTS_DIR, dirName));
-    const fallback = dirEntries.find((name) => /^[A-Z][A-Za-z0-9]*\.tsx$/.test(name) && !name.endsWith('.stories.tsx'));
-    if (fallback) {
-        componentFiles.push(join(COMPONENTS_DIR, dirName, fallback));
+    const dirEntries = readdirSync(join(COMPONENTS_DIR, dirName), { withFileTypes: true });
+    for (const e of dirEntries) {
+        if (!e.isFile()) {
+            continue;
+        }
+        if (!/^[A-Z][A-Za-z0-9]*\.tsx$/.test(e.name)) {
+            continue;
+        }
+        if (e.name.endsWith('.stories.tsx') || e.name.endsWith('.test.tsx')) {
+            continue;
+        }
+        componentFiles.push(join(COMPONENTS_DIR, dirName, e.name));
     }
 }
 componentFiles.push(ICON_FILE);

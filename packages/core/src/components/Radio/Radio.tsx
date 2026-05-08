@@ -109,7 +109,7 @@ const DOT_INNER_BASE: ViewStyle = {
  *   - Selection follows focus, so an arrow key both moves focus and
  *     activates the option (the standard radiogroup behavior).
  */
-const RadioGroup = ({
+export const RadioGroup = ({
     value,
     defaultValue,
     onChange,

@@ -259,7 +259,7 @@ const CONTENT_INNER_LAYOUT_BASE: ViewStyle = {
 };
 
 /** A single expandable section. Wraps an `Accordion.Trigger` and `Accordion.Content`. */
-const AccordionItem = ({ value, disabled = false, children, className, testID }: AccordionItemProps) => {
+export const AccordionItem = ({ value, disabled = false, children, className, testID }: AccordionItemProps) => {
     const ctx = useAccordionContext('Accordion.Item');
     const colors = useThemeColors();
     const open = ctx.isOpen(value);
@@ -299,7 +299,7 @@ export type AccordionTriggerProps = {
  * `<button>` (via Pressable) and wires `aria-expanded` + `aria-controls` to
  * the matching `Accordion.Content`.
  */
-const AccordionTrigger = ({ children, className, testID }: AccordionTriggerProps) => {
+export const AccordionTrigger = ({ children, className, testID }: AccordionTriggerProps) => {
     const ctx = useAccordionContext('Accordion.Trigger');
     const item = useAccordionItemContext('Accordion.Trigger');
     const colors = useThemeColors();
@@ -451,7 +451,12 @@ const ACCORDION_ANIM_DURATION_MS = 200;
  * mutation bypasses that filter — same trick used by Dialog's backdrop
  * blur.
  */
-const AccordionContent = ({ children, className, testID, forceMount: _forceMount = false }: AccordionContentProps) => {
+export const AccordionContent = ({
+    children,
+    className,
+    testID,
+    forceMount: _forceMount = false,
+}: AccordionContentProps) => {
     const item = useAccordionItemContext('Accordion.Content');
     const colors = useThemeColors();
     const wrapperRef = useRef<HTMLElement | null>(null);

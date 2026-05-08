@@ -138,7 +138,7 @@ export type PopoverTriggerProps = {
  * The trigger element gets `aria-haspopup="dialog"` and `aria-expanded`
  * so assistive tech announces the relationship.
  */
-const PopoverTrigger = ({ asChild = true, children, className, testID }: PopoverTriggerProps) => {
+export const PopoverTrigger = ({ asChild = true, children, className, testID }: PopoverTriggerProps) => {
     const ctx = usePopoverContext('PopoverTrigger');
     const onPress = useCallback(() => {
         ctx.measureTrigger();
@@ -288,7 +288,7 @@ export type PopoverContentProps = {
  * ARIA: `role="dialog"` (without `aria-modal`) so assistive tech
  * announces it as a grouping but doesn't suppress the rest of the page.
  */
-const PopoverContent = ({
+export const PopoverContent = ({
     side = 'bottom',
     align = 'center',
     children,

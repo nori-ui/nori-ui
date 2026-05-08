@@ -109,7 +109,7 @@ export type AlertDialogTriggerProps = {
  * Element that opens the alert dialog when activated. `asChild` by default
  * so any element (Button, Link, custom Pressable) becomes the trigger.
  */
-const AlertDialogTrigger = ({ asChild = true, children, className, testID }: AlertDialogTriggerProps) => {
+export const AlertDialogTrigger = ({ asChild = true, children, className, testID }: AlertDialogTriggerProps) => {
     const ctx = useAlertDialogContext('AlertDialogTrigger');
     const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
 
@@ -269,7 +269,7 @@ export type AlertDialogContentProps = {
  * on close. Crucially, neither overlay click nor Escape closes — the user
  * MUST press an explicit Cancel/Action button.
  */
-const AlertDialogContent = ({ children, className, testID }: AlertDialogContentProps) => {
+export const AlertDialogContent = ({ children, className, testID }: AlertDialogContentProps) => {
     const ctx = useAlertDialogContext('AlertDialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -493,7 +493,7 @@ export type AlertDialogTextProps = {
 };
 
 /** Heading inside AlertDialogContent. Wires `aria-labelledby`. */
-const AlertDialogTitle = ({ children, className }: AlertDialogTextProps) => {
+export const AlertDialogTitle = ({ children, className }: AlertDialogTextProps) => {
     const ctx = useAlertDialogContext('AlertDialogTitle');
     const colors = useThemeColors();
     return (
@@ -516,7 +516,7 @@ const AlertDialogTitle = ({ children, className }: AlertDialogTextProps) => {
 };
 
 /** Body description inside AlertDialogContent. Wires `aria-describedby`. */
-const AlertDialogDescription = ({ children, className }: AlertDialogTextProps) => {
+export const AlertDialogDescription = ({ children, className }: AlertDialogTextProps) => {
     const ctx = useAlertDialogContext('AlertDialogDescription');
     const colors = useThemeColors();
     return (
@@ -550,7 +550,7 @@ export type AlertDialogActionProps = {
  * The destructive / confirming action. Closes the dialog AND forwards
  * `onPress` to the consumer's handler so they can run the side effect.
  */
-const AlertDialogAction = ({ asChild = true, children, className, testID, onPress }: AlertDialogActionProps) => {
+export const AlertDialogAction = ({ asChild = true, children, className, testID, onPress }: AlertDialogActionProps) => {
     const ctx = useAlertDialogContext('AlertDialogAction');
     const handle = useCallback(
         (event?: unknown) => {
@@ -610,7 +610,7 @@ export type AlertDialogCancelProps = {
  * least destructive default, so a stray Enter keypress can't fire the
  * destructive action.
  */
-const AlertDialogCancel = ({ asChild = true, children, className, testID, onPress }: AlertDialogCancelProps) => {
+export const AlertDialogCancel = ({ asChild = true, children, className, testID, onPress }: AlertDialogCancelProps) => {
     const ctx = useAlertDialogContext('AlertDialogCancel');
     const handle = useCallback(
         (event?: unknown) => {
@@ -663,7 +663,7 @@ export type AlertDialogFooterProps = {
 };
 
 /** Convenience row for action buttons (right-aligned). */
-const AlertDialogFooter = ({ children, className }: AlertDialogFooterProps) => {
+export const AlertDialogFooter = ({ children, className }: AlertDialogFooterProps) => {
     const colors = useThemeColors();
     return (
         <View

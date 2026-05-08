@@ -1361,7 +1361,7 @@ export type BreadcrumbListProps = {
     testID?: string;
 };
 
-const BreadcrumbList = ({ children, className, testID }: BreadcrumbListProps) => {
+export const BreadcrumbList = ({ children, className, testID }: BreadcrumbListProps) => {
     useBreadcrumbContext('Breadcrumb.List');
     // Auto-insert separators between consecutive `Breadcrumb.Item`s
     // unless the user provided their own. Lets users write the terse form:
@@ -1407,7 +1407,7 @@ export type BreadcrumbItemProps = {
     testID?: string;
 };
 
-const BreadcrumbItem = ({ children, className, testID }: BreadcrumbItemProps) => {
+export const BreadcrumbItem = ({ children, className, testID }: BreadcrumbItemProps) => {
     useBreadcrumbContext('Breadcrumb.Item');
     return (
         <View
@@ -1432,7 +1432,7 @@ export type BreadcrumbLinkProps = {
     testID?: string;
 };
 
-const BreadcrumbLink = ({ href, onPress, asChild, children, className, testID }: BreadcrumbLinkProps) => {
+export const BreadcrumbLink = ({ href, onPress, asChild, children, className, testID }: BreadcrumbLinkProps) => {
     const colors = useThemeColors();
 
     if (asChild) {
@@ -1511,7 +1511,7 @@ export type BreadcrumbPageProps = {
     testID?: string;
 };
 
-const BreadcrumbPage = ({ children, className, testID }: BreadcrumbPageProps) => {
+export const BreadcrumbPage = ({ children, className, testID }: BreadcrumbPageProps) => {
     const ctx = useBreadcrumbContext('Breadcrumb.Page');
     const colors = useThemeColors();
     return (
@@ -1558,7 +1558,7 @@ export type BreadcrumbSeparatorProps = {
     testID?: string;
 };
 
-const BreadcrumbSeparator = ({ children, className, testID }: BreadcrumbSeparatorProps) => {
+export const BreadcrumbSeparator = ({ children, className, testID }: BreadcrumbSeparatorProps) => {
     const ctx = useBreadcrumbContext('Breadcrumb.Separator');
     const node = children ?? renderSeparator(ctx.separator, { fromIndex: 0, visibleCount: 0, dir: ctx.dir });
     return (
@@ -1583,7 +1583,7 @@ export type BreadcrumbEllipsisProps = {
     testID?: string;
 };
 
-const BreadcrumbEllipsis = ({ ellipsisLabel, className, testID }: BreadcrumbEllipsisProps) => {
+export const BreadcrumbEllipsis = ({ ellipsisLabel, className, testID }: BreadcrumbEllipsisProps) => {
     useBreadcrumbContext('Breadcrumb.Ellipsis');
     const { t } = useTranslation();
     const colors = useThemeColors();

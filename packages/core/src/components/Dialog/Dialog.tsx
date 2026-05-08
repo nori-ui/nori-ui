@@ -106,7 +106,7 @@ export type DialogTriggerProps = {
  * Element that opens the dialog when activated. Uses `asChild` by default so
  * any element (Button, Link, custom Pressable) becomes the trigger.
  */
-const DialogTrigger = ({ asChild = true, children, className, testID }: DialogTriggerProps) => {
+export const DialogTrigger = ({ asChild = true, children, className, testID }: DialogTriggerProps) => {
     const ctx = useDialogContext('DialogTrigger');
     const onPress = useCallback(() => ctx.setOpen(true), [ctx]);
 
@@ -227,7 +227,7 @@ export type DialogContentProps = {
  * the parent `Dialog` is open. On web: traps focus inside, locks body
  * scroll, and dismisses on Escape or overlay click.
  */
-const DialogContent = ({ children, className, testID }: DialogContentProps) => {
+export const DialogContent = ({ children, className, testID }: DialogContentProps) => {
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -459,7 +459,7 @@ export type DialogTextProps = {
 };
 
 /** Heading inside DialogContent. Wires `aria-labelledby`. */
-const DialogTitle = ({ children, className }: DialogTextProps) => {
+export const DialogTitle = ({ children, className }: DialogTextProps) => {
     const ctx = useDialogContext('DialogTitle');
     const colors = useThemeColors();
     return (
@@ -482,7 +482,7 @@ const DialogTitle = ({ children, className }: DialogTextProps) => {
 };
 
 /** Subtitle / description inside DialogContent. Wires `aria-describedby`. */
-const DialogDescription = ({ children, className }: DialogTextProps) => {
+export const DialogDescription = ({ children, className }: DialogTextProps) => {
     const ctx = useDialogContext('DialogDescription');
     const colors = useThemeColors();
     return (
@@ -516,7 +516,7 @@ export type DialogCloseProps = {
  * wraps the child. Without `asChild`, renders a default ✕ button — useful
  * for the canonical top-right corner close.
  */
-const DialogClose = ({
+export const DialogClose = ({
     asChild = true,
     children,
     className,
@@ -596,7 +596,7 @@ export type DialogFooterProps = {
 };
 
 /** Convenience row for dialog action buttons (right-aligned). */
-const DialogFooter = ({ children, className }: DialogFooterProps) => {
+export const DialogFooter = ({ children, className }: DialogFooterProps) => {
     const colors = useThemeColors();
     return (
         <View

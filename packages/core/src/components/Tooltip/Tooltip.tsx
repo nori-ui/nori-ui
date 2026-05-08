@@ -233,7 +233,7 @@ export type TooltipTriggerProps = {
  * `blur`, both honoring the configured delays. Native: opens on
  * `onLongPress` (500ms hold) and closes on the next press anywhere.
  */
-const TooltipTrigger = ({ asChild = true, children, className, testID }: TooltipTriggerProps) => {
+export const TooltipTrigger = ({ asChild = true, children, className, testID }: TooltipTriggerProps) => {
     const ctx = useTooltipContext('TooltipTrigger');
 
     const handleMouseEnter = useCallback(() => {
@@ -412,7 +412,13 @@ export type TooltipContentProps = {
  * ARIA: `role="tooltip"` plus a unique id that the trigger's
  * `aria-describedby` points at.
  */
-const TooltipContent = ({ side = 'top', align = 'center', children, className, testID }: TooltipContentProps) => {
+export const TooltipContent = ({
+    side = 'top',
+    align = 'center',
+    children,
+    className,
+    testID,
+}: TooltipContentProps) => {
     const ctx = useTooltipContext('TooltipContent');
     const colors = useThemeColors();
 

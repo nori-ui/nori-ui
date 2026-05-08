@@ -65,7 +65,7 @@ export type CardSectionProps = Omit<ViewProps, 'children'> & {
 };
 
 /** Header section — sits flush with the card top with comfortable padding. */
-const CardHeader = ({ children, className, style, ...rest }: CardSectionProps) => {
+export const CardHeader = ({ children, className, style, ...rest }: CardSectionProps) => {
     const colors = useThemeColors();
     const headerStyle: ViewStyle = {
         ...HEADER_LAYOUT_BASE,
@@ -82,7 +82,7 @@ const CardHeader = ({ children, className, style, ...rest }: CardSectionProps) =
 };
 
 /** Body content — for arbitrary content between header and footer. */
-const CardContent = ({ children, className, style, ...rest }: CardSectionProps) => {
+export const CardContent = ({ children, className, style, ...rest }: CardSectionProps) => {
     const colors = useThemeColors();
     const contentStyle: ViewStyle = {
         ...CONTENT_LAYOUT_BASE,
@@ -117,7 +117,7 @@ const CardContent = ({ children, className, style, ...rest }: CardSectionProps) 
 };
 
 /** Footer with a top border and a row of actions (typically Buttons). */
-const CardFooter = ({ children, className, style, ...rest }: CardSectionProps) => {
+export const CardFooter = ({ children, className, style, ...rest }: CardSectionProps) => {
     const colors = useThemeColors();
     const footerStyle: ViewStyle = {
         ...FOOTER_LAYOUT_BASE,
@@ -147,7 +147,7 @@ export type CardTextProps = {
 };
 
 /** Card title — heading-weight text. Renders as a heading on web. */
-const CardTitle = ({ children, className, testID }: CardTextProps) => {
+export const CardTitle = ({ children, className, testID }: CardTextProps) => {
     const colors = useThemeColors();
     return (
         <RNText
@@ -169,7 +169,7 @@ const CardTitle = ({ children, className, testID }: CardTextProps) => {
 };
 
 /** Muted subtitle that pairs with Card.Title. */
-const CardDescription = ({ children, className, testID }: CardTextProps) => {
+export const CardDescription = ({ children, className, testID }: CardTextProps) => {
     const colors = useThemeColors();
     return (
         <RNText

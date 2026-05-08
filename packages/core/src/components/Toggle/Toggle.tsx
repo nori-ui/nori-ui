@@ -383,7 +383,7 @@ export type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps
  * tabindex), `Home` / `End` jump to the ends, and `Space` / `Enter`
  * toggle the focused item.
  */
-const ToggleGroup = (props: ToggleGroupProps) => {
+export const ToggleGroup = (props: ToggleGroupProps) => {
     const {
         type,
         disabled = false,
@@ -592,7 +592,7 @@ export type ToggleGroupItemProps = {
  * One toggle inside a `<ToggleGroup>`. Throws with a clear message when
  * rendered outside of one.
  */
-const ToggleGroupItem = ({
+export const ToggleGroupItem = ({
     value,
     disabled,
     children,
