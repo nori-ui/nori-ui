@@ -78,7 +78,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsup",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
   },
