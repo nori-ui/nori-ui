@@ -1,3 +1,9 @@
+## [1.0.5](https://github.com/nori-ui/nori-ui/compare/v1.0.4...v1.0.5) (2026-05-08)
+
+### Bug Fixes
+
+* **release:** override breaking changes to patch while pre-launch (no consumers yet) ([0b0980d](https://github.com/nori-ui/nori-ui/commit/0b0980d14133d94f1d876e8a541c38f479bd580e))
+
 ## [1.0.4](https://github.com/nori-ui/nori-ui/compare/v1.0.3...v1.0.4) (2026-05-08)
 
 ### Bug Fixes
