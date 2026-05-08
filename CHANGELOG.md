@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/nori-ui/nori-ui/compare/v1.0.3...v1.0.4) (2026-05-08)
+
+### Bug Fixes
+
+* **playground-web:** unblock e2e by removing dead glob guard + browser globals ([34bed11](https://github.com/nori-ui/nori-ui/commit/34bed11986f81e85771bcde858251773a57308a8))
+
 ## [1.0.3](https://github.com/nori-ui/nori-ui/compare/v1.0.2...v1.0.3) (2026-05-08)
 
 ### Bug Fixes
