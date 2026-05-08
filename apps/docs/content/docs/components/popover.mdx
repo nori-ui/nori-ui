@@ -54,7 +54,12 @@ The content is non-modal, so a small form (rename, quick edit, filter) fits clea
 
 There is a 4-pixel gap between the trigger and the content so the two don't kiss. The minimum width is 200 px so help text never wraps awkwardly.
 
-## Controlled vs uncontrolled
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+Pass `open` (paired with `onOpenChange`) for controlled mode. Pass
+`defaultOpen` when you want the popover open on first render (e.g.
+hint after a route transition). Mixing the two prefers controlled and
+ignores `defaultOpen`.
 
 ```tsx
 // Uncontrolled — Popover owns its open state.

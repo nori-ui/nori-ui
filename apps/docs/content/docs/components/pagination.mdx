@@ -28,6 +28,21 @@ import { PropsTable } from '@/components/props-table';
 - **WCAG 2.2 AA**: `<nav>` landmark, `aria-current="page"` on the active item, debounced `aria-live="polite"` page-change announcements, every label localizable via `useTranslation` (`pagination.previous`, `pagination.next`, `pagination.first`, `pagination.last`, `pagination.gotoPage`, `pagination.range`, `pagination.pageOf`, `pagination.pageSizeLabel`, `pagination.ariaLabel`).
 - **RTL** via `dir="rtl"` — chevron glyphs and DOM order both flip.
 
+## Controlled vs uncontrolled — `page` and `defaultPage`
+
+`page` (paired with `onPageChange`) puts Pagination in controlled
+mode. `defaultPage` puts it in uncontrolled mode and lets the
+component track the current page itself — handy for stateless lists
+where the URL or a parent doesn't drive the page.
+
+```tsx
+// Uncontrolled
+<Pagination defaultPage={1} pageCount={20} />
+
+// Controlled
+<Pagination page={page} pageCount={20} onPageChange={setPage} />
+```
+
 ## Preview
 
 <Preview name="pagination-basic" />

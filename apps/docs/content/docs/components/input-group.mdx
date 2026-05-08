@@ -64,6 +64,21 @@ import { MailIcon } from 'lucide-react';
 </InputGroup>
 ```
 
+## `containerClassName`
+
+Adds Tailwind classes to the *outer wrapper* (label + field row +
+helper text), as opposed to `className` which applies to the bordered
+field row only. Use it when you need the entire labeled group to
+participate in a parent layout — e.g. setting a fixed width across a
+form.
+
+```tsx
+<InputGroup containerClassName="w-80">
+    <InputGroup.Addon>@</InputGroup.Addon>
+    <InputGroup.Input label="Handle" />
+</InputGroup>
+```
+
 ## Disabled and error states
 
 Pass `disabled` or `error` on the group itself to dim/mark the whole compound, or pass `disabled` / `error` on `<InputGroup.Input>` for input-only control. Either source flips the border + addon dim.

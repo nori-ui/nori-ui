@@ -23,6 +23,30 @@ import { PropsTable } from '@/components/props-table';
 
 <Preview name="dialog-basic" />
 
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+`open` (controlled) + `onOpenChange` is the parent-driven shape; pass
+`defaultOpen` instead for uncontrolled mode when the Dialog should
+manage its own open state. Mixing the two prefers controlled and
+ignores `defaultOpen`. The Trigger and Close subcomponents flip the
+state for you, so most use sites don't need either prop.
+
+```tsx
+// Uncontrolled — Trigger / Close manage open state.
+<Dialog>
+    <Dialog.Trigger><Button>Open</Button></Dialog.Trigger>
+    <Dialog.Content>...</Dialog.Content>
+</Dialog>
+
+// Controlled — parent owns the state, useful for closing the dialog
+// after an async save completes.
+const [open, setOpen] = useState(false);
+<Dialog open={open} onOpenChange={setOpen}>
+    <Dialog.Trigger><Button>Open</Button></Dialog.Trigger>
+    <Dialog.Content>...</Dialog.Content>
+</Dialog>
+```
+
 ## Anatomy
 
 | Subcomponent | Role |

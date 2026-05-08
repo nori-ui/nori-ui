@@ -38,6 +38,18 @@ import { PropsTable } from '@/components/props-table';
 
 <Preview name="alert-dialog-destructive" />
 
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+`open` (controlled) + `onOpenChange` is the parent-driven shape; pass
+`defaultOpen` for uncontrolled mode. Mixing the two prefers controlled
+and ignores `defaultOpen`. Trigger / Cancel / Action subcomponents
+already flip the state for you, so most call sites don't need either.
+
+```tsx
+const [open, setOpen] = useState(false);
+<AlertDialog open={open} onOpenChange={setOpen}>...</AlertDialog>
+```
+
 ## Anatomy
 
 | Subcomponent | Role |

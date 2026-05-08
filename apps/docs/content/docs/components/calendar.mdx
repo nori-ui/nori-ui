@@ -217,6 +217,12 @@ A handful of small toggles that don't fit elsewhere:
 <Calendar highlightToday={false} /> // disables today's accent (default: on)
 ```
 
+`showWeekNumbers` adds a left column rendering ISO 8601 week numbers
+for each visible row — common in scheduling UIs and European calendars.
+`highlightToday` paints today's cell with the accent color; turn it
+off in calendars where "today" isn't a meaningful anchor (e.g. browsing
+historical dates).
+
 ## Internationalization
 
 Calendar reads its locale from `NoriProvider.locale`, falling back to

@@ -24,6 +24,17 @@ import { PropsTable } from '@/components/props-table';
   - Selection follows focus by default; pass `activation="manual"` to require Enter / Space to activate.
 - Tabs render in their own roving tabindex group: tabbing into the list lands on the active tab, and the active tab is the only one in the tab order.
 
+## `orientation`
+
+Lays the trigger list out horizontally (default) or vertically. Affects
+keyboard nav too: in `vertical` mode `ArrowUp` / `ArrowDown` move
+between tabs, in `horizontal` mode it's `ArrowLeft` / `ArrowRight`
+(matching the WAI-ARIA tablist convention).
+
+```tsx
+<Tabs orientation="vertical" defaultValue="account">{/* … */}</Tabs>
+```
+
 ## Preview
 
 <Preview name="tabs-basic" />

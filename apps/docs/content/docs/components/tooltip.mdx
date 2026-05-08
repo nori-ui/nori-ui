@@ -57,7 +57,12 @@ import { PropsTable } from '@/components/props-table';
 <Tooltip delayMs={300} closeDelayMs={150}>...</Tooltip>
 ```
 
-## Controlled vs uncontrolled
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+Pass `open` for controlled mode and pair with `onOpenChange`. Pass
+`defaultOpen` for uncontrolled mode when you want the tooltip
+pre-opened on first render (rare, useful during onboarding tours).
+Mixing the two prefers controlled and ignores `defaultOpen`.
 
 ```tsx
 import { useState } from 'react';
