@@ -46,17 +46,19 @@ jobs:
       # Belt-and-braces guard: surface a clear error if anything in the
       # chain regresses to token auth or an OIDC-incapable npm.
       - name: Verify OIDC publish prerequisites
-        env:
-          ID_TOKEN_PRESENT: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL != '' && 'yes' || 'no' }}
+        # `ACTIONS_ID_TOKEN_REQUEST_URL` / `_TOKEN` are runtime env vars
+        # injected by the runner when `id-token: write` is granted. They
+        # are NOT accessible via `${{ env.X }}` workflow expressions —
+        # those only see job/step `env:` blocks. Read them directly from
+        # the shell instead.
         run: |
           set -e
           NPM_VERSION="$(npm --version)"
           echo "npm $NPM_VERSION"
           node -e "const v=process.argv[1].split('.').map(Number);if(v[0]<11||(v[0]===11&&v[1]<5)||(v[0]===11&&v[1]===5&&v[2]<1)){console.error('npm too old for OIDC trusted publishing (need >= 11.5.1)');process.exit(1);}" "$NPM_VERSION"
-          if [ "$ID_TOKEN_PRESENT" != "yes" ]; then
-            echo "OIDC ID-token request URL is missing — id-token: write is not granted"; exit 1
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "OIDC ID-token request URL is missing — id-token: write is not granted, or the runtime env didn't expose it"; exit 1
           fi
-          # Any leftover auth in .npmrc would override the OIDC handshake.
           AUTH_LINES="$(grep -h '_authToken\|_password' ~/.npmrc /github/home/.npmrc 2>/dev/null || true)"
           if [ -n "$AUTH_LINES" ]; then
             echo "Found stale auth in .npmrc — would override OIDC:"; echo "$AUTH_LINES"; exit 1
