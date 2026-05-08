@@ -84,24 +84,50 @@ jobs:
       # installed by consumers) — replacing the spec with "*" lets npm parse
       # the package.json without changing what consumers receive at install
       # time. Done on the runner only; never committed.
-      - name: "Substitute workspace: protocol in publishable packages"
+      - name: "Substitute workspace: protocol in ALL package.json files"
         run: |
+          # npm 11's `npm version` (run by @semantic-release/npm in pkgRoot)
+          # walks the entire workspace tree once it finds the root's
+          # `workspaces` config — and chokes with EUNSUPPORTEDPROTOCOL on
+          # the FIRST `workspace:*` dep it encounters anywhere, even if
+          # that dep is in a non-publishable workspace (apps/*). Rewrite
+          # every package.json on the runner so npm can parse them all.
+          # The deps that use this protocol are private build-time-only
+          # internals (e.g. `@nori-ui/tokens` is bundled into core's dist
+          # by tsup and never installed by consumers); replacing with "*"
+          # doesn't change what consumers receive at install time. Done
+          # on the runner only; never committed.
           node -e '
             const fs = require("fs");
-            const pkgs = ["packages/core/package.json", "packages/mcp/package.json"];
-            for (const p of pkgs) {
-              const j = JSON.parse(fs.readFileSync(p, "utf8"));
-              for (const k of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
-                if (!j[k]) continue;
-                for (const [name, spec] of Object.entries(j[k])) {
-                  if (typeof spec === "string" && spec.startsWith("workspace:")) {
-                    j[k][name] = "*";
-                    console.log("rewrote", p, k + "." + name, ":", spec, "→", "*");
+            const path = require("path");
+            const walk = (dir) => {
+              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                if (entry.isDirectory()) {
+                  if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
+                  walk(path.join(dir, entry.name));
+                } else if (entry.name === "package.json") {
+                  const p = path.join(dir, entry.name);
+                  const raw = fs.readFileSync(p, "utf8");
+                  if (!raw.includes("workspace:")) continue;
+                  const j = JSON.parse(raw);
+                  let changed = false;
+                  for (const k of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
+                    if (!j[k]) continue;
+                    for (const [name, spec] of Object.entries(j[k])) {
+                      if (typeof spec === "string" && spec.startsWith("workspace:")) {
+                        j[k][name] = "*";
+                        changed = true;
+                        console.log("rewrote", p, k + "." + name, ":", spec, "→", "*");
+                      }
+                    }
+                  }
+                  if (changed) {
+                    fs.writeFileSync(p, JSON.stringify(j, null, 4) + "\n");
                   }
                 }
               }
-              fs.writeFileSync(p, JSON.stringify(j, null, 4) + "\n");
-            }
+            };
+            walk(".");
           '
 
       - name: Verify build artifacts
