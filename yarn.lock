@@ -4603,7 +4603,7 @@ __metadata:
   resolution: "@nori-ui/core@workspace:packages/core"
   dependencies:
     "@internationalized/date": "npm:^3.5.6"
-    "@nori-ui/tokens": "workspace:*"
+    "@nori-ui/tokens": "npm:*"
     "@size-limit/preset-small-lib": "npm:^12.1.0"
     "@storybook/react": "npm:^8.4"
     "@testing-library/dom": "npm:^10.4.1"
@@ -4736,7 +4736,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nori-ui/tokens@workspace:*, @nori-ui/tokens@workspace:packages/tokens":
+"@nori-ui/tokens@npm:*, @nori-ui/tokens@workspace:*, @nori-ui/tokens@workspace:packages/tokens":
   version: 0.0.0-use.local
   resolution: "@nori-ui/tokens@workspace:packages/tokens"
   dependencies:

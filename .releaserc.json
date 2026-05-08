@@ -1,23 +1,60 @@
 {
-  "branches": ["main", { "name": "next", "prerelease": true }],
+  "branches": [
+    "main",
+    {
+      "name": "next",
+      "prerelease": true
+    }
+  ],
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
         "releaseRules": [
-          { "type": "docs", "release": false },
-          { "type": "chore", "release": false },
-          { "type": "ci", "release": false },
-          { "type": "test", "release": false },
-          { "type": "refactor", "release": "patch" },
-          { "type": "perf", "release": "patch" },
-          { "type": "style", "release": false }
+          {
+            "type": "docs",
+            "release": false
+          },
+          {
+            "type": "chore",
+            "release": false
+          },
+          {
+            "type": "ci",
+            "release": false
+          },
+          {
+            "type": "test",
+            "release": false
+          },
+          {
+            "type": "refactor",
+            "release": "patch"
+          },
+          {
+            "type": "perf",
+            "release": "patch"
+          },
+          {
+            "type": "style",
+            "release": false
+          }
         ]
       }
     ],
-    ["@semantic-release/release-notes-generator", { "preset": "conventionalcommits" }],
-    ["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
     [
       "@semantic-release/npm",
       {
@@ -36,13 +73,7 @@
     [
       "@semantic-release/git",
       {
-        "assets": [
-          "CHANGELOG.md",
-          "packages/core/package.json",
-          "packages/mcp/package.json",
-          "package.json",
-          "yarn.lock"
-        ],
+        "assets": ["CHANGELOG.md", "packages/core/package.json", "packages/mcp/package.json"],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ]

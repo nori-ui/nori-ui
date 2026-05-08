@@ -87,3 +87,21 @@ Multiple `release.yml` runs failed in a row with confusingly different errors th
 ## Updated standing rule
 
 7. **Provenance only works on public repos.** With a private repo, set `NPM_CONFIG_PROVENANCE=false` and omit `publishConfig.provenance`. OIDC trusted publishing remains active.
+
+### 8 · `387e556` (disable provenance)
+
+- **Symptom:** `yarn install --immutable` failed at the very start of the workflow:
+  ```
+  YN0028: The lockfile would have been modified by this install, which is explicitly forbidden.
+  ```
+- **Root cause:** **A previous CI run (`dca8f63`) committed my runner-only mutations back to `main`.** The `chore(release): 1.0.0` commit that semantic-release pushed contained the modified root `package.json` (with `workspaces` field stripped) because `@semantic-release/git`'s `assets` list included `package.json` and `yarn.lock`. Subsequent runs saw a root manifest with no `workspaces` field, drift between manifest and lockfile, and immutable-install rejected it.
+- **Fix:**
+  1. Restore the `workspaces` field in committed root `package.json`.
+  2. Re-run `yarn install` to refresh `yarn.lock` (regenerated 14k+ lines that had been wiped).
+  3. Remove `package.json` and `yarn.lock` from `.releaserc.json` `@semantic-release/git` `assets` — semantic-release MUST NOT commit either file. We don't bump the root version anyway; only `packages/{core,mcp}/package.json` need to be committed by it.
+- **Rule learned:** see new standing rule #8 below.
+
+## Updated standing rules
+
+8. **`@semantic-release/git`'s `assets` list is the only thing semantic-release will commit.** Anything in there is at risk of capturing accidental runner-side mutations. Keep it minimal: `CHANGELOG.md` + the `package.json` files of the actually-published packages. Never include the root `package.json`, `yarn.lock`, or any file modified by CI prep steps.
+9. **Runner-only mutations to the working tree must NEVER end up in a commit semantic-release pushes.** Audit every workflow step that writes to a tracked file: confirm it's outside `.releaserc.json` `assets` AND outside any glob that semantic-release evaluates.
