@@ -16,15 +16,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Enable corepack
         run: corepack enable
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
 
       - name: Install dependencies
@@ -83,15 +83,15 @@ jobs:
     needs: quality
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Enable corepack
         run: corepack enable
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
 
       - name: Install dependencies
@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload Playwright report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playwright-report
           path: e2e/web/playwright-report/
@@ -130,15 +130,15 @@ jobs:
     needs: quality
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Enable corepack
         run: corepack enable
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
 
       - name: Install dependencies
@@ -199,11 +199,11 @@ jobs:
           #   rn: "0.84.0"   # or whatever 56 pairs with
           #   react: "^19"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: corepack enable
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
       - run: yarn install --immutable
       - run: yarn build:tokens
