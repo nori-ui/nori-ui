@@ -84,50 +84,47 @@ jobs:
       # installed by consumers) — replacing the spec with "*" lets npm parse
       # the package.json without changing what consumers receive at install
       # time. Done on the runner only; never committed.
-      - name: "Substitute workspace: protocol in ALL package.json files"
+      - name: "Detach root workspaces config + rewrite Yarn-only dep protocols"
         run: |
-          # npm 11's `npm version` (run by @semantic-release/npm in pkgRoot)
-          # walks the entire workspace tree once it finds the root's
-          # `workspaces` config — and chokes with EUNSUPPORTEDPROTOCOL on
-          # the FIRST `workspace:*` dep it encounters anywhere, even if
-          # that dep is in a non-publishable workspace (apps/*). Rewrite
-          # every package.json on the runner so npm can parse them all.
-          # The deps that use this protocol are private build-time-only
-          # internals (e.g. `@nori-ui/tokens` is bundled into core's dist
-          # by tsup and never installed by consumers); replacing with "*"
-          # doesn't change what consumers receive at install time. Done
-          # on the runner only; never committed.
+          # @semantic-release/npm runs `npm version` (and later `npm publish`)
+          # in pkgRoot (packages/core). npm 11 walks UP from pkgRoot, finds
+          # the root package.json's `workspaces` field, then validates EVERY
+          # workspace's package.json — choking on the first Yarn-only spec
+          # it sees (`workspace:*`, `patch:`, `portal:`, …). None of those
+          # Yarn-only protocols are needed at publish time:
+          #   - `workspace:*` deps point at private, build-time-only
+          #     internals (e.g. `@nori-ui/tokens`, bundled into core's dist
+          #     by tsup and never installed by consumers).
+          #   - `patch:` deps live in apps/* (docs/playgrounds), which we
+          #     don't publish at all.
+          # Two defenses: drop the root `workspaces` field so npm doesn't
+          # walk the tree, AND rewrite any Yarn-only protocol in core/mcp
+          # package.json so npm can parse them standalone. All edits land
+          # on the runner only; nothing committed.
           node -e '
             const fs = require("fs");
-            const path = require("path");
-            const walk = (dir) => {
-              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-                if (entry.isDirectory()) {
-                  if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
-                  walk(path.join(dir, entry.name));
-                } else if (entry.name === "package.json") {
-                  const p = path.join(dir, entry.name);
-                  const raw = fs.readFileSync(p, "utf8");
-                  if (!raw.includes("workspace:")) continue;
-                  const j = JSON.parse(raw);
-                  let changed = false;
-                  for (const k of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
-                    if (!j[k]) continue;
-                    for (const [name, spec] of Object.entries(j[k])) {
-                      if (typeof spec === "string" && spec.startsWith("workspace:")) {
-                        j[k][name] = "*";
-                        changed = true;
-                        console.log("rewrote", p, k + "." + name, ":", spec, "→", "*");
-                      }
-                    }
-                  }
-                  if (changed) {
-                    fs.writeFileSync(p, JSON.stringify(j, null, 4) + "\n");
+            const root = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            delete root.workspaces;
+            fs.writeFileSync("package.json", JSON.stringify(root, null, 4) + "\n");
+            console.log("dropped root workspaces field");
+            const YARN_ONLY = /^(workspace|patch|portal|link):/;
+            for (const p of ["packages/core/package.json", "packages/mcp/package.json"]) {
+              const j = JSON.parse(fs.readFileSync(p, "utf8"));
+              let changed = false;
+              for (const k of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
+                if (!j[k]) continue;
+                for (const [name, spec] of Object.entries(j[k])) {
+                  if (typeof spec === "string" && YARN_ONLY.test(spec)) {
+                    j[k][name] = "*";
+                    changed = true;
+                    console.log("rewrote", p, k + "." + name, ":", spec, "→", "*");
                   }
                 }
               }
-            };
-            walk(".");
+              if (changed) {
+                fs.writeFileSync(p, JSON.stringify(j, null, 4) + "\n");
+              }
+            }
           '
 
       - name: Verify build artifacts
