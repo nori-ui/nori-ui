@@ -76,6 +76,34 @@ jobs:
 
       - run: yarn workspace @nori-ui/mcp build
 
+      # Strip the `workspace:` protocol from any deps in the about-to-publish
+      # package.json files. npm 11 rejects `workspace:*` with EUNSUPPORTEDPROTOCOL
+      # during `npm version` (semantic-release's prepare step). The deps that
+      # use this protocol here are all private build-time-only packages
+      # (e.g. `@nori-ui/tokens` is bundled into core's dist by tsup and never
+      # installed by consumers) — replacing the spec with "*" lets npm parse
+      # the package.json without changing what consumers receive at install
+      # time. Done on the runner only; never committed.
+      - name: Substitute workspace: protocol in publishable packages
+        run: |
+          node -e '
+            const fs = require("fs");
+            const pkgs = ["packages/core/package.json", "packages/mcp/package.json"];
+            for (const p of pkgs) {
+              const j = JSON.parse(fs.readFileSync(p, "utf8"));
+              for (const k of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
+                if (!j[k]) continue;
+                for (const [name, spec] of Object.entries(j[k])) {
+                  if (typeof spec === "string" && spec.startsWith("workspace:")) {
+                    j[k][name] = "*";
+                    console.log("rewrote", p, k + "." + name, ":", spec, "→", "*");
+                  }
+                }
+              }
+              fs.writeFileSync(p, JSON.stringify(j, null, 4) + "\n");
+            }
+          '
+
       - name: Verify build artifacts
         run: |
           test -f packages/core/dist/index.js
