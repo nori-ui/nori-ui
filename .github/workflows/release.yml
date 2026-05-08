@@ -84,7 +84,7 @@ jobs:
       # installed by consumers) — replacing the spec with "*" lets npm parse
       # the package.json without changing what consumers receive at install
       # time. Done on the runner only; never committed.
-      - name: Substitute workspace: protocol in publishable packages
+      - name: "Substitute workspace: protocol in publishable packages"
         run: |
           node -e '
             const fs = require("fs");
