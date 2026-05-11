@@ -78,3 +78,5 @@ apps/*/android/
 
 # git worktrees (per-developer; never committed)
 .worktrees/
+# Added by code-review-graph
+.code-review-graph/

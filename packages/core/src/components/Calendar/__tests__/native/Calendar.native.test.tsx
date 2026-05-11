@@ -29,3 +29,26 @@ describe('Calendar — native smoke (single mode)', () => {
         expect(meta).toMatchObject({ view: 'day', source: 'click' });
     });
 });
+
+describe('Calendar — native smoke (multiple mode)', () => {
+    it('accumulates selected dates', () => {
+        const onChange = jest.fn();
+        const { getByLabelText } = render(
+            wrap(<Calendar mode="multiple" defaultValue={[]} onChange={onChange} />)
+        );
+        fireEvent.press(getByLabelText(/May 1,\s+2026/i));
+        fireEvent.press(getByLabelText(/May 3,\s+2026/i));
+        const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1];
+        expect(lastCall?.[0]).toHaveLength(2);
+    });
+});
+
+describe('Calendar — native smoke (drilldown)', () => {
+    it('opens the month grid when the header title is pressed', () => {
+        const { getByText, queryByText } = render(wrap(<Calendar />));
+        const titleLike = getByText(/May 2026|2026/i);
+        fireEvent.press(titleLike);
+        expect(queryByText(/Jan/i)).toBeTruthy();
+        expect(queryByText(/Dec/i)).toBeTruthy();
+    });
+});
