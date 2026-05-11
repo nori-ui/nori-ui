@@ -62,10 +62,6 @@ packages/core/src/components/Calendar/
 
 ```
 packages/core/src/components/Calendar/
-├── interaction/
-│   ├── use-range-interaction.ts          (shared types/contract)
-│   ├── use-range-interaction.web.ts      (mouse-enter hover preview, click commit)
-│   └── use-range-interaction.native.ts   (tap-tap, no preview)
 ├── scroll/
 │   ├── ScrollBody.tsx                    (shared interface; default impl
 │   │                                       throws if neither extension is picked)
@@ -73,8 +69,7 @@ packages/core/src/components/Calendar/
 │   │                                       IntersectionObserver for visible-month tracking)
 │   └── ScrollBody.native.tsx             (flash-calendar wrapper, mapping our
 │                                           DayContext / renderDay to its API)
-├── view/                                 (UNCHANGED — DayCell consumes the
-│                                           interaction hook; DayGrid is reused
+├── view/                                 (UNCHANGED for paged; DayGrid is reused
 │                                           by ScrollBody)
 ├── Calendar.tsx                          (gains behavior dispatch:
 │                                           `behavior === 'scroll' ? <ScrollBody/> : <DayGrid/>`)
@@ -83,17 +78,19 @@ packages/core/src/components/Calendar/
     ├── Calendar.scroll.test.tsx          (web scroll path; runs under nori-ui:jsdom)
     └── native/
         ├── Calendar.native.test.tsx           (smoke render)
-        ├── range-interaction.native.test.tsx  (tap-tap state machine)
+        ├── range-interaction.native.test.tsx  (tap-tap behavior via existing state machine)
         ├── a11y.native.test.tsx               (roles/labels/states)
         ├── scroll-body.native.test.tsx        (flash-calendar wrapper)
         └── perf.native.test.tsx               (Profiler render-time)
 ```
 
+**Why no `interaction/` split:** Phase-1 wires hover-preview through `Pressable.onHoverIn`, which is already platform-aware (RN-Web maps to mouse events, RN native ignores it). On native, `setHoveredDate` is never called, so `previewRange` is always `null` and tap-tap behavior emerges from the existing range state machine without new code. The native tests **verify** this rather than implementing a parallel hook.
+
 ### 2.3 Why platform extensions (Approach B), not inline `Platform.OS`
 
-The hover-preview-vs-tap-tap split diverges by **capability**, not configuration: mouse hover is a primitive native lacks. Inline `Platform.OS` would force JSX like `<div onPointerEnter />` into a file Metro has to consume on native, requiring coaxing to drop. Platform extensions cleanly send only the relevant implementation to each platform's bundler.
+The `behavior="scroll"` implementation diverges by **infrastructure**, not configuration: web uses CSS scroll + `IntersectionObserver`, native uses `flash-calendar`. Inline `Platform.OS` would force unrelated JSX/imports into each platform's bundle. Platform extensions send only the relevant implementation to each.
 
-The codebase already uses this pattern for capability divergences (`animated-view.web.ts`, `sonner-native-bridge.native.tsx`, `blur-backdrop.native.tsx`), while inline `Platform.OS` is reserved for narrow one-liners (`Pagination`, `FloatButton`). Subsystem A follows the established split.
+The codebase already uses this pattern for capability/infrastructure divergences (`animated-view.web.ts`, `sonner-native-bridge.native.tsx`, `blur-backdrop.native.tsx`), while inline `Platform.OS` is reserved for narrow one-liners (`Pagination`, `FloatButton`). Subsystem A follows the established split for `ScrollBody`; the rest of the Calendar requires no platform split because Phase-1 already used universal RN primitives (`Pressable`, `View`, `Text`).
 
 ### 2.4 Bundle / entry impact
 
