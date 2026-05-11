@@ -24,28 +24,57 @@ export type DayCellProps = {
 export const CELL_SIZE = 40;
 
 /**
+ * Module-scope cache of Intl.DateTimeFormat instances keyed by locale.
+ * Prior to caching, each DayCell instantiated a new formatter per render
+ * (~420+ instantiations per scroll burst in scroll mode). The cache is
+ * unbounded but the live locale set is also bounded — typically 1–2
+ * entries per app — so no LRU is needed.
+ */
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+const RUNTIME_DEFAULT_LOCALE_KEY = '__default__';
+
+const getDayFormatter = (locale: string | undefined): Intl.DateTimeFormat | null => {
+    const key = locale ?? RUNTIME_DEFAULT_LOCALE_KEY;
+    const cached = formatterCache.get(key);
+    if (cached) return cached;
+    try {
+        const fmt = new Intl.DateTimeFormat(locale, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'UTC',
+        });
+        formatterCache.set(key, fmt);
+        return fmt;
+    } catch {
+        return null;
+    }
+};
+
+/**
  * Builds the day cell's accessibility label. Format:
  *   "{weekday}, {Month} {day}, {year}" + optional state suffixes,
  * e.g. "Friday, May 8, 2026, today, selected".
  *
  * Kept module-local so view tests / Profiler harnesses can match it
  * with a regex without depending on Intl output for the suffix.
+ *
+ * KNOWN LIMITATION: State suffixes ("today", "selected", "in range",
+ * "unavailable") are hardcoded English. Non-English locales get
+ * mixed-language output (e.g. "2026年5月8日金曜日, today"). Proper
+ * fix routes these through the project's i18n provider; tracked as
+ * a follow-up to be addressed alongside the broader i18n sweep.
+ *
+ * TODO(i18n): localize state suffixes.
  */
 const formatDayLabel = (ctx: DayContext, locale?: string): string => {
     const jsDate = new Date(Date.UTC(ctx.date.year, ctx.date.month - 1, ctx.date.day));
-    let base: string;
-    try {
-        base = new Intl.DateTimeFormat(locale, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            timeZone: 'UTC',
-        }).format(jsDate);
-    } catch {
-        // Fallback if the runtime rejects the locale tag.
-        base = `${ctx.date.month}/${ctx.date.day}/${ctx.date.year}`;
-    }
+    const fmt = getDayFormatter(locale);
+    const base = fmt
+        ? fmt.format(jsDate)
+        : // Fallback if the runtime rejects the locale tag.
+          `${ctx.date.month}/${ctx.date.day}/${ctx.date.year}`;
 
     const suffixes: string[] = [];
     if (ctx.isToday) suffixes.push('today');

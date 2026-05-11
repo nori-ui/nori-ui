@@ -10,7 +10,7 @@ const d = (y: number, m: number, day: number) => new CalendarDate(y, m, day);
 describe('Calendar — native smoke (single mode)', () => {
     it('renders day cells for the focused month', () => {
         const { getByLabelText } = render(wrap(<Calendar defaultValue={d(2026, 5, 8)} />));
-        expect(getByLabelText(/May 8, 2026/i)).toBeTruthy();
+        expect(getByLabelText(/May 8,\s+2026/i)).toBeTruthy();
     });
 
     it('fires onChange when a day cell is pressed', () => {
@@ -18,7 +18,7 @@ describe('Calendar — native smoke (single mode)', () => {
         const { getByLabelText } = render(
             wrap(<Calendar defaultValue={d(2026, 5, 1)} onChange={onChange} />)
         );
-        fireEvent.press(getByLabelText(/May 15, 2026/i));
+        fireEvent.press(getByLabelText(/May 15,\s+2026/i));
         expect(onChange).toHaveBeenCalledTimes(1);
         const call = onChange.mock.calls[0];
         if (!call) {
