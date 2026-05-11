@@ -257,7 +257,7 @@ export const Caption = ({
                 alignSelf: 'center',
             }}
         >
-            <NavButton label={t('calendar.header.previous', { defaultValue: 'Previous' })} onPress={onPrev}>
+            <NavButton label={t('calendar.header.previous', { defaultValue: 'Previous month' })} onPress={onPrev}>
                 ‹
             </NavButton>
             <View style={{ flexDirection: 'row', gap: monthGap, width: titleRowWidth }}>
@@ -313,7 +313,7 @@ export const Caption = ({
                     </View>
                 )}
             </View>
-            <NavButton label={t('calendar.header.next', { defaultValue: 'Next' })} onPress={onNext}>
+            <NavButton label={t('calendar.header.next', { defaultValue: 'Next month' })} onPress={onNext}>
                 ›
             </NavButton>
         </View>

@@ -113,7 +113,7 @@ export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay, locale
         <Pressable
             accessibilityRole="button"
             accessibilityLabel={accessibilityLabel}
-            accessibilityState={{ disabled: ctx.isUnavailable }}
+            accessibilityState={{ disabled: ctx.isUnavailable, selected: isSelectedLike }}
             disabled={ctx.isUnavailable}
             onPress={onPress}
             {...(onHoverIn ? { onHoverIn } : {})}

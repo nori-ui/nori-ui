@@ -108,7 +108,31 @@ jest.mock('react-native', () => {
             domProps['aria-disabled'] = accessibilityState.disabled;
         }
         if (accessibilityState?.selected !== undefined && domProps['aria-selected'] === undefined) {
-            domProps['aria-selected'] = accessibilityState.selected;
+            // aria-selected is only valid on a small set of roles (option, row,
+            // tab, treeitem, gridcell, columnheader, rowheader). On native,
+            // `accessibilityState.selected` on a `role="button"` is the
+            // accepted iOS VoiceOver / Android TalkBack pattern for "this
+            // button is currently the selected one" (e.g. day cell), but
+            // translating it to `aria-selected` on a DOM button violates
+            // ARIA. The native a11y suite still verifies the prop on the
+            // RN tree; here we just suppress the DOM-side translation when
+            // the role wouldn't accept aria-selected.
+            const ariaSelectedAllowedRoles = new Set([
+                'option',
+                'row',
+                'tab',
+                'treeitem',
+                'gridcell',
+                'columnheader',
+                'rowheader',
+                'listbox',
+                'menuitemcheckbox',
+                'menuitemradio',
+            ]);
+            const effectiveRole = (domProps.role as string | undefined) ?? '';
+            if (ariaSelectedAllowedRoles.has(effectiveRole)) {
+                domProps['aria-selected'] = accessibilityState.selected;
+            }
         }
         if (accessibilityState?.checked !== undefined && domProps['aria-checked'] === undefined) {
             domProps['aria-checked'] = accessibilityState.checked;

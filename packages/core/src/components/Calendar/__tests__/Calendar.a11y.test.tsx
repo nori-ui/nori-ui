@@ -26,7 +26,7 @@ describe('<Calendar /> a11y', () => {
 
     it('header buttons have accessible names', () => {
         const { getByLabelText } = render(<Calendar defaultValue={d(2026, 5, 15)} locale="en-US" />);
-        expect(getByLabelText('Previous')).toBeInTheDocument();
-        expect(getByLabelText('Next')).toBeInTheDocument();
+        expect(getByLabelText('Previous month')).toBeInTheDocument();
+        expect(getByLabelText('Next month')).toBeInTheDocument();
     });
 });
