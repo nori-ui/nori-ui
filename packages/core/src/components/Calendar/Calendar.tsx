@@ -11,6 +11,7 @@ import { type DayOfWeek, getFirstDayOfWeek, getWeekendDays } from './state/local
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
 import { useCalendarState } from './state/use-calendar-state';
 import { useRangeState } from './state/use-range-state';
+import { ScrollBody } from './scroll/ScrollBody';
 import { Caption } from './view/Caption';
 import { CELL_SIZE } from './view/DayCell';
 import { DayGrid } from './view/DayGrid';
@@ -194,8 +195,22 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
     const firstDayOfWeek = props.firstDayOfWeek ?? getFirstDayOfWeek(locale);
     const weekendDays = (props.weekendDays as [DayOfWeek, DayOfWeek] | undefined) ?? getWeekendDays(locale);
 
-    const visibleMonths = pickVisibleMonths(props.visibleMonths, containerWidth);
+    const visibleMonths = props.behavior === 'scroll' ? 1 : pickVisibleMonths(props.visibleMonths, containerWidth);
     const { innerWidth, gridsRowWidth } = surfaceMetrics(visibleMonths);
+
+    useEffect(() => {
+        if (
+            process.env.NODE_ENV !== 'production' &&
+            props.behavior === 'scroll' &&
+            typeof props.visibleMonths === 'number' &&
+            props.visibleMonths > 1
+        ) {
+            // biome-ignore lint/suspicious/noConsole: dev-mode developer warning
+            console.warn(
+                '[Calendar] visibleMonths is ignored when behavior="scroll"; falling back to single column.'
+            );
+        }
+    }, [props.behavior, props.visibleMonths]);
 
     // Anchor month: what the user sees. Decoupled from `state.focusedDate`
     // so selecting a day in the rightmost grid does NOT shift the view.
@@ -351,25 +366,45 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
                 {props.children}
             </Caption>
             <FadeIn key={`smc-${state.view}`}>
-                {state.view === 'day' && (
-                    <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
-                        {months.map((m) => (
-                            <DayGrid<M>
-                                key={`${m.year}-${m.month}`}
-                                visibleMonth={m}
-                                locale={locale}
-                                mode={(props.mode ?? 'single') as M}
-                                value={state.value as CalendarValue<M>}
-                                focusedDate={state.focusedDate}
-                                isUnavailable={state.isUnavailable}
-                                weekendDays={weekendDays}
-                                firstDayOfWeek={firstDayOfWeek}
-                                onDayPress={(date) => state.selectDate(date, 'click')}
-                                {...(renderDay ? { renderDay } : {})}
-                            />
-                        ))}
-                    </View>
-                )}
+                {state.view === 'day' &&
+                    (props.behavior === 'scroll' ? (
+                        <ScrollBody<M>
+                            mode={(props.mode ?? 'single') as M}
+                            locale={locale}
+                            focusedDate={state.focusedDate}
+                            onFocusedMonthChange={(next) => setAnchor(next)}
+                            value={state.value as CalendarValue<M>}
+                            onSelectDate={(date) => state.selectDate(date, 'click')}
+                            firstDayOfWeek={firstDayOfWeek}
+                            weekendDays={weekendDays}
+                            {...(props.minValue !== undefined ? { minValue: props.minValue } : {})}
+                            {...(props.maxValue !== undefined ? { maxValue: props.maxValue } : {})}
+                            {...(props.isDateUnavailable !== undefined
+                                ? { isDateUnavailable: props.isDateUnavailable }
+                                : {})}
+                            {...(renderDay ? { renderDay } : {})}
+                        />
+                    ) : (
+                        <View
+                            style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}
+                        >
+                            {months.map((m) => (
+                                <DayGrid<M>
+                                    key={`${m.year}-${m.month}`}
+                                    visibleMonth={m}
+                                    locale={locale}
+                                    mode={(props.mode ?? 'single') as M}
+                                    value={state.value as CalendarValue<M>}
+                                    focusedDate={state.focusedDate}
+                                    isUnavailable={state.isUnavailable}
+                                    weekendDays={weekendDays}
+                                    firstDayOfWeek={firstDayOfWeek}
+                                    onDayPress={(date) => state.selectDate(date, 'click')}
+                                    {...(renderDay ? { renderDay } : {})}
+                                />
+                            ))}
+                        </View>
+                    ))}
                 {state.view === 'month' && (
                     <View style={{ alignItems: 'center' }}>
                         <MonthGrid
@@ -407,8 +442,22 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
     const firstDayOfWeek = props.firstDayOfWeek ?? getFirstDayOfWeek(locale);
     const weekendDays = (props.weekendDays as [DayOfWeek, DayOfWeek] | undefined) ?? getWeekendDays(locale);
 
-    const visibleMonths = pickVisibleMonths(props.visibleMonths, containerWidth);
+    const visibleMonths = props.behavior === 'scroll' ? 1 : pickVisibleMonths(props.visibleMonths, containerWidth);
     const { innerWidth, gridsRowWidth } = surfaceMetrics(visibleMonths);
+
+    useEffect(() => {
+        if (
+            process.env.NODE_ENV !== 'production' &&
+            props.behavior === 'scroll' &&
+            typeof props.visibleMonths === 'number' &&
+            props.visibleMonths > 1
+        ) {
+            // biome-ignore lint/suspicious/noConsole: dev-mode developer warning
+            console.warn(
+                '[Calendar] visibleMonths is ignored when behavior="scroll"; falling back to single column.'
+            );
+        }
+    }, [props.behavior, props.visibleMonths]);
 
     const containerRef = useRef<HTMLElement | null>(null);
 
@@ -574,27 +623,48 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
                 {props.children}
             </Caption>
             <FadeIn key={`range-${view}`}>
-                {view === 'day' && (
-                    <View style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}>
-                        {months.map((m) => (
-                            <DayGrid<'range'>
-                                key={`${m.year}-${m.month}`}
-                                visibleMonth={m}
-                                locale={locale}
-                                mode="range"
-                                value={range.value as DateRange | null}
-                                previewRange={range.previewRange}
-                                focusedDate={focusedDate}
-                                isUnavailable={range.isUnavailable}
-                                weekendDays={weekendDays}
-                                firstDayOfWeek={firstDayOfWeek}
-                                onDayPress={(date) => range.selectDate(date)}
-                                onDayHover={(date) => range.setHoveredDate(date)}
-                                {...(renderDay ? { renderDay } : {})}
-                            />
-                        ))}
-                    </View>
-                )}
+                {view === 'day' &&
+                    (props.behavior === 'scroll' ? (
+                        <ScrollBody<'range'>
+                            mode="range"
+                            locale={locale}
+                            focusedDate={focusedDate}
+                            onFocusedMonthChange={(next) => setAnchor(next)}
+                            value={range.value as DateRange | null}
+                            previewRange={range.previewRange}
+                            onSelectDate={(date) => range.selectDate(date)}
+                            firstDayOfWeek={firstDayOfWeek}
+                            weekendDays={weekendDays}
+                            {...(props.minValue !== undefined ? { minValue: props.minValue } : {})}
+                            {...(props.maxValue !== undefined ? { maxValue: props.maxValue } : {})}
+                            {...(props.isDateUnavailable !== undefined
+                                ? { isDateUnavailable: props.isDateUnavailable }
+                                : {})}
+                            {...(renderDay ? { renderDay } : {})}
+                        />
+                    ) : (
+                        <View
+                            style={{ flexDirection: 'row', gap: MONTH_GAP, alignSelf: 'center', width: gridsRowWidth }}
+                        >
+                            {months.map((m) => (
+                                <DayGrid<'range'>
+                                    key={`${m.year}-${m.month}`}
+                                    visibleMonth={m}
+                                    locale={locale}
+                                    mode="range"
+                                    value={range.value as DateRange | null}
+                                    previewRange={range.previewRange}
+                                    focusedDate={focusedDate}
+                                    isUnavailable={range.isUnavailable}
+                                    weekendDays={weekendDays}
+                                    firstDayOfWeek={firstDayOfWeek}
+                                    onDayPress={(date) => range.selectDate(date)}
+                                    onDayHover={(date) => range.setHoveredDate(date)}
+                                    {...(renderDay ? { renderDay } : {})}
+                                />
+                            ))}
+                        </View>
+                    ))}
                 {view === 'month' && (
                     <View style={{ alignItems: 'center' }}>
                         <MonthGrid

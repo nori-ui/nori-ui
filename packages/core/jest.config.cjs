@@ -28,6 +28,9 @@ module.exports = {
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.tsx'],
             testPathIgnorePatterns: ['/node_modules/', '/__tests__/native/'],
             setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/jest.rn-setup.ts'],
+            // Honor `*.web.tsx` platform extensions in the jsdom project so
+            // `import './ScrollBody'` resolves to `ScrollBody.web.tsx` first.
+            moduleFileExtensions: ['web.tsx', 'web.ts', 'tsx', 'ts', 'jsx', 'js', 'json'],
             transform: {
                 '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/../../tooling/tsconfig.test.json' }],
             },
