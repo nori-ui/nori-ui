@@ -294,6 +294,8 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             setAnchor((a) => a.add({ years: -10 }));
         } else if (state.view === 'month') {
             setAnchor((a) => a.add({ years: -1 }));
+        } else if (props.behavior === 'scroll') {
+            state.moveFocus({ months: -1 });
         } else {
             setAnchor((a) => a.add({ months: -1 }));
         }
@@ -303,6 +305,8 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             setAnchor((a) => a.add({ years: 10 }));
         } else if (state.view === 'month') {
             setAnchor((a) => a.add({ years: 1 }));
+        } else if (props.behavior === 'scroll') {
+            state.moveFocus({ months: 1 });
         } else {
             setAnchor((a) => a.add({ months: 1 }));
         }
@@ -543,6 +547,8 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             setAnchor((a) => a.add({ years: -10 }));
         } else if (view === 'month') {
             setAnchor((a) => a.add({ years: -1 }));
+        } else if (props.behavior === 'scroll') {
+            setFocusedDate((f) => f.add({ months: -1 }));
         } else {
             setAnchor((a) => a.add({ months: -1 }));
         }
@@ -552,6 +558,8 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             setAnchor((a) => a.add({ years: 10 }));
         } else if (view === 'month') {
             setAnchor((a) => a.add({ years: 1 }));
+        } else if (props.behavior === 'scroll') {
+            setFocusedDate((f) => f.add({ months: 1 }));
         } else {
             setAnchor((a) => a.add({ months: 1 }));
         }

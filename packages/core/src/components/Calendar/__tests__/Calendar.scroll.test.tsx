@@ -1,5 +1,5 @@
 import { CalendarDate } from '@internationalized/date';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { NoriProvider } from '../../../provider';
 import { Calendar } from '../Calendar';
@@ -45,5 +45,26 @@ describe('Calendar — behavior="scroll" (web)', () => {
         const firstRow = container.querySelector('[data-scroll-row]');
         expect(firstRow?.querySelectorAll('[data-month-panel]').length).toBe(1);
         warn.mockRestore();
+    });
+
+    it('header chevrons advance the focused month one panel at a time in scroll mode', () => {
+        const { getByLabelText, container } = render(
+            wrap(<Calendar behavior="scroll" defaultValue={d(2026, 5, 8)} />)
+        );
+        const next = getByLabelText(/next month/i);
+        fireEvent.click(next);
+        const focused = container.querySelector('[data-focused-month="true"]');
+        expect(focused?.getAttribute('data-month-iso')).toBe('2026-06');
+    });
+
+    it('scrolls to a target month when the focused date changes', () => {
+        const scrollIntoView = jest.fn();
+        // jsdom doesn't implement scrollIntoView; install a stub before render so
+        // the effect can find and call it on the target panel.
+        Element.prototype.scrollIntoView = scrollIntoView as unknown as typeof Element.prototype.scrollIntoView;
+        const { rerender } = render(wrap(<Calendar behavior="scroll" defaultValue={d(2026, 5, 8)} />));
+        scrollIntoView.mockClear();
+        rerender(wrap(<Calendar behavior="scroll" defaultValue={d(2026, 7, 8)} />));
+        expect(scrollIntoView).toHaveBeenCalled();
     });
 });

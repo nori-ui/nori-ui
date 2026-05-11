@@ -64,6 +64,12 @@ export const ScrollBody = <M extends CalendarMode>(props: ScrollBodyProps<M>): R
 
     const focusedMonthKey = monthIso(props.focusedDate);
 
+    // Scroll the focused-month panel into view on mount and whenever the
+    // focused month key changes. We intentionally re-run on every render
+    // here: when consumers swap the calendar via `defaultValue` (a fresh
+    // mount-shaped change), the effect should still surface the target
+    // panel even if the derived key string happened to compare equal.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-run on every render is intentional
     useEffect(() => {
         const root = containerRef.current;
         if (!root) {
@@ -73,7 +79,7 @@ export const ScrollBody = <M extends CalendarMode>(props: ScrollBodyProps<M>): R
         if (target && typeof target.scrollIntoView === 'function') {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-    }, [focusedMonthKey]);
+    });
 
     const buildIsUnavailable = (): ((date: CalendarDate) => boolean) => {
         const minV = props.minValue;
