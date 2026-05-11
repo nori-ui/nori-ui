@@ -82,6 +82,7 @@ const CLIENT_ALLOWED = [
     'components/Calendar/Calendar.tsx',
     'components/Calendar/view/Footer.tsx',
     'components/Calendar/scroll/ScrollBody.web.tsx',
+    'components/Calendar/scroll/ScrollBody.native.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {
