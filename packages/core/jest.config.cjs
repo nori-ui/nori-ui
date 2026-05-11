@@ -26,6 +26,7 @@ module.exports = {
             displayName: 'nori-ui:jsdom',
             testEnvironment: 'jsdom',
             testMatch: ['<rootDir>/src/**/__tests__/**/*.test.tsx'],
+            testPathIgnorePatterns: ['/node_modules/', '/__tests__/native/'],
             setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/jest.rn-setup.ts'],
             transform: {
                 '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/../../tooling/tsconfig.test.json' }],
@@ -35,6 +36,16 @@ module.exports = {
                 // (Metro), both unparseable under ts-jest's CJS target. Tests inject CSF
                 // fixtures via `__setCsfModules` instead, so the stub returns an empty map.
                 '^(.*)/csf-loader-bundler$': '<rootDir>/src/stories/__tests__/csf-loader-bundler.stub.ts',
+            },
+        },
+        {
+            ...base,
+            displayName: 'nori-ui:rn',
+            preset: 'jest-expo',
+            testMatch: ['<rootDir>/src/**/__tests__/native/**/*.test.tsx'],
+            setupFilesAfterEnv: ['<rootDir>/jest.native-setup.ts'],
+            transform: {
+                '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/../../tooling/tsconfig.test.json' }],
             },
         },
     ],
