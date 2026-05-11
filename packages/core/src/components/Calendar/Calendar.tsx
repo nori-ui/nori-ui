@@ -36,6 +36,12 @@ const focusDayCell = (root: HTMLElement | null, date: CalendarDate, force: boole
     if (!root) {
         return;
     }
+    // DOM-only: keyboard focus management has no analog on native, where this
+    // ref points at a RN View instead of HTMLElement. Bail out before touching
+    // `document` so jest-expo / RN runtime don't ReferenceError.
+    if (typeof document === 'undefined' || typeof root.contains !== 'function') {
+        return;
+    }
     if (!force && !root.contains(document.activeElement)) {
         return;
     }

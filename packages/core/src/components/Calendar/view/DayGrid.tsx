@@ -214,6 +214,7 @@ export const DayGrid = <M extends CalendarMode>(props: DayGridProps<M>) => {
                                 {rangeFillStyle ? <View style={rangeFillStyle} /> : null}
                                 <DayCell
                                     ctx={ctx}
+                                    locale={locale}
                                     onPress={() => onDayPress(date)}
                                     {...(onDayHover
                                         ? {

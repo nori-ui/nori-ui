@@ -13,12 +13,52 @@ export type DayCellProps = {
     onHoverOut?: () => void;
     /** When provided, the slot wins over default day rendering. */
     renderDay?: (ctx: DayContext) => ReactNode;
+    /**
+     * BCP-47 locale used to format the accessibility label
+     * (e.g. "Friday, May 8, 2026"). Falls back to undefined (runtime default)
+     * if not provided.
+     */
+    locale?: string;
 };
 
 export const CELL_SIZE = 40;
 
-export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay }: DayCellProps) => {
+/**
+ * Builds the day cell's accessibility label. Format:
+ *   "{weekday}, {Month} {day}, {year}" + optional state suffixes,
+ * e.g. "Friday, May 8, 2026, today, selected".
+ *
+ * Kept module-local so view tests / Profiler harnesses can match it
+ * with a regex without depending on Intl output for the suffix.
+ */
+const formatDayLabel = (ctx: DayContext, locale?: string): string => {
+    const jsDate = new Date(Date.UTC(ctx.date.year, ctx.date.month - 1, ctx.date.day));
+    let base: string;
+    try {
+        base = new Intl.DateTimeFormat(locale, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'UTC',
+        }).format(jsDate);
+    } catch {
+        // Fallback if the runtime rejects the locale tag.
+        base = `${ctx.date.month}/${ctx.date.day}/${ctx.date.year}`;
+    }
+
+    const suffixes: string[] = [];
+    if (ctx.isToday) suffixes.push('today');
+    if (ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd) suffixes.push('selected');
+    if (ctx.isInRange && !ctx.isRangeStart && !ctx.isRangeEnd) suffixes.push('in range');
+    if (ctx.isUnavailable) suffixes.push('unavailable');
+
+    return suffixes.length > 0 ? `${base}, ${suffixes.join(', ')}` : base;
+};
+
+export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay, locale }: DayCellProps) => {
     const colors = useThemeColors();
+    const accessibilityLabel = formatDayLabel(ctx, locale);
 
     const isSelectedLike = ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd;
 
@@ -43,6 +83,7 @@ export const DayCell = ({ ctx, onPress, onHoverIn, onHoverOut, renderDay }: DayC
     return (
         <Pressable
             accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
             accessibilityState={{ disabled: ctx.isUnavailable }}
             disabled={ctx.isUnavailable}
             onPress={onPress}
