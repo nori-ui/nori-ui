@@ -82,6 +82,7 @@
     "test": "jest --passWithNoTests"
   },
   "devDependencies": {
+    "@marceloterreiro/flash-calendar": "^1",
     "@nori-ui/tokens": "*",
     "@size-limit/preset-small-lib": "^12.1.0",
     "@storybook/react": "^8.4",
@@ -116,6 +117,7 @@
     "sonner": "^2.0.7"
   },
   "peerDependencies": {
+    "@marceloterreiro/flash-calendar": "^1",
     "expo-blur": ">=14",
     "nativewind": "^4.2.0",
     "react": "^19",
@@ -127,6 +129,9 @@
     "sonner-native": ">=0.20"
   },
   "peerDependenciesMeta": {
+    "@marceloterreiro/flash-calendar": {
+      "optional": true
+    },
     "expo-blur": {
       "optional": true
     },

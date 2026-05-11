@@ -4463,6 +4463,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@marceloterreiro/flash-calendar@npm:^1":
+  version: 1.6.0
+  resolution: "@marceloterreiro/flash-calendar@npm:1.6.0"
+  dependencies:
+    mitt: "npm:^3.0.1"
+  peerDependencies:
+    "@shopify/flash-list": "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/923c5cc70355f3e43f631e035d3114755a7f26b8a04f2959167fe45615189ee123a5b95a2c3f8fe7475e582dba46d8febc467225a78224328436c61dbe986d89
+  languageName: node
+  linkType: hard
+
 "@mdx-js/mdx@npm:^3.1.1":
   version: 3.1.1
   resolution: "@mdx-js/mdx@npm:3.1.1"
@@ -4647,6 +4660,7 @@ __metadata:
   resolution: "@nori-ui/core@workspace:packages/core"
   dependencies:
     "@internationalized/date": "npm:^3.5.6"
+    "@marceloterreiro/flash-calendar": "npm:^1"
     "@nori-ui/tokens": "npm:*"
     "@size-limit/preset-small-lib": "npm:^12.1.0"
     "@storybook/react": "npm:^8.4"
@@ -4677,6 +4691,7 @@ __metadata:
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.6.0"
   peerDependencies:
+    "@marceloterreiro/flash-calendar": ^1
     expo-blur: ">=14"
     nativewind: ^4.2.0
     react: ^19
@@ -4687,6 +4702,8 @@ __metadata:
     react-native-worklets: ">=0.8.0"
     sonner-native: ">=0.20"
   peerDependenciesMeta:
+    "@marceloterreiro/flash-calendar":
+      optional: true
     expo-blur:
       optional: true
     nativewind:
@@ -17206,6 +17223,13 @@ __metadata:
   dependencies:
     minipass: "npm:^7.1.2"
   checksum: 10c0/5aad75ab0090b8266069c9aabe582c021ae53eb33c6c691054a13a45db3b4f91a7fb1bd79151e6b4e9e9a86727b522527c0a06ec7d45206b745d54cd3097bcec
+  languageName: node
+  linkType: hard
+
+"mitt@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: 10c0/3ab4fdecf3be8c5255536faa07064d05caa3dd332bd318ff02e04621f7b3069ca1de9106cfe8e7ced675abfc2bec2ce4c4ef321c4a1bb1fb29df8ae090741913
   languageName: node
   linkType: hard
 
