@@ -1,8 +1,8 @@
 'use client';
 
 import type { CalendarDate } from '@internationalized/date';
-import { useMemo } from 'react';
 import type { ComponentType, ReactElement } from 'react';
+import { useMemo } from 'react';
 import type { CalendarMode } from '../Calendar.types';
 import { SCROLL_FUTURE_MONTHS, SCROLL_PAST_MONTHS } from './constants';
 import type { ScrollBodyProps } from './ScrollBody';
@@ -23,7 +23,9 @@ let cachedCalendarList: ComponentType<FlashCalendarListProps> | null = null;
 let resolveAttempted = false;
 
 const resolveCalendarList = (): ComponentType<FlashCalendarListProps> => {
-    if (cachedCalendarList) return cachedCalendarList;
+    if (cachedCalendarList) {
+        return cachedCalendarList;
+    }
     if (resolveAttempted && !cachedCalendarList) {
         throw new Error(
             '[Calendar] behavior="scroll" requires @marceloterreiro/flash-calendar. ' +
@@ -52,8 +54,7 @@ const resolveCalendarList = (): ComponentType<FlashCalendarListProps> => {
     }
 };
 
-const monthIdFromDate = (d: CalendarDate): string =>
-    `${d.year}-${String(d.month).padStart(2, '0')}-01`;
+const monthIdFromDate = (d: CalendarDate): string => `${d.year}-${String(d.month).padStart(2, '0')}-01`;
 
 export const ScrollBody = <M extends CalendarMode>(props: ScrollBodyProps<M>): ReactElement => {
     const CalendarList = resolveCalendarList();
@@ -64,11 +65,15 @@ export const ScrollBody = <M extends CalendarMode>(props: ScrollBodyProps<M>): R
         const yStr = parts[0];
         const mStr = parts[1];
         const dStr = parts[2];
-        if (!yStr || !mStr || !dStr) return;
+        if (!yStr || !mStr || !dStr) {
+            return;
+        }
         const y = Number.parseInt(yStr, 10);
         const m = Number.parseInt(mStr, 10);
         const dd = Number.parseInt(dStr, 10);
-        if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(dd)) return;
+        if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(dd)) {
+            return;
+        }
         const date = props.focusedDate.set({ year: y, month: m, day: dd });
         props.onSelectDate(date);
     };

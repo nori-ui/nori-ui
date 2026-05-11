@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { Calendar } from '../../Calendar';
 import { NoriProvider } from '../../../../provider';
+import { Calendar } from '../../Calendar';
 
 /**
  * Native range tap-tap verification.
@@ -27,9 +27,7 @@ const wrap = (ui: ReactNode) => <NoriProvider locale="en-US">{ui}</NoriProvider>
 describe('Calendar — native range tap-tap', () => {
     it('first tap sets pending start, second tap commits end', () => {
         const onChange = jest.fn();
-        const { getByLabelText } = render(
-            wrap(<Calendar mode="range" defaultValue={null} onChange={onChange} />)
-        );
+        const { getByLabelText } = render(wrap(<Calendar mode="range" defaultValue={null} onChange={onChange} />));
 
         fireEvent.press(getByLabelText(/May 10,\s+2026/i));
         expect(onChange).toHaveBeenCalledTimes(1);
@@ -50,9 +48,7 @@ describe('Calendar — native range tap-tap', () => {
 
     it('third tap restarts the pending state', () => {
         const onChange = jest.fn();
-        const { getByLabelText } = render(
-            wrap(<Calendar mode="range" defaultValue={null} onChange={onChange} />)
-        );
+        const { getByLabelText } = render(wrap(<Calendar mode="range" defaultValue={null} onChange={onChange} />));
 
         fireEvent.press(getByLabelText(/May 10,\s+2026/i));
         fireEvent.press(getByLabelText(/May 15,\s+2026/i));
@@ -71,9 +67,7 @@ describe('Calendar — native range tap-tap', () => {
         // (the pending start). If hover-preview were somehow firing on native,
         // multiple cells would carry the "selected" suffix because previewRange
         // would mark range start/end and isInRange cells.
-        const { getByLabelText, queryAllByLabelText } = render(
-            wrap(<Calendar mode="range" defaultValue={null} />)
-        );
+        const { getByLabelText, queryAllByLabelText } = render(wrap(<Calendar mode="range" defaultValue={null} />));
 
         fireEvent.press(getByLabelText(/May 10,\s+2026/i));
 

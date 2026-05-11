@@ -36,7 +36,9 @@ const RUNTIME_DEFAULT_LOCALE_KEY = '__default__';
 const getDayFormatter = (locale: string | undefined): Intl.DateTimeFormat | null => {
     const key = locale ?? RUNTIME_DEFAULT_LOCALE_KEY;
     const cached = formatterCache.get(key);
-    if (cached) return cached;
+    if (cached) {
+        return cached;
+    }
     try {
         const fmt = new Intl.DateTimeFormat(locale, {
             weekday: 'long',
@@ -77,10 +79,18 @@ const formatDayLabel = (ctx: DayContext, locale?: string): string => {
           `${ctx.date.month}/${ctx.date.day}/${ctx.date.year}`;
 
     const suffixes: string[] = [];
-    if (ctx.isToday) suffixes.push('today');
-    if (ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd) suffixes.push('selected');
-    if (ctx.isInRange && !ctx.isRangeStart && !ctx.isRangeEnd) suffixes.push('in range');
-    if (ctx.isUnavailable) suffixes.push('unavailable');
+    if (ctx.isToday) {
+        suffixes.push('today');
+    }
+    if (ctx.isSelected || ctx.isRangeStart || ctx.isRangeEnd) {
+        suffixes.push('selected');
+    }
+    if (ctx.isInRange && !ctx.isRangeStart && !ctx.isRangeEnd) {
+        suffixes.push('in range');
+    }
+    if (ctx.isUnavailable) {
+        suffixes.push('unavailable');
+    }
 
     return suffixes.length > 0 ? `${base}, ${suffixes.join(', ')}` : base;
 };

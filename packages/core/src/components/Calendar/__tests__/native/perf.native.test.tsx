@@ -1,8 +1,8 @@
-import { Profiler, useState } from 'react';
-import { fireEvent, render, act } from '@testing-library/react-native';
 import { CalendarDate } from '@internationalized/date';
-import { Calendar } from '../../Calendar';
+import { act, fireEvent, render } from '@testing-library/react-native';
+import { Profiler, useState } from 'react';
 import { NoriProvider } from '../../../../provider';
+import { Calendar } from '../../Calendar';
 
 const d = (y: number, m: number, day: number) => new CalendarDate(y, m, day);
 
@@ -20,10 +20,7 @@ describe('Calendar — native perf (informational)', () => {
             return (
                 <NoriProvider locale="en-US">
                     <Profiler id="calendar" onRender={onRender}>
-                        <Calendar
-                            value={value}
-                            onChange={(v) => v && setValue(v as CalendarDate)}
-                        />
+                        <Calendar value={value} onChange={(v) => v && setValue(v as CalendarDate)} />
                     </Profiler>
                 </NoriProvider>
             );

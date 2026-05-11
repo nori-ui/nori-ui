@@ -1,8 +1,8 @@
 import { CalendarDate } from '@internationalized/date';
 import { render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { Calendar } from '../../Calendar';
 import { NoriProvider } from '../../../../provider';
+import { Calendar } from '../../Calendar';
 
 const wrap = (ui: ReactNode) => <NoriProvider locale="en-US">{ui}</NoriProvider>;
 const d = (y: number, m: number, day: number) => new CalendarDate(y, m, day);
@@ -17,9 +17,7 @@ describe('Calendar — native a11y', () => {
 
     it('disabled day cells carry disabled state', () => {
         const isPast = (date: CalendarDate) => date.compare(d(2026, 5, 5)) < 0;
-        const { getByLabelText } = render(
-            wrap(<Calendar defaultValue={d(2026, 5, 10)} isDateUnavailable={isPast} />)
-        );
+        const { getByLabelText } = render(wrap(<Calendar defaultValue={d(2026, 5, 10)} isDateUnavailable={isPast} />));
         const cell = getByLabelText(/May 1,\s+2026/i);
         expect(cell.props.accessibilityState).toMatchObject({ disabled: true });
     });
@@ -39,9 +37,7 @@ describe('Calendar — native a11y', () => {
         // `grid` is a valid ARIA Role (and a valid native `role` prop value)
         // but not a member of RN's legacy `AccessibilityRole` union, so we
         // use `role="grid"` on the DayGrid container.
-        const gridNodes = UNSAFE_root.findAll(
-            (node) => node.props?.role === 'grid'
-        );
+        const gridNodes = UNSAFE_root.findAll((node) => node.props?.role === 'grid');
         expect(gridNodes.length).toBeGreaterThan(0);
     });
 });

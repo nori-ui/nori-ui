@@ -58,18 +58,19 @@ export const ScrollBody = <M extends CalendarMode>(props: ScrollBodyProps<M>): R
             },
             { root, threshold: [0, 0.5, 1] }
         );
-        root.querySelectorAll<HTMLElement>('[data-month-panel]').forEach((el) => io.observe(el));
+        root.querySelectorAll<HTMLElement>('[data-month-panel]').forEach((el) => {
+            io.observe(el);
+        });
         return () => io.disconnect();
-    }, [months, onFocusedMonthChange, focusedDate]);
+    }, [onFocusedMonthChange, focusedDate]);
 
     const focusedMonthKey = monthIso(props.focusedDate);
 
     // Scroll the focused-month panel into view on mount and whenever the
-    // focused month key changes. We intentionally re-run on every render
-    // here: when consumers swap the calendar via `defaultValue` (a fresh
-    // mount-shaped change), the effect should still surface the target
-    // panel even if the derived key string happened to compare equal.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: re-run on every render is intentional
+    // focused month key changes. Intentionally no dep array — when consumers
+    // swap the calendar via `defaultValue` (mount-shaped change), the effect
+    // should still surface the target panel even if the derived key string
+    // happens to compare equal.
     useEffect(() => {
         const root = containerRef.current;
         if (!root) {

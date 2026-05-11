@@ -39,18 +39,14 @@ describe('Calendar — behavior="scroll" (web)', () => {
         const { container } = render(
             wrap(<Calendar behavior="scroll" visibleMonths={2} defaultValue={d(2026, 5, 8)} />)
         );
-        expect(warn).toHaveBeenCalledWith(
-            expect.stringContaining('visibleMonths is ignored when behavior="scroll"')
-        );
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('visibleMonths is ignored when behavior="scroll"'));
         const firstRow = container.querySelector('[data-scroll-row]');
         expect(firstRow?.querySelectorAll('[data-month-panel]').length).toBe(1);
         warn.mockRestore();
     });
 
     it('header chevrons advance the focused month one panel at a time in scroll mode', () => {
-        const { getByLabelText, container } = render(
-            wrap(<Calendar behavior="scroll" defaultValue={d(2026, 5, 8)} />)
-        );
+        const { getByLabelText, container } = render(wrap(<Calendar behavior="scroll" defaultValue={d(2026, 5, 8)} />));
         const next = getByLabelText(/next month/i);
         fireEvent.click(next);
         const focused = container.querySelector('[data-focused-month="true"]');

@@ -7,11 +7,11 @@ import { View } from 'react-native';
 import { useLocale } from '../../i18n/locale';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import type { CalendarBaseProps, CalendarMode, CalendarValue, CalendarView, DateRange } from './Calendar.types';
+import { ScrollBody } from './scroll/ScrollBody';
 import { type DayOfWeek, getFirstDayOfWeek, getWeekendDays } from './state/locale-utils';
 import { useCalendarKeyboard } from './state/use-calendar-keyboard';
 import { useCalendarState } from './state/use-calendar-state';
 import { useRangeState } from './state/use-range-state';
-import { ScrollBody } from './scroll/ScrollBody';
 import { Caption } from './view/Caption';
 import { CELL_SIZE } from './view/DayCell';
 import { DayGrid } from './view/DayGrid';
@@ -206,9 +206,7 @@ const SingleOrMultiCalendar = <M extends Exclude<CalendarMode, 'range'>>(
             props.visibleMonths > 1
         ) {
             // biome-ignore lint/suspicious/noConsole: dev-mode developer warning
-            console.warn(
-                '[Calendar] visibleMonths is ignored when behavior="scroll"; falling back to single column.'
-            );
+            console.warn('[Calendar] visibleMonths is ignored when behavior="scroll"; falling back to single column.');
         }
     }, [props.behavior, props.visibleMonths]);
 
@@ -457,9 +455,7 @@ const RangeCalendar = (props: CalendarBaseProps<'range'> & { locale: string; con
             props.visibleMonths > 1
         ) {
             // biome-ignore lint/suspicious/noConsole: dev-mode developer warning
-            console.warn(
-                '[Calendar] visibleMonths is ignored when behavior="scroll"; falling back to single column.'
-            );
+            console.warn('[Calendar] visibleMonths is ignored when behavior="scroll"; falling back to single column.');
         }
     }, [props.behavior, props.visibleMonths]);
 
