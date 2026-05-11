@@ -268,12 +268,41 @@ Use it to decide whether to dismiss a popover (`source === 'click'`)
 versus keep it open during keyboard navigation, or to know if a year-view
 selection completed a date pick.
 
-## Behavior: paged vs scroll
+## Scroll behavior
 
-`behavior="paged"` (web default) advances by month with prev/next arrows
-and PageUp/PageDown. `behavior="scroll"` is the native default on
-React Native — month-by-month scrolling without arrows. Phase 2 work
-exposes this on web for touch surfaces.
+By default `<Calendar>` renders one month at a time (paged) with prev/next
+chevrons in the header. Set `behavior="scroll"` to render a vertically
+scrollable list of month panels instead — handy on touch surfaces and for
+date pickers where the user is browsing rather than navigating.
+
+<Preview name="calendar-scroll" />
+
+```tsx
+import { Calendar } from '@nori-ui/core';
+import { getLocalTimeZone, today } from '@internationalized/date';
+
+<Calendar behavior="scroll" defaultValue={today(getLocalTimeZone())} />
+```
+
+When `behavior="scroll"` is active:
+
+- The header chevrons advance the focused month one panel at a time — the
+  list scrolls to bring the new month into view rather than swapping the
+  panel in place.
+- The dropdown caption (`caption="dropdown"`) also scrolls the list to the
+  chosen month / year instead of paging.
+- `visibleMonths` is ignored — scroll mode is single-column by definition.
+  Passing `visibleMonths > 1` together with `behavior="scroll"` logs a
+  development-mode warning and falls back to single column.
+- On native, scroll mode requires the optional peer dependency
+  [`@marceloterreiro/flash-calendar`](https://github.com/MarceloPrado/flash-calendar):
+
+  ```bash
+  yarn add @marceloterreiro/flash-calendar
+  ```
+
+  Web doesn't require any additional dependency — the scroll container is
+  a plain `<div>` and focused-month tracking uses `IntersectionObserver`.
 
 ## Keyboard
 
