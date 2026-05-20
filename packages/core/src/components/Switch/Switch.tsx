@@ -21,6 +21,22 @@ export type SwitchProps = {
     testID?: string;
     asChild?: boolean;
     children?: ReactNode;
+    /** DOM id / nativeID forwarded to the Pressable — used by Field.Control */
+    id?: string;
+    /** HTML name attribute (web only) */
+    name?: string;
+    /** aria-labelledby forwarded to the Pressable */
+    'aria-labelledby'?: string;
+    /** React Native accessibilityLabelledBy forwarded to the Pressable */
+    accessibilityLabelledBy?: string;
+    /** aria-describedby forwarded to the Pressable */
+    'aria-describedby'?: string;
+    /** React Native accessibilityDescribedBy forwarded to the Pressable */
+    accessibilityDescribedBy?: string;
+    /** Marks the control as invalid — set by Field.Control when there is an error */
+    'aria-invalid'?: boolean;
+    /** Marks the control as required — set by Field.Control */
+    'aria-required'?: boolean;
 };
 
 // Layout-only base; row gap is theme-driven inside the component.
@@ -62,6 +78,14 @@ export const Switch = ({
     testID,
     asChild,
     children,
+    id,
+    name,
+    'aria-labelledby': ariaLabelledBy,
+    accessibilityLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    accessibilityDescribedBy,
+    'aria-invalid': ariaInvalid,
+    'aria-required': ariaRequired,
 }: SwitchProps) => {
     const colors = useThemeColors();
     const [inner, setInner] = useState<boolean>(defaultChecked);
@@ -92,12 +116,39 @@ export const Switch = ({
         accessibilityState: { checked: value, disabled: Boolean(disabled) },
         testID,
     };
+    if (id !== undefined) {
+        commonProps.id = id;
+        commonProps.nativeID = id;
+    }
+    if (name !== undefined) {
+        commonProps.name = name;
+    }
     if (disabled) {
         commonProps['aria-disabled'] = true;
     }
     if (label !== undefined) {
         commonProps['aria-label'] = label;
         commonProps.accessibilityLabel = label;
+    }
+    if (ariaLabelledBy !== undefined) {
+        commonProps['aria-labelledby'] = ariaLabelledBy;
+        commonProps.accessibilityLabelledBy = ariaLabelledBy;
+    }
+    if (accessibilityLabelledBy !== undefined) {
+        commonProps.accessibilityLabelledBy = accessibilityLabelledBy;
+    }
+    if (ariaDescribedBy !== undefined) {
+        commonProps['aria-describedby'] = ariaDescribedBy;
+        commonProps.accessibilityDescribedBy = ariaDescribedBy;
+    }
+    if (accessibilityDescribedBy !== undefined) {
+        commonProps.accessibilityDescribedBy = accessibilityDescribedBy;
+    }
+    if (ariaInvalid) {
+        commonProps['aria-invalid'] = true;
+    }
+    if (ariaRequired) {
+        commonProps['aria-required'] = true;
     }
 
     if (asChild) {

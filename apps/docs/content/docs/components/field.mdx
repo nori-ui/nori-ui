@@ -1,0 +1,369 @@
+---
+title: Field
+description: Layout and accessibility envelope that wires a label, description, error, and a form control together without managing form state.
+since: 0.1.0
+tags: [form, a11y, layout]
+platform: both
+category: inputs
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Field" />
+
+`<Field>` is a layout and accessibility envelope. It generates stable IDs, wires
+`aria-labelledby`, `aria-describedby`, `aria-invalid`, and `aria-required` onto
+the wrapped control, and provides visual slots for a label, hint text, and an error
+message. It does not own form state — you bring your own state management and pass
+`error` down from wherever validation lives.
+
+`Field` is form-framework agnostic. It works equally well with React Hook Form,
+Zod + manual state, or no library at all. The RHF pattern using `<Controller>`
+is shown in the [react-hook-form](#react-hook-form-recommended) section.
+
+## Basic usage
+
+Label + Control is the minimum viable field.
+
+<Preview name="field-basic" />
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+
+<Field>
+    <Field.Label>Email</Field.Label>
+    <Field.Control>
+        <TextInput placeholder="you@example.com" />
+    </Field.Control>
+</Field>
+```
+
+`Field.Control` clones its single child and injects `id`, `aria-labelledby`,
+and related ARIA attributes automatically. The child receives these as props
+and does not need to set them manually.
+
+## With description and error
+
+All four compound parts together:
+
+<Preview name="field-with-description-error" />
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+
+<Field error={error}>
+    <Field.Label>Username</Field.Label>
+    <Field.Description>3 to 20 characters. Letters, numbers, and underscores only.</Field.Description>
+    <Field.Control>
+        <TextInput value={value} onChangeText={setValue} placeholder="your_username" />
+    </Field.Control>
+    <Field.Error />
+</Field>
+```
+
+`Field.Error` with no children reads the message from the `error` prop on `<Field>`.
+Pass children to override the display text while keeping the `error` prop for ARIA:
+
+```tsx
+<Field error="SERVER_TAKEN">
+    <Field.Control>
+        <TextInput value={value} onChangeText={setValue} />
+    </Field.Control>
+    <Field.Error>That username is already taken.</Field.Error>
+</Field>
+```
+
+When both `Field.Description` and `Field.Error` are present, `aria-describedby`
+contains both IDs joined by a space — assistive technology reads both.
+
+## Required
+
+Pass `required` on `<Field>`. `aria-required` is forwarded to the control by
+`Field.Control`. `Field.Label` renders a visual indicator (a red asterisk by
+default) next to the label text, with a screen-reader-only accessible label:
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+
+<Field required>
+    <Field.Label>Email</Field.Label>
+    <Field.Control>
+        <TextInput placeholder="you@example.com" />
+    </Field.Control>
+</Field>
+```
+
+Both strings are configurable via the `NoriProvider` dictionary:
+
+| Key                      | Default | Purpose                                      |
+|--------------------------|---------|----------------------------------------------|
+| `field.requiredIndicator` | `*`    | Visual character appended to the label       |
+| `field.requiredLabel`     | `required` | Accessible label on the indicator span  |
+
+```tsx
+import { NoriProvider } from '@nori-ui/core/client';
+
+<NoriProvider dictionary={{ field: { requiredIndicator: '(required)', requiredLabel: 'required' } }}>
+    {/* ... */}
+</NoriProvider>
+```
+
+## Disabled
+
+Pass `disabled` on `<Field>`. The flag propagates to `Field.Control`'s child and
+dims the label:
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+
+<Field disabled>
+    <Field.Label>Email</Field.Label>
+    <Field.Control>
+        <TextInput defaultValue="locked@example.com" />
+    </Field.Control>
+</Field>
+```
+
+The child component's own `disabled` prop is OR-ed with the field-level value,
+so you can also disable the control directly without going through the field.
+
+## Horizontal orientation
+
+`orientation="horizontal"` renders the label and control side-by-side:
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+
+<Field orientation="horizontal">
+    <Field.Label>Name</Field.Label>
+    <Field.Control>
+        <TextInput placeholder="Your name" />
+    </Field.Control>
+</Field>
+```
+
+The default is `"vertical"`.
+
+## Validating state
+
+While an async validation is in flight, pass `validating` to show a spinner and
+set `aria-busy`:
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+
+<Field validating>
+    <Field.Label>Username</Field.Label>
+    <Field.Description>Checking availability…</Field.Description>
+    <Field.Control>
+        <TextInput defaultValue="claude" />
+    </Field.Control>
+</Field>
+```
+
+`validating` and `error` can coexist — the spinner renders alongside the error
+message until the new result arrives.
+
+## Field.Group
+
+`Field.Group` is a fieldset-style envelope for grouped controls such as radio
+sets, checkbox groups, or multi-switch rows. It renders a `role="group"` container
+labelled by its `Field.Label` — equivalent to `<fieldset>` + `<legend>` semantics,
+but using `<View>` so layout is not constrained by browser fieldset quirks.
+
+<Preview name="field-group" />
+
+```tsx
+import { Field, Radio } from '@nori-ui/core';
+import { useState } from 'react';
+
+export default function PlanPicker() {
+    const [value, setValue] = useState<string | undefined>(undefined);
+    const error = value === undefined ? 'Please select a plan.' : null;
+    return (
+        <Field.Group required error={error}>
+            <Field.Label>Plan</Field.Label>
+            <Field.Description>Pick the tier that fits your team.</Field.Description>
+            <Field.Control>
+                <Radio.Group value={value} onChange={setValue} name="plan">
+                    <Radio value="hobby" label="Hobby" />
+                    <Radio value="pro" label="Pro" />
+                    <Radio value="enterprise" label="Enterprise" />
+                </Radio.Group>
+            </Field.Control>
+            <Field.Error />
+        </Field.Group>
+    );
+}
+```
+
+`Field.Group` accepts the same props as `Field` except `name`. The `name` prop
+can be passed directly to the inner input group.
+
+## react-hook-form (recommended)
+
+Use `<Controller>` to connect Field to React Hook Form. Pass `field.value`,
+`field.onChange`, and `fieldState.error?.message` through:
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+import { useForm, Controller } from 'react-hook-form';
+
+type FormValues = {
+    email: string;
+};
+
+export default function SignUpForm() {
+    const { control, handleSubmit } = useForm<FormValues>({
+        defaultValues: { email: '' },
+    });
+
+    const onSubmit = (data: FormValues) => {
+        console.log(data);
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+                control={control}
+                name="email"
+                rules={{ required: 'Email is required.', pattern: { value: /\S+@\S+/, message: 'Not a valid email.' } }}
+                render={({ field, fieldState }) => (
+                    <Field required error={fieldState.error?.message ?? null}>
+                        <Field.Label>Email</Field.Label>
+                        <Field.Control>
+                            <TextInput
+                                value={field.value}
+                                onChangeText={field.onChange}
+                                placeholder="you@example.com"
+                            />
+                        </Field.Control>
+                        <Field.Error />
+                    </Field>
+                )}
+            />
+            <button type="submit">Sign up</button>
+        </form>
+    );
+}
+```
+
+To inject a server-side error after submission, call `setError`:
+
+```tsx
+import { useForm } from 'react-hook-form';
+
+const { setError } = useForm<FormValues>();
+
+// After a failed API call:
+setError('email', { message: 'That email is already registered.' });
+```
+
+`react-hook-form` is not a peer dependency of `@nori-ui/core`. Install it
+separately:
+
+```bash
+yarn add react-hook-form
+```
+
+## Manual / framework-agnostic
+
+Field works without any form library. Use `useState` for local state and pass
+a derived error string:
+
+```tsx
+import { Field, TextInput } from '@nori-ui/core';
+import { useState } from 'react';
+
+export default function EmailField() {
+    const [value, setValue] = useState('');
+    const [touched, setTouched] = useState(false);
+
+    const error =
+        touched && value.length === 0
+            ? 'Email is required.'
+            : touched && !value.includes('@')
+              ? 'Not a valid email address.'
+              : null;
+
+    return (
+        <Field required error={error}>
+            <Field.Label>Email</Field.Label>
+            <Field.Control>
+                <TextInput
+                    value={value}
+                    onChangeText={(v) => { setValue(v); setTouched(true); }}
+                    placeholder="you@example.com"
+                />
+            </Field.Control>
+            <Field.Error />
+        </Field>
+    );
+}
+```
+
+## Standalone Label
+
+For cases where `<Field>` is too much — standalone toggle rows or settings
+entries — use [`<Label>`](/docs/components/label) directly. It renders the same
+visual style and required indicator as `Field.Label`, wired by an explicit
+`htmlFor` instead of auto-generated IDs.
+
+## API reference
+
+### `<Field>`
+
+<PropsTable component="Field" />
+
+### `<Field.Label>`
+
+Renders a label text node wired to the field's generated ID. Clicking it moves
+focus to the control.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | Label text. |
+
+### `<Field.Description>`
+
+Renders hint copy below the label. Its ID is wired to the control's
+`aria-describedby`.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | Hint text. |
+
+### `<Field.Error>`
+
+Renders the error message in the danger tone. Returns `null` when there is no
+error and no children. Has `role="alert"` on web.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | Override the message from the `error` prop on `<Field>`. |
+
+### `<Field.Control>`
+
+Clones its single child element and injects accessibility props.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactElement` | — | A single form control element. |
+
+Injected props (your control receives these automatically):
+
+| Prop | Set when |
+|------|---------|
+| `id` | Always (uses `Field`'s generated ID) |
+| `aria-labelledby` | Always |
+| `aria-describedby` | `Field.Description` or `Field.Error` is present |
+| `aria-invalid` | `error` is truthy |
+| `aria-required` | `required` is true |
+| `disabled` | `disabled` is true on `Field` |
+| `name` | `name` prop on `Field` is set and child has no own `name` |
+
+### `<Field.Group>`
+
+<PropsTable component="FieldGroup" />

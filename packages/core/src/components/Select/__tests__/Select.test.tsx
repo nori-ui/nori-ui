@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
+import { NoriProvider } from '../../../provider';
+import { Field } from '../../Field/Field';
 import { Select, type SelectOption } from '../Select';
 
 const FRUITS: SelectOption[] = [
@@ -291,5 +293,36 @@ describe('<Select multiple>', () => {
         const trigger = screen.getByRole('combobox');
         expect(trigger.textContent).toContain('4 selected');
         expect(trigger.textContent).not.toContain('Apple');
+    });
+
+    describe('inside Field', () => {
+        it('receives aria-labelledby on the trigger from Field.Control', () => {
+            render(
+                <NoriProvider>
+                    <Field>
+                        <Field.Label>Plan</Field.Label>
+                        <Field.Control>
+                            <Select testID="sel" options={[{ value: 'a', label: 'A' }]} />
+                        </Field.Control>
+                    </Field>
+                </NoriProvider>
+            );
+            const trigger = screen.getByRole('combobox');
+            expect(trigger.getAttribute('aria-labelledby')).toBeTruthy();
+        });
+
+        it('receives aria-invalid on the trigger when Field has an error', () => {
+            render(
+                <NoriProvider>
+                    <Field error="Required">
+                        <Field.Control>
+                            <Select testID="sel" options={[{ value: 'a', label: 'A' }]} />
+                        </Field.Control>
+                    </Field>
+                </NoriProvider>
+            );
+            const trigger = screen.getByRole('combobox');
+            expect(trigger.getAttribute('aria-invalid')).toBe('true');
+        });
     });
 });

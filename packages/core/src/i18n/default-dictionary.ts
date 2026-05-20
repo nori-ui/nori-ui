@@ -66,4 +66,8 @@ export const defaultDictionary: Dictionary = {
     'checkbox.unchecked': 'Unchecked',
     'switch.on': 'On',
     'switch.off': 'Off',
+
+    // field
+    'field.requiredIndicator': '*',
+    'field.requiredLabel': 'required',
 };

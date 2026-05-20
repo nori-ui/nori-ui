@@ -16,25 +16,49 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Multi-line variant of [TextInput](/docs/components/text-input) — same `label` / `helperText` / `error` / `disabled` / `leading` / `trailing` API, vertical instead of horizontal.
+- Multi-line variant of [TextInput](/docs/components/text-input) — vertical instead of horizontal.
 - Forwards every native TextInput prop (`value`, `onChangeText`, `placeholder`, `multiline` is set automatically, `numberOfLines`, …).
+- Pair with [`Field`](/docs/components/field) for label, description, error wiring, and accessible `id` / `aria-*` attributes.
 
 ## Preview
 
 <Preview name="text-area-basic" />
 
-## `label`, `helperText`, `error`, `disabled`
+## Use with Field
 
-Identical semantics to [`TextInput`](/docs/components/text-input). The
-label sits above the field; `helperText` and `error` render below;
-`error` flips the border to danger tone and forwards `aria-invalid`
-to the underlying input. `disabled` greys the field and blocks input.
+For labelled fields with description, error, and a11y wiring, wrap in `<Field>`:
 
 ```tsx
-<TextArea label="Notes" helperText="Markdown supported." />
-<TextArea label="Notes" error="Notes can't be empty." />
-<TextArea label="Notes" disabled defaultValue="Locked" />
+import { Field, TextArea } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field>
+        <Field.Label>Bio</Field.Label>
+        <Field.Description>Markdown supported.</Field.Description>
+        <Field.Control>
+            <TextArea placeholder="Tell us about yourself" numberOfLines={4} />
+        </Field.Control>
+    </Field>
+);
 ```
+
+With validation error:
+
+```tsx
+import { Field, TextArea } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field error="Notes can't be empty.">
+        <Field.Label>Notes</Field.Label>
+        <Field.Control>
+            <TextArea placeholder="Add your notes here" numberOfLines={4} />
+        </Field.Control>
+        <Field.Error />
+    </Field>
+);
+```
+
+See [Field](/docs/components/field) for the full API.
 
 ## `rows` and `resize`
 
@@ -51,7 +75,16 @@ line height). `resize` controls the resize affordance on web —
 | `both`                | Drag-resize corner         | Fixed height    |
 
 ```tsx
-<TextArea label="Bio" rows={4} resize="vertical" />
+import { Field, TextArea } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field>
+        <Field.Label>Bio</Field.Label>
+        <Field.Control>
+            <TextArea rows={4} resize="vertical" />
+        </Field.Control>
+    </Field>
+);
 ```
 
 ## `leading` and `trailing`
@@ -62,18 +95,29 @@ text content as it grows.
 
 ```tsx
 import { Sparkles } from 'lucide-react-native';
+import { Field, TextArea } from '@nori-ui/core';
 
-<TextArea leading={<Sparkles size={16} />} label="Prompt" />
+export const Example = () => (
+    <Field>
+        <Field.Label>Prompt</Field.Label>
+        <Field.Control>
+            <TextArea leading={<Sparkles size={16} />} numberOfLines={4} />
+        </Field.Control>
+    </Field>
+);
 ```
 
 ## `containerClassName`
 
-Tailwind classes for the outer wrapper (label + field + helper text)
-rather than the bordered field row. Useful for sizing within a form
-grid.
+Tailwind classes for the outer wrapper when used without `<Field>`. Use `className`
+on `<Field>` for grid sizing when wrapped.
 
 ```tsx
-<TextArea containerClassName="w-full" label="Description" rows={6} />
+import { TextArea } from '@nori-ui/core';
+
+export const Example = () => (
+    <TextArea containerClassName="w-full" placeholder="Description" rows={6} />
+);
 ```
 
 ## Native preview

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
+import { Field } from '../../Field';
 import { Switch } from '../Switch';
 
 describe('<Switch>', () => {
@@ -53,5 +54,35 @@ describe('<Switch>', () => {
             </Switch>
         );
         expect(screen.getByTestId('s').getAttribute('role')).toBe('switch');
+    });
+
+    it('inside Field: receives id, aria-labelledby, aria-describedby from Field.Control', () => {
+        render(
+            <Field id="field-sw">
+                <Field.Label>Notifications</Field.Label>
+                <Field.Description>Choose how you'd like to be notified.</Field.Description>
+                <Field.Control>
+                    <Switch testID="s" label="Email digests" />
+                </Field.Control>
+            </Field>
+        );
+        const el = screen.getByTestId('s');
+        expect(el.getAttribute('id')).toBe('field-sw');
+        expect(el.getAttribute('aria-labelledby')).toMatch(/field-sw-label/);
+        expect(el.getAttribute('aria-describedby')).toMatch(/field-sw-desc/);
+    });
+
+    it('inside Field with error: receives aria-invalid from Field.Control', () => {
+        render(
+            <Field id="field-sw-err" error="Required">
+                <Field.Label>Notifications</Field.Label>
+                <Field.Control>
+                    <Switch testID="s" label="Email digests" />
+                </Field.Control>
+                <Field.Error />
+            </Field>
+        );
+        const el = screen.getByTestId('s');
+        expect(el.getAttribute('aria-invalid')).toBe('true');
     });
 });

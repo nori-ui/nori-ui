@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useMemo, useState } from 'react';
+import { Field } from '../Field';
 import { Text } from '../Text';
 import { VStack } from '../VStack';
 import { Checkbox } from './Checkbox';
@@ -40,6 +41,30 @@ const PERMISSIONS = ['Read', 'Write', 'Admin'] as const;
  * Checked and Disabled are the three core states a developer needs to
  * see first.
  */
+export const InsideField: Story = {
+    render: () => (
+        <Field>
+            <Field.Label>Notifications</Field.Label>
+            <Field.Description>Choose how you'd like to be notified.</Field.Description>
+            <Field.Control>
+                <Checkbox label="Accept email digests" />
+            </Field.Control>
+        </Field>
+    ),
+};
+
+export const InsideFieldWithError: Story = {
+    render: () => (
+        <Field error="You must accept the terms to continue.">
+            <Field.Label>Terms</Field.Label>
+            <Field.Control>
+                <Checkbox label="Accept terms" />
+            </Field.Control>
+            <Field.Error />
+        </Field>
+    ),
+};
+
 export const Indeterminate: Story = {
     render: () => {
         const [selected, setSelected] = useState<Set<string>>(new Set(['Read']));

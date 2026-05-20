@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
+import { NoriProvider } from '../../provider';
+import { Field } from '../Field/Field';
 import { Select, type SelectOption } from './Select';
 
 const meta: Meta<typeof Select> = {
@@ -68,3 +70,26 @@ function MultiCappedPicker() {
 
 /** Multi-select capped at 3 items + chip overflow at 2. */
 export const MultipleCapped: Story = { render: () => <MultiCappedPicker /> };
+
+function InsideFieldSelect() {
+    const [v, setV] = useState<string | undefined>(undefined);
+    return (
+        <NoriProvider>
+            <Field>
+                <Field.Label>Subscription plan</Field.Label>
+                <Field.Control>
+                    <Select
+                        options={FRUIT}
+                        {...(v !== undefined ? { value: v } : {})}
+                        onChange={(next) => setV(next)}
+                        placeholder="Choose a plan"
+                    />
+                </Field.Control>
+                <Field.Description>Your plan determines your billing cycle.</Field.Description>
+            </Field>
+        </NoriProvider>
+    );
+}
+
+/** Select wired up inside Field — label association and a11y props injected automatically. */
+export const InsideField: Story = { render: () => <InsideFieldSelect /> };

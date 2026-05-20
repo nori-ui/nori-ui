@@ -102,7 +102,13 @@ type SelectBaseProps<T = unknown> = {
     maxMenuHeight?: number;
     className?: string;
     testID?: string;
+    id?: string;
+    name?: string;
     'aria-label'?: string;
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean;
+    'aria-required'?: boolean;
 };
 
 export type SelectSingleProps<T = unknown> = SelectBaseProps<T> & {
@@ -199,8 +205,14 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
         maxMenuHeight = DEFAULT_MAX_MENU,
         className,
         testID,
+        id,
+        name,
     } = props;
     const ariaLabel = (props as { 'aria-label'?: string })['aria-label'];
+    const ariaLabelledBy = (props as { 'aria-labelledby'?: string })['aria-labelledby'];
+    const ariaDescribedBy = (props as { 'aria-describedby'?: string })['aria-describedby'];
+    const ariaInvalid = (props as { 'aria-invalid'?: boolean })['aria-invalid'];
+    const ariaRequired = (props as { 'aria-required'?: boolean })['aria-required'];
     const multiple = props.multiple === true;
     const maxSelected = multiple ? (props as SelectMultiProps<T>).maxSelected : undefined;
     const maxChips = multiple ? ((props as SelectMultiProps<T>).maxChips ?? 3) : undefined;
@@ -790,7 +802,17 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                     'aria-controls': `${baseId}-listbox`,
                     'aria-haspopup': 'listbox',
                     tabIndex: disabled ? -1 : 0,
+                    ...(id !== undefined ? { id, nativeID: id } : {}),
+                    ...(name !== undefined ? { name } : {}),
                     ...(ariaLabel !== undefined ? { 'aria-label': ariaLabel, accessibilityLabel: ariaLabel } : {}),
+                    ...(ariaLabelledBy !== undefined
+                        ? { 'aria-labelledby': ariaLabelledBy, accessibilityLabelledBy: ariaLabelledBy }
+                        : {}),
+                    ...(ariaDescribedBy !== undefined
+                        ? { 'aria-describedby': ariaDescribedBy, accessibilityDescribedBy: ariaDescribedBy }
+                        : {}),
+                    ...(ariaInvalid === true ? { 'aria-invalid': true } : {}),
+                    ...(ariaRequired === true ? { 'aria-required': true } : {}),
                     ...(disabled ? { 'aria-disabled': true, disabled: true } : {}),
                 } as Record<string, unknown>)}
                 onPress={() => {

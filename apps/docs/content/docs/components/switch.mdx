@@ -45,6 +45,37 @@ same target as pressing the track itself, with a wider hit area.
 <Switch label="Show advanced options" />
 ```
 
+## Inline label vs Field
+
+The `label` prop is the **inline** label (right of the track) — the control's own affordance.
+Use it for stand-alone toggles:
+
+```tsx
+import { Switch } from '@nori-ui/core';
+
+export const Example = () => (
+    <Switch label="Email digests" />
+);
+```
+
+For grouped settings with description and error, wrap in `<Field>`:
+
+```tsx
+import { Field, Switch } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field>
+        <Field.Label>Notifications</Field.Label>
+        <Field.Description>Choose how you'd like to be notified.</Field.Description>
+        <Field.Control>
+            <Switch label="Email digests" />
+        </Field.Control>
+    </Field>
+);
+```
+
+See [Field](/docs/components/field) for the full API.
+
 ## `onChange`
 
 Fires with the next boolean. Pair with `checked` for controlled mode,

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
+import { Field } from '../../Field';
 import { Checkbox } from '../Checkbox';
 
 describe('<Checkbox>', () => {
@@ -62,5 +63,35 @@ describe('<Checkbox>', () => {
             </Checkbox>
         );
         expect(screen.getByTestId('c').getAttribute('role')).toBe('checkbox');
+    });
+
+    it('inside Field: receives id, aria-labelledby, aria-describedby from Field.Control', () => {
+        render(
+            <Field id="field-cb">
+                <Field.Label>Accept terms</Field.Label>
+                <Field.Description>Required to continue.</Field.Description>
+                <Field.Control>
+                    <Checkbox testID="c" label="Accept terms" />
+                </Field.Control>
+            </Field>
+        );
+        const el = screen.getByTestId('c');
+        expect(el.getAttribute('id')).toBe('field-cb');
+        expect(el.getAttribute('aria-labelledby')).toMatch(/field-cb-label/);
+        expect(el.getAttribute('aria-describedby')).toMatch(/field-cb-desc/);
+    });
+
+    it('inside Field with error: receives aria-invalid from Field.Control', () => {
+        render(
+            <Field id="field-cb-err" error="Required">
+                <Field.Label>Accept terms</Field.Label>
+                <Field.Control>
+                    <Checkbox testID="c" label="Accept terms" />
+                </Field.Control>
+                <Field.Error />
+            </Field>
+        );
+        const el = screen.getByTestId('c');
+        expect(el.getAttribute('aria-invalid')).toBe('true');
     });
 });

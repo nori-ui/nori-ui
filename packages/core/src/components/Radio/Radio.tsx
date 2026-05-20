@@ -63,6 +63,23 @@ export type RadioGroupProps = {
     children?: ReactNode;
     className?: string;
     testID?: string;
+    // ── Accessibility / Field.Control injection ──────────────────────────────
+    /** HTML id forwarded to the radiogroup container. Injected by Field.Control. */
+    id?: string;
+    /** React Native equivalent of `id`. Injected by Field.Control. */
+    nativeID?: string;
+    /** Points to the element that labels this group. Injected by Field.Control. */
+    'aria-labelledby'?: string;
+    /** React Native equivalent of `aria-labelledby`. Injected by Field.Control. */
+    accessibilityLabelledBy?: string;
+    /** Points to description / error elements. Injected by Field.Control. */
+    'aria-describedby'?: string;
+    /** React Native equivalent of `aria-describedby`. Injected by Field.Control. */
+    accessibilityDescribedBy?: string;
+    /** Marks the group as invalid. Injected by Field.Control when Field has an error. */
+    'aria-invalid'?: boolean;
+    /** Marks the group as required. Injected by Field.Control when Field is required. */
+    'aria-required'?: boolean;
 };
 
 export type RadioProps = {
@@ -119,6 +136,14 @@ export const RadioGroup = ({
     children,
     className,
     testID,
+    id,
+    nativeID,
+    'aria-labelledby': ariaLabelledBy,
+    accessibilityLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    accessibilityDescribedBy,
+    'aria-invalid': ariaInvalid,
+    'aria-required': ariaRequired,
 }: RadioGroupProps) => {
     const [inner, setInner] = useState<string | undefined>(defaultValue);
     const isControlled = value !== undefined;
@@ -232,6 +257,14 @@ export const RadioGroup = ({
         'aria-disabled': disabled || undefined,
         onKeyDown: handleKeyDown,
         ...(testID !== undefined ? { testID } : {}),
+        ...(id !== undefined ? { id } : {}),
+        ...(nativeID !== undefined ? { nativeID } : {}),
+        ...(ariaLabelledBy !== undefined ? { 'aria-labelledby': ariaLabelledBy } : {}),
+        ...(accessibilityLabelledBy !== undefined ? { accessibilityLabelledBy } : {}),
+        ...(ariaDescribedBy !== undefined ? { 'aria-describedby': ariaDescribedBy } : {}),
+        ...(accessibilityDescribedBy !== undefined ? { accessibilityDescribedBy } : {}),
+        ...(ariaInvalid ? { 'aria-invalid': true } : {}),
+        ...(ariaRequired ? { 'aria-required': true } : {}),
     };
 
     return (

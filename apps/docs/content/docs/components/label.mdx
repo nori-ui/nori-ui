@@ -1,0 +1,90 @@
+---
+title: Label
+description: Standalone label for toggle rows and settings entries that do not need a full Field envelope.
+since: 0.1.0
+tags: [form, a11y]
+platform: both
+category: inputs
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Label" />
+
+`<Label>` is a standalone label that wires to a control via an explicit `htmlFor`
+prop. It renders the same visual style and required indicator as the `Field.Label`
+slot inside `<Field>`.
+
+## When to use
+
+Use `<Field>` when you need the full envelope: auto-generated IDs, description,
+error message, and ARIA wiring across all four compound parts. See the
+[Field docs](/docs/components/field) for that pattern.
+
+Use `<Label>` when you are composing a simpler row yourself — a toggle with a
+label, a settings entry, or any spot where the full Field structure is
+more overhead than the layout needs.
+
+## Basic example
+
+`htmlFor` must match the `id` (or `testID` on native) of the target control:
+
+<Preview name="label-basic" />
+
+```tsx
+import { Label, Switch } from '@nori-ui/core';
+import { View } from 'react-native';
+
+export default function NewsletterToggle() {
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Label htmlFor="newsletter">Subscribe to newsletter</Label>
+            <Switch id="newsletter" testID="newsletter" />
+        </View>
+    );
+}
+```
+
+On web, clicking the label text moves focus to and toggles the associated Switch.
+On native, the label is presentational — wrap both in a `Pressable` if you need
+the full tap target.
+
+## Required
+
+Pass `required` to show the visual indicator and an accessible label on the
+indicator span (controlled by the same `field.requiredIndicator` /
+`field.requiredLabel` dictionary keys as `Field`):
+
+```tsx
+import { Label, TextInput } from '@nori-ui/core';
+
+<Label htmlFor="email" required>Email</Label>
+<TextInput id="email" testID="email" placeholder="you@example.com" />
+```
+
+`<Label>` does not set `aria-required` on the target — that attribute lives on
+the control, not the label. If you need ARIA threading, use `<Field>` with the
+`required` prop instead.
+
+## Disabled
+
+Pass `disabled` to dim the label text. This is a visual hint only — it does not
+disable the associated control:
+
+```tsx
+import { Label, Switch } from '@nori-ui/core';
+import { View } from 'react-native';
+
+<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+    <Label htmlFor="opt-in" disabled>Receive updates</Label>
+    <Switch id="opt-in" testID="opt-in" disabled />
+</View>
+```
+
+Disable the control separately.
+
+## API reference
+
+<PropsTable component="Label" />

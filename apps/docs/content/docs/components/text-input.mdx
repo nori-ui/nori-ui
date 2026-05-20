@@ -16,37 +16,49 @@ import { PropsTable } from '@/components/props-table';
 
 ## At a glance
 
-- Wraps RN `<TextInput>` / web `<input>` with a unified label + helper-text layout.
-- Forwards every native TextInput prop (`value`, `onChangeText`, `placeholder`, `keyboardType`, `secureTextEntry`, …) untouched.
+- Single-line text field that forwards every native TextInput prop (`value`, `onChangeText`, `placeholder`, `keyboardType`, `secureTextEntry`, …) untouched.
+- Pair with [`Field`](/docs/components/field) for label, description, error wiring, and accessible `id` / `aria-*` attributes.
 - Compose with [`InputGroup`](/docs/components/input-group) when you need fixed prefix / suffix decorators (@username, https://, USD).
 
 ## Preview
 
 <Preview name="text-input-basic" />
 
-## `label`
+## Use with Field
 
-Renders above the field. Wires `id` + `htmlFor` on web and ties the
-field to the label so click focuses the input. When you render without
-a `label`, pair the field with `aria-label` or `aria-labelledby` so
-assistive tech can name it.
+For labelled fields with description, error, and a11y wiring, wrap in `<Field>`:
 
 ```tsx
-<TextInput label="Email" placeholder="you@example.com" />
+import { Field, TextInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field>
+        <Field.Label>Email</Field.Label>
+        <Field.Description>We won't share it.</Field.Description>
+        <Field.Control>
+            <TextInput placeholder="you@example.com" />
+        </Field.Control>
+    </Field>
+);
 ```
 
-## `helperText` and `error`
-
-`helperText` renders below the field as muted body copy (format hints,
-character limits, expectations). `error` is the same slot at the same
-spot, but rendered in the danger tone and forwarded as `aria-invalid`
-+ `aria-describedby` on the underlying input. When both are set,
-`error` wins.
+With validation error:
 
 ```tsx
-<TextInput label="Username" helperText="3–20 characters, no spaces." />
-<TextInput label="Email" error="That doesn't look like a valid email address." />
+import { Field, TextInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field error="That doesn't look like a valid email address.">
+        <Field.Label>Email</Field.Label>
+        <Field.Control>
+            <TextInput placeholder="you@example.com" />
+        </Field.Control>
+        <Field.Error />
+    </Field>
+);
 ```
+
+See [Field](/docs/components/field) for the full API.
 
 ## `disabled`
 
@@ -55,7 +67,16 @@ keeps its color so the disabled control still reads as a labeled
 field.
 
 ```tsx
-<TextInput label="Email" defaultValue="locked@example.com" disabled />
+import { Field, TextInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field disabled>
+        <Field.Label>Email</Field.Label>
+        <Field.Control>
+            <TextInput defaultValue="locked@example.com" />
+        </Field.Control>
+    </Field>
+);
 ```
 
 ## `leading` and `trailing`
@@ -67,9 +88,14 @@ box as the input.
 
 ```tsx
 import { Search, X } from 'lucide-react-native';
+import { TextInput } from '@nori-ui/core';
 
-<TextInput leading={<Search size={16} />} placeholder="Search…" />
-<TextInput trailing={<X size={16} />} value={value} />
+export const Example = () => (
+    <>
+        <TextInput leading={<Search size={16} />} placeholder="Search…" />
+        <TextInput trailing={<X size={16} />} value={value} onChangeText={setValue} />
+    </>
+);
 ```
 
 For interactive trailing content (a clear button, a visibility
@@ -77,12 +103,15 @@ toggle), wrap it in a `Pressable` — the slot accepts any React node.
 
 ## `containerClassName`
 
-Tailwind classes for the *outer wrapper* (label + field + helper
-text) as opposed to `className` which targets the bordered field row
-only. Use it to size the field within a form grid.
+Tailwind classes for the *outer wrapper* when used without `<Field>`, targeting the
+bordered field row. Use `className` on `<Field>` for grid sizing when wrapped.
 
 ```tsx
-<TextInput containerClassName="w-full md:w-80" label="Subject" />
+import { TextInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <TextInput containerClassName="w-full md:w-80" placeholder="Subject" />
+);
 ```
 
 ## Native preview

@@ -377,7 +377,14 @@ const INPUT_LAYOUT_BASE: TextStyle = {
     outlineStyle: 'none' as unknown as TextStyle['outlineStyle'],
 };
 
-export type InputGroupInputProps = TextInputProps;
+export type InputGroupInputProps = TextInputProps & {
+    /** Label rendered above the bordered field row by the parent InputGroup. */
+    label?: string;
+    /** Helper text rendered below the bordered field row by the parent InputGroup. */
+    helperText?: string;
+    /** Error message rendered below the bordered field row by the parent InputGroup. */
+    error?: string;
+};
 
 /**
  * The text field inside an `<InputGroup>`. Extends the full `TextInput` API

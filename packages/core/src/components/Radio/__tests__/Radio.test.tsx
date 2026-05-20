@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
+import { NoriProvider } from '../../../provider';
+import { Field } from '../../Field';
 import { Radio } from '../Radio';
 
 describe('<Radio.Group>', () => {
@@ -125,5 +127,45 @@ describe('<Radio.Group>', () => {
         } finally {
             console.error = original;
         }
+    });
+});
+
+describe('<Radio.Group> inside <Field.Group>', () => {
+    it('receives aria-labelledby and aria-invalid when wrapped in Field.Group with error', () => {
+        render(
+            <NoriProvider>
+                <Field.Group error="pick one">
+                    <Field.Label>Plan</Field.Label>
+                    <Field.Control>
+                        <Radio.Group value={undefined} onChange={() => {}} testID="rg">
+                            <Radio value="a" label="A" />
+                            <Radio value="b" label="B" />
+                        </Radio.Group>
+                    </Field.Control>
+                    <Field.Error />
+                </Field.Group>
+            </NoriProvider>
+        );
+        const rg = screen.getByTestId('rg');
+        expect(rg.getAttribute('aria-labelledby')).toBeTruthy();
+        expect(rg.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('receives aria-required when Field.Group is required', () => {
+        render(
+            <NoriProvider>
+                <Field.Group required>
+                    <Field.Label>Plan</Field.Label>
+                    <Field.Control>
+                        <Radio.Group value={undefined} onChange={() => {}} testID="rg">
+                            <Radio value="a" label="A" />
+                            <Radio value="b" label="B" />
+                        </Radio.Group>
+                    </Field.Control>
+                </Field.Group>
+            </NoriProvider>
+        );
+        const rg = screen.getByTestId('rg');
+        expect(rg.getAttribute('aria-required')).toBe('true');
     });
 });

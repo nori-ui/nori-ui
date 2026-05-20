@@ -62,6 +62,37 @@ When you need richer label content (a link inside the label, an icon),
 pass `children` instead — the Checkbox treats the children as the
 label slot.
 
+## Inline label vs Field
+
+The `label` prop is the **inline** label (right of the box) — the control's own affordance.
+Use it for stand-alone checkboxes:
+
+```tsx
+import { Checkbox } from '@nori-ui/core';
+
+export const Example = () => (
+    <Checkbox label="I accept the terms" />
+);
+```
+
+For grouped settings with description and error, wrap in `<Field>`:
+
+```tsx
+import { Checkbox, Field } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field>
+        <Field.Label>Notifications</Field.Label>
+        <Field.Description>Choose how you'd like to be notified.</Field.Description>
+        <Field.Control>
+            <Checkbox label="Send me email updates" />
+        </Field.Control>
+    </Field>
+);
+```
+
+See [Field](/docs/components/field) for the full API.
+
 ## `disabled`
 
 Greys out the box and blocks `onChange`. Forwarded as

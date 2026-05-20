@@ -87,6 +87,35 @@ for assistive tech to announce as a unit.
 </>
 ```
 
+## Grouped with Field.Group
+
+For label + description + error around a radio set, use `<Field.Group>`:
+
+```tsx
+import { useState } from 'react';
+import { Field, Radio } from '@nori-ui/core';
+
+export const Example = () => {
+    const [value, setValue] = useState<string | null>(null);
+    return (
+        <Field.Group required>
+            <Field.Label>Plan</Field.Label>
+            <Field.Description>Pick the tier that fits your team.</Field.Description>
+            <Field.Control>
+                <Radio.Group value={value} onChange={setValue}>
+                    <Radio value="hobby" label="Hobby" />
+                    <Radio value="pro" label="Pro" />
+                    <Radio value="enterprise" label="Enterprise" />
+                </Radio.Group>
+            </Field.Control>
+            <Field.Error />
+        </Field.Group>
+    );
+};
+```
+
+See [Field](/docs/components/field) for the full API.
+
 ## Props
 
 ### `<Radio.Group>`

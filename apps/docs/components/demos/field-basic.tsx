@@ -1,10 +1,9 @@
 import { Field, TextInput } from '@nori-ui/core';
 
-export default function TextInputBasic() {
+export default function FieldBasic() {
     return (
         <Field>
             <Field.Label>Email</Field.Label>
-            <Field.Description>We won't share it.</Field.Description>
             <Field.Control>
                 <TextInput placeholder="you@example.com" />
             </Field.Control>

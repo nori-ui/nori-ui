@@ -1,17 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useId, useRef } from 'react';
+import { useRef } from 'react';
 import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
-import { Pressable, Text as RNText, TextInput as RNTextInput, View } from 'react-native';
+import { TextInput as RNTextInput, View } from 'react-native';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
 export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
-    label?: string;
-    helperText?: string;
-    error?: string;
     disabled?: boolean;
     leading?: ReactNode;
     trailing?: ReactNode;
@@ -19,6 +16,8 @@ export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
     containerClassName?: string;
     className?: string;
     testID?: string;
+    id?: string;
+    name?: string;
     /** Controlled text handler. Optional so uncontrolled usage works too. */
     onChangeText?: (text: string) => void;
     /** Multi-line mode — flipped by TextArea. Default false. */
@@ -27,7 +26,6 @@ export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
 };
 
 // Layout-only bases; theme-driven dimensions are merged inside the component.
-const CONTAINER_LAYOUT_BASE: ViewStyle = { flexDirection: 'column' };
 const FIELD_LAYOUT_BASE: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -39,57 +37,44 @@ const FIELD_LAYOUT_BASE: ViewStyle = {
 };
 
 /**
- * Single-line text input with label, helper, error, and leading/trailing slots.
+ * Single-line text input with leading/trailing slots.
  *
- * a11y: label is a <label for={id}>; the input is `aria-invalid=true` + labelled
- * by the error/helper text via aria-describedby when present.
+ * Wrap in <Field> + <Field.Control> to get label, description, error, and
+ * full a11y wiring (aria-labelledby, aria-describedby, aria-invalid).
  *
- * Color flips with the active scheme — the field surface, border, label, and
+ * Color flips with the active scheme — the field surface, border, and
  * placeholder all read from the resolved palette via `useThemeColors`.
  */
 export const TextInput = ({
-    label,
-    helperText,
-    error,
     disabled,
     leading,
     trailing,
     containerClassName,
     className,
     testID,
+    id,
+    name,
     onChangeText,
     multiline,
     numberOfLines,
     ...rest
 }: TextInputProps) => {
     const colors = useThemeColors();
-    const reactId = useId();
-    const inputId = testID ?? `nori-ui-input-${reactId}`;
     const inputRef = useRef<RNTextInput | null>(null);
-    // Tap on the label → focus the input. Cross-platform: Pressable's
-    // onPress fires on web (click) and native (tap), and RNTextInput's
-    // imperative `.focus()` works on both. This restores the
-    // `<label htmlFor>` UX without resurrecting the host-element crash
-    // we hit on native (see comment near the label render).
-    const focusInput = () => {
-        inputRef.current?.focus();
-    };
-    const describeId = `${inputId}-describe`;
-    const hasError = Boolean(error);
-    const describedBy = error || helperText ? describeId : undefined;
+
+    const restAny = rest as Record<string, unknown>;
+    const hasError = restAny['aria-invalid'] === true || restAny['aria-invalid'] === 'true';
 
     const inputExtras: Record<string, unknown> = {};
     if (testID !== undefined) {
         inputExtras.testID = testID;
     }
-    if (label !== undefined) {
-        inputExtras.accessibilityLabel = label;
+    if (id !== undefined) {
+        inputExtras.id = id;
+        inputExtras.nativeID = id;
     }
-    if (hasError) {
-        inputExtras['aria-invalid'] = true;
-    }
-    if (describedBy !== undefined) {
-        inputExtras['aria-describedby'] = describedBy;
+    if (name !== undefined) {
+        inputExtras.name = name;
     }
     if (multiline !== undefined) {
         inputExtras.multiline = multiline;
@@ -101,12 +86,6 @@ export const TextInput = ({
         inputExtras.onChangeText = onChangeText;
     }
 
-    const labelStyle: TextStyle = {
-        fontFamily: colors.fontFamily.body,
-        fontSize: px(colors.fontSize.sm),
-        fontWeight: colors.fontWeight.medium as '500',
-        color: colors.semantic.text.default,
-    };
     const inputStyle: TextStyle = {
         flex: 1,
         paddingVertical: px(colors.spacing['2']),
@@ -114,17 +93,7 @@ export const TextInput = ({
         fontSize: px(colors.fontSize.md),
         color: colors.semantic.text.default,
     };
-    const helperStyle: TextStyle = {
-        fontFamily: colors.fontFamily.body,
-        fontSize: px(colors.fontSize.sm),
-        color: colors.semantic.text.muted,
-    };
-    const errorStyle: TextStyle = {
-        fontFamily: colors.fontFamily.body,
-        fontSize: px(colors.fontSize.sm),
-        color: colors.color.danger,
-    };
-    const containerStyle: ViewStyle = { ...CONTAINER_LAYOUT_BASE, gap: px(colors.spacing['1']) };
+
     const fieldStyle = [
         FIELD_LAYOUT_BASE,
         {
@@ -137,29 +106,7 @@ export const TextInput = ({
     ];
 
     return (
-        <View className={cn('flex flex-col gap-1', containerClassName)} style={containerStyle}>
-            {/*
-             * Use RNText for the label so the component renders on both
-             * platforms. The previous `<label htmlFor>` worked only on
-             * the web (rn-web compiled it through), but on native RN
-             * tries to look up `label` as a host component and crashes
-             * with "View config getter callback for component `label`
-             * must be a function". Click-to-focus on web is a small
-             * cost we accept; the underlying RNTextInput still gets
-             * `accessibilityLabel={label}` (above) for screen readers.
-             */}
-            {label !== undefined ? (
-                <Pressable onPress={focusInput} accessibilityRole="none" disabled={disabled}>
-                    <RNText
-                        nativeID={`${inputId}-label`}
-                        accessibilityRole="text"
-                        className="text-sm font-medium text-semantic-text-default"
-                        style={labelStyle}
-                    >
-                        {label}
-                    </RNText>
-                </Pressable>
-            ) : null}
+        <View className={cn(containerClassName)} style={{ flexDirection: 'column' }}>
             <View
                 className={cn(
                     'flex-row items-center rounded-md border px-3',
@@ -175,7 +122,6 @@ export const TextInput = ({
                 ) : null}
                 <RNTextInput
                     ref={inputRef}
-                    nativeID={inputId}
                     editable={!disabled}
                     className={cn('flex-1 py-2 text-md text-semantic-text-default outline-none', className)}
                     placeholderTextColor={colors.semantic.text.muted}
@@ -191,19 +137,6 @@ export const TextInput = ({
                     </View>
                 ) : null}
             </View>
-            {error ? (
-                <RNText
-                    nativeID={describeId}
-                    className="text-sm text-semantic-interactive-destructive"
-                    style={errorStyle}
-                >
-                    {error}
-                </RNText>
-            ) : helperText ? (
-                <RNText nativeID={describeId} className="text-sm text-semantic-text-muted" style={helperStyle}>
-                    {helperText}
-                </RNText>
-            ) : null}
         </View>
     );
 };

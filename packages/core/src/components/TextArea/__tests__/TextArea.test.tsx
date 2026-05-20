@@ -1,9 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { NoriProvider } from '../../../provider';
+import { Field } from '../../Field';
 import { TextArea } from '../TextArea';
 
 describe('<TextArea>', () => {
     it('renders as a multiline textbox', () => {
-        render(<TextArea testID="ta" label="Bio" />);
+        render(<TextArea testID="ta" />);
         const el = screen.getByTestId('ta');
         // RN-Web renders multiline RNTextInput as a <textarea>
         expect(el.tagName.toLowerCase()).toBe('textarea');
@@ -22,9 +24,34 @@ describe('<TextArea>', () => {
         expect(onChangeText).toHaveBeenCalledWith('multiline\nvalue');
     });
 
-    it('shows error state', () => {
-        render(<TextArea testID="ta" label="Bio" error="Too long" />);
+    it('inside Field with error, receives aria-invalid from Field.Control', () => {
+        render(
+            <NoriProvider>
+                <Field error="Too long">
+                    <Field.Label>Bio</Field.Label>
+                    <Field.Control>
+                        <TextArea testID="ta" />
+                    </Field.Control>
+                    <Field.Error />
+                </Field>
+            </NoriProvider>
+        );
         expect(screen.getByText('Too long')).toBeInTheDocument();
         expect(screen.getByTestId('ta').getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('inside Field, receives aria-labelledby from Field.Label', () => {
+        render(
+            <NoriProvider>
+                <Field>
+                    <Field.Label>Bio</Field.Label>
+                    <Field.Control>
+                        <TextArea testID="ta" />
+                    </Field.Control>
+                </Field>
+            </NoriProvider>
+        );
+        const el = screen.getByTestId('ta');
+        expect(el.getAttribute('aria-labelledby')).toBeTruthy();
     });
 });

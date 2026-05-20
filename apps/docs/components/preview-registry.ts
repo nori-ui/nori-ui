@@ -30,6 +30,9 @@ import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
 import DialogBasic from './demos/dialog-basic';
+import FieldBasic from './demos/field-basic';
+import FieldGroup from './demos/field-group';
+import FieldWithDescriptionError from './demos/field-with-description-error';
 import FloatButtonBackToTop from './demos/float-button-back-to-top';
 import FloatButtonBadge from './demos/float-button-badge';
 import FloatButtonBasic from './demos/float-button-basic';
@@ -43,6 +46,7 @@ import IconBasic from './demos/icon-basic';
 import InputGroupBoth from './demos/input-group-both';
 import InputGroupPrefix from './demos/input-group-prefix';
 import InputGroupSuffix from './demos/input-group-suffix';
+import LabelBasic from './demos/label-basic';
 import PaginationBasic from './demos/pagination-basic';
 import PaginationCompact from './demos/pagination-compact';
 import PaginationCompound from './demos/pagination-compound';
@@ -263,6 +267,14 @@ export const previews = {
     'calendar-disabled-dates': { Component: CalendarDisabledDates, ...previewSources['calendar-disabled-dates'] },
     'calendar-dropdown-caption': { Component: CalendarDropdownCaption, ...previewSources['calendar-dropdown-caption'] },
     'calendar-scroll': { Component: CalendarScroll, ...previewSources['calendar-scroll'] },
+    'field-basic': { Component: FieldBasic, ...previewSources['field-basic'], ...DIR_ONLY },
+    'field-with-description-error': {
+        Component: FieldWithDescriptionError,
+        ...previewSources['field-with-description-error'],
+        ...DIR_ONLY,
+    },
+    'field-group': { Component: FieldGroup, ...previewSources['field-group'], ...DIR_ONLY },
+    'label-basic': { Component: LabelBasic, ...previewSources['label-basic'], ...DIR_ONLY },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.
