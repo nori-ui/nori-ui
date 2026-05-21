@@ -1,3 +1,32 @@
+## [1.1.0](https://github.com/nori-ui/nori-ui/compare/v1.0.6...v1.1.0) (2026-05-21)
+
+### ⚠ BREAKING CHANGES
+
+* **field:** label, helperText, error removed from TextInput and
+TextArea. Wrap controls in <Field> to keep the previous UX.
+
+Sprint 1 of the 9-sprint shadcn parity push. Spec at
+docs/superpowers/specs/2026-05-20-field-label-design.md.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+### Features
+
+* **calendar:** add flash-calendar as optional peer dep for native scroll ([f07e800](https://github.com/nori-ui/nori-ui/commit/f07e800bdfeefb4483445d477989cb6331f7f6a5))
+* **calendar:** behavior="scroll" on native via flash-calendar wrapper ([2fe5f14](https://github.com/nori-ui/nori-ui/commit/2fe5f148ad09305aa13d319172a882c1b6c0403a))
+* **calendar:** behavior="scroll" on web (css scroll + intersectionobserver) ([63cdcaf](https://github.com/nori-ui/nori-ui/commit/63cdcaf7adb8e6372163ec4062fafe2df69bd6f4))
+* **calendar:** native a11y — labels, roles, and states on cells/chevrons/grid ([e466635](https://github.com/nori-ui/nori-ui/commit/e466635b815d89d18e08b3938062cb29404e427c))
+* **calendar:** scroll-mode chevrons advance month, focused-month change scrolls to target ([26ae1fa](https://github.com/nori-ui/nori-ui/commit/26ae1fa0ded44da3e009f32db3a7cafdc9653301))
+* **calendar:** scroll-mode window constants ([fb5233e](https://github.com/nori-ui/nori-ui/commit/fb5233ec4f226d166211798ecb9552270aec1512))
+* **calendar:** scrollbody shared interface (platform-extension fallback) ([d0555ca](https://github.com/nori-ui/nori-ui/commit/d0555cadfc4382ad161eb82a32a842919ef804f4))
+* **field:** add Field + Label primitives and migrate controls ([9ec6d30](https://github.com/nori-ui/nori-ui/commit/9ec6d3024dd550d4eeac2ca24a2d6d6e611308fc))
+* **field:** shorthand API — label/description/error as props ([9f23beb](https://github.com/nori-ui/nori-ui/commit/9f23beb15b108cc9235bbdfc7bfce2d8ff66b796))
+* **playground-native:** calendar stories for scroll/dropdown/renderDay variants ([1c724b2](https://github.com/nori-ui/nori-ui/commit/1c724b2907406a13620067ffd9a555cf416ede1e))
+
+### Performance Improvements
+
+* **calendar:** cache day-label formatters; mark i18n suffix limitation ([8391ea2](https://github.com/nori-ui/nori-ui/commit/8391ea24ccaff291c4c10eefaddc5f1db3659d08))
+
 ## [1.0.6](https://github.com/nori-ui/nori-ui/compare/v1.0.5...v1.0.6) (2026-05-08)
 
 ### Bug Fixes
