@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/nori-ui/nori-ui/compare/v1.1.0...v1.2.0) (2026-05-21)
+
+### Features
+
+* **date-picker:** add DatePicker + DatePicker.Range ([#2](https://github.com/nori-ui/nori-ui/issues/2)) ([6f3636d](https://github.com/nori-ui/nori-ui/commit/6f3636dba9a36c66f61e26aed1d5ffd4a2077ca6))
+
 ## [1.1.0](https://github.com/nori-ui/nori-ui/compare/v1.0.6...v1.1.0) (2026-05-21)
 
 ### ⚠ BREAKING CHANGES
