@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/nori-ui/nori-ui/compare/v1.6.0...v1.7.0) (2026-05-21)
+
+### Features
+
+* **primitives:** add 6 small components in one batch ([#7](https://github.com/nori-ui/nori-ui/issues/7)) ([796ef0f](https://github.com/nori-ui/nori-ui/commit/796ef0fa57151e76c0562e342c16bc6e28f0fdb4))
+
 ## [1.6.0](https://github.com/nori-ui/nori-ui/compare/v1.5.0...v1.6.0) (2026-05-21)
 
 ### Features
