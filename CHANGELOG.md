@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/nori-ui/nori-ui/compare/v1.8.0...v1.9.0) (2026-05-21)
+
+### Features
+
+* **sidebar,command:** add Sidebar + Command palette ([#9](https://github.com/nori-ui/nori-ui/issues/9)) ([9ca7598](https://github.com/nori-ui/nori-ui/commit/9ca7598f5278b1c39469d950d07e45c6d3c4e2ad))
+
 ## [1.8.0](https://github.com/nori-ui/nori-ui/compare/v1.7.0...v1.8.0) (2026-05-21)
 
 ### Features
