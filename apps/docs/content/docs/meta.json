@@ -33,6 +33,7 @@
     "components/segmented-control",
     "components/select",
     "components/separator",
+    "components/sheet",
     "components/skeleton",
     "components/slider",
     "components/spinner",
