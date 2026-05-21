@@ -36,7 +36,6 @@ const resolveCalendarList = (): ComponentType<FlashCalendarListProps> => {
     try {
         // Lazy require so consumers that don't use behavior="scroll" never pay
         // for (or need to install) the peer dep at runtime.
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const mod = require('@marceloterreiro/flash-calendar') as {
             Calendar?: { List?: ComponentType<FlashCalendarListProps> };
         };

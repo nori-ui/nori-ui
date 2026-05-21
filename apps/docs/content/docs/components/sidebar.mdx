@@ -137,7 +137,14 @@ The `side` prop controls which edge the sidebar attaches to. Defaults to `'left'
 
 ### Sidebar.MenuItem
 
-<PropsTable component="SidebarMenuItem" />
+A single tappable navigation row inside `Sidebar.Menu`. Accepts:
+
+- `children` — the item's text label. Hidden (visually) when the sidebar is collapsed; still read by screen readers.
+- `icon` — a React element rendered to the left of the label. Required in collapsed mode for usability.
+- `active` — marks the item as the current page. Applies an active style and sets `aria-current="page"`.
+- `onPress` — press handler. The item is tappable when this is provided.
+- `disabled` — prevents interaction and dims the row.
+- `className` — custom styles for the row element.
 
 ## v2 / deferred
 

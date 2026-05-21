@@ -28,3 +28,36 @@ Pass an `options` function that returns a promise — Select streams results int
 Combobox accepts every prop of Select. The only difference is the default value of `searchable`.
 
 See [Select's API reference](/docs/components/select#api) for the full prop list.
+
+Below is a quick reference of the most commonly used props. Full details live on
+the Select page.
+
+| Prop | Notes |
+|------|-------|
+| `value` / `defaultValue` | Controlled or uncontrolled selected value. `string` for single, `string[]` for `multiple`. |
+| `onChange` | Fires with the new value on each selection change. |
+| `options` | Static option array. Each item has `value`, `label`, and optional `group` / `disabled`. |
+| `loadOptions` | Async loader for server-backed lists. Returns `{ items, total? }`. |
+| `multiple` | Enables multi-select. Trigger renders a chip per selection. |
+| `disabled` | Disables the control. Forwards `aria-disabled`. |
+| `placeholder` | Trigger label when nothing is selected. |
+| `searchPlaceholder` | Label inside the search input field. |
+| `noOptionsMessage` | Shown when the filter returns zero results. |
+| `loadingMessage` | Shown while an async `loadOptions` call is in flight. |
+| `filterOption` | Custom match predicate `(option, query) => boolean`. |
+| `renderOption` | Custom row renderer `(option, { selected, active }) => ReactNode`. |
+| `dir` | RTL layout — set to `"rtl"` for Arabic / Hebrew locales. |
+| `locale` | BCP 47 locale tag. Enables `Intl.Collator` sort when `sortByLocale` is true. |
+| `sortByLocale` | Sort options via `Intl.Collator`. Auto-enabled when `locale` is set. |
+| `virtualized` | Render only the visible option window. Auto-on above 100 items. |
+| `itemHeight` | Fixed row height in px for the virtualization math. Default 36. |
+| `maxMenuHeight` | Popup height in px before scrolling. Default 320. |
+| `maxChips` | Collapse chips to "N selected" past this count. Default 3. |
+| `maxSelected` | Cap the number of selected items in multi-select mode. |
+| `pageSize` | Async only — items to fetch per `loadOptions` call. Default 50. |
+| `id` | Forwarded to the trigger for `<label htmlFor>` wiring. |
+| `aria-label` | Accessible label when no visible label is present. |
+| `aria-labelledby` | ID of an external label element. |
+| `aria-describedby` | ID of a description / hint element. |
+| `aria-invalid` | Marks the field invalid. Injected automatically by `<Field>`. |
+| `aria-required` | Marks the field required. Injected automatically by `<Field>`. |

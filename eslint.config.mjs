@@ -20,6 +20,7 @@ export default [
             '**/storybook-static/**',
             '**/playwright-report/**',
             '**/test-results/**',
+            '**/.claude/**',
         ],
     },
     {

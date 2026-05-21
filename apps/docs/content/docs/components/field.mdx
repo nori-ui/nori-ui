@@ -394,4 +394,15 @@ Injected props (your control receives these automatically):
 
 ### `<Field.Group>`
 
-<PropsTable component="FieldGroup" />
+Fieldset-style group container for sets of related controls (radio buttons,
+checkboxes, multi-switch rows). Accepts the same shorthand props as `<Field>`:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | `string` | — | Visible group heading (rendered as `<legend>` equivalent). |
+| `description` | `string` | `null` | Hint text below the label. |
+| `error` | `string \| null` | `null` | Validation error message. Sets `aria-invalid` on inner controls. |
+| `required` | `boolean` | `false` | Marks the group required. Appends visual indicator and sets `aria-required`. |
+| `disabled` | `boolean` | `false` | Disables all inner controls. |
+| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Stack direction for label and content. |
+| `children` | `ReactNode` | — | The grouped controls (e.g., `Radio.Group`, checkbox list). |

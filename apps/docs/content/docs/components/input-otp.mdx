@@ -87,6 +87,13 @@ export function OTPField() {
 **Native:** Each cell is an RN `TextInput`. Backspace is detected via `onKeyPress`. Paste is handled by detecting multi-character `onChangeText` input.
 </Callout>
 
+## Additional props
+
+- `disabled` — prevents all input, dims the cells, and forwards `aria-disabled`.
+- `placeholder` — single character shown inside each empty cell as a hint (e.g., `"·"`). Defaults to no placeholder.
+- `autoFocus` — focuses the first cell on mount.
+- `aria-label` — accessible label for the control when no visible label is present (e.g., when used outside a `<Field>`).
+
 ## Props
 
 <PropsTable component="InputOTP" />

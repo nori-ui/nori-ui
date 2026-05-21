@@ -291,4 +291,13 @@ of locale (e.g. force Monday in a locale that defaults to Sunday):
 
 ### `<DatePicker.Range>`
 
-<PropsTable component="DatePickerRange" />
+Accepts the same props as `<DatePicker>` with the following differences:
+
+- `value` — `{ start: CalendarDate | null; end: CalendarDate | null }`.
+- `defaultValue` — uncontrolled initial range; same shape as `value`.
+- `onChange` — fires with the updated range object on each selection.
+
+All other props (`disabled`, `placeholder`, `locale`, `minValue`, `maxValue`,
+`firstDayOfWeek`, `isDateUnavailable`, `id`, `aria-labelledby`,
+`aria-describedby`, `aria-invalid`, `aria-required`) behave identically to
+`<DatePicker>`.

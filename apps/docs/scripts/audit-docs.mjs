@@ -50,6 +50,7 @@ const SLUG_OVERRIDES = {
     vstack: 'VStack',
     'toggle-group': 'ToggleGroup',
     toast: 'Toaster',
+    'input-otp': 'InputOTP',
 };
 const slugToComponent = (slug) => {
     if (SLUG_OVERRIDES[slug]) {

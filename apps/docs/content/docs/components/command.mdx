@@ -145,11 +145,19 @@ Disabled items still match the filter but do not fire `onSelect` when clicked.
 
 ### Command.Dialog
 
-<PropsTable component="CommandDialog" />
+The modal surface that contains the search input and the item list. Accepts:
+
+- `children` — `Command.Empty`, `Command.Group`, and `Command.Item` nodes.
+- `placeholder` — text shown inside the search `<input>`. Defaults to `"Type a command or search…"`.
+- `className` — for custom width / padding overrides.
 
 ### Command.Item
 
-<PropsTable component="CommandItem" />
+A single selectable row inside a `Command.Group`. Accepts:
+
+- `children` — row content. Can include text and a `Command.Shortcut`.
+- `onSelect` — callback fired when the item is clicked or activated via Enter.
+- `disabled` — renders the item as non-interactive (still shown; filtered matches still apply).
 
 ## v2 / deferred
 
