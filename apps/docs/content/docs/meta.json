@@ -17,6 +17,7 @@
     "components/date-picker",
     "components/card",
     "components/checkbox",
+    "components/combobox",
     "components/context-menu",
     "components/dialog",
     "components/dropdown-menu",
