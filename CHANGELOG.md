@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/nori-ui/nori-ui/compare/v1.3.0...v1.4.0) (2026-05-21)
+
+### Features
+
+* **sheet:** add Sheet (Drawer alias) slide-from-edge modal ([#4](https://github.com/nori-ui/nori-ui/issues/4)) ([6a9111d](https://github.com/nori-ui/nori-ui/commit/6a9111dd367175204f58d3ccd9b7687429e04550))
+
 ## [1.3.0](https://github.com/nori-ui/nori-ui/compare/v1.2.0...v1.3.0) (2026-05-21)
 
 ### Features
