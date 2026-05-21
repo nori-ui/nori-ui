@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/nori-ui/nori-ui/compare/v1.2.0...v1.3.0) (2026-05-21)
+
+### Features
+
+* **menu:** add DropdownMenu + ContextMenu ([#3](https://github.com/nori-ui/nori-ui/issues/3)) ([05ee546](https://github.com/nori-ui/nori-ui/commit/05ee5465fb817dd5f7df47a136c42e7c0be5ddac))
+
 ## [1.2.0](https://github.com/nori-ui/nori-ui/compare/v1.1.0...v1.2.0) (2026-05-21)
 
 ### Features
