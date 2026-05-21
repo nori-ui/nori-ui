@@ -21,6 +21,7 @@ const light = {
             },
             "colors": {
                 "danger": "#ef4444",
+                "dangerText": "#b91c1c",
                 "info": "#3b82f6",
                 "neutral": {
                     "50": "#fafafa",
@@ -131,6 +132,7 @@ const dark = {
             },
             "colors": {
                 "danger": "#ef4444",
+                "dangerText": "#b91c1c",
                 "info": "#3b82f6",
                 "neutral": {
                     "50": "#fafafa",

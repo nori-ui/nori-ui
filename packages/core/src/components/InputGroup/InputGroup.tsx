@@ -183,7 +183,7 @@ const InputGroupRoot = ({
     const errorStyle: TextStyle = {
         fontFamily: colors.fontFamily.body,
         fontSize: px(colors.fontSize.sm),
-        color: colors.color.danger,
+        color: colors.color.dangerText,
     };
     const containerStyle: ViewStyle = { ...CONTAINER_LAYOUT_BASE, gap: px(colors.spacing['1']) };
 

@@ -27,6 +27,7 @@
     "success": { "value": "#22c55e", "type": "color" },
     "warning": { "value": "#f59e0b", "type": "color" },
     "danger": { "value": "#ef4444", "type": "color" },
+    "dangerText": { "value": "#b91c1c", "type": "color" },
     "info": { "value": "#3b82f6", "type": "color" }
   }
 }
