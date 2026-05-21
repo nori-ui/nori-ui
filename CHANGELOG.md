@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/nori-ui/nori-ui/compare/v1.4.0...v1.5.0) (2026-05-21)
+
+### Features
+
+* **combobox:** add Combobox as a searchable Select wrapper ([#5](https://github.com/nori-ui/nori-ui/issues/5)) ([baa8590](https://github.com/nori-ui/nori-ui/commit/baa85902a0234a2f49887b1d120ca6f77c26723a))
+
 ## [1.4.0](https://github.com/nori-ui/nori-ui/compare/v1.3.0...v1.4.0) (2026-05-21)
 
 ### Features
