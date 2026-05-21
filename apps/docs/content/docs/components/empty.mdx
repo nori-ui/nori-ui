@@ -1,0 +1,51 @@
+---
+title: Empty
+description: Empty-state container with optional icon, title, description, and action.
+since: 0.8.0
+tags: [display]
+platform: both
+category: display
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Empty" />
+
+## At a glance
+
+- Use for zero-results views, onboarding prompts, and placeholder states.
+- Renders a centered column: icon → title → description → action.
+- All slots except `title` are optional.
+
+## Preview
+
+<Preview name="empty-basic" />
+
+## Usage
+
+```tsx
+import { Empty, Button } from '@nori-ui/core';
+
+// Minimal
+<Empty title="No results found" />
+
+// With description
+<Empty
+  title="No results found"
+  description="Try adjusting your search or filters."
+/>
+
+// Full
+<Empty
+  icon={<SearchIcon size={48} />}
+  title="No results found"
+  description="Try adjusting your search or filters to find what you're looking for."
+  action={<Button onPress={onReset}>Clear filters</Button>}
+/>
+```
+
+## Props
+
+<PropsTable component="Empty" />

@@ -1,0 +1,43 @@
+---
+title: Kbd
+description: Inline keyboard key hint — semantic &lt;kbd&gt; on web, styled Text on native.
+since: 0.8.0
+tags: [display, typography]
+platform: both
+category: display
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Kbd" />
+
+## At a glance
+
+- Renders a styled monospace pill for keyboard shortcuts in prose or UI labels.
+- On web, uses a semantic `<kbd>` element (via react-native-web).
+- On native, renders a styled `<Text>` with the same visual appearance.
+- Subtle border + slight bottom shadow for the classic key look.
+
+## Preview
+
+<Preview name="kbd-basic" />
+
+## Usage
+
+```tsx
+import { Kbd } from '@nori-ui/core';
+
+// Standalone
+<Kbd>⌘K</Kbd>
+<Kbd>Ctrl+S</Kbd>
+<Kbd>Esc</Kbd>
+
+// Inside prose
+<Text>Press <Kbd>⌘K</Kbd> to open the command palette.</Text>
+```
+
+## Props
+
+<PropsTable component="Kbd" />

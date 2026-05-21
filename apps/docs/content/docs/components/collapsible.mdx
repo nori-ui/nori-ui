@@ -1,0 +1,66 @@
+---
+title: Collapsible
+description: Single open/close disclosure with an animated content area.
+since: 0.8.0
+tags: [disclosure]
+platform: both
+category: disclosure
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Collapsible" />
+
+## At a glance
+
+- Single-item disclosure — for multi-item FAQ lists use `Accordion`.
+- Compound API: `Collapsible.Trigger` + `Collapsible.Content`.
+- Trigger wires `aria-expanded` and `aria-controls` automatically.
+- Web: `Content` animates via CSS `max-height` transition (200 ms).
+- Native: `Content` mounts/unmounts immediately (animated height is a v2 follow-up).
+
+## Preview
+
+<Preview name="collapsible-basic" />
+
+## Usage
+
+```tsx
+import { Collapsible } from '@nori-ui/core';
+
+// Uncontrolled (starts closed)
+<Collapsible>
+  <Collapsible.Trigger>Show details</Collapsible.Trigger>
+  <Collapsible.Content>
+    <Text>Hidden until the trigger is pressed.</Text>
+  </Collapsible.Content>
+</Collapsible>
+
+// Uncontrolled (starts open)
+<Collapsible defaultOpen>
+  <Collapsible.Trigger>Hide details</Collapsible.Trigger>
+  <Collapsible.Content>...</Collapsible.Content>
+</Collapsible>
+
+// Controlled
+<Collapsible open={open} onOpenChange={setOpen}>
+  <Collapsible.Trigger>Toggle</Collapsible.Trigger>
+  <Collapsible.Content>...</Collapsible.Content>
+</Collapsible>
+```
+
+## Props
+
+### `Collapsible`
+
+<PropsTable component="Collapsible" />
+
+### `Collapsible.Trigger`
+
+<PropsTable component="CollapsibleTrigger" />
+
+### `Collapsible.Content`
+
+<PropsTable component="CollapsibleContent" />

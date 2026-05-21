@@ -1,0 +1,54 @@
+---
+title: AspectRatio
+description: Wraps children in a container with a fixed width-to-height ratio.
+since: 0.8.0
+tags: [layout]
+platform: both
+category: layout
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="AspectRatio" />
+
+## At a glance
+
+- Use to constrain images, videos, maps, or any media to a known ratio.
+- Works identically on web and native — React Native's `aspectRatio` style
+  property maps to the CSS `aspect-ratio` property via react-native-web.
+
+## Preview
+
+<Preview name="aspect-ratio-basic" />
+
+## Usage
+
+```tsx
+import { AspectRatio } from '@nori-ui/core';
+
+// 16:9 video thumbnail
+<AspectRatio ratio={16 / 9}>
+  <Image source={thumbnail} style={{ width: '100%', height: '100%' }} />
+</AspectRatio>
+
+// Square avatar placeholder
+<AspectRatio ratio={1} style={{ width: 80 }}>
+  <View style={{ flex: 1, backgroundColor: '#e2e8f0' }} />
+</AspectRatio>
+```
+
+## Common ratios
+
+| Ratio | Value | Use |
+|-------|-------|-----|
+| `16 / 9` | 1.777 | Video, banners |
+| `4 / 3` | 1.333 | Classic photo |
+| `1` | 1.0 | Square avatar, card |
+| `2 / 3` | 0.667 | Portrait photo, poster |
+| `21 / 9` | 2.333 | Ultrawide cinema |
+
+## Props
+
+<PropsTable component="AspectRatio" />
