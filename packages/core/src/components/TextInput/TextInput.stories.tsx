@@ -22,30 +22,19 @@ export const WithLeadingTrailing: Story = {
 export const Disabled: Story = { args: { disabled: true, value: 'read only' } };
 
 export const InsideField = () => (
-    <Field>
-        <Field.Label>Email</Field.Label>
-        <Field.Description>We will not share this.</Field.Description>
-        <Field.Control>
-            <TextInput placeholder="you@example.com" />
-        </Field.Control>
+    <Field label="Email" description="We will not share this.">
+        <TextInput placeholder="you@example.com" />
     </Field>
 );
 
 export const InsideFieldWithError = () => (
-    <Field error="This field is required.">
-        <Field.Label>Email</Field.Label>
-        <Field.Control>
-            <TextInput placeholder="you@example.com" />
-        </Field.Control>
-        <Field.Error />
+    <Field label="Email" error="This field is required.">
+        <TextInput placeholder="you@example.com" />
     </Field>
 );
 
 export const InsideFieldDisabled = () => (
-    <Field disabled>
-        <Field.Label>Email</Field.Label>
-        <Field.Control>
-            <TextInput placeholder="you@example.com" value="user@example.com" />
-        </Field.Control>
+    <Field label="Email" disabled>
+        <TextInput placeholder="you@example.com" value="user@example.com" />
     </Field>
 );

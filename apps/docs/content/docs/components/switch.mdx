@@ -64,17 +64,13 @@ For grouped settings with description and error, wrap in `<Field>`:
 import { Field, Switch } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field>
-        <Field.Label>Notifications</Field.Label>
-        <Field.Description>Choose how you'd like to be notified.</Field.Description>
-        <Field.Control>
-            <Switch label="Email digests" />
-        </Field.Control>
+    <Field label="Notifications" description="Choose how you'd like to be notified.">
+        <Switch label="Email digests" />
     </Field>
 );
 ```
 
-See [Field](/docs/components/field) for the full API.
+See [Field](/docs/components/field) for the full API. For custom layouts, use the [compound API](/docs/components/field#custom-layout-compound-api).
 
 ## `onChange`
 

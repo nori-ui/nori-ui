@@ -80,16 +80,12 @@ For labelled selects with description, error, and a11y wiring, wrap in `<Field>`
 import { Field, Select } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field>
-        <Field.Label>Country</Field.Label>
-        <Field.Description>Where we'll ship your order.</Field.Description>
-        <Field.Control>
-            <Select placeholder="Pick a country" options={[
-                { value: 'us', label: 'United States' },
-                { value: 'de', label: 'Germany' },
-                { value: 'jp', label: 'Japan' },
-            ]} />
-        </Field.Control>
+    <Field label="Country" description="Where we'll ship your order.">
+        <Select placeholder="Pick a country" options={[
+            { value: 'us', label: 'United States' },
+            { value: 'de', label: 'Germany' },
+            { value: 'jp', label: 'Japan' },
+        ]} />
     </Field>
 );
 ```
@@ -100,20 +96,16 @@ With validation error:
 import { Field, Select } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field error="Please select a country.">
-        <Field.Label>Country</Field.Label>
-        <Field.Control>
-            <Select placeholder="Pick a country" options={[
-                { value: 'us', label: 'United States' },
-                { value: 'de', label: 'Germany' },
-            ]} />
-        </Field.Control>
-        <Field.Error />
+    <Field label="Country" error="Please select a country.">
+        <Select placeholder="Pick a country" options={[
+            { value: 'us', label: 'United States' },
+            { value: 'de', label: 'Germany' },
+        ]} />
     </Field>
 );
 ```
 
-See [Field](/docs/components/field) for the full API.
+See [Field](/docs/components/field) for the full API. For custom layouts (e.g., a control + button row), use the [compound API](/docs/components/field#custom-layout-compound-api).
 
 ## `value` and `defaultValue`
 

@@ -26,18 +26,14 @@ import { PropsTable } from '@/components/props-table';
 
 ## Use with Field
 
-For labelled fields with description, error, and a11y wiring, wrap in `<Field>`:
+For labelled text areas with description, error, and a11y wiring, wrap in `<Field>`:
 
 ```tsx
 import { Field, TextArea } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field>
-        <Field.Label>Bio</Field.Label>
-        <Field.Description>Markdown supported.</Field.Description>
-        <Field.Control>
-            <TextArea placeholder="Tell us about yourself" numberOfLines={4} />
-        </Field.Control>
+    <Field label="Bio" description="Markdown supported.">
+        <TextArea placeholder="Tell us about yourself" numberOfLines={4} />
     </Field>
 );
 ```
@@ -48,17 +44,13 @@ With validation error:
 import { Field, TextArea } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field error="Notes can't be empty.">
-        <Field.Label>Notes</Field.Label>
-        <Field.Control>
-            <TextArea placeholder="Add your notes here" numberOfLines={4} />
-        </Field.Control>
-        <Field.Error />
+    <Field label="Notes" error="Notes can't be empty.">
+        <TextArea placeholder="Add your notes here" numberOfLines={4} />
     </Field>
 );
 ```
 
-See [Field](/docs/components/field) for the full API.
+See [Field](/docs/components/field) for the full API. For custom layouts (e.g., a control + button row), use the [compound API](/docs/components/field#custom-layout-compound-api).
 
 ## `rows` and `resize`
 
@@ -78,11 +70,8 @@ line height). `resize` controls the resize affordance on web —
 import { Field, TextArea } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field>
-        <Field.Label>Bio</Field.Label>
-        <Field.Control>
-            <TextArea rows={4} resize="vertical" />
-        </Field.Control>
+    <Field label="Bio">
+        <TextArea rows={4} resize="vertical" />
     </Field>
 );
 ```
@@ -98,11 +87,8 @@ import { Sparkles } from 'lucide-react-native';
 import { Field, TextArea } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field>
-        <Field.Label>Prompt</Field.Label>
-        <Field.Control>
-            <TextArea leading={<Sparkles size={16} />} numberOfLines={4} />
-        </Field.Control>
+    <Field label="Prompt">
+        <TextArea leading={<Sparkles size={16} />} numberOfLines={4} />
     </Field>
 );
 ```

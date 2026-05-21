@@ -1,12 +1,9 @@
 import { Field, TextInput } from '@nori-ui/core';
 
-export default function FieldBasic() {
+export default function FieldBasicDemo() {
     return (
-        <Field>
-            <Field.Label>Email</Field.Label>
-            <Field.Control>
-                <TextInput placeholder="you@example.com" />
-            </Field.Control>
+        <Field label="Email">
+            <TextInput placeholder="you@example.com" />
         </Field>
     );
 }

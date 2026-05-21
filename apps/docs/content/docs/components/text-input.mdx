@@ -26,18 +26,14 @@ import { PropsTable } from '@/components/props-table';
 
 ## Use with Field
 
-For labelled fields with description, error, and a11y wiring, wrap in `<Field>`:
+For labelled inputs with description, error, and a11y wiring, wrap in `<Field>`:
 
 ```tsx
 import { Field, TextInput } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field>
-        <Field.Label>Email</Field.Label>
-        <Field.Description>We won't share it.</Field.Description>
-        <Field.Control>
-            <TextInput placeholder="you@example.com" />
-        </Field.Control>
+    <Field label="Email" description="We won't share it.">
+        <TextInput placeholder="you@example.com" />
     </Field>
 );
 ```
@@ -48,17 +44,13 @@ With validation error:
 import { Field, TextInput } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field error="That doesn't look like a valid email address.">
-        <Field.Label>Email</Field.Label>
-        <Field.Control>
-            <TextInput placeholder="you@example.com" />
-        </Field.Control>
-        <Field.Error />
+    <Field label="Email" error="That doesn't look like a valid email address.">
+        <TextInput placeholder="you@example.com" />
     </Field>
 );
 ```
 
-See [Field](/docs/components/field) for the full API.
+See [Field](/docs/components/field) for the full API. For custom layouts (e.g., a control + button row), use the [compound API](/docs/components/field#custom-layout-compound-api).
 
 ## `disabled`
 
@@ -70,11 +62,8 @@ field.
 import { Field, TextInput } from '@nori-ui/core';
 
 export const Example = () => (
-    <Field disabled>
-        <Field.Label>Email</Field.Label>
-        <Field.Control>
-            <TextInput defaultValue="locked@example.com" />
-        </Field.Control>
+    <Field label="Email" disabled>
+        <TextInput defaultValue="locked@example.com" />
     </Field>
 );
 ```

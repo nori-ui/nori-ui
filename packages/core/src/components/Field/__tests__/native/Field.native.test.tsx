@@ -47,4 +47,15 @@ describe('Field (native)', () => {
         const label = getByText('Plan');
         expect(g.props['aria-labelledby']).toBe(label.props.nativeID);
     });
+
+    it('shorthand: label prop drives accessibilityLabelledBy on control', () => {
+        const { getByTestId, getByText } = wrap(
+            <Field label="Email">
+                <Text testID="ctrl" />
+            </Field>
+        );
+        const label = getByText('Email');
+        const ctrl = getByTestId('ctrl');
+        expect(ctrl.props.accessibilityLabelledBy).toBe(label.props.nativeID);
+    });
 });

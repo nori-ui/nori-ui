@@ -5,7 +5,7 @@ import { Field } from '../Field';
 
 const wrap = (ui: React.ReactElement) => render(<NoriProvider>{ui}</NoriProvider>);
 
-describe('Field', () => {
+describe('Field (compound mode)', () => {
     it('associates Field.Label with the control by id', () => {
         wrap(
             <Field>
@@ -208,5 +208,111 @@ describe('Field', () => {
         );
         const f = screen.getByTestId('f');
         expect(f.getAttribute('data-orientation')).toBe('vertical');
+    });
+});
+
+describe('Field (shorthand mode)', () => {
+    it('renders label from prop with id linkage to control', () => {
+        wrap(
+            <Field label="Email">
+                <TextInput testID="email" />
+            </Field>
+        );
+        const labelEl = screen.getByText('Email');
+        const labelId = labelEl.getAttribute('id');
+        expect(labelId).toBeTruthy();
+        const input = screen.getByTestId('email');
+        expect(input.getAttribute('aria-labelledby')).toBe(labelId);
+    });
+
+    it('renders description from prop and threads aria-describedby', () => {
+        wrap(
+            <Field label="Email" description="We will not share this.">
+                <TextInput testID="email" />
+            </Field>
+        );
+        const desc = screen.getByText('We will not share this.');
+        const id = desc.getAttribute('id');
+        expect(id).toMatch(/-desc$/);
+        const input = screen.getByTestId('email');
+        expect(input.getAttribute('aria-describedby')).toBe(id);
+    });
+
+    it('renders error from prop, threads aria-invalid + aria-describedby', () => {
+        wrap(
+            <Field label="Email" error="Required">
+                <TextInput testID="email" />
+            </Field>
+        );
+        const err = screen.getByText('Required');
+        const id = err.getAttribute('id');
+        expect(id).toMatch(/-error$/);
+        const input = screen.getByTestId('email');
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+        expect(input.getAttribute('aria-describedby')).toBe(id);
+    });
+
+    it('description + error ids join in aria-describedby (description first)', () => {
+        wrap(
+            <Field label="X" description="hint" error="bad">
+                <TextInput testID="i" />
+            </Field>
+        );
+        const input = screen.getByTestId('i');
+        const ids = (input.getAttribute('aria-describedby') ?? '').split(' ');
+        expect(ids).toHaveLength(2);
+        expect(ids[0]).toMatch(/-desc$/);
+        expect(ids[1]).toMatch(/-error$/);
+    });
+
+    it('omits error rendering when error prop is null/empty/false', () => {
+        wrap(
+            <Field label="X" error={null}>
+                <TextInput testID="i" />
+            </Field>
+        );
+        const input = screen.getByTestId('i');
+        expect(input.getAttribute('aria-invalid')).toBeNull();
+    });
+
+    it('threads required and renders the indicator', () => {
+        wrap(
+            <Field label="X" required>
+                <TextInput testID="i" />
+            </Field>
+        );
+        expect(screen.getByLabelText('required')).toBeInTheDocument();
+        expect(screen.getByTestId('i').getAttribute('aria-required')).toBe('true');
+    });
+
+    it('warns when shorthand props and compound children are mixed', () => {
+        const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        wrap(
+            <Field label="A" error="b">
+                <Field.Control>
+                    <TextInput />
+                </Field.Control>
+                <Field.Error>Compound wins</Field.Error>
+            </Field>
+        );
+        expect(spy).toHaveBeenCalledWith(expect.stringContaining('[Field]'));
+        spy.mockRestore();
+    });
+});
+
+describe('Field.Group (shorthand mode)', () => {
+    it('shorthand label prop labels the group and required indicator renders', () => {
+        wrap(
+            <Field.Group label="Plan" required testID="plan-group">
+                <TextInput testID="plan-input" />
+            </Field.Group>
+        );
+        const group = screen.getByTestId('plan-group');
+        expect(group.getAttribute('role')).toBe('group');
+        const label = screen.getByText('Plan');
+        const labelId = label.getAttribute('id');
+        expect(labelId).toBeTruthy();
+        expect(group.getAttribute('aria-labelledby')).toBe(labelId);
+        expect(screen.getByLabelText('required')).toBeInTheDocument();
     });
 });

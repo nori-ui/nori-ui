@@ -43,24 +43,16 @@ const PERMISSIONS = ['Read', 'Write', 'Admin'] as const;
  */
 export const InsideField: Story = {
     render: () => (
-        <Field>
-            <Field.Label>Notifications</Field.Label>
-            <Field.Description>Choose how you'd like to be notified.</Field.Description>
-            <Field.Control>
-                <Checkbox label="Accept email digests" />
-            </Field.Control>
+        <Field label="Notifications" description="Choose how you'd like to be notified.">
+            <Checkbox label="Accept email digests" />
         </Field>
     ),
 };
 
 export const InsideFieldWithError: Story = {
     render: () => (
-        <Field error="You must accept the terms to continue.">
-            <Field.Label>Terms</Field.Label>
-            <Field.Control>
-                <Checkbox label="Accept terms" />
-            </Field.Control>
-            <Field.Error />
+        <Field label="Terms" error="You must accept the terms to continue.">
+            <Checkbox label="Accept terms" />
         </Field>
     ),
 };

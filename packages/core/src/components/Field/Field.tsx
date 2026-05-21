@@ -8,8 +8,10 @@ import {
     type ReactElement,
     type ReactNode,
     useContext,
+    useEffect,
     useId,
     useMemo,
+    useRef,
 } from 'react';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { useTranslation } from '../../i18n/use-translation';
@@ -51,14 +53,28 @@ const childHasDisplayName = (child: ReactNode, name: string): boolean => {
     return typeof t !== 'string' && t?.displayName === name;
 };
 
+/** Display names that mark a compound-mode child. */
+const COMPOUND_DISPLAY_NAMES = ['Field.Label', 'Field.Description', 'Field.Error', 'Field.Control'];
+
+const isCompoundChild = (child: ReactNode): boolean =>
+    COMPOUND_DISPLAY_NAMES.some((name) => childHasDisplayName(child, name));
+
 export type FieldProps = {
+    // Shorthand slot props
+    label?: ReactNode;
+    description?: ReactNode;
+    error?: ReactNode;
+
+    // State flags
     name?: string;
     required?: boolean;
     disabled?: boolean;
-    error?: string | null;
     validating?: boolean;
+
+    // Layout
     orientation?: 'vertical' | 'horizontal';
     id?: string;
+
     children: ReactNode;
     className?: string;
     testID?: string;
@@ -71,6 +87,8 @@ const FieldRoot = ({
     required = false,
     disabled = false,
     error = null,
+    label,
+    description,
     validating = false,
     orientation = 'vertical',
     id,
@@ -86,7 +104,22 @@ const FieldRoot = ({
     const descriptionId = `${fieldId}-desc`;
     const errorId = `${fieldId}-error`;
 
+    // ---------- mode detection ----------
+    const isCompoundMode = useMemo(() => {
+        let found = false;
+        Children.forEach(children, (child) => {
+            if (isCompoundChild(child)) {
+                found = true;
+            }
+        });
+        return found;
+    }, [children]);
+
+    // ---------- derive hasDescription / hasError ----------
     const hasDescription = useMemo(() => {
+        if (!isCompoundMode) {
+            return description !== undefined && description !== null && description !== false && description !== '';
+        }
         let found = false;
         Children.forEach(children, (child) => {
             if (childHasDisplayName(child, 'Field.Description')) {
@@ -94,9 +127,33 @@ const FieldRoot = ({
             }
         });
         return found;
-    }, [children]);
+    }, [isCompoundMode, description, children]);
 
-    const hasError = Boolean(error);
+    const hasError = useMemo(() => {
+        if (!isCompoundMode) {
+            return Boolean(error);
+        }
+        // compound mode: scan for Field.Error child with truthy children
+        let found = false;
+        Children.forEach(children, (child) => {
+            if (childHasDisplayName(child, 'Field.Error') && isValidElement(child)) {
+                const el = child as ReactElement<{ children?: ReactNode }>;
+                if (
+                    el.props.children !== undefined &&
+                    el.props.children !== null &&
+                    el.props.children !== false &&
+                    el.props.children !== ''
+                ) {
+                    found = true;
+                }
+            }
+        });
+        // also check the legacy `error` prop usage in compound mode
+        if (!found && error !== null && error !== undefined && error !== false && error !== '') {
+            found = true;
+        }
+        return found;
+    }, [isCompoundMode, error, children]);
 
     const describedBy = useMemo(() => {
         const ids: string[] = [];
@@ -121,10 +178,29 @@ const FieldRoot = ({
         required,
         validating,
         ...(name !== undefined ? { name } : {}),
-        ...(error !== null ? { error } : {}),
+        // In compound mode pass `error` (string) so Field.Error can fall back to it.
+        // In shorthand mode the error prop may be ReactNode; only pass when it is a string/null.
+        ...(error !== null && error !== undefined && typeof error === 'string' ? { error } : {}),
         isGroup,
     };
 
+    // ---------- dev warning for mixed usage ----------
+    const warnedRef = useRef(false);
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'production' || warnedRef.current) {
+            return;
+        }
+        const hasShorthand = label !== undefined || description !== undefined || error !== undefined;
+        if (hasShorthand && isCompoundMode) {
+            warnedRef.current = true;
+            // biome-ignore lint/suspicious/noConsole: intentional dev-mode warning
+            console.warn(
+                '[Field] Mixing shorthand props (label/description/error) with compound children (Field.Label/Field.Description/Field.Error) is not supported. The compound children will win. To suppress this warning, use only one mode.'
+            );
+        }
+    }, [label, description, error, isCompoundMode]);
+
+    // ---------- layout ----------
     const containerStyle =
         orientation === 'horizontal'
             ? {
@@ -149,10 +225,31 @@ const FieldRoot = ({
         containerExtra['aria-busy'] = true;
     }
 
+    // ---------- shorthand mode rendering ----------
+    const renderShorthand = () => {
+        // Determine if there's exactly one non-Field.* child we can auto-wrap.
+        const childArray = Children.toArray(children);
+        const controlChild =
+            childArray.length === 1 && isValidElement(childArray[0]) ? (childArray[0] as ReactElement) : null;
+
+        return (
+            <>
+                {label !== undefined && label !== null && label !== false ? <FieldLabel>{label}</FieldLabel> : null}
+                {description !== undefined && description !== null && description !== false && description !== '' ? (
+                    <FieldDescription>{description}</FieldDescription>
+                ) : null}
+                {controlChild !== null ? <FieldControl>{controlChild}</FieldControl> : children}
+                {error !== undefined && error !== null && error !== false && error !== '' ? (
+                    <FieldError>{error}</FieldError>
+                ) : null}
+            </>
+        );
+    };
+
     return (
         <FieldContext.Provider value={value}>
             <View style={containerStyle} {...(className !== undefined ? { className } : {})} {...containerExtra}>
-                {children}
+                {isCompoundMode ? children : renderShorthand()}
                 {validating ? <Spinner size="sm" /> : null}
             </View>
         </FieldContext.Provider>

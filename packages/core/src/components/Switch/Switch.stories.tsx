@@ -22,24 +22,16 @@ export const Disabled: Story = { args: { disabled: true } };
 
 export const InsideField: Story = {
     render: () => (
-        <Field>
-            <Field.Label>Notifications</Field.Label>
-            <Field.Description>Choose how you'd like to be notified.</Field.Description>
-            <Field.Control>
-                <Switch label="Email digests" />
-            </Field.Control>
+        <Field label="Notifications" description="Choose how you'd like to be notified.">
+            <Switch label="Email digests" />
         </Field>
     ),
 };
 
 export const InsideFieldWithError: Story = {
     render: () => (
-        <Field error="This setting is required.">
-            <Field.Label>Notifications</Field.Label>
-            <Field.Control>
-                <Switch label="Email digests" />
-            </Field.Control>
-            <Field.Error />
+        <Field label="Notifications" error="This setting is required.">
+            <Switch label="Email digests" />
         </Field>
     ),
 };

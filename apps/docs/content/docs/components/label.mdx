@@ -20,8 +20,9 @@ slot inside `<Field>`.
 ## When to use
 
 Use `<Field>` when you need the full envelope: auto-generated IDs, description,
-error message, and ARIA wiring across all four compound parts. See the
-[Field docs](/docs/components/field) for that pattern.
+error message, and ARIA wiring. Field's shorthand props (`label`, `description`,
+`error`) mean it's only one wrapper, not a verbose compound block — see
+[Field](/docs/components/field).
 
 Use `<Label>` when you are composing a simpler row yourself — a toggle with a
 label, a settings entry, or any spot where the full Field structure is

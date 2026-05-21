@@ -75,17 +75,13 @@ function InsideFieldSelect() {
     const [v, setV] = useState<string | undefined>(undefined);
     return (
         <NoriProvider>
-            <Field>
-                <Field.Label>Subscription plan</Field.Label>
-                <Field.Control>
-                    <Select
-                        options={FRUIT}
-                        {...(v !== undefined ? { value: v } : {})}
-                        onChange={(next) => setV(next)}
-                        placeholder="Choose a plan"
-                    />
-                </Field.Control>
-                <Field.Description>Your plan determines your billing cycle.</Field.Description>
+            <Field label="Subscription plan" description="Your plan determines your billing cycle.">
+                <Select
+                    options={FRUIT}
+                    {...(v !== undefined ? { value: v } : {})}
+                    onChange={(next) => setV(next)}
+                    placeholder="Choose a plan"
+                />
             </Field>
         </NoriProvider>
     );
