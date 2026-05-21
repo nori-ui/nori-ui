@@ -1,0 +1,176 @@
+---
+title: Table
+description: Compound table primitive. Semantic <table> on web for full a11y; View flex-grid on native.
+since: 0.7.0
+tags: [data]
+platform: both
+category: data
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+
+<BundleSize component="Table" />
+
+## At a glance
+
+- Compound primitive: `Table`, `.Header`, `.Body`, `.Footer`, `.Row`, `.HeaderCell`, `.Cell`, `.Caption`.
+- Web uses semantic `<table>` / `<thead>` / `<tbody>` / `<tfoot>` / `<tr>` / `<th>` / `<td>` / `<caption>` for full screen-reader support.
+- Native renders a `ScrollView` + `View` flex-grid (all columns equal-width in v1; variable widths are a v2 improvement).
+- Optional cosmetic flags: `striped`, `compact`, `bordered`.
+- Interactive rows via `onPress` on `Table.Row`.
+- For automatic column/data rendering with sort + pagination, see [DataTable](/docs/components/data-table).
+
+## Basic usage
+
+<Preview name="table-basic" />
+
+```tsx
+import { Table } from '@nori-ui/core';
+
+const invoices = [
+    { id: 'INV-001', status: 'Paid', amount: '$250.00' },
+    { id: 'INV-002', status: 'Pending', amount: '$150.00' },
+    { id: 'INV-003', status: 'Overdue', amount: '$350.00' },
+];
+
+export function InvoiceTable() {
+    return (
+        <Table>
+            <Table.Caption>Recent invoices</Table.Caption>
+            <Table.Header>
+                <Table.Row>
+                    <Table.HeaderCell>Invoice</Table.HeaderCell>
+                    <Table.HeaderCell>Status</Table.HeaderCell>
+                    <Table.HeaderCell align="right">Amount</Table.HeaderCell>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
+                {invoices.map((inv) => (
+                    <Table.Row key={inv.id}>
+                        <Table.Cell>{inv.id}</Table.Cell>
+                        <Table.Cell>{inv.status}</Table.Cell>
+                        <Table.Cell align="right">{inv.amount}</Table.Cell>
+                    </Table.Row>
+                ))}
+            </Table.Body>
+            <Table.Footer>
+                <Table.Row>
+                    <Table.Cell colSpan={2}>Total</Table.Cell>
+                    <Table.Cell align="right">$750.00</Table.Cell>
+                </Table.Row>
+            </Table.Footer>
+        </Table>
+    );
+}
+```
+
+## Striped rows
+
+Pass `striped` to alternate row backgrounds:
+
+```tsx
+<Table striped>
+    {/* ... */}
+</Table>
+```
+
+## Compact
+
+Tighter cell padding for dense layouts:
+
+```tsx
+<Table compact>
+    {/* ... */}
+</Table>
+```
+
+## Bordered
+
+Draw a border around all cells:
+
+```tsx
+<Table bordered>
+    {/* ... */}
+</Table>
+```
+
+## Aligned columns
+
+`align` works on both `Table.Cell` and `Table.HeaderCell`:
+
+```tsx
+<Table.HeaderCell align="right">Amount</Table.HeaderCell>
+<Table.Cell align="center">Status</Table.Cell>
+```
+
+Accepted values: `'left'` (default) | `'center'` | `'right'`.
+
+## Column span
+
+Pass `colSpan` to merge cells:
+
+```tsx
+<Table.Cell colSpan={2}>Merged cell</Table.Cell>
+```
+
+On web this maps to the HTML `colspan` attribute. On native it is a visual hint only (the cell still occupies its flex slot).
+
+## Clickable rows
+
+Pass `onPress` to `Table.Row` to make a row interactive:
+
+```tsx
+<Table.Row onPress={() => router.push(`/invoices/${inv.id}`)}>
+    {/* ... */}
+</Table.Row>
+```
+
+On web the row gets a pointer cursor and a hover background. On native it wraps in a `Pressable` with an opacity feedback.
+
+## Native notes
+
+- The root element is a `ScrollView` with `horizontal` enabled so wide tables can scroll on narrow screens.
+- All columns share equal `flex: 1` in v1. Custom column widths are deferred to v2.
+- `striped` is not yet applied on native (rows have no index-aware background without a parent counter context); use a plain list with custom `backgroundColor` on alternating rows as a workaround.
+- `compact` reduces `paddingVertical` on all rows.
+- `bordered` adds a `borderWidth: 1` around the outer container.
+
+## Accessibility
+
+- **Web**: uses semantic table elements. Screen readers announce column headers via `<th>` and can navigate by row/column.
+- **Native**: no explicit `accessibilityRole` is set on the grid container; individual cells are plain `View`s. For data-heavy native UIs where VoiceOver/TalkBack navigation matters, consider labelling cells manually via `accessibilityLabel`.
+
+## API
+
+### `Table`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `striped` | `boolean` | `false` | Alternate row background tinting. |
+| `compact` | `boolean` | `false` | Reduce cell padding. |
+| `bordered` | `boolean` | `false` | Draw borders around cells. |
+| `className` | `string` | — | Web: extra CSS classes on the `<table>`. |
+| `testID` | `string` | — | Test identifier. |
+
+### `Table.Row`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `selected` | `boolean` | `false` | Highlight row as selected. |
+| `onPress` | `() => void` | — | Makes the row pressable. |
+| `className` | `string` | — | Web only. |
+| `testID` | `string` | — | Test identifier. |
+
+### `Table.Cell` / `Table.HeaderCell`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `align` | `'left' \| 'center' \| 'right'` | `'left'` | Horizontal alignment. |
+| `colSpan` | `number` | — | Column span (HTML on web; visual on native). |
+| `className` | `string` | — | Web only. |
+| `testID` | `string` | — | Test identifier. |
+
+### `Table.Header` / `Table.Body` / `Table.Footer` / `Table.Caption`
+
+Structural wrappers. Accept `children`, `className` (web), and `testID`.

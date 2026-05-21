@@ -70,4 +70,7 @@ export const defaultDictionary: Dictionary = {
     // field
     'field.requiredIndicator': '*',
     'field.requiredLabel': 'required',
+
+    // table / dataTable
+    'table.empty': 'No data',
 };

@@ -30,6 +30,7 @@ import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
 import ComboboxBasic from './demos/combobox-basic';
+import DataTableBasic from './demos/data-table-basic';
 import ContextMenuBasic from './demos/context-menu-basic';
 import DatePickerBasic from './demos/date-picker-basic';
 import DatePickerMinMax from './demos/date-picker-min-max';
@@ -78,6 +79,7 @@ import SelectMulti from './demos/select-multi';
 import SelectMultiCapped from './demos/select-multi-capped';
 import SelectVirtualized from './demos/select-virtualized';
 import SeparatorBasic from './demos/separator-basic';
+import TableBasic from './demos/table-basic';
 import SeparatorVertical from './demos/separator-vertical';
 import SheetBasic from './demos/sheet-basic';
 import SheetSidePanel from './demos/sheet-side-panel';
@@ -291,6 +293,8 @@ export const previews = {
     'sheet-basic': { Component: SheetBasic, ...previewSources['sheet-basic'], ...DIR_ONLY },
     'sheet-side-panel': { Component: SheetSidePanel, ...previewSources['sheet-side-panel'], ...DIR_ONLY },
     'combobox-basic': { Component: ComboboxBasic, ...previewSources['combobox-basic'] },
+    'table-basic': { Component: TableBasic, ...previewSources['table-basic'] },
+    'data-table-basic': { Component: DataTableBasic, ...previewSources['data-table-basic'] },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.
