@@ -1,0 +1,158 @@
+---
+title: DropdownMenu
+description: Click-triggered floating menu anchored to a trigger element — for actions, navigation, and destructive operations.
+since: 0.0.9
+tags: [overlay, menu]
+platform: both
+category: overlays
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="DropdownMenu" />
+
+## At a glance
+
+- Compose: `DropdownMenu`, `DropdownMenu.Trigger`, `DropdownMenu.Content`, `DropdownMenu.Item`, `DropdownMenu.Separator`, `DropdownMenu.Label`.
+- Trigger uses `asChild` — wrap any element (Button, icon, avatar) and it becomes the activator.
+- Cross-platform: same API on web and native. On native, the content renders in an RN `<Modal>` with a tap-outside-to-close backdrop.
+- Keyboard navigation on web: ArrowDown/Up cycle items, Home/End jump to first/last, Enter/Space select, Escape closes.
+- Accessibility: trigger gets `aria-haspopup="menu"` + `aria-expanded`; content gets `role="menu"`; items get `role="menuitem"`.
+
+## Preview
+
+<Preview name="dropdown-menu-basic" />
+
+## With icons
+
+```tsx
+import { Button, DropdownMenu } from '@nori-ui/core';
+
+export function FileMenu() {
+    return (
+        <DropdownMenu>
+            <DropdownMenu.Trigger>
+                <Button variant="secondary">File</Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+                <DropdownMenu.Item
+                    icon={<NewFileIcon />}
+                    shortcut="⌘N"
+                    onSelect={() => console.log('new')}
+                >
+                    New File
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                    icon={<OpenIcon />}
+                    shortcut="⌘O"
+                    onSelect={() => console.log('open')}
+                >
+                    Open
+                </DropdownMenu.Item>
+            </DropdownMenu.Content>
+        </DropdownMenu>
+    );
+}
+```
+
+## With destructive items
+
+Use `destructive` on items that perform irreversible operations. The item text renders in the danger color.
+
+```tsx
+<DropdownMenu>
+    <DropdownMenu.Trigger>
+        <Button variant="secondary">Actions</Button>
+    </DropdownMenu.Trigger>
+    <DropdownMenu.Content>
+        <DropdownMenu.Item onSelect={() => console.log('edit')}>Edit</DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item destructive onSelect={() => console.log('delete')}>Delete</DropdownMenu.Item>
+    </DropdownMenu.Content>
+</DropdownMenu>
+```
+
+## With separators and labels
+
+Group related items with `DropdownMenu.Separator` and annotate groups with `DropdownMenu.Label`.
+
+```tsx
+<DropdownMenu>
+    <DropdownMenu.Trigger>
+        <Button>My Account</Button>
+    </DropdownMenu.Trigger>
+    <DropdownMenu.Content>
+        <DropdownMenu.Label>Account</DropdownMenu.Label>
+        <DropdownMenu.Item onSelect={() => {}}>Profile</DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={() => {}}>Settings</DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item destructive onSelect={() => {}}>Log Out</DropdownMenu.Item>
+    </DropdownMenu.Content>
+</DropdownMenu>
+```
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `DropdownMenu` | Root — owns open state (controlled or uncontrolled). |
+| `DropdownMenu.Trigger` | Element that toggles the menu. Uses `asChild`. |
+| `DropdownMenu.Content` | The floating menu surface. `role="menu"`. |
+| `DropdownMenu.Item` | Interactive menu item. `role="menuitem"`. |
+| `DropdownMenu.Separator` | Visual and semantic divider. `role="separator"`. |
+| `DropdownMenu.Label` | Non-interactive section heading. Muted small-caps. |
+
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+```tsx
+// Uncontrolled
+<DropdownMenu>
+    <DropdownMenu.Trigger><Button>Open</Button></DropdownMenu.Trigger>
+    <DropdownMenu.Content>...</DropdownMenu.Content>
+</DropdownMenu>
+
+// Controlled
+const [open, setOpen] = useState(false);
+
+<DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu.Trigger><Button>Open</Button></DropdownMenu.Trigger>
+    <DropdownMenu.Content>...</DropdownMenu.Content>
+</DropdownMenu>
+```
+
+## Accessibility
+
+- Trigger gets `aria-haspopup="menu"` and `aria-expanded` automatically.
+- Content container has `role="menu"`.
+- Each item has `role="menuitem"` and `aria-disabled` when disabled.
+- Web keyboard navigation: ArrowDown/Up cycles items; Home/End jumps to bounds; Enter/Space selects; Escape closes.
+- Disabled items are skipped by keyboard nav (negative `tabIndex`).
+
+## Props
+
+### DropdownMenu
+
+<PropsTable component="DropdownMenu" />
+
+### DropdownMenu.Trigger
+
+<PropsTable component="DropdownMenuTrigger" />
+
+### DropdownMenu.Content
+
+<PropsTable component="DropdownMenuContent" />
+
+### DropdownMenu.Item
+
+<PropsTable component="MenuItem" />
+
+### DropdownMenu.Separator
+
+<PropsTable component="MenuSeparator" />
+
+### DropdownMenu.Label
+
+<PropsTable component="MenuLabel" />

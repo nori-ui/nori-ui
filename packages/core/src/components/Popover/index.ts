@@ -5,4 +5,5 @@ export {
     type PopoverProps,
     type PopoverSide,
     type PopoverTriggerProps,
+    usePopoverContext,
 } from './Popover';
