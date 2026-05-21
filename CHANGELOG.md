@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/nori-ui/nori-ui/compare/v1.7.0...v1.8.0) (2026-05-21)
+
+### Features
+
+* **carousel,input-otp,hover-card:** add three components ([#8](https://github.com/nori-ui/nori-ui/issues/8)) ([a8f75dc](https://github.com/nori-ui/nori-ui/commit/a8f75dc4cf697c0553a4021e93b5afaab3df2238))
+
 ## [1.7.0](https://github.com/nori-ui/nori-ui/compare/v1.6.0...v1.7.0) (2026-05-21)
 
 ### Features
