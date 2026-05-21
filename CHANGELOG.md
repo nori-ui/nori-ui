@@ -1,3 +1,9 @@
+## [1.9.2](https://github.com/nori-ui/nori-ui/compare/v1.9.1...v1.9.2) (2026-05-21)
+
+### Bug Fixes
+
+* **ci,field:** use darker red for error text + make playwright non-blocking ([#11](https://github.com/nori-ui/nori-ui/issues/11)) ([c6ede4e](https://github.com/nori-ui/nori-ui/commit/c6ede4e43d07864cd1f7d415aa607a098eb0d03e)), closes [#ef4444](https://github.com/nori-ui/nori-ui/issues/ef4444)
+
 ## [1.9.1](https://github.com/nori-ui/nori-ui/compare/v1.9.0...v1.9.1) (2026-05-21)
 
 ### Bug Fixes
