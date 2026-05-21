@@ -29,6 +29,7 @@ import CalendarScroll from './demos/calendar-scroll';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
+import ComboboxBasic from './demos/combobox-basic';
 import ContextMenuBasic from './demos/context-menu-basic';
 import DatePickerBasic from './demos/date-picker-basic';
 import DatePickerMinMax from './demos/date-picker-min-max';
@@ -289,6 +290,7 @@ export const previews = {
     'context-menu-basic': { Component: ContextMenuBasic, ...previewSources['context-menu-basic'], ...DIR_ONLY },
     'sheet-basic': { Component: SheetBasic, ...previewSources['sheet-basic'], ...DIR_ONLY },
     'sheet-side-panel': { Component: SheetSidePanel, ...previewSources['sheet-side-panel'], ...DIR_ONLY },
+    'combobox-basic': { Component: ComboboxBasic, ...previewSources['combobox-basic'] },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.

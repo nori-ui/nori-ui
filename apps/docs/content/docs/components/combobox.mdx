@@ -1,0 +1,30 @@
+---
+title: Combobox
+description: A searchable Select. Use for long lists or async option loading where typeahead filtering helps users find an option quickly.
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+
+<BundleSize component="Combobox" />
+
+## When to use
+
+- **Combobox** — long lists (10+ items), typeahead filtering, async option loading.
+- **[Select](/docs/components/select)** — short static lists where clicking is enough.
+
+Combobox is a thin wrapper over Select with `searchable` defaulted to `true`. Every other prop, behavior, and type is identical — see Select's full API reference.
+
+## Basic usage
+
+<Preview name="combobox-basic" />
+
+## Async options
+
+Pass an `options` function that returns a promise — Select streams results into the popup as the user types. See [Select → async](/docs/components/select#async).
+
+## API
+
+Combobox accepts every prop of Select. The only difference is the default value of `searchable`.
+
+See [Select's API reference](/docs/components/select#api) for the full prop list.

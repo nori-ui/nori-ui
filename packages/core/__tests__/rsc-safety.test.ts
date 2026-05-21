@@ -58,6 +58,7 @@ const CLIENT_ALLOWED = [
     'components/Progress/Progress.tsx',
     'components/Radio/Radio.tsx',
     'components/SegmentedControl/SegmentedControl.tsx',
+    'components/Combobox/Combobox.tsx',
     'components/Select/Select.tsx',
     'components/Separator/Separator.tsx',
     'components/Sheet/Sheet.tsx',
