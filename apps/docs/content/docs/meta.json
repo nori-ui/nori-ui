@@ -14,6 +14,7 @@
     "components/breadcrumb",
     "components/button",
     "components/calendar",
+    "components/date-picker",
     "components/card",
     "components/checkbox",
     "components/dialog",

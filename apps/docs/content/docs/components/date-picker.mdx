@@ -1,0 +1,294 @@
+---
+title: DatePicker
+description: A trigger + popover composition that lets users pick a single date or a date range through a locale-aware calendar — with Field integration, min/max constraints, and react-hook-form support.
+since: 1.0.0
+tags: [date, picker, range, i18n, a11y, form]
+platform: both
+category: inputs
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="DatePicker" />
+
+## Overview
+
+`<DatePicker>` and `<DatePicker.Range>` are **trigger + popover** composites. The
+trigger renders as a TextInput-styled button (border, padding, calendar icon) that
+opens a `<Popover>` containing the existing `<Calendar>` component in single or
+range mode. There is no typed text input in v1 — calendar selection is the only
+input method; keyboard-typed date entry is deferred to a future release.
+
+Display formatting uses `Intl.DateTimeFormat` with `dateStyle: 'medium'`, so dates
+render in the user's locale automatically (e.g. "May 21, 2026" in `en-US`, "21
+mai 2026" in `fr-FR`). The locale comes from the nearest `NoriProvider`'s i18n
+context and can be overridden per instance via the `locale` prop.
+
+Both components connect to `<Field>` via the standard `Field.Control` hook: `id`,
+`aria-labelledby`, `aria-describedby`, `aria-invalid`, and `aria-required` are all
+forwarded from the field envelope to the trigger automatically.
+
+## Basic usage
+
+<Preview name="date-picker-basic" />
+
+```tsx
+import { useState } from 'react';
+import type { CalendarDate } from '@internationalized/date';
+import { DatePicker } from '@nori-ui/core';
+
+export default function BasicExample() {
+    const [d, setD] = useState<CalendarDate | null>(null);
+    return <DatePicker value={d} onChange={setD} placeholder="Pick a date" />;
+}
+```
+
+## Range
+
+`DatePicker.Range` takes a `{ start: CalendarDate | null; end: CalendarDate | null }`
+value. The popover closes automatically once both `start` and `end` are set.
+
+<Preview name="date-picker-range" />
+
+```tsx
+import { useState } from 'react';
+import type { CalendarDate } from '@internationalized/date';
+import { DatePicker } from '@nori-ui/core';
+
+type DateRangeValue = { start: CalendarDate | null; end: CalendarDate | null };
+
+export default function RangeExample() {
+    const [r, setR] = useState<DateRangeValue>({ start: null, end: null });
+    return <DatePicker.Range value={r} onChange={setR} placeholder="Pick a range" />;
+}
+```
+
+## Min / Max
+
+Use `minValue` and `maxValue` to constrain the selectable range. Dates outside
+the bounds are rendered as disabled in the calendar and cannot be selected.
+
+<Preview name="date-picker-min-max" />
+
+```tsx
+import { useState } from 'react';
+import { CalendarDate } from '@internationalized/date';
+import { DatePicker } from '@nori-ui/core';
+
+export default function MinMaxExample() {
+    const [d, setD] = useState<CalendarDate | null>(null);
+    return (
+        <DatePicker
+            value={d}
+            onChange={setD}
+            minValue={new CalendarDate(2026, 5, 1)}
+            maxValue={new CalendarDate(2026, 5, 31)}
+            placeholder="May 2026 only"
+        />
+    );
+}
+```
+
+## Disabled
+
+Set `disabled` to prevent any interaction. The trigger renders at 60% opacity
+and `aria-disabled` is applied.
+
+```tsx
+import { DatePicker } from '@nori-ui/core';
+
+<DatePicker disabled placeholder="Not available" />
+```
+
+## With Field
+
+Wrap in `<Field>` for a label, description, and error message. The `id`,
+`aria-labelledby`, `aria-describedby`, `aria-required`, and `aria-invalid`
+attributes are injected automatically by `Field.Control`.
+
+```tsx
+import { useState } from 'react';
+import type { CalendarDate } from '@internationalized/date';
+import { DatePicker, Field } from '@nori-ui/core';
+
+export default function FieldExample() {
+    const [d, setD] = useState<CalendarDate | null>(null);
+    return (
+        <Field label="Date of birth" required>
+            <DatePicker value={d} onChange={setD} placeholder="Pick a date" />
+        </Field>
+    );
+}
+```
+
+With an error message:
+
+```tsx
+import { useState } from 'react';
+import type { CalendarDate } from '@internationalized/date';
+import { DatePicker, Field } from '@nori-ui/core';
+
+export default function FieldErrorExample() {
+    const [d, setD] = useState<CalendarDate | null>(null);
+    return (
+        <Field label="Date of birth" required error={d === null ? 'Required' : null}>
+            <DatePicker value={d} onChange={setD} placeholder="Pick a date" />
+        </Field>
+    );
+}
+```
+
+## react-hook-form
+
+Use `<Controller>` to wire DatePicker (or DatePicker.Range) into React Hook Form.
+
+### Single
+
+```tsx
+import { useState } from 'react';
+import type { CalendarDate } from '@internationalized/date';
+import { DatePicker, Field } from '@nori-ui/core';
+import { useForm, Controller } from 'react-hook-form';
+
+type FormValues = {
+    startDate: CalendarDate | null;
+};
+
+export default function RHFSingleExample() {
+    const { control, handleSubmit } = useForm<FormValues>({
+        defaultValues: { startDate: null },
+    });
+
+    const onSubmit = (data: FormValues) => {
+        console.log(data);
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+                control={control}
+                name="startDate"
+                rules={{ required: 'Start date is required.' }}
+                render={({ field, fieldState }) => (
+                    <Field
+                        label="Start date"
+                        required
+                        error={fieldState.error?.message ?? null}
+                    >
+                        <DatePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Pick a date"
+                        />
+                    </Field>
+                )}
+            />
+            <button type="submit">Submit</button>
+        </form>
+    );
+}
+```
+
+### Range
+
+```tsx
+import type { CalendarDate } from '@internationalized/date';
+import { DatePicker, Field } from '@nori-ui/core';
+import { useForm, Controller } from 'react-hook-form';
+
+type DateRangeValue = { start: CalendarDate | null; end: CalendarDate | null };
+
+type FormValues = {
+    period: DateRangeValue;
+};
+
+export default function RHFRangeExample() {
+    const { control, handleSubmit } = useForm<FormValues>({
+        defaultValues: { period: { start: null, end: null } },
+    });
+
+    const onSubmit = (data: FormValues) => {
+        console.log(data);
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+                control={control}
+                name="period"
+                rules={{
+                    validate: (v) =>
+                        (v.start !== null && v.end !== null) || 'Both dates are required.',
+                }}
+                render={({ field, fieldState }) => (
+                    <Field
+                        label="Period"
+                        required
+                        error={fieldState.error?.message ?? null}
+                    >
+                        <DatePicker.Range
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Pick a range"
+                        />
+                    </Field>
+                )}
+            />
+            <button type="submit">Submit</button>
+        </form>
+    );
+}
+```
+
+`react-hook-form` is not a peer dependency of `@nori-ui/core`. Install it
+separately:
+
+```bash
+yarn add react-hook-form
+```
+
+## Accessibility
+
+The trigger renders with `role="combobox"`, `aria-haspopup="dialog"`, and
+`aria-expanded` (toggled as the popover opens/closes). When `disabled`, the
+trigger also gets `aria-disabled="true"`.
+
+All `aria-*` props (`aria-labelledby`, `aria-describedby`, `aria-invalid`,
+`aria-required`) are forwarded from the trigger props to the underlying
+`Pressable`, so they are wired automatically when you use `<Field>`. You can
+also pass them explicitly for custom label associations.
+
+The calendar inside the popover follows the standard keyboard navigation
+documented on the [Calendar](/docs/components/calendar) page. The `Tab` key
+moves focus into and out of the popover; `Escape` closes it.
+
+## Locale
+
+By default both components read the active locale from the nearest
+`NoriProvider`'s i18n context. This affects date formatting in the trigger and
+the calendar's first day of week and weekday names.
+
+To override per-instance, pass a BCP 47 locale tag:
+
+```tsx
+<DatePicker value={d} onChange={setD} locale="de-DE" />
+```
+
+The `firstDayOfWeek` prop lets you override the first day of week independently
+of locale (e.g. force Monday in a locale that defaults to Sunday):
+
+```tsx
+<DatePicker value={d} onChange={setD} firstDayOfWeek={1} />
+```
+
+## API reference
+
+### `<DatePicker>`
+
+<PropsTable component="DatePicker" />
+
+### `<DatePicker.Range>`
+
+<PropsTable component="DatePickerRange" />

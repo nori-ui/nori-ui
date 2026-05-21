@@ -29,6 +29,9 @@ import CalendarScroll from './demos/calendar-scroll';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
+import DatePickerBasic from './demos/date-picker-basic';
+import DatePickerMinMax from './demos/date-picker-min-max';
+import DatePickerRange from './demos/date-picker-range';
 import DialogBasic from './demos/dialog-basic';
 import FieldBasic from './demos/field-basic';
 import FieldGroup from './demos/field-group';
@@ -267,6 +270,9 @@ export const previews = {
     'calendar-disabled-dates': { Component: CalendarDisabledDates, ...previewSources['calendar-disabled-dates'] },
     'calendar-dropdown-caption': { Component: CalendarDropdownCaption, ...previewSources['calendar-dropdown-caption'] },
     'calendar-scroll': { Component: CalendarScroll, ...previewSources['calendar-scroll'] },
+    'date-picker-basic': { Component: DatePickerBasic, ...previewSources['date-picker-basic'], ...DIR_ONLY },
+    'date-picker-range': { Component: DatePickerRange, ...previewSources['date-picker-range'], ...DIR_ONLY },
+    'date-picker-min-max': { Component: DatePickerMinMax, ...previewSources['date-picker-min-max'], ...DIR_ONLY },
     'field-basic': { Component: FieldBasic, ...previewSources['field-basic'], ...DIR_ONLY },
     'field-with-description-error': {
         Component: FieldWithDescriptionError,

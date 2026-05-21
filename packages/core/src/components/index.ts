@@ -9,6 +9,7 @@ export * from './Button';
 export * from './Calendar';
 export * from './Card';
 export * from './Checkbox';
+export * from './DatePicker';
 export * from './Dialog';
 export * from './Field';
 export * from './FloatButton';
