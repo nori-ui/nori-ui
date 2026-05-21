@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/nori-ui/nori-ui/compare/v1.5.0...v1.6.0) (2026-05-21)
+
+### Features
+
+* **table:** add Table primitive + DataTable wrapper ([#6](https://github.com/nori-ui/nori-ui/issues/6)) ([9257f5a](https://github.com/nori-ui/nori-ui/commit/9257f5a38d006a8e76e29ebe29e8ae427d46109b))
+
 ## [1.5.0](https://github.com/nori-ui/nori-ui/compare/v1.4.0...v1.5.0) (2026-05-21)
 
 ### Features
