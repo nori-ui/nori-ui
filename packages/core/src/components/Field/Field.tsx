@@ -290,7 +290,7 @@ const FieldLabel = ({ children }: { children: ReactNode }) => {
                     <RNText
                         accessibilityLabel={requiredLabel}
                         {...({ 'aria-label': requiredLabel } as Record<string, unknown>)}
-                        style={{ color: colors.color.danger }}
+                        style={{ color: colors.color.dangerText }}
                     >
                         {` ${requiredIndicator}`}
                     </RNText>
@@ -366,7 +366,7 @@ const FieldError = ({ children }: { children?: ReactNode }) => {
             style={{
                 fontFamily: colors.fontFamily.body,
                 fontSize: px(colors.fontSize.sm),
-                color: colors.color.danger,
+                color: colors.color.dangerText,
             }}
         >
             {content}

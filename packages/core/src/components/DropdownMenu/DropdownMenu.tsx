@@ -212,7 +212,7 @@ export const MenuItem = ({
     }, [disabled, onSelect, menu]);
 
     const textColor = destructive
-        ? colors.color.danger
+        ? colors.color.dangerText
         : disabled
           ? colors.semantic.text.muted
           : colors.semantic.text.default;

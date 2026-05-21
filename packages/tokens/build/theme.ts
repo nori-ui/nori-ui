@@ -7,6 +7,7 @@
 export const theme = {
     color: {
         danger: "#ef4444",
+        dangerText: "#b91c1c",
         info: "#3b82f6",
         neutral: {
             "100": "#f4f4f5",
@@ -124,6 +125,7 @@ export type Theme = typeof theme;
 export const themeDark = {
     color: {
         danger: "#ef4444",
+        dangerText: "#b91c1c",
         info: "#3b82f6",
         neutral: {
             "100": "#f4f4f5",

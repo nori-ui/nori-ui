@@ -53,7 +53,7 @@ export const Label = ({ htmlFor, required = false, disabled = false, children, c
                     <RNText
                         accessibilityLabel={requiredLabel}
                         {...({ 'aria-label': requiredLabel } as Record<string, unknown>)}
-                        style={{ color: colors.color.danger }}
+                        style={{ color: colors.color.dangerText }}
                     >
                         {` ${requiredIndicator}`}
                     </RNText>
