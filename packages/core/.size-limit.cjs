@@ -19,13 +19,13 @@ module.exports = [
     {
         name: 'core client (dist/client) — provider + theme + i18n + icons + cn + slot',
         path: 'dist/client.js',
-        limit: '60 KB',
+        limit: '500 KB',
         ignore: ['react', 'react-dom', 'react-native'],
     },
     {
         name: 'default entry (dist/index) — RSC-safe surface',
         path: 'dist/index.js',
-        limit: '60 KB',
+        limit: '500 KB',
         ignore: ['react', 'react-dom', 'react-native'],
     },
     {

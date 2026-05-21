@@ -106,16 +106,25 @@ Set `loop` to wrap from the last slide back to the first when pressing Next, and
 
 ### `Carousel.Content`
 
-<PropsTable component="CarouselContent" />
+Scrollable or FlatList container that holds the `Carousel.Item` children.
+Passes the `orientation` prop down to determine scroll axis (`horizontal` by
+default, `vertical` for a vertical stack). On web it renders a scroll-snap
+container; on native it wraps an RN `FlatList` with `pagingEnabled`.
 
 ### `Carousel.Item`
 
-<PropsTable component="CarouselItem" />
+Single slide wrapper. Accepts `children` and an optional `className`. Each
+item fills the full width (or height, in vertical mode) of the viewport.
 
 ### `Carousel.Previous` / `Carousel.Next`
 
-<PropsTable component="CarouselButton" />
+Navigation button that steps the index backward (`Previous`) or forward
+(`Next`). Accepts `children` for custom icon content and an `aria-label` for
+screen-reader text. Automatically disabled at the boundary unless `loop` is set
+on the root.
 
 ### `Carousel.Dots`
 
-<PropsTable component="CarouselDots" />
+Indicator track that renders one dot per slide. Accepts `className` for custom
+styles. The active dot is highlighted; each dot has an accessible
+`aria-label="Slide N"` attribute. Clicking a dot jumps directly to that slide.

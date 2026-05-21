@@ -87,11 +87,17 @@ const [open, setOpen] = useState(false);
 
 ### ContextMenu.Trigger
 
-<PropsTable component="ContextMenuTrigger" />
+Wraps the element that the user right-clicks (web) or long-presses (native) to open
+the menu. Accepts `children` (the element to clone) and an optional `asChild` to
+render a custom root instead of the default `View` wrapper. Adds
+`aria-haspopup="menu"` and `aria-expanded` to the cloned element automatically.
 
 ### ContextMenu.Content
 
-<PropsTable component="ContextMenuContent" />
+The floating menu surface. Accepts `children` (`ContextMenu.Item`,
+`ContextMenu.Separator`, `ContextMenu.Label`) and an optional `className`.
+Has `role="menu"` on web. On native it renders inside an RN `Modal` with a
+tap-outside-to-close backdrop.
 
 ### ContextMenu.Item
 

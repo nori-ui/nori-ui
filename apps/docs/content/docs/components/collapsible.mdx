@@ -55,12 +55,21 @@ import { Collapsible } from '@nori-ui/core';
 
 ### `Collapsible`
 
+Accepts `open` (controlled) and `onOpenChange` for parent-driven state.
+Use `defaultOpen={true}` for uncontrolled mode starting in the open position.
+
 <PropsTable component="Collapsible" />
 
 ### `Collapsible.Trigger`
 
-<PropsTable component="CollapsibleTrigger" />
+The button that toggles the panel. Accepts `children` (the visible label/icon)
+and an optional `asChild` to render a custom element instead of the default
+`Pressable`. Wires `aria-expanded` and `aria-controls` onto the trigger element
+automatically.
 
 ### `Collapsible.Content`
 
-<PropsTable component="CollapsibleContent" />
+The panel that expands and collapses. Accepts `children` (the revealed content)
+and an optional `className` for layout styles. On web the panel animates via a
+CSS `max-height` transition (200 ms). On native, the panel mounts/unmounts
+without animation in v1 — animated height is a v2 follow-up.

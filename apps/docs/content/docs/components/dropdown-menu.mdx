@@ -139,11 +139,17 @@ const [open, setOpen] = useState(false);
 
 ### DropdownMenu.Trigger
 
-<PropsTable component="DropdownMenuTrigger" />
+Renders the element that opens the menu. Uses `asChild` — any element passed as
+`children` is cloned and becomes the activator. The most common child is a
+`Button`. Adds `aria-haspopup="menu"` and `aria-expanded` to the child
+automatically.
 
 ### DropdownMenu.Content
 
-<PropsTable component="DropdownMenuContent" />
+The floating menu surface. Accepts `children` (`DropdownMenu.Item`,
+`DropdownMenu.Separator`, `DropdownMenu.Label`) and an optional `className`.
+Has `role="menu"`. On native it renders inside an RN `Modal` with a
+tap-outside-to-close backdrop.
 
 ### DropdownMenu.Item
 

@@ -80,12 +80,23 @@ Pass `side` and `align` to `HoverCard.Content` to control positioning:
 
 ### `HoverCard`
 
+Controls open state via `open` (controlled) and `onOpenChange` (callback). Use
+`defaultOpen={true}` for uncontrolled mode starting visible. `openDelay` and
+`closeDelay` (both in ms) tune the hover timing.
+
 <PropsTable component="HoverCard" />
 
 ### `HoverCard.Trigger`
 
-<PropsTable component="HoverCardTrigger" />
+Wraps the element that the user hovers to open the card. Accepts `children`
+(any hoverable element — typically an avatar, link, or username chip) and an
+optional `asChild` to render a custom root element instead of the default
+`span` wrapper.
 
 ### `HoverCard.Content`
 
-<PropsTable component="HoverCardContent" />
+The card surface revealed on hover. Accepts `children` (any card body content),
+plus placement props `side` (`"top"` | `"right"` | `"bottom"` | `"left"`,
+default `"bottom"`) and `align` (`"start"` | `"center"` | `"end"`, default
+`"center"`) forwarded to the underlying `Popover` positioner. On native this
+component renders `null`.
