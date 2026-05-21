@@ -104,6 +104,11 @@ const CLIENT_ALLOWED = [
     'components/Table/Table.native.tsx',
     'components/Table/Table.shared.tsx',
     'components/DataTable/DataTable.tsx',
+    'components/Carousel/Carousel.web.tsx',
+    'components/Carousel/Carousel.native.tsx',
+    'components/InputOTP/InputOTP.tsx',
+    'components/HoverCard/HoverCard.web.tsx',
+    'components/HoverCard/HoverCard.native.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {

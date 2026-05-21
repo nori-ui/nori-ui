@@ -29,6 +29,7 @@ import CalendarMultiple from './demos/calendar-multiple';
 import CalendarRange from './demos/calendar-range';
 import CalendarScroll from './demos/calendar-scroll';
 import CardBasic from './demos/card-basic';
+import CarouselBasic from './demos/carousel-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
 import CollapsibleBasic from './demos/collapsible-basic';
@@ -51,12 +52,14 @@ import FloatButtonGroup from './demos/float-button-group';
 import FloatButtonGroupBackdrop from './demos/float-button-group-backdrop';
 import FloatButtonShapes from './demos/float-button-shapes';
 import FloatButtonVariants from './demos/float-button-variants';
+import HoverCardBasic from './demos/hover-card-basic';
 import HStackBasic from './demos/hstack-basic';
 import HStackFlex from './demos/hstack-flex';
 import IconBasic from './demos/icon-basic';
 import InputGroupBoth from './demos/input-group-both';
 import InputGroupPrefix from './demos/input-group-prefix';
 import InputGroupSuffix from './demos/input-group-suffix';
+import InputOTPBasic from './demos/input-otp-basic';
 import ItemBasic from './demos/item-basic';
 import KbdBasic from './demos/kbd-basic';
 import LabelBasic from './demos/label-basic';
@@ -307,6 +310,9 @@ export const previews = {
     'combobox-basic': { Component: ComboboxBasic, ...previewSources['combobox-basic'] },
     'table-basic': { Component: TableBasic, ...previewSources['table-basic'] },
     'data-table-basic': { Component: DataTableBasic, ...previewSources['data-table-basic'] },
+    'carousel-basic': { Component: CarouselBasic, ...previewSources['carousel-basic'], ...NO_CHROME },
+    'input-otp-basic': { Component: InputOTPBasic, ...previewSources['input-otp-basic'], ...DIR_ONLY },
+    'hover-card-basic': { Component: HoverCardBasic, ...previewSources['hover-card-basic'], ...NO_CHROME },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.

@@ -1,0 +1,92 @@
+---
+title: InputOTP
+description: Segmented one-time-code input with auto-advance, backspace backtrack, and paste-to-fill. Works cross-platform.
+since: 0.9.0
+tags: [form, input, otp]
+platform: both
+category: forms
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="InputOTP" />
+
+## At a glance
+
+- Renders `length` (default 6) individual text cells in a row.
+- Auto-advances focus to the next cell on character entry.
+- Backspace on an empty cell moves focus to the previous cell.
+- Paste of a full code distributes characters across all cells.
+- `onComplete` fires once all cells are filled.
+- `pattern="numeric"` (default) or `pattern="alphanumeric"`.
+- Field.Control-compatible: forwards `id`, `aria-labelledby`, `aria-describedby`, `aria-invalid`.
+
+## Preview
+
+<Preview name="input-otp-basic" />
+
+## Usage
+
+```tsx
+import { useState } from 'react';
+import { InputOTP } from '@nori-ui/core';
+
+export function OTPForm() {
+    const [code, setCode] = useState('');
+
+    return (
+        <InputOTP
+            value={code}
+            onChange={setCode}
+            onComplete={(value) => console.log('Submit:', value)}
+            length={6}
+        />
+    );
+}
+```
+
+## With Field
+
+```tsx
+import { Field, InputOTP } from '@nori-ui/core';
+
+export function OTPField() {
+    return (
+        <Field>
+            <Field.Label>Verification code</Field.Label>
+            <Field.Control>
+                <InputOTP length={6} />
+            </Field.Control>
+            <Field.Description>Enter the 6-digit code from your authenticator app.</Field.Description>
+        </Field>
+    );
+}
+```
+
+## Alphanumeric
+
+```tsx
+<InputOTP
+    value={code}
+    onChange={setCode}
+    length={8}
+    pattern="alphanumeric"
+/>
+```
+
+## Platform notes
+
+<Callout type="info">
+**Web:** Each cell is an `<input>` element. The component handles `onKeyDown` for arrow navigation, backspace, and character entry. Paste is captured on the container `div` via `onPaste`.
+</Callout>
+
+<Callout type="info">
+**Native:** Each cell is an RN `TextInput`. Backspace is detected via `onKeyPress`. Paste is handled by detecting multi-character `onChangeText` input.
+</Callout>
+
+## Props
+
+<PropsTable component="InputOTP" />
