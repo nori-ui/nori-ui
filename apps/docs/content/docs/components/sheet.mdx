@@ -1,0 +1,263 @@
+---
+title: Sheet / Drawer
+description: Slide-from-edge modal panel. Bottom sheet by default; side drawer with side="left" or side="right". Drawer is an alias for Sheet.
+since: 0.5.0
+tags: [overlay]
+platform: both
+category: overlays
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Sheet" />
+
+## At a glance
+
+- Slide-from-edge modal panel. Defaults to a bottom sheet; set `side="right"` / `"left"` / `"top"` for drawers.
+- Compound parts: `Sheet.Trigger`, `Sheet.Panel`, `Sheet.Header`, `Sheet.Title`, `Sheet.Description`, `Sheet.Body`, `Sheet.Footer`, `Sheet.Close`. Triggers and closes use `asChild` by default.
+- `Drawer` is an alias — `import { Drawer } from '@nori-ui/core'` is identical to `Sheet` at runtime.
+- Cross-platform: RN `<Modal>` on native (slide animation), CSS transitions on web with focus-trap, body scroll-lock, Escape-to-close, and click-outside-to-close.
+- Safe-area aware: leaves space for device home indicators on native via bottom padding in `Sheet.Footer`.
+- Accessibility: `role="dialog"`, `aria-modal="true"`, `aria-labelledby` wired to `Sheet.Title`, `aria-describedby` wired to `Sheet.Description`.
+
+## Preview
+
+<Preview name="sheet-basic" />
+
+## Bottom sheet
+
+The default. Add `side="bottom"` explicitly or rely on the default:
+
+```tsx
+import { useState } from 'react';
+import { Button, Sheet } from '@nori-ui/core';
+
+export function BottomSheetExample() {
+    return (
+        <Sheet side="bottom" size="md">
+            <Sheet.Trigger>
+                <Button>Open sheet</Button>
+            </Sheet.Trigger>
+            <Sheet.Panel>
+                <Sheet.Header>
+                    <Sheet.Title>Settings</Sheet.Title>
+                    <Sheet.Description>Manage your preferences.</Sheet.Description>
+                </Sheet.Header>
+                <Sheet.Body>
+                    {/* arbitrary content */}
+                </Sheet.Body>
+                <Sheet.Footer>
+                    <Sheet.Close>
+                        <Button variant="secondary">Cancel</Button>
+                    </Sheet.Close>
+                    <Sheet.Close>
+                        <Button>Done</Button>
+                    </Sheet.Close>
+                </Sheet.Footer>
+            </Sheet.Panel>
+        </Sheet>
+    );
+}
+```
+
+## Side panel
+
+<Preview name="sheet-side-panel" />
+
+```tsx
+import { Button, Sheet } from '@nori-ui/core';
+
+export function SidePanelExample() {
+    return (
+        <Sheet side="right" size="md">
+            <Sheet.Trigger>
+                <Button>Open side panel</Button>
+            </Sheet.Trigger>
+            <Sheet.Panel>
+                <Sheet.Header>
+                    <Sheet.Title>Settings</Sheet.Title>
+                    <Sheet.Description>Manage your account preferences.</Sheet.Description>
+                </Sheet.Header>
+                <Sheet.Body>
+                    {/* navigation items, settings list, etc. */}
+                </Sheet.Body>
+                <Sheet.Footer>
+                    <Sheet.Close>
+                        <Button>Save</Button>
+                    </Sheet.Close>
+                </Sheet.Footer>
+            </Sheet.Panel>
+        </Sheet>
+    );
+}
+```
+
+## Sizes
+
+`size` accepts a preset key or an explicit pixel number:
+
+| Value | Panel dimension |
+|---|---|
+| `'sm'` | 25% of viewport height (or width for side drawers) |
+| `'md'` | 50% — default |
+| `'lg'` | 75% |
+| `'full'` | 100% |
+| `number` | Explicit pixel value, e.g. `size={400}` |
+
+```tsx
+<Sheet side="bottom" size="lg">…</Sheet>
+<Sheet side="right" size={320}>…</Sheet>
+```
+
+## Controlled
+
+```tsx
+import { useState } from 'react';
+import { Button, Sheet } from '@nori-ui/core';
+
+export function ControlledSheet() {
+    const [open, setOpen] = useState(false);
+
+    async function handleSave() {
+        await saveSettings();
+        setOpen(false);
+    }
+
+    return (
+        <Sheet open={open} onOpenChange={setOpen} side="bottom" size="md">
+            <Sheet.Trigger>
+                <Button>Edit</Button>
+            </Sheet.Trigger>
+            <Sheet.Panel>
+                <Sheet.Header>
+                    <Sheet.Title>Edit profile</Sheet.Title>
+                </Sheet.Header>
+                <Sheet.Body>
+                    {/* form fields */}
+                </Sheet.Body>
+                <Sheet.Footer>
+                    <Button onPress={handleSave}>Save</Button>
+                </Sheet.Footer>
+            </Sheet.Panel>
+        </Sheet>
+    );
+}
+```
+
+## Non-dismissible
+
+Set `dismissible={false}` to require the user to use an explicit close button:
+
+```tsx
+<Sheet dismissible={false} side="bottom">
+    <Sheet.Trigger>
+        <Button>Open</Button>
+    </Sheet.Trigger>
+    <Sheet.Panel>
+        <Sheet.Header>
+            <Sheet.Title>Required action</Sheet.Title>
+        </Sheet.Header>
+        <Sheet.Body>Please complete this form before continuing.</Sheet.Body>
+        <Sheet.Footer>
+            <Sheet.Close>
+                <Button>Done</Button>
+            </Sheet.Close>
+        </Sheet.Footer>
+    </Sheet.Panel>
+</Sheet>
+```
+
+## Drawer alias
+
+`Drawer` and `Sheet` are the same component at runtime:
+
+```tsx
+import { Drawer } from '@nori-ui/core';
+
+export function DrawerExample() {
+    return (
+        <Drawer side="right" size="md">
+            <Drawer.Trigger>
+                <Button>Open drawer</Button>
+            </Drawer.Trigger>
+            <Drawer.Panel>
+                <Drawer.Header>
+                    <Drawer.Title>Navigation</Drawer.Title>
+                </Drawer.Header>
+                <Drawer.Body>
+                    {/* nav items */}
+                </Drawer.Body>
+            </Drawer.Panel>
+        </Drawer>
+    );
+}
+```
+
+## Scroll behavior
+
+Wrap `Sheet.Body` content in a `ScrollView` (native) or `div` with `overflow: auto` (web) when the content may exceed the panel height:
+
+```tsx
+import { ScrollView } from 'react-native';
+import { Sheet } from '@nori-ui/core';
+
+<Sheet.Body>
+    <ScrollView>
+        {longList.map((item) => (
+            <Item key={item.id} {...item} />
+        ))}
+    </ScrollView>
+</Sheet.Body>
+```
+
+## Accessibility notes
+
+- The panel receives `role="dialog"` and `aria-modal="true"`.
+- `Sheet.Title` is wired to `aria-labelledby` on the panel. Always include it.
+- `Sheet.Description` is wired to `aria-describedby`. Include when context is needed.
+- On web: focus moves into the panel on open, is trapped there, and returns to the trigger on close. Escape dismisses (unless `dismissible={false}`).
+- On native: the RN Modal manages focus isolation automatically.
+
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+`open` (controlled) + `onOpenChange` is the parent-driven shape. Pass `defaultOpen` for uncontrolled mode. Mixing the two prefers controlled. Trigger and Close flip the state automatically, so most call sites need neither prop.
+
+## API reference
+
+### Sheet
+
+<PropsTable component="Sheet" />
+
+### Sheet.Trigger
+
+<PropsTable component="SheetTrigger" />
+
+### Sheet.Panel
+
+<PropsTable component="SheetPanel" />
+
+### Sheet.Header
+
+<PropsTable component="SheetHeader" />
+
+### Sheet.Title
+
+<PropsTable component="SheetTitle" />
+
+### Sheet.Description
+
+<PropsTable component="SheetDescription" />
+
+### Sheet.Body
+
+<PropsTable component="SheetBody" />
+
+### Sheet.Footer
+
+<PropsTable component="SheetFooter" />
+
+### Sheet.Close
+
+<PropsTable component="SheetClose" />
