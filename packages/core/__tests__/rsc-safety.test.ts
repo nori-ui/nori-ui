@@ -109,6 +109,8 @@ const CLIENT_ALLOWED = [
     'components/InputOTP/InputOTP.tsx',
     'components/HoverCard/HoverCard.web.tsx',
     'components/HoverCard/HoverCard.native.tsx',
+    'components/Sidebar/Sidebar.tsx',
+    'components/Command/Command.tsx',
 ];
 
 function isClientAllowed(relPath: string): boolean {

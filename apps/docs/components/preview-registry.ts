@@ -34,6 +34,7 @@ import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
 import CollapsibleBasic from './demos/collapsible-basic';
 import ComboboxBasic from './demos/combobox-basic';
+import CommandBasic from './demos/command-basic';
 import ContextMenuBasic from './demos/context-menu-basic';
 import DataTableBasic from './demos/data-table-basic';
 import DatePickerBasic from './demos/date-picker-basic';
@@ -91,6 +92,7 @@ import SeparatorBasic from './demos/separator-basic';
 import SeparatorVertical from './demos/separator-vertical';
 import SheetBasic from './demos/sheet-basic';
 import SheetSidePanel from './demos/sheet-side-panel';
+import SidebarBasic from './demos/sidebar-basic';
 import SkeletonBasic from './demos/skeleton-basic';
 import SliderBasic from './demos/slider-basic';
 import SliderDisabled from './demos/slider-disabled';
@@ -313,6 +315,8 @@ export const previews = {
     'carousel-basic': { Component: CarouselBasic, ...previewSources['carousel-basic'], ...NO_CHROME },
     'input-otp-basic': { Component: InputOTPBasic, ...previewSources['input-otp-basic'], ...DIR_ONLY },
     'hover-card-basic': { Component: HoverCardBasic, ...previewSources['hover-card-basic'], ...NO_CHROME },
+    'sidebar-basic': { Component: SidebarBasic, ...previewSources['sidebar-basic'], ...NO_CHROME },
+    'command-basic': { Component: CommandBasic, ...previewSources['command-basic'] },
     // Wire new entries here. If unsure: omit `controls`. The picker
     // only annoys when it changes nothing — so set `NO_CHROME` for
     // pure visual primitives, and otherwise leave it on.
