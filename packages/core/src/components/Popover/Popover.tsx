@@ -44,6 +44,13 @@ const usePopoverContext = (label: string): PopoverContextValue => {
     return ctx;
 };
 
+/**
+ * @internal — exposes the Popover context so higher-level overlay components
+ * (DropdownMenu, ContextMenu) can interact with trigger measurement and open
+ * state without going through PopoverTrigger.
+ */
+export { usePopoverContext };
+
 export type PopoverProps = {
     /** Controlled open state. */
     open?: boolean;

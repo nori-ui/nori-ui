@@ -1,0 +1,106 @@
+---
+title: ContextMenu
+description: Right-click (web) or long-press (native) triggered menu — for contextual actions on a target element.
+since: 0.0.9
+tags: [overlay, menu]
+platform: both
+category: overlays
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="ContextMenu" />
+
+## At a glance
+
+- Same compound API and menu surface as `DropdownMenu` — only the trigger gesture differs.
+- **Web**: right-click fires the `contextmenu` event. The browser's native context menu is suppressed.
+- **Native**: long-press (`onLongPress`) opens the menu.
+- Anchor: the menu is anchored to the trigger element's bounding box. True cursor-coordinate anchoring is deferred to v2.
+
+## Preview
+
+<Preview name="context-menu-basic" />
+
+## Platform notes
+
+<Callout type="info" title="Different gesture per platform">
+The `ContextMenu.Trigger` transparently handles both gestures. You write one JSX tree; nori-ui picks the right event per platform.
+
+```tsx
+// Works identically on web (right-click) and native (long-press)
+<ContextMenu>
+    <ContextMenu.Trigger>
+        <ImageCard />
+    </ContextMenu.Trigger>
+    <ContextMenu.Content>
+        <ContextMenu.Item onSelect={() => share()}>Share</ContextMenu.Item>
+    </ContextMenu.Content>
+</ContextMenu>
+```
+</Callout>
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `ContextMenu` | Root — owns open state (controlled or uncontrolled). |
+| `ContextMenu.Trigger` | Element that opens the menu on right-click (web) / long-press (native). |
+| `ContextMenu.Content` | The floating menu surface. `role="menu"`. |
+| `ContextMenu.Item` | Interactive menu item. `role="menuitem"`. |
+| `ContextMenu.Separator` | Visual and semantic divider. `role="separator"`. |
+| `ContextMenu.Label` | Non-interactive section heading. Muted small-caps. |
+
+## Open state — `open`, `defaultOpen`, `onOpenChange`
+
+```tsx
+// Uncontrolled
+<ContextMenu>
+    <ContextMenu.Trigger><View>...</View></ContextMenu.Trigger>
+    <ContextMenu.Content>...</ContextMenu.Content>
+</ContextMenu>
+
+// Controlled
+const [open, setOpen] = useState(false);
+
+<ContextMenu open={open} onOpenChange={setOpen}>
+    <ContextMenu.Trigger><View>...</View></ContextMenu.Trigger>
+    <ContextMenu.Content>...</ContextMenu.Content>
+</ContextMenu>
+```
+
+## Accessibility
+
+- Trigger gets `aria-haspopup="menu"` and `aria-expanded` automatically.
+- Content container has `role="menu"`.
+- Each item has `role="menuitem"` and `aria-disabled` when disabled.
+- Web keyboard navigation (same as DropdownMenu): ArrowDown/Up, Home/End, Enter/Space, Escape.
+
+## Props
+
+### ContextMenu
+
+<PropsTable component="ContextMenu" />
+
+### ContextMenu.Trigger
+
+<PropsTable component="ContextMenuTrigger" />
+
+### ContextMenu.Content
+
+<PropsTable component="ContextMenuContent" />
+
+### ContextMenu.Item
+
+<PropsTable component="MenuItem" />
+
+### ContextMenu.Separator
+
+<PropsTable component="MenuSeparator" />
+
+### ContextMenu.Label
+
+<PropsTable component="MenuLabel" />
