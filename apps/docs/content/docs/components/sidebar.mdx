@@ -1,0 +1,145 @@
+---
+title: Sidebar
+description: Collapsible side-panel navigation with compound API — Header, Content, Footer, Group, GroupLabel, Menu, MenuItem.
+since: 1.8.0
+tags: [navigation, layout]
+platform: both
+category: navigation
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Sidebar" />
+
+## At a glance
+
+- Compound API: `Sidebar`, `Sidebar.Header`, `Sidebar.Content`, `Sidebar.Footer`, `Sidebar.Group`, `Sidebar.GroupLabel`, `Sidebar.Menu`, `Sidebar.MenuItem`.
+- Web: fixed `<aside>` with `role="navigation"`. Width transitions between 240 px (expanded) and 56 px (collapsed — icons only).
+- Native v1: always-visible `View`. Slide-in drawer behavior is a v2 follow-up.
+- Accessibility: `role="navigation"` + `aria-label`. Active item gets `aria-current="page"`. Collapsed label surfaced as `title` tooltip on web.
+
+## Preview
+
+<Preview name="sidebar-basic" />
+
+## Open / collapsed state
+
+`collapsed` (controlled) + `onCollapsedChange` is the parent-driven shape.  
+Use `defaultCollapsed` for uncontrolled mode.
+
+```tsx
+import { Sidebar } from '@nori-ui/core';
+
+// Uncontrolled — starts expanded.
+<Sidebar defaultCollapsed={false}>
+  {/* ... */}
+</Sidebar>
+
+// Controlled — parent owns state.
+const [collapsed, setCollapsed] = useState(false);
+<Sidebar collapsed={collapsed} onCollapsedChange={setCollapsed}>
+  {/* ... */}
+</Sidebar>
+```
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `Sidebar` | Root — owns collapsed state, wraps `<aside role="navigation">` on web. |
+| `Sidebar.Header` | Top slot — logo, workspace switcher, etc. |
+| `Sidebar.Content` | Scrollable middle zone — holds Groups. |
+| `Sidebar.Footer` | Pinned bottom slot — user row, logout. |
+| `Sidebar.Group` | Logical section inside Content. |
+| `Sidebar.GroupLabel` | Section heading. Hidden when collapsed. |
+| `Sidebar.Menu` | Ordered list of MenuItem entries. |
+| `Sidebar.MenuItem` | Single tappable nav entry with optional icon and active state. |
+
+## Full example
+
+```tsx
+import { Sidebar } from '@nori-ui/core';
+
+<Sidebar defaultCollapsed={false}>
+  <Sidebar.Header>
+    <Avatar src="..." />
+    <Text>Acme Inc.</Text>
+  </Sidebar.Header>
+  <Sidebar.Content>
+    <Sidebar.Group>
+      <Sidebar.GroupLabel>Main</Sidebar.GroupLabel>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem icon={<HomeIcon />} onPress={() => navigate('/')}>
+          Home
+        </Sidebar.MenuItem>
+        <Sidebar.MenuItem icon={<UsersIcon />} active>
+          Team
+        </Sidebar.MenuItem>
+      </Sidebar.Menu>
+    </Sidebar.Group>
+    <Sidebar.Group>
+      <Sidebar.GroupLabel>Settings</Sidebar.GroupLabel>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem icon={<CogIcon />} onPress={() => navigate('/settings')}>
+          Preferences
+        </Sidebar.MenuItem>
+      </Sidebar.Menu>
+    </Sidebar.Group>
+  </Sidebar.Content>
+  <Sidebar.Footer>
+    <Button onPress={logout}>Logout</Button>
+  </Sidebar.Footer>
+</Sidebar>
+```
+
+## Collapsed mode (web)
+
+When `collapsed={true}` the sidebar narrows to 56 px. Labels are hidden; only icons remain visible. On web, the icon button receives a `title` attribute equal to the label string, which browsers surface as a native tooltip on hover.
+
+```tsx
+// Icons are required in collapsed mode for usability.
+<Sidebar.MenuItem icon={<HomeIcon />} onPress={goHome}>
+  Home
+</Sidebar.MenuItem>
+```
+
+## Variants
+
+| Variant | Description |
+|---|---|
+| `standard` (default) | Full-bleed panel attached to the screen edge. Right border separates it from content. |
+| `inset` | Standard with a subtle box-shadow instead of a border. |
+| `floating` | Has margin + rounded corners — visually floats above the page. |
+
+```tsx
+<Sidebar variant="floating">
+  {/* ... */}
+</Sidebar>
+```
+
+## Side
+
+The `side` prop controls which edge the sidebar attaches to. Defaults to `'left'`.
+
+```tsx
+<Sidebar side="right">
+  {/* ... */}
+</Sidebar>
+```
+
+## Props
+
+### Sidebar
+
+<PropsTable component="Sidebar" />
+
+### Sidebar.MenuItem
+
+<PropsTable component="SidebarMenuItem" />
+
+## v2 / deferred
+
+- **Native slide-in drawer** — on mobile, a real drawer with swipe-to-open/close gesture is the idiomatic pattern. v1 ships as an always-visible View.
+- **Collapsible-on-hover variant** — auto-collapse when the user leaves the sidebar; auto-expand on hover.

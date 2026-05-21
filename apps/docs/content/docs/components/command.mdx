@@ -1,0 +1,159 @@
+---
+title: Command
+description: cmdk-style command palette — search-filtered list inside a modal, with global ⌘K shortcut on web.
+since: 1.8.0
+tags: [overlay, search, navigation]
+platform: both
+category: overlays
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Command" />
+
+## At a glance
+
+- Compound API: `Command`, `Command.Trigger`, `Command.Dialog`, `Command.Empty`, `Command.Group`, `Command.Item`, `Command.Shortcut`.
+- Web: global `⌘K` / `Ctrl+K` shortcut opens the palette. Search is a substring match (case-insensitive). Escape closes.
+- Native: trigger tap opens the modal; no global keyboard shortcut (React Native has no global key listener).
+- Reuses the `Dialog` primitive for the modal surface — inherits focus trap, scroll lock, backdrop blur, and Escape-to-close.
+
+## Preview
+
+<Preview name="command-basic" />
+
+## Anatomy
+
+| Subcomponent | Role |
+|---|---|
+| `Command` | Root — owns open state and the filter query. Registers `⌘K`/`Ctrl+K` on web. |
+| `Command.Trigger` | Element that opens the palette when clicked/pressed. |
+| `Command.Dialog` | The modal surface — contains the search input and item list. |
+| `Command.Empty` | Shown automatically when the current query matches nothing. |
+| `Command.Group` | Labelled section of items. Hidden when all its items are filtered out. |
+| `Command.Item` | Selectable entry. Filtered by its text content against the current query. |
+| `Command.Shortcut` | Keyboard shortcut hint rendered right-aligned inside an Item. |
+
+## Full example
+
+```tsx
+import { Command, Button, Kbd } from '@nori-ui/core';
+
+<Command>
+  <Command.Trigger>
+    <Button>
+      Search <Kbd>⌘K</Kbd>
+    </Button>
+  </Command.Trigger>
+  <Command.Dialog placeholder="Type a command or search…">
+    <Command.Empty>No results found.</Command.Empty>
+    <Command.Group heading="Suggestions">
+      <Command.Item onSelect={() => navigate('/calendar')}>Calendar</Command.Item>
+      <Command.Item onSelect={() => navigate('/emoji')}>Search Emoji</Command.Item>
+    </Command.Group>
+    <Command.Group heading="Settings">
+      <Command.Item onSelect={() => navigate('/profile')}>
+        Profile
+        <Command.Shortcut>⌘P</Command.Shortcut>
+      </Command.Item>
+      <Command.Item onSelect={() => navigate('/billing')}>
+        Billing
+        <Command.Shortcut>⌘B</Command.Shortcut>
+      </Command.Item>
+    </Command.Group>
+  </Command.Dialog>
+</Command>
+```
+
+## Open state
+
+`open` (controlled) + `onOpenChange` for parent-driven state; `defaultOpen` for uncontrolled mode.
+
+```tsx
+// Uncontrolled — Trigger manages state.
+<Command>
+  <Command.Trigger><Button>Search</Button></Command.Trigger>
+  <Command.Dialog>...</Command.Dialog>
+</Command>
+
+// Controlled.
+const [open, setOpen] = useState(false);
+<Command open={open} onOpenChange={setOpen}>
+  <Command.Trigger><Button>Search</Button></Command.Trigger>
+  <Command.Dialog>...</Command.Dialog>
+</Command>
+```
+
+## Global keyboard shortcut (web only)
+
+The `Command` root registers a `keydown` listener for `⌘K` (macOS) / `Ctrl+K` (Windows/Linux) on `window`. This shortcut toggles the palette open/closed — no extra wiring needed.
+
+On native, there is no global key listener. Use the `Command.Trigger` to open the palette.
+
+## Filtering
+
+Items are filtered by their **text content** using a case-insensitive substring match. The query is reset when the palette closes so the next open starts fresh.
+
+```tsx
+// "calc" matches "Calculator" and "Calculate tax"
+// but NOT "Calendar"
+<Command.Item onSelect={...}>Calculator</Command.Item>
+<Command.Item onSelect={...}>Calendar</Command.Item>  // hidden when query is "calc"
+```
+
+An empty query shows everything.
+
+## Empty state
+
+`Command.Empty` renders when the query produces zero matching items across all groups. Place it directly inside `Command.Dialog` — the wrapper handles visibility automatically.
+
+```tsx
+<Command.Dialog>
+  <Command.Empty>No results found.</Command.Empty>
+  <Command.Group heading="Actions">
+    <Command.Item onSelect={...}>Calendar</Command.Item>
+  </Command.Group>
+</Command.Dialog>
+```
+
+## Shortcuts
+
+`Command.Shortcut` renders right-aligned text inside a `Command.Item`:
+
+```tsx
+<Command.Item onSelect={openProfile}>
+  Profile
+  <Command.Shortcut>⌘P</Command.Shortcut>
+</Command.Item>
+```
+
+## Disabled items
+
+```tsx
+<Command.Item disabled onSelect={...}>Unavailable feature</Command.Item>
+```
+
+Disabled items still match the filter but do not fire `onSelect` when clicked.
+
+## Props
+
+### Command
+
+<PropsTable component="Command" />
+
+### Command.Dialog
+
+<PropsTable component="CommandDialog" />
+
+### Command.Item
+
+<PropsTable component="CommandItem" />
+
+## v2 / deferred
+
+- **Fuzzy search** — v1 uses simple substring matching; fuzzy ranking (like fuse.js or cmdk's built-in) is a v2 follow-up.
+- **Async / remote items** — v1 works with static children only; async loading with a loading state is deferred.
+- **Customizable shortcut** — v1 hardcodes `⌘K`/`Ctrl+K`; a `shortcut` prop on `Command` is planned for v2.
+- **Keyboard navigation** — Arrow-Up/Down between items, Enter to select. v1 relies on standard DOM focus management via tab order; explicit arrow-key navigation is a v2 polish item.
