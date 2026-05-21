@@ -1,0 +1,59 @@
+---
+title: Item
+description: List row primitive with optional leading, title, description, trailing, and chevron.
+since: 0.8.0
+tags: [display, list]
+platform: both
+category: display
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Item" />
+
+## At a glance
+
+- A generic horizontal row for settings lists, menus, and data rows.
+- Four horizontal zones: `leading | title + description | trailing | chevron`.
+- All zones except `title` are optional.
+- Becomes a tappable `Pressable` when `onPress` is provided.
+
+## Preview
+
+<Preview name="item-basic" />
+
+## Usage
+
+```tsx
+import { Item } from '@nori-ui/core';
+
+// Navigation row with chevron
+<Item
+  title="Profile"
+  description="Manage your account settings"
+  chevron
+  onPress={() => navigate('/profile')}
+/>
+
+// With leading icon and trailing badge
+<Item
+  leading={<UserIcon size={24} />}
+  title="Manuel Bieh"
+  description="manuel@example.com"
+  trailing={<Badge tone="primary">Admin</Badge>}
+  chevron
+  onPress={() => navigate('/users/1')}
+/>
+
+// Non-tappable informational row
+<Item
+  title="Version"
+  trailing={<Text>1.0.0</Text>}
+/>
+```
+
+## Props
+
+<PropsTable component="Item" />

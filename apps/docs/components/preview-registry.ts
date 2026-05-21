@@ -5,6 +5,7 @@ import AccordionMultiple from './demos/accordion-multiple';
 import AccordionSingle from './demos/accordion-single';
 import AlertBasic from './demos/alert-basic';
 import AlertDialogDestructive from './demos/alert-dialog-destructive';
+import AspectRatioBasic from './demos/aspect-ratio-basic';
 import AvatarBasic from './demos/avatar-basic';
 import BadgeBasic from './demos/badge-basic';
 import BoxBasic from './demos/box-basic';
@@ -16,6 +17,7 @@ import BreadcrumbSeparators from './demos/breadcrumb-separators';
 import BreadcrumbSiblingMenu from './demos/breadcrumb-sibling-menu';
 import BreadcrumbWidthCollapse from './demos/breadcrumb-width-collapse';
 import ButtonBasic from './demos/button-basic';
+import ButtonGroupBasic from './demos/button-group-basic';
 import CalendarBasic from './demos/calendar-basic';
 import CalendarControlled from './demos/calendar-controlled';
 import CalendarCustomRender from './demos/calendar-custom-render';
@@ -29,14 +31,16 @@ import CalendarScroll from './demos/calendar-scroll';
 import CardBasic from './demos/card-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
+import CollapsibleBasic from './demos/collapsible-basic';
 import ComboboxBasic from './demos/combobox-basic';
-import DataTableBasic from './demos/data-table-basic';
 import ContextMenuBasic from './demos/context-menu-basic';
+import DataTableBasic from './demos/data-table-basic';
 import DatePickerBasic from './demos/date-picker-basic';
 import DatePickerMinMax from './demos/date-picker-min-max';
 import DatePickerRange from './demos/date-picker-range';
 import DialogBasic from './demos/dialog-basic';
 import DropdownMenuBasic from './demos/dropdown-menu-basic';
+import EmptyBasic from './demos/empty-basic';
 import FieldBasic from './demos/field-basic';
 import FieldGroup from './demos/field-group';
 import FieldWithDescriptionError from './demos/field-with-description-error';
@@ -53,6 +57,8 @@ import IconBasic from './demos/icon-basic';
 import InputGroupBoth from './demos/input-group-both';
 import InputGroupPrefix from './demos/input-group-prefix';
 import InputGroupSuffix from './demos/input-group-suffix';
+import ItemBasic from './demos/item-basic';
+import KbdBasic from './demos/kbd-basic';
 import LabelBasic from './demos/label-basic';
 import PaginationBasic from './demos/pagination-basic';
 import PaginationCompact from './demos/pagination-compact';
@@ -79,7 +85,6 @@ import SelectMulti from './demos/select-multi';
 import SelectMultiCapped from './demos/select-multi-capped';
 import SelectVirtualized from './demos/select-virtualized';
 import SeparatorBasic from './demos/separator-basic';
-import TableBasic from './demos/table-basic';
 import SeparatorVertical from './demos/separator-vertical';
 import SheetBasic from './demos/sheet-basic';
 import SheetSidePanel from './demos/sheet-side-panel';
@@ -91,6 +96,7 @@ import SliderRtl from './demos/slider-rtl';
 import SliderVertical from './demos/slider-vertical';
 import SpinnerBasic from './demos/spinner-basic';
 import SwitchBasic from './demos/switch-basic';
+import TableBasic from './demos/table-basic';
 import TabsBasic from './demos/tabs-basic';
 import TextAreaBasic from './demos/text-area-basic';
 import TextBasic from './demos/text-basic';
@@ -149,6 +155,7 @@ const DIR_ONLY = { controls: { dir: true, locale: false } } as const;
 export const previews = {
     'accordion-single': { Component: AccordionSingle, ...previewSources['accordion-single'], ...DIR_ONLY },
     'accordion-multiple': { Component: AccordionMultiple, ...previewSources['accordion-multiple'], ...DIR_ONLY },
+    'aspect-ratio-basic': { Component: AspectRatioBasic, ...previewSources['aspect-ratio-basic'], ...NO_CHROME },
     'text-basic': { Component: TextBasic, ...previewSources['text-basic'], ...NO_CHROME },
     'box-basic': { Component: BoxBasic, ...previewSources['box-basic'], ...NO_CHROME },
     'breadcrumb-basic': { Component: BreadcrumbBasic, ...previewSources['breadcrumb-basic'] },
@@ -171,6 +178,7 @@ export const previews = {
     },
     'breadcrumb-compound': { Component: BreadcrumbCompound, ...previewSources['breadcrumb-compound'], ...NO_CHROME },
     'hstack-basic': { Component: HStackBasic, ...previewSources['hstack-basic'], ...NO_CHROME },
+    'item-basic': { Component: ItemBasic, ...previewSources['item-basic'], ...NO_CHROME },
     'hstack-flex': { Component: HStackFlex, ...previewSources['hstack-flex'], ...NO_CHROME },
     'vstack-basic': { Component: VStackBasic, ...previewSources['vstack-basic'], ...NO_CHROME },
     'segmented-control-basic': {
@@ -202,6 +210,7 @@ export const previews = {
     'slider-disabled': { Component: SliderDisabled, ...previewSources['slider-disabled'], ...DIR_ONLY },
     'spinner-basic': { Component: SpinnerBasic, ...previewSources['spinner-basic'], ...NO_CHROME },
     'button-basic': { Component: ButtonBasic, ...previewSources['button-basic'] },
+    'button-group-basic': { Component: ButtonGroupBasic, ...previewSources['button-group-basic'], ...NO_CHROME },
     'card-basic': { Component: CardBasic, ...previewSources['card-basic'], ...DIR_ONLY },
     'text-input-basic': { Component: TextInputBasic, ...previewSources['text-input-basic'] },
     'text-area-basic': { Component: TextAreaBasic, ...previewSources['text-area-basic'] },
@@ -215,6 +224,7 @@ export const previews = {
     },
     'radio-basic': { Component: RadioBasic, ...previewSources['radio-basic'] },
     'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
+    'empty-basic': { Component: EmptyBasic, ...previewSources['empty-basic'], ...NO_CHROME },
     'float-button-basic': { Component: FloatButtonBasic, ...previewSources['float-button-basic'] },
     'float-button-shapes': { Component: FloatButtonShapes, ...previewSources['float-button-shapes'] },
     'float-button-variants': { Component: FloatButtonVariants, ...previewSources['float-button-variants'] },
@@ -241,6 +251,7 @@ export const previews = {
     },
     'toggle-group-single': { Component: ToggleGroupSingle, ...previewSources['toggle-group-single'], ...DIR_ONLY },
     'icon-basic': { Component: IconBasic, ...previewSources['icon-basic'], ...NO_CHROME },
+    'kbd-basic': { Component: KbdBasic, ...previewSources['kbd-basic'], ...NO_CHROME },
     'pagination-basic': { Component: PaginationBasic, ...previewSources['pagination-basic'] },
     'pagination-first-last': { Component: PaginationFirstLast, ...previewSources['pagination-first-last'] },
     'pagination-compact': { Component: PaginationCompact, ...previewSources['pagination-compact'], ...NO_CHROME },
@@ -268,6 +279,7 @@ export const previews = {
         ...previewSources['alert-dialog-destructive'],
     },
     'calendar-basic': { Component: CalendarBasic, ...previewSources['calendar-basic'] },
+    'collapsible-basic': { Component: CollapsibleBasic, ...previewSources['collapsible-basic'], ...DIR_ONLY },
     'calendar-range': { Component: CalendarRange, ...previewSources['calendar-range'] },
     'calendar-multiple': { Component: CalendarMultiple, ...previewSources['calendar-multiple'] },
     'calendar-drilldown': { Component: CalendarDrilldown, ...previewSources['calendar-drilldown'] },

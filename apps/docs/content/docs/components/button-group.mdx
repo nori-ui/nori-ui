@@ -1,0 +1,61 @@
+---
+title: ButtonGroup
+description: Joined buttons in a horizontal or vertical row — the segmented look without toggle semantics.
+since: 0.8.0
+tags: [input]
+platform: both
+category: input
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="ButtonGroup" />
+
+## At a glance
+
+- Visually joins multiple buttons into a single connected unit.
+- No toggle / selection semantics — for that, use `SegmentedControl`.
+- Supports `horizontal` (default) and `vertical` orientations.
+- Injects `data-position` (`first` / `middle` / `last`) on each child for
+  CSS-side radius stripping on web.
+
+> **v2 note:** Middle-button corner-radius adjustment is applied via
+> `data-position` CSS selectors on web. On native, the group renders with
+> standard per-button radius — this will be improved in a follow-up.
+
+## Preview
+
+<Preview name="button-group-basic" />
+
+## Usage
+
+```tsx
+import { Button, ButtonGroup } from '@nori-ui/core';
+
+// Horizontal (default)
+<ButtonGroup>
+  <Button variant="secondary">Day</Button>
+  <Button variant="secondary">Week</Button>
+  <Button variant="secondary">Month</Button>
+</ButtonGroup>
+
+// Vertical
+<ButtonGroup orientation="vertical">
+  <Button variant="secondary">Top</Button>
+  <Button variant="secondary">Middle</Button>
+  <Button variant="secondary">Bottom</Button>
+</ButtonGroup>
+```
+
+## `orientation`
+
+| Value | Description |
+|-------|-------------|
+| `horizontal` (default) | Buttons laid out left-to-right |
+| `vertical` | Buttons laid out top-to-bottom |
+
+## Props
+
+<PropsTable component="ButtonGroup" />
