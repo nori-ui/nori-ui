@@ -1,0 +1,91 @@
+---
+title: HoverCard
+description: Hover-triggered popover card. Web only — on native the content is omitted since hover events don't exist.
+since: 0.9.0
+tags: [overlay, popover]
+platform: web
+category: overlays
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="HoverCard" />
+
+## At a glance
+
+- Opens after `openDelay` (default 300 ms) on `mouseEnter`; closes after `closeDelay` (default 200 ms) on `mouseLeave`.
+- Stays open while the mouse is over the content itself.
+- Reuses `Popover` for positioning — inherits `side` + `align` placement props.
+- Compound API: `HoverCard.Trigger` + `HoverCard.Content`.
+- **Web only.** On native, `HoverCard.Content` renders `null` — only the trigger renders. Use `Popover` directly if you need a long-press-triggered panel on native.
+
+## Preview
+
+<Preview name="hover-card-basic" />
+
+## Usage
+
+```tsx
+import { HoverCard } from '@nori-ui/core';
+
+export function UserCard() {
+    return (
+        <HoverCard>
+            <HoverCard.Trigger>
+                <Avatar src="/avatar.jpg" />
+            </HoverCard.Trigger>
+            <HoverCard.Content>
+                <div>
+                    <strong>@manuelbieh</strong>
+                    <p>Senior dev at Wiremore</p>
+                </div>
+            </HoverCard.Content>
+        </HoverCard>
+    );
+}
+```
+
+## Delays
+
+```tsx
+<HoverCard openDelay={500} closeDelay={300}>
+  <HoverCard.Trigger>...</HoverCard.Trigger>
+  <HoverCard.Content>...</HoverCard.Content>
+</HoverCard>
+```
+
+## Placement
+
+Pass `side` and `align` to `HoverCard.Content` to control positioning:
+
+```tsx
+<HoverCard>
+  <HoverCard.Trigger>...</HoverCard.Trigger>
+  <HoverCard.Content side="top" align="center">
+    ...
+  </HoverCard.Content>
+</HoverCard>
+```
+
+## Native behavior
+
+<Callout type="info">
+`HoverCard` is **web-only**. On native, `HoverCard.Content` renders nothing and `HoverCard.Trigger` renders its children as-is. There is no long-press fallback — use `Popover` directly if you need hover-card-style content on touch devices.
+</Callout>
+
+## Props
+
+### `HoverCard`
+
+<PropsTable component="HoverCard" />
+
+### `HoverCard.Trigger`
+
+<PropsTable component="HoverCardTrigger" />
+
+### `HoverCard.Content`
+
+<PropsTable component="HoverCardContent" />

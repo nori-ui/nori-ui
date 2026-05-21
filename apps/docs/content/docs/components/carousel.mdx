@@ -1,0 +1,121 @@
+---
+title: Carousel
+description: Paged horizontal (or vertical) image/card slider with CSS scroll-snap on web and FlatList paging on native.
+since: 0.9.0
+tags: [navigation, slider]
+platform: both
+category: navigation
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Carousel" />
+
+## At a glance
+
+- Compound API: `Carousel`, `Carousel.Content`, `Carousel.Item`, `Carousel.Previous`, `Carousel.Next`, `Carousel.Dots`.
+- Web: CSS `scroll-snap-type: x mandatory` — no extra dependency.
+- Native: RN `FlatList` with `pagingEnabled` — no carousel peer dep.
+- Controlled or uncontrolled via `index` / `defaultIndex`.
+- `loop` prop wraps navigation from last slide back to first and vice versa.
+
+## Preview
+
+<Preview name="carousel-basic" />
+
+## Usage
+
+```tsx
+import { Carousel } from '@nori-ui/core';
+
+export function MyCarousel() {
+    return (
+        <Carousel>
+            <Carousel.Content>
+                <Carousel.Item>
+                    <img src="/slide1.jpg" alt="Slide 1" />
+                </Carousel.Item>
+                <Carousel.Item>
+                    <img src="/slide2.jpg" alt="Slide 2" />
+                </Carousel.Item>
+                <Carousel.Item>
+                    <img src="/slide3.jpg" alt="Slide 3" />
+                </Carousel.Item>
+            </Carousel.Content>
+            <Carousel.Previous />
+            <Carousel.Next />
+            <Carousel.Dots />
+        </Carousel>
+    );
+}
+```
+
+## Controlled
+
+```tsx
+import { useState } from 'react';
+import { Carousel } from '@nori-ui/core';
+
+export function ControlledCarousel() {
+    const [index, setIndex] = useState(0);
+    return (
+        <Carousel index={index} onIndexChange={setIndex}>
+            <Carousel.Content>
+                <Carousel.Item><SlideA /></Carousel.Item>
+                <Carousel.Item><SlideB /></Carousel.Item>
+            </Carousel.Content>
+            <Carousel.Dots />
+        </Carousel>
+    );
+}
+```
+
+## Looping
+
+Set `loop` to wrap from the last slide back to the first when pressing Next, and vice versa:
+
+```tsx
+<Carousel loop>
+  <Carousel.Content>
+    <Carousel.Item>...</Carousel.Item>
+    <Carousel.Item>...</Carousel.Item>
+  </Carousel.Content>
+  <Carousel.Previous />
+  <Carousel.Next />
+</Carousel>
+```
+
+## Platform notes
+
+<Callout type="info">
+**Web:** Each `Carousel.Item` has `scroll-snap-align: start` and `min-width: 100%`. The scrollbar is hidden via `scrollbar-width: none`. Previous/Next buttons call `scrollIntoView` with `behavior: smooth`.
+</Callout>
+
+<Callout type="info">
+**Native:** `Carousel.Content` renders an RN `FlatList` with `pagingEnabled` and `horizontal`. Each item gets `width: windowWidth`. The item list passed as `children` to `Carousel.Content` is unwrapped by the FlatList renderer — `Carousel.Item` on native is just a thin `View` wrapper.
+</Callout>
+
+## Props
+
+### `Carousel`
+
+<PropsTable component="Carousel" />
+
+### `Carousel.Content`
+
+<PropsTable component="CarouselContent" />
+
+### `Carousel.Item`
+
+<PropsTable component="CarouselItem" />
+
+### `Carousel.Previous` / `Carousel.Next`
+
+<PropsTable component="CarouselButton" />
+
+### `Carousel.Dots`
+
+<PropsTable component="CarouselDots" />
