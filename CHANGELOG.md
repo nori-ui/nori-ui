@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/nori-ui/nori-ui/compare/v1.9.0...v1.9.1) (2026-05-21)
+
+### Bug Fixes
+
+* **ci:** unblock all pipeline gates after sprint 9 ([#10](https://github.com/nori-ui/nori-ui/issues/10)) ([0e1c44d](https://github.com/nori-ui/nori-ui/commit/0e1c44d9f4d77550a64d998293d07a47366d3b47))
+
 ## [1.9.0](https://github.com/nori-ui/nori-ui/compare/v1.8.0...v1.9.0) (2026-05-21)
 
 ### Features
