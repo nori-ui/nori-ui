@@ -39,6 +39,8 @@
     "components/slider",
     "components/spinner",
     "components/switch",
+    "components/data-table",
+    "components/table",
     "components/tabs",
     "components/text",
     "components/text-area",

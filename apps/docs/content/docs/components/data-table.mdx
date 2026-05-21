@@ -1,0 +1,168 @@
+---
+title: DataTable
+description: Convenience wrapper around Table. Pass columns + data arrays and get header rendering, in-memory sort, and client-side pagination for free.
+since: 0.7.0
+tags: [data]
+platform: both
+category: data
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+
+<BundleSize component="DataTable" />
+
+## At a glance
+
+- Pass `columns` (header + cell renderer per column) and `data` (array of objects) — DataTable handles the rest.
+- In-memory, client-side sort on any column marked `sortable: true`. Click a header once for ascending, again for descending, a third time to clear.
+- Client-side pagination via the existing `usePagination` hook. Controls appear automatically when `data.length > pageSize`.
+- Empty state shown automatically when `data` is empty; override text or render any node via `emptyState`.
+- Row press handler via `onRowPress`.
+- Inherits all cosmetic props from `Table`: `striped`, `compact`, `bordered`.
+- For full control over markup and layout, use the lower-level [Table](/docs/components/table) primitive directly.
+
+## Basic usage
+
+<Preview name="data-table-basic" />
+
+```tsx
+import { DataTable } from '@nori-ui/core';
+import type { Column } from '@nori-ui/core';
+
+type Invoice = { id: string; customer: string; status: string; amount: number };
+
+const columns: Column<Invoice>[] = [
+    { id: 'id',       header: 'Invoice',  cell: (r) => r.id },
+    { id: 'customer', header: 'Customer', cell: (r) => r.customer, sortable: true },
+    { id: 'status',   header: 'Status',   cell: (r) => r.status,   sortable: true },
+    { id: 'amount',   header: 'Amount',   cell: (r) => `$${r.amount.toFixed(2)}`, sortable: true, align: 'right' },
+];
+
+const data: Invoice[] = [
+    { id: 'INV-001', customer: 'Alice', status: 'Paid',    amount: 250 },
+    { id: 'INV-002', customer: 'Bob',   status: 'Pending', amount: 150 },
+    // ...
+];
+
+export function InvoiceDataTable() {
+    return <DataTable data={data} columns={columns} />;
+}
+```
+
+## With sort
+
+Any column with `sortable: true` gets a clickable header with a direction indicator (↑ / ↓). Clicking a third time clears the sort and restores the original data order.
+
+Pass `defaultSort` to pre-sort on mount:
+
+```tsx
+<DataTable
+    data={data}
+    columns={columns}
+    defaultSort={{ id: 'amount', direction: 'asc' }}
+/>
+```
+
+## With pagination
+
+DataTable paginates automatically when `data.length > pageSize`. The default page size is 10. Pass a different value to `pageSize`:
+
+```tsx
+<DataTable data={largeDataset} columns={columns} pageSize={20} />
+```
+
+The ‹ Prev / page / Next › controls appear below the table only when there is more than one page.
+
+## Empty state
+
+When `data` is empty DataTable shows "No data" centered below the header row. Override with any string or node:
+
+```tsx
+<DataTable data={[]} columns={columns} emptyState="No invoices found." />
+
+<DataTable
+    data={[]}
+    columns={columns}
+    emptyState={<MyEmptyIllustration message="Nothing here yet" />}
+/>
+```
+
+## Custom cell rendering
+
+`cell` receives the full row and can return any `ReactNode`:
+
+```tsx
+const columns: Column<User>[] = [
+    {
+        id: 'status',
+        header: 'Status',
+        cell: (row) => (
+            <Badge variant={row.status === 'active' ? 'success' : 'warning'}>
+                {row.status}
+            </Badge>
+        ),
+    },
+];
+```
+
+## Row press
+
+```tsx
+<DataTable
+    data={data}
+    columns={columns}
+    onRowPress={(row) => router.push(`/invoices/${row.id}`)}
+/>
+```
+
+## Accessibility
+
+- Column headers render as `<th>` elements via the underlying `Table.HeaderCell`. Screen readers associate data cells with their headers automatically.
+- Sortable headers include an `aria-label="Sort by <id>"` on the interactive span.
+- Pagination controls use `aria-label` on Prev/Next and `aria-live="polite"` on the page indicator.
+- The empty-state cell spans all columns via `colSpan` so it reads as a single region.
+
+## Deferred to v2
+
+The following features are explicitly out of scope for v1 and are documented here so you know what to build around:
+
+| Feature | Notes |
+|---------|-------|
+| **Server-side sorting/pagination** | Add `onSort` / `onPaginate` callbacks; DataTable becomes uncontrolled for these. |
+| **Filtering** | Column-level filter inputs or a global search box. |
+| **Row selection** | Checkbox column + `selectedRows` / `onSelectionChange` props. |
+| **Expanding rows** | Sub-row renderer via `expandedRow` column. |
+| **Column resizing** | Drag handle on `HeaderCell`. |
+| **Sticky headers** | `stickyHeader` prop on `Table`; requires `overflow: auto` container. |
+| **Variable-width columns on native** | `width` / `minWidth` on `Column`; v1 uses equal flex. |
+
+## API
+
+### `Column<T>`
+
+```ts
+type Column<T> = {
+    id: string;
+    header: ReactNode;
+    cell: (row: T) => ReactNode;
+    sortable?: boolean;
+    align?: 'left' | 'center' | 'right';
+};
+```
+
+### `DataTable`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `data` | `T[]` | — | Row data array. |
+| `columns` | `Column<T>[]` | — | Column definitions. |
+| `pageSize` | `number` | `10` | Rows per page. |
+| `defaultSort` | `{ id: string; direction: 'asc' \| 'desc' }` | — | Initial sort state. |
+| `onRowPress` | `(row: T) => void` | — | Row press/click handler. |
+| `emptyState` | `ReactNode` | `"No data"` | Shown when `data` is empty. |
+| `striped` | `boolean` | `false` | Inherited from `Table`. |
+| `compact` | `boolean` | `false` | Inherited from `Table`. |
+| `bordered` | `boolean` | `false` | Inherited from `Table`. |
+| `className` | `string` | — | Web only: extra classes on the table. |
+| `testID` | `string` | — | Test identifier. |
