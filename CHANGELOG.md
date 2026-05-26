@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/nori-ui/nori-ui/compare/v1.10.0...v1.10.1) (2026-05-26)
+
+### Bug Fixes
+
+* **storybook:** build @nori-ui/core before storybook deploy ([f062852](https://github.com/nori-ui/nori-ui/commit/f062852f19235c9f4becf62fc9a1323d3f365959))
+
 ## [1.10.0](https://github.com/nori-ui/nori-ui/compare/v1.9.2...v1.10.0) (2026-05-26)
 
 ### Features
