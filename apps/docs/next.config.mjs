@@ -2,9 +2,20 @@ import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
 
+// Storybook is deployed as a separate Vercel project and surfaced at
+// nori-ui.com/storybook via rewrite. Override per-environment with
+// STORYBOOK_URL; the default points at the production Storybook project.
+const storybookUrl = process.env.STORYBOOK_URL ?? 'https://nori-ui-storybook.vercel.app';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    async rewrites() {
+        return [
+            { source: '/storybook', destination: `${storybookUrl}/storybook/index.html` },
+            { source: '/storybook/:path*', destination: `${storybookUrl}/storybook/:path*` },
+        ];
+    },
     // NativeWind + react-native-css-interop must be transpiled by Next so
     // their JSX runtime is applied uniformly across the app.
     transpilePackages: [
