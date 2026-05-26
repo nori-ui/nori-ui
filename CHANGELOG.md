@@ -1,3 +1,9 @@
+## [1.10.0](https://github.com/nori-ui/nori-ui/compare/v1.9.2...v1.10.0) (2026-05-26)
+
+### Features
+
+* **storybook:** deploy to nori-ui.com/storybook via docs rewrite ([9853693](https://github.com/nori-ui/nori-ui/commit/985369317f78e293ac1b781beec89a2c7821d731))
+
 ## [1.9.2](https://github.com/nori-ui/nori-ui/compare/v1.9.1...v1.9.2) (2026-05-21)
 
 ### Bug Fixes
