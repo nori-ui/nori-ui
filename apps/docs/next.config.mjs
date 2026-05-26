@@ -5,7 +5,7 @@ const withMDX = createMDX();
 // Storybook is deployed as a separate Vercel project and surfaced at
 // nori-ui.com/storybook via rewrite. Override per-environment with
 // STORYBOOK_URL; the default points at the production Storybook project.
-const storybookUrl = process.env.STORYBOOK_URL ?? 'https://nori-ui-storybook.vercel.app';
+const storybookUrl = process.env.STORYBOOK_URL ?? 'https://nori-ui-playground-web.vercel.app';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

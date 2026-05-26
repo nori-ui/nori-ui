@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "cd ../.. && corepack enable && yarn install --immutable",
-  "buildCommand": "cd ../.. && yarn build:tokens && yarn workspace playground-web build:storybook:prod",
+  "buildCommand": "cd ../.. && yarn build:tokens && yarn workspace @nori-ui/core build && yarn workspace playground-web build:storybook:prod",
   "outputDirectory": "storybook-static"
 }
