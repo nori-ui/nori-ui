@@ -136,6 +136,31 @@ jobs:
           test -f packages/mcp/dist/index.js
           test -f packages/mcp/dist/index.d.ts
 
+      # @nori-ui/mcp ships in lockstep with @nori-ui/core (same version), but
+      # its published artifact only changes when the mcp source, the corpus
+      # generator, or the docs content it snapshots changes. Decide HERE —
+      # before semantic-release adds its version-bump commit — whether mcp
+      # should be published this run, so a core-only release doesn't mint a
+      # pointless mcp version. semantic-release still bumps mcp's package.json
+      # version (npmPublish:false on the mcp plugin), keeping versions aligned;
+      # the actual `npm publish` for mcp is the gated step after the release.
+      - name: Detect mcp changes since last release
+        id: mcp
+        run: |
+          set -e
+          LAST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo '')"
+          echo "core_version_before=$(node -p "require('./packages/core/package.json').version")" >> "$GITHUB_OUTPUT"
+          if [ -z "$LAST_TAG" ] || ! git diff --quiet "$LAST_TAG" HEAD -- \
+              packages/mcp \
+              apps/docs/content/docs \
+              apps/docs/scripts/generate-mcp-data.mjs; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "mcp inputs changed since ${LAST_TAG:-<no previous tag>} — will publish if a release is cut"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "no mcp input changes since $LAST_TAG — mcp publish will be skipped"
+          fi
+
       # semantic-release runs version bump + publish + changelog + github release.
       # `npm publish` is invoked by @semantic-release/npm. With:
       #   - id-token: write granted (above)
@@ -156,3 +181,28 @@ jobs:
           # Re-enable (set to "true") once this repo goes public.
           NPM_CONFIG_PROVENANCE: "false"
         run: yarn semantic-release
+
+      # semantic-release published @nori-ui/core and bumped @nori-ui/mcp's
+      # version (npmPublish:false) but did NOT publish mcp. Publish it now,
+      # but only when both hold:
+      #   - a release was actually cut this run (core's version changed), and
+      #   - mcp's inputs changed since the last release (detected above).
+      # mcp is already a configured OIDC trusted publisher for this workflow,
+      # the workspace-protocol detach + version bump already ran on the
+      # runner, so a bare `npm publish` here behaves exactly as the
+      # semantic-release npm step did — just gated.
+      - name: Publish @nori-ui/mcp (lockstep, only when changed)
+        if: steps.mcp.outputs.changed == 'true'
+        env:
+          NPM_CONFIG_PROVENANCE: "false"
+          CORE_VERSION_BEFORE: ${{ steps.mcp.outputs.core_version_before }}
+        run: |
+          set -e
+          CORE_VERSION_AFTER="$(node -p "require('./packages/core/package.json').version")"
+          if [ "$CORE_VERSION_AFTER" = "$CORE_VERSION_BEFORE" ]; then
+            echo "No release cut this run (version still $CORE_VERSION_AFTER) — skipping mcp publish."
+            exit 0
+          fi
+          echo "Release $CORE_VERSION_AFTER cut and mcp inputs changed — publishing @nori-ui/mcp@$CORE_VERSION_AFTER"
+          cd packages/mcp
+          npm publish

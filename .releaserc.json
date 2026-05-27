@@ -70,7 +70,7 @@
       "@semantic-release/npm",
       {
         "pkgRoot": "packages/mcp",
-        "npmPublish": true
+        "npmPublish": false
       }
     ],
     "@semantic-release/github",
