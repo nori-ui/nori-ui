@@ -1,3 +1,9 @@
+## [1.10.3](https://github.com/nori-ui/nori-ui/compare/v1.10.2...v1.10.3) (2026-05-27)
+
+### Bug Fixes
+
+* **storybook:** force trailing slash so manager assets resolve ([8d666c2](https://github.com/nori-ui/nori-ui/commit/8d666c23e20005bd67f59a7c05566735ae2cb76e))
+
 ## [1.10.2](https://github.com/nori-ui/nori-ui/compare/v1.10.1...v1.10.2) (2026-05-27)
 
 ### Bug Fixes
