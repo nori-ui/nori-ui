@@ -3,6 +3,26 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 
+// Inline book/storybook glyph — no icon-set dep.
+const BookIcon = (
+    <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        role="img"
+        aria-label="Storybook"
+    >
+        <title>Storybook</title>
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+);
+
 // Inline sparkles glyph — keeps the layout free of an icon-set dep just
 // for one nav adornment.
 const SparklesIcon = (
@@ -46,9 +66,36 @@ const ForAiBanner = (
     </Link>
 );
 
+/**
+ * Sidebar banner pill linking to the deployed Storybook. Sits below the
+ * "For AI agents" pill so both are visible without scrolling. Storybook
+ * is served from /storybook (static asset rewrite in next.config.mjs).
+ */
+const StorybookBanner = (
+    <Link
+        href="/storybook"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="-mx-2 mb-2 flex items-center gap-2 rounded-lg border border-fd-border bg-fd-card px-3 py-2 text-sm font-medium text-fd-foreground transition-colors hover:bg-fd-accent"
+    >
+        <span className="text-fd-muted-foreground">{BookIcon}</span>
+        <span>Storybook</span>
+        <span className="ml-auto rounded-md bg-fd-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-fd-primary">
+            UI
+        </span>
+    </Link>
+);
+
+const SidebarBanner = (
+    <div>
+        {StorybookBanner}
+        {ForAiBanner}
+    </div>
+);
+
 export default function Layout({ children }: { children: ReactNode }) {
     return (
-        <DocsLayout tree={source.pageTree} nav={{ title: 'nori-ui' }} sidebar={{ banner: ForAiBanner }}>
+        <DocsLayout tree={source.pageTree} nav={{ title: 'nori-ui' }} sidebar={{ banner: SidebarBanner }}>
             {children}
         </DocsLayout>
     );
