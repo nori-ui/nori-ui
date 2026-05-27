@@ -21,6 +21,13 @@ const config: StorybookConfig = {
         }
         return cfg;
     },
+    // NB: the Vite `base` above only rewrites the preview (iframe) asset URLs.
+    // The manager's index.html references its runtime/addon chunks with
+    // relative (./sb-manager, ./sb-addons) URLs. Storybook has no manager
+    // base-path option and managerHead only appends (too late for a <base>
+    // tag, which must precede those refs), so the prod build scripts
+    // post-process index.html to inject <base> at the top of <head>. See
+    // scripts/inject-manager-base.mjs.
 };
 
 export default config;

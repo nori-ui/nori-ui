@@ -11,7 +11,8 @@
     "test": "echo 'no unit tests — e2e only' && exit 0",
     "storybook": "storybook dev -p 6006 --no-open",
     "build:storybook": "storybook build -o storybook-static",
-    "build:storybook:prod": "STORYBOOK_BASE_PATH=/storybook/ storybook build -o storybook-static/storybook"
+    "build:storybook:prod": "STORYBOOK_BASE_PATH=/storybook/ storybook build -o storybook-static/storybook && STORYBOOK_BASE_PATH=/storybook/ node scripts/inject-manager-base.mjs storybook-static/storybook/index.html",
+    "build:storybook:docs": "STORYBOOK_BASE_PATH=/storybook/ storybook build -o ../docs/public/storybook && STORYBOOK_BASE_PATH=/storybook/ node scripts/inject-manager-base.mjs ../docs/public/storybook/index.html"
   },
   "dependencies": {
     "@nori-ui/core": "workspace:*",
