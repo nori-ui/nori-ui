@@ -50,11 +50,15 @@ export default defineConfig({
         'animation/animated-view.web': 'src/animation/animated-view.web.ts',
     },
     format: ['esm', 'cjs'],
-    // Use a non-composite tsconfig for the dts build. The main tsconfig.json
-    // is composite for yarn workspace project refs (which prevents tsup's
-    // rollup-plugin-dts from resolving inter-file imports).
     tsconfig: './tsconfig.build.json',
-    dts: true,
+    // Declarations are emitted separately via `tsc -p tsconfig.dts.json`
+    // (see the package `build` script). tsup's rollup-plugin-dts bundles the
+    // entire ~60-entry type graph into one process needing ~8 GB of heap,
+    // which OOMs an 8 GB CI machine (and can't be lowered — it heap-OOMs
+    // below ~7 GB). Plain `tsc --emitDeclarationOnly` streams file-by-file
+    // in a few hundred MB and emits the same per-entry .d.ts the exports map
+    // points at.
+    dts: false,
     sourcemap: true,
     clean: true,
     target: 'es2022',

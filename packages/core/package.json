@@ -77,7 +77,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
+    "build": "tsup && tsc -p tsconfig.dts.json",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
   },
