@@ -1,3 +1,9 @@
+## [1.10.2](https://github.com/nori-ui/nori-ui/compare/v1.10.1...v1.10.2) (2026-05-27)
+
+### Bug Fixes
+
+* **storybook:** skip core .d.ts generation in storybook deploy ([8e8f9de](https://github.com/nori-ui/nori-ui/commit/8e8f9de2de1e23ba23bdbf4818619785ddd0c1be))
+
 ## [1.10.1](https://github.com/nori-ui/nori-ui/compare/v1.10.0...v1.10.1) (2026-05-26)
 
 ### Bug Fixes
