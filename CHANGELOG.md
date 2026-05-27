@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/nori-ui/nori-ui/compare/v1.10.4...v1.11.0) (2026-05-27)
+
+### Features
+
+* **docs:** surface Storybook — navbar link, intro callouts, per-component deep links ([#12](https://github.com/nori-ui/nori-ui/issues/12)) ([8225c6e](https://github.com/nori-ui/nori-ui/commit/8225c6e355488a46d6a2e3afc34a54440f12c1be))
+
 ## [1.10.4](https://github.com/nori-ui/nori-ui/compare/v1.10.3...v1.10.4) (2026-05-27)
 
 ## [1.10.3](https://github.com/nori-ui/nori-ui/compare/v1.10.2...v1.10.3) (2026-05-27)
