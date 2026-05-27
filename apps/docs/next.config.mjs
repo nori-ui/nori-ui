@@ -10,11 +10,18 @@ const storybookUrl = process.env.STORYBOOK_URL ?? 'https://nori-ui-playground-we
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    async redirects() {
+        // Storybook's manager index.html references its chunks with relative
+        // (./sb-manager, ./sb-addons) URLs, so it only resolves correctly when
+        // served from a path with a trailing slash. Force /storybook ->
+        // /storybook/ before the rewrite below proxies it.
+        return [{ source: '/storybook', destination: '/storybook/', permanent: true }];
+    },
     async rewrites() {
-        return [
-            { source: '/storybook', destination: `${storybookUrl}/storybook/index.html` },
-            { source: '/storybook/:path*', destination: `${storybookUrl}/storybook/:path*` },
-        ];
+        // :path* matches zero or more segments, so this also covers the bare
+        // /storybook/ index. Path is preserved end-to-end, matching the
+        // /storybook/ Vite base the static build was compiled with.
+        return [{ source: '/storybook/:path*', destination: `${storybookUrl}/storybook/:path*` }];
     },
     // NativeWind + react-native-css-interop must be transpiled by Next so
     // their JSX runtime is applied uniformly across the app.
