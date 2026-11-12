@@ -50,6 +50,11 @@ export default defineConfig({
         'animation/animated-view.web': 'src/animation/animated-view.web.ts',
     },
     format: ['esm', 'cjs'],
+    // Split the CJS build too (tsup only splits ESM by default). Without it
+    // every CJS entry inlines its own copy of the theme and i18n contexts, so
+    // a `NoriProvider` required from `/client` never reaches a `Button`
+    // required from the root entry.
+    splitting: true,
     tsconfig: './tsconfig.build.json',
     // Declarations are emitted separately via `tsc -p tsconfig.dts.json`
     // (see the package `build` script). tsup's rollup-plugin-dts bundles the
