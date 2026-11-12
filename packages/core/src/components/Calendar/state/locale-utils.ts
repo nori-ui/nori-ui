@@ -93,7 +93,7 @@ const WEEKEND_FALLBACK: Record<string, [DayOfWeek, DayOfWeek]> = {
  * Use for the calendar grid header row.
  */
 export const formatWeekdayNames = (locale: string, format: 'short' | 'narrow' = 'short'): string[] => {
-    const fmt = new Intl.DateTimeFormat(locale, { weekday: format });
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: format, timeZone: 'UTC' });
     const start = getFirstDayOfWeek(locale);
     // 2026-01-04 is a Sunday in Gregorian; offset from there.
     return Array.from({ length: 7 }, (_, i) => {
@@ -104,18 +104,18 @@ export const formatWeekdayNames = (locale: string, format: 'short' | 'narrow' = 
 
 /** "May 2026" / "Mai 2026" / "mai 2026" — for the calendar header. */
 export const formatMonthYearTitle = (date: CalendarDate, locale: string): string => {
-    const fmt = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' });
     return fmt.format(date.toDate('UTC'));
 };
 
 /** Twelve full month names in the active locale. */
 export const formatMonthNames = (locale: string): string[] => {
-    const fmt = new Intl.DateTimeFormat(locale, { month: 'long' });
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' });
     return Array.from({ length: 12 }, (_, m) => fmt.format(new Date(Date.UTC(2026, m, 15))));
 };
 
 /** "May 5, 2026" — for screen-reader announcements of the focused date. */
 export const formatFullDate = (date: CalendarDate, locale: string): string => {
-    const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'long' });
+    const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' });
     return fmt.format(date.toDate('UTC'));
 };

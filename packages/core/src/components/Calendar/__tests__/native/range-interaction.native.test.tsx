@@ -25,6 +25,16 @@ import { Calendar } from '../../Calendar';
 const wrap = (ui: ReactNode) => <NoriProvider locale="en-US">{ui}</NoriProvider>;
 
 describe('Calendar — native range tap-tap', () => {
+    // Without a value the calendar opens on today's month, so pin "today" to
+    // the month these assertions address. Mid-month noon keeps it stable in
+    // every time zone.
+    beforeAll(() => {
+        jest.useFakeTimers({ now: new Date('2026-05-15T12:00:00Z') });
+    });
+    afterAll(() => {
+        jest.useRealTimers();
+    });
+
     it('first tap sets pending start, second tap commits end', () => {
         const onChange = jest.fn();
         const { getByLabelText } = render(wrap(<Calendar mode="range" defaultValue={null} onChange={onChange} />));

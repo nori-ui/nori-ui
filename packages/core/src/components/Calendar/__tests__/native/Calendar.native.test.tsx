@@ -29,6 +29,16 @@ describe('Calendar — native smoke (single mode)', () => {
 });
 
 describe('Calendar — native smoke (multiple mode)', () => {
+    // Without a value the calendar opens on today's month, so pin "today" to
+    // the month these assertions address. Mid-month noon keeps it stable in
+    // every time zone.
+    beforeAll(() => {
+        jest.useFakeTimers({ now: new Date('2026-05-15T12:00:00Z') });
+    });
+    afterAll(() => {
+        jest.useRealTimers();
+    });
+
     it('accumulates selected dates', () => {
         const onChange = jest.fn();
         const { getByLabelText } = render(wrap(<Calendar mode="multiple" defaultValue={[]} onChange={onChange} />));
