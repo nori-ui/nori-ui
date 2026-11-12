@@ -16,8 +16,11 @@ export type NoriProviderProps = {
      *   - a `NoriTheme` (`{ light, dark }`) — covers both schemes
      *   - a single `Theme` — used for both schemes (rare)
      *   - one of the bundled presets: `tealTheme`, `blueTheme`, `roseTheme`,
-     *     `violetTheme`, `orangeTheme`, `slateTheme` (from `@nori-ui/core`)
-     *   - omit — falls back to the default Nori palette (teal)
+     *     `violetTheme`, `orangeTheme`, `slateTheme` (exported from
+     *     `@nori-ui/core/client` and `@nori-ui/core/theme`, not from the
+     *     `@nori-ui/core` root entry)
+     *   - omit — inherits the theme of a parent `NoriProvider`, or falls
+     *     back to the default Nori palette (teal) when there is none
      */
     theme?: NoriTheme | Theme;
     /**
@@ -45,6 +48,9 @@ export type NoriProviderProps = {
  * Single root provider composing theme, i18n, and semantic-icons contexts.
  * Place near the root of your app. Only needed to override defaults — the
  * library works out of the box without any provider.
+ *
+ * Providers nest: a nested `NoriProvider` inherits `theme`, `i18n`,
+ * `locale`, and `icons` from its parent for every prop it does not set.
  */
 export function NoriProvider({ theme, colorScheme, i18n, icons, locale, children }: NoriProviderProps) {
     // Conditionally spread each optional prop — `exactOptionalPropertyTypes: true`

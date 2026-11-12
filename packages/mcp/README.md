@@ -40,12 +40,14 @@ npm i -g @nori-ui/mcp
 
 ## Tools
 
-| Name                  | Input                | What it returns                                      |
-| --------------------- | -------------------- | ---------------------------------------------------- |
-| `search_components`   | `{ query: string }`  | Fuzzy search by name, description, or tag.           |
-| `get_component_docs`  | `{ name: string }`   | Full docs body for a single component.               |
-| `get_component_props` | `{ name: string }`   | Prop definitions (deferred — pointer to docs today). |
-| `list_examples`       | `{ component?: ... }` | Usage examples; filter by component name.            |
+| Name                  | Input                    | What it returns |
+| --------------------- | ------------------------ | --------------- |
+| `search_components`   | `{ query: string }`      | Summaries (`name`, `description`, `tags`, `since`, `platform`, `url`) of every docs page whose title, description, or tags contain `query` (case-insensitive substring match). |
+| `get_component_docs`  | `{ name: string }`       | The summary plus `body`, the full docs text of the page with that title. `null` if there is none. |
+| `get_component_props` | `{ name: string }`       | `{ note, url }`. Prop extraction is deferred: the tool returns a pointer to the docs page, not a prop list. Read props from `get_component_docs`. |
+| `list_examples`       | `{ component?: string }` | `{ component, body }[]`, where `body` is the full docs text of the page. With `component`, only that page; without it, every page. |
+
+Every tool returns its result as a JSON string.
 
 ## How it works
 

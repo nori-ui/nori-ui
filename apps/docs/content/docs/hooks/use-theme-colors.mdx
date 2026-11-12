@@ -7,30 +7,34 @@ platform: both
 category: hooks
 ---
 
-Returns the fully resolved theme object for the current `colorScheme` ('light' | 'dark') under the nearest `<NoriProvider>` / `<ThemeProvider>`. Every component in the library reads its tokens through this hook — use it to style your own components in the same look-and-feel.
+Returns the `Theme` object for the current color scheme: the `light` half of the active theme in light mode, the `dark` half in dark mode. The active theme comes from the nearest `<NoriProvider theme={…}>` or `<ThemeProvider theme={…}>`; without one, the hook returns the default (teal) theme. The library's components read their tokens through this hook, so you can use it to style your own components consistently.
+
+`useTheme` is an alias of `useThemeColors`. Both return the same object.
 
 ## Usage
 
 ```tsx
-import { useThemeColors } from '@nori-ui/core/client';
-import { px } from '@nori-ui/core/theme/px';
-import { View, Text } from 'react-native';
+'use client';
 
-function Card() {
-    const colors = useThemeColors();
+import { useThemeColors } from '@nori-ui/core/client';
+import { px } from '@nori-ui/core/theme';
+import { Text, View } from 'react-native';
+
+export function Card() {
+    const theme = useThemeColors();
     return (
         <View
             style={{
-                backgroundColor: colors.semantic.background.subtle,
-                borderRadius: px(colors.radius.md),
-                padding: px(colors.spacing['4']),
+                backgroundColor: theme.semantic.background.subtle,
+                borderRadius: px(theme.radius.md),
+                padding: px(theme.spacing['4']),
             }}
         >
             <Text
                 style={{
-                    fontFamily: colors.fontFamily.body,
-                    fontSize: px(colors.fontSize.md),
-                    color: colors.semantic.text.default,
+                    fontFamily: theme.fontFamily.body,
+                    fontSize: px(theme.fontSize.md),
+                    color: theme.semantic.text.default,
                 }}
             >
                 Hello
@@ -40,23 +44,39 @@ function Card() {
 }
 ```
 
+`'use client'` is needed in Next.js only.
+
+Every token value is a string. Dimension tokens carry a `px` suffix (`'16px'`). `px()` from `@nori-ui/core/theme` converts such a value to the number React Native style props expect: `px('16px')` returns `16`.
+
 ## Token surface
 
-The returned object exposes the following families (see [Theming](/docs/theming) for the full token tree):
+The returned `Theme` has these top-level keys:
 
-- `semantic.{background, text, border, …}` — color roles that change with the active scheme.
-- `colors.{neutral, primary, danger, success, warning, info}.{50…900}` — the raw palette ramps.
-- `spacing` — `0` … `64` numeric scale.
-- `radius` — `xs` … `full`.
-- `fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing` — typography.
-- `shadow.{sm, md, lg}` — elevation tokens.
+| Key | Entries | Example value |
+|---|---|---|
+| `color.primary`, `color.neutral` | Ramps with the steps `'50'`, `'100'`, `'200'`, `'300'`, `'400'`, `'500'`, `'600'`, `'700'`, `'800'`, `'900'`. | `theme.color.primary['600']` is `'#0d9488'` |
+| `color.danger`, `color.dangerText`, `color.info`, `color.success`, `color.warning` | Single color strings, not ramps. | `theme.color.danger` is `'#ef4444'` |
+| `semantic.background` | `default`, `subtle`, `elevated` | `'#fafafa'` |
+| `semantic.text` | `default`, `muted`, `inverted` | `'#18181b'` |
+| `semantic.border` | `default`, `strong` | `'#e4e4e7'` |
+| `semantic.interactive` | `primary`, `primaryHover`, `primaryPressed`, `destructive` | `'#0d9488'` |
+| `spacing` | `'0'`, `'1'`, `'2'`, `'3'`, `'4'`, `'5'`, `'6'`, `'8'`, `'10'`, `'12'`, `'16'`, `'20'`, `'24'`. One step is 4px. | `theme.spacing['4']` is `'16px'` |
+| `radius` | `none`, `sm`, `md`, `lg`, `xl`, `2xl`, `full` | `theme.radius.md` is `'6px'` |
+| `fontFamily` | `body`, `display`, `mono` | a font stack string |
+| `fontSize` | `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl` | `theme.fontSize.md` is `'16px'` |
+| `fontWeight` | `regular`, `medium`, `semibold`, `bold` | `theme.fontWeight.bold` is `'700'` |
+| `lineHeight` | `tight`, `normal`, `relaxed` | `theme.lineHeight.normal` is `'1.4'` |
+| `shadow` | `sm`, `md`, `lg` | a CSS box-shadow string |
+
+Example values are from the default theme in light mode.
 
 ## Notes
 
-- The returned object is **memoized per scheme + theme combo** — safe to use as a dependency in `useMemo` / `useEffect` arrays.
-- `colors.semantic.*` automatically swaps between the active light / dark mapping; `colors.colors.*` does not.
-- The hook is client-only — import from `@nori-ui/core/client`.
+- In the default theme and the bundled presets, only the `semantic` group differs between light and dark. The `color` ramps, spacing, radii, and typography are the same in both halves. A custom theme can differ anywhere.
+- The hook returns one half of the theme object from context, without copying it. The reference is stable as long as the color scheme and the `theme` prop stay the same, so it is safe in `useMemo` and `useEffect` dependency arrays. If you build a custom theme inside a component, memoize it; a new theme object on every render changes the reference on every render.
+- The color scheme is `'dark'` on web when `<html>` has `class="dark"` or `data-theme="dark"`, on native when the OS appearance is dark, and on both when a `NoriProvider` sets `colorScheme="dark"`. Read it directly with `useColorScheme()` from `@nori-ui/core/client`.
+- `fontWeight` and `lineHeight` values are strings (`'700'`, `'1.4'`). Convert them where a style prop expects a number.
 
 ## Related
 
-- [Theming](/docs/theming) — token reference + custom theme construction.
+- [Theming](/docs/theming) — presets and custom themes.

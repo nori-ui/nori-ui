@@ -9,8 +9,9 @@ import { themeDark as defaultDark, theme as defaultLight, type Theme } from './g
  * by `useColorScheme()` so the same theme object covers both schemes.
  *
  * Build one yourself by spreading the defaults and overriding the colors
- * you care about, or pick a preset from `@nori-ui/core/themes` (see the
- * Theming docs for examples).
+ * you care about, or pick a preset (`tealTheme`, `blueTheme`, …) from
+ * `@nori-ui/core/client` or `@nori-ui/core/theme` (see the Theming docs
+ * for examples).
  */
 export type NoriTheme = {
     light: Theme;
