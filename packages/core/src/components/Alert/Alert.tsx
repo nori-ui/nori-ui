@@ -3,6 +3,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
@@ -45,12 +46,17 @@ type TonePalette = { bg: string; border: string; fg: string; iconBg: string; def
 // pastel scale (Tailwind 50/200/800); dark variants use the deep 950/700/100
 // scale so the alert reads as a calm, on-tone surface against either
 // background — never a harsh white card on a dark page.
+//
+// The theme carries one color per status (plus `dangerText`), so only the
+// icon and the light danger text follow a custom theme. The surface, border
+// and remaining text shades have no token and stay literal.
 function tonePalettes(
     scheme: 'light' | 'dark',
     primary: { '50': string; '200': string; '700': string; '800': string; '900': string; '100': string },
     success: string,
     warning: string,
-    danger: string
+    danger: string,
+    dangerText: string
 ): Record<AlertTone, TonePalette> {
     if (scheme === 'dark') {
         return {
@@ -109,7 +115,7 @@ function tonePalettes(
         danger: {
             bg: '#fef2f2',
             border: '#fecaca',
-            fg: '#991b1b',
+            fg: dangerText,
             iconBg: danger,
             defaultIcon: defaultSemanticIcons.alertTriangle,
         },
@@ -143,13 +149,16 @@ export const Alert = ({
     testID,
 }: AlertProps) => {
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const dismissLabel = t('alert.dismiss');
     const scheme = useColorScheme();
     const palette = tonePalettes(
         scheme,
         colors.color.primary,
         colors.color.success,
         colors.color.warning,
-        colors.color.danger
+        colors.color.danger,
+        colors.color.dangerText
     )[tone];
     const IconComponent = palette.defaultIcon;
     const containerStyle: ViewStyle = {
@@ -219,8 +228,8 @@ export const Alert = ({
                     onPress={onDismiss}
                     role="button"
                     accessibilityRole="button"
-                    accessibilityLabel="Dismiss"
-                    aria-label="Dismiss"
+                    accessibilityLabel={dismissLabel}
+                    aria-label={dismissLabel}
                     style={{
                         // 24×24 close button hit area — component-density literal — not from theme
                         width: 24,

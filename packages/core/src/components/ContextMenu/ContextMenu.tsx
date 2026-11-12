@@ -1,16 +1,9 @@
 'use client';
 
-import {
-    createContext,
-    isValidElement,
-    type ReactElement,
-    type ReactNode,
-    useCallback,
-    useContext,
-    useState,
-} from 'react';
+import { createContext, isValidElement, type ReactElement, type ReactNode, useCallback, useContext } from 'react';
 import { Platform, Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
+import { slotTestIdProps, useOverlayOpenState } from '../../utils/overlay-utils';
 import {
     MenuContent,
     type MenuContentProps,
@@ -83,19 +76,7 @@ export type ContextMenuProps = {
  * ```
  */
 const ContextMenuRoot = ({ open, defaultOpen = false, onOpenChange, children }: ContextMenuProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
 
     return (
         <ContextMenuCtx.Provider value={{ open: current, setOpen }}>
@@ -111,6 +92,12 @@ const ContextMenuRoot = ({ open, defaultOpen = false, onOpenChange, children }: 
 // ---------------------------------------------------------------------------
 
 export type ContextMenuTriggerProps = {
+    /**
+     * Render the child as the trigger (Slot pattern). Pass `false` to wrap
+     * the children in the library's own pressable instead.
+     * @defaultValue true
+     */
+    asChild?: boolean;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -121,9 +108,12 @@ export type ContextMenuTriggerProps = {
  *
  * - Web: fires on `contextmenu` (right-click). Calls `preventDefault` so the
  *   browser's native context menu is suppressed.
- * - Native: fires on `onLongPress`.
+ * - Native: fires on long-press. The child is wrapped in a pressable, so a
+ *   plain `View` works as the trigger area. That wrapper is the element the
+ *   parent lays out: put layout classes such as `flex-1` on the trigger's
+ *   `className` (it is applied to the wrapper), not only on the child.
  */
-const ContextMenuTrigger = ({ children, className, testID }: ContextMenuTriggerProps) => {
+const ContextMenuTrigger = ({ asChild = true, children, className, testID }: ContextMenuTriggerProps) => {
     const ctx = useContextMenuCtx();
     const popover = usePopoverContext('ContextMenu.Trigger');
 
@@ -132,26 +122,33 @@ const ContextMenuTrigger = ({ children, className, testID }: ContextMenuTriggerP
         ctx.setOpen(true);
     }, [ctx, popover]);
 
+    const onContextMenu = useCallback(
+        (event: MouseEvent) => {
+            event.preventDefault();
+            openMenu();
+        },
+        [openMenu]
+    );
+
+    const child = asChild && isValidElement(children) ? (children as ReactElement<Record<string, unknown>>) : null;
+
     if (Platform.OS === 'web') {
-        if (isValidElement(children)) {
-            const child = children as ReactElement<Record<string, unknown>>;
-            const existing = child.props.onContextMenu as ((e: MouseEvent) => void) | undefined;
+        const menuProps = {
+            onContextMenu,
+            'aria-haspopup': 'menu',
+            'aria-expanded': ctx.open,
+            'aria-controls': popover.contentId,
+        } as Record<string, unknown>;
+
+        if (child) {
+            // Slot chains the child's own `onContextMenu` after this one.
             return (
                 <Slot
                     ref={(node: HTMLElement | null) => {
                         popover.triggerRef.current = node;
                     }}
-                    onContextMenu={(e: MouseEvent) => {
-                        e.preventDefault();
-                        existing?.(e);
-                        openMenu();
-                    }}
-                    {...({
-                        'aria-haspopup': 'menu',
-                        'aria-expanded': ctx.open,
-                        'aria-controls': popover.contentId,
-                    } as Record<string, unknown>)}
-                    {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                    {...menuProps}
+                    {...slotTestIdProps(child, testID)}
                     {...(className !== undefined ? { className } : {})}
                 >
                     {child}
@@ -164,15 +161,7 @@ const ContextMenuTrigger = ({ children, className, testID }: ContextMenuTriggerP
                 ref={(node) => {
                     popover.triggerRef.current = node as unknown as HTMLElement | null;
                 }}
-                {...({
-                    onContextMenu: (e: MouseEvent) => {
-                        e.preventDefault();
-                        openMenu();
-                    },
-                    'aria-haspopup': 'menu',
-                    'aria-expanded': ctx.open,
-                    'aria-controls': popover.contentId,
-                } as Record<string, unknown>)}
+                {...menuProps}
                 {...(testID !== undefined ? { testID } : {})}
                 {...(className !== undefined ? { className } : {})}
             >
@@ -181,38 +170,32 @@ const ContextMenuTrigger = ({ children, className, testID }: ContextMenuTriggerP
         );
     }
 
-    // Native — long press
-    if (isValidElement(children)) {
-        const child = children as ReactElement<Record<string, unknown>>;
-        const existing = child.props.onLongPress as ((e: unknown) => void) | undefined;
-        return (
-            <Slot
-                ref={(node: unknown) => {
-                    popover.triggerRef.current = node as HTMLElement | null;
-                }}
-                onLongPress={(e: unknown) => {
-                    existing?.(e);
-                    openMenu();
-                }}
-                accessibilityRole="button"
-                {...(testID !== undefined ? { testID } : {})}
-                {...(className !== undefined ? { className } : {})}
-            >
-                {child}
-            </Slot>
-        );
-    }
-
+    // Native — long press. Only pressables emit `onLongPress`, so the wrapper
+    // carries it for children that are plain Views. The child still receives
+    // the handler through Slot: when it is itself a pressable it claims the
+    // touch and the wrapper never sees it. Exactly one of the two fires.
+    //
+    // `accessible={false}` keeps the wrapper from collapsing the child's
+    // content into a single accessibility element.
     return (
         <Pressable
             ref={(node) => {
                 popover.triggerRef.current = node as unknown as HTMLElement | null;
             }}
+            accessible={false}
             onLongPress={openMenu}
-            {...(testID !== undefined ? { testID } : {})}
+            {...(child === null && testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
-            {typeof children === 'string' || typeof children === 'number' ? <RNText>{children}</RNText> : children}
+            {child ? (
+                <Slot onLongPress={openMenu} {...slotTestIdProps(child, testID)}>
+                    {child}
+                </Slot>
+            ) : typeof children === 'string' || typeof children === 'number' ? (
+                <RNText>{children}</RNText>
+            ) : (
+                children
+            )}
         </Pressable>
     );
 };

@@ -135,7 +135,9 @@ attributes are injected onto the underlying `Pressable` automatically:
 
 On native, the React Native counterparts are forwarded instead:
 `accessibilityLabelledBy` (mirrors `aria-labelledby`) and
-`accessibilityDescribedBy` (mirrors `aria-describedby`).
+`accessibilityDescribedBy` (mirrors `aria-describedby`). On iOS, where
+`aria-labelledby` has no effect, `Field` passes the label text as
+`accessibilityLabel` instead.
 
 You can also pass any of these props explicitly when using `Checkbox` outside a
 `Field`, e.g., `<Checkbox aria-label="Accept terms" />`.

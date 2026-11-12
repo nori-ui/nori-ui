@@ -62,6 +62,22 @@ describe('<FloatButton>', () => {
     });
 });
 
+describe('<FloatButton> href', () => {
+    it('renders one link, not a button nested in an anchor', () => {
+        render(<FloatButton accessibilityLabel="Docs" href="/docs" testID="fab" />);
+        const fab = screen.getByTestId('fab');
+        expect(fab.getAttribute('role')).toBe('link');
+        expect(fab.getAttribute('href')).toBe('/docs');
+        expect(fab.closest('a')).toBeNull();
+        expect(screen.queryByRole('button')).toBeNull();
+    });
+
+    it('drops the link target while disabled', () => {
+        render(<FloatButton accessibilityLabel="Docs" href="/docs" disabled testID="fab" />);
+        expect(screen.getByTestId('fab').hasAttribute('href')).toBe(false);
+    });
+});
+
 describe('<FloatButton.Group>', () => {
     it('starts collapsed and opens on trigger press', () => {
         function Demo() {
@@ -101,6 +117,8 @@ describe('<FloatButton.Group>', () => {
         }
         render(<Demo />);
         fireEvent.click(screen.getByTestId('trigger'));
+        // Exactly one notification: no `false` reported ahead of the `true`.
+        expect(onOpenChange).toHaveBeenCalledTimes(1);
         expect(onOpenChange).toHaveBeenCalledWith(true);
         expect(screen.getByTestId('action-1')).toBeInTheDocument();
     });
@@ -164,5 +182,19 @@ describe('<FloatButton.BackToTop>', () => {
         render(<FloatButton.BackToTop testID="bt" />);
         const bt = screen.getByTestId('bt');
         expect(bt.getAttribute('aria-label')).toBe('Back to top');
+    });
+
+    it('is unreachable by keyboard and assistive technology while hidden', () => {
+        render(<FloatButton.BackToTop testID="bt" />);
+        const bt = screen.getByTestId('bt');
+        expect(bt.getAttribute('tabindex')).toBe('-1');
+        expect(bt.closest('[aria-hidden="true"]')).not.toBeNull();
+    });
+
+    it('honors a controlled `visible` prop', () => {
+        render(<FloatButton.BackToTop testID="bt" visible />);
+        const bt = screen.getByTestId('bt');
+        expect(bt.hasAttribute('tabindex')).toBe(false);
+        expect(bt.closest('[aria-hidden="true"]')).toBeNull();
     });
 });

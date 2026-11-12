@@ -100,4 +100,19 @@ describe('<Sidebar> native', () => {
         const item = getByTestId('active-item');
         expect(item.props.accessibilityState?.selected).toBe(true);
     });
+
+    it('collapsed icon-only item exposes its label to screen readers', () => {
+        const { getByLabelText } = render(
+            wrap(
+                <Sidebar defaultCollapsed>
+                    <Sidebar.Menu>
+                        <Sidebar.MenuItem icon={<HomeIcon />} onPress={() => {}}>
+                            Home
+                        </Sidebar.MenuItem>
+                    </Sidebar.Menu>
+                </Sidebar>
+            )
+        );
+        expect(getByLabelText('Home')).toBeTruthy();
+    });
 });

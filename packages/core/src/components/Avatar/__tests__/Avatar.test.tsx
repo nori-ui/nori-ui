@@ -43,4 +43,12 @@ describe('<Avatar>', () => {
         render(<Avatar name="Ada Lovelace" testID="a" />);
         expect(screen.getByTestId('a').getAttribute('aria-label')).toBe('Ada Lovelace');
     });
+
+    it('tries the image again when src changes after a failed load', () => {
+        const { rerender } = render(<Avatar src="bad-url" name="Ada Lovelace" testID="a" />);
+        fireEvent.error(screen.getByTestId('a').querySelector('img') as Element);
+        expect(screen.getByTestId('a').querySelector('img')).toBeNull();
+        rerender(<Avatar src="https://example.com/good.png" name="Ada Lovelace" testID="a" />);
+        expect(screen.getByTestId('a').querySelector('img')).not.toBeNull();
+    });
 });

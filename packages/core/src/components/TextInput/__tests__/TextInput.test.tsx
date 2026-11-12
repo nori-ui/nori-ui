@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { useState } from 'react';
+import { createRef, useState } from 'react';
+import type { TextInput as RNTextInput } from 'react-native';
 import { NoriProvider } from '../../../provider';
 import { Field } from '../../Field';
 import { TextInput } from '../TextInput';
@@ -89,5 +90,30 @@ describe('<TextInput>', () => {
         );
         const input = screen.getByTestId('t');
         expect(input.getAttribute('aria-describedby')).toBeTruthy();
+    });
+});
+
+describe('<TextInput> ref and form integration', () => {
+    it('exposes the underlying input through ref for imperative focus', () => {
+        const ref = createRef<RNTextInput>();
+        render(<TextInput ref={ref} testID="t" />);
+        ref.current?.focus();
+        expect(document.activeElement).toBe(screen.getByTestId('t'));
+    });
+
+    it('submits its value under name with an HTML form', () => {
+        render(
+            <form data-testid="form">
+                <TextInput name="email" defaultValue="a@b.co" />
+            </form>
+        );
+        expect(new FormData(screen.getByTestId('form') as HTMLFormElement).get('email')).toBe('a@b.co');
+    });
+
+    it('is announced as disabled, not just read-only', () => {
+        render(<TextInput disabled testID="t" />);
+        const input = screen.getByTestId('t');
+        expect(input).toBeDisabled();
+        expect(input.getAttribute('aria-disabled')).toBe('true');
     });
 });

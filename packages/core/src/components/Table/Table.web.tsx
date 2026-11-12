@@ -6,11 +6,12 @@
  * via the `.web.tsx` extension.
  */
 
-import { useCallback, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 import {
     buildTableCompound,
+    IndexedRows,
     type TableCaptionProps,
     type TableCellProps,
     TableContext,
@@ -19,18 +20,18 @@ import {
     type TableProps,
     type TableRowProps,
     type TableSectionProps,
+    useTableContext,
 } from './Table.shared';
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 const TableRoot = ({ striped = false, compact = false, bordered = false, children, className, testID }: TableProps) => {
-    const [rowIndex, setRowIndex] = useState(0);
     const ctxValue: TableContextValue = {
         striped,
         compact,
         bordered,
-        rowIndex,
-        setRowIndex,
+        rowIndex: 0,
+        setRowIndex: () => {},
     };
     return (
         <TableContext.Provider value={ctxValue}>
@@ -68,7 +69,7 @@ const TableBody = ({ children, className, testID }: TableSectionProps) => (
         className={cn('[&_tr:last-child]:border-0', className)}
         {...(testID !== undefined ? { 'data-testid': testID } : {})}
     >
-        {children}
+        <IndexedRows>{children}</IndexedRows>
     </tbody>
 );
 
@@ -87,20 +88,33 @@ const TableFooter = ({ children, className, testID }: TableSectionProps) => (
 
 const TableRow = ({ selected = false, onPress, children, className, testID }: TableRowProps) => {
     const colors = useThemeColors();
-    const handleClick = useCallback(() => {
-        onPress?.();
-    }, [onPress]);
+    const { striped, rowIndex } = useTableContext();
+    const tinted = selected || (striped && rowIndex % 2 === 1);
+
+    const handleKeyDown = (event: KeyboardEvent<HTMLTableRowElement>) => {
+        // Keys pressed inside a nested control (a checkbox, a link) belong to that control.
+        if (event.target !== event.currentTarget) {
+            return;
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onPress?.();
+        }
+    };
 
     return (
+        // The row keeps its implicit `row` role: `role="button"` would detach
+        // the cells from the table for assistive technology.
         <tr
             className={cn(
                 'border-b border-semantic-border-default transition-colors',
-                onPress && 'cursor-pointer hover:bg-semantic-background-subtle',
+                onPress &&
+                    'cursor-pointer hover:bg-semantic-background-subtle focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-semantic-interactive-primary',
                 selected && 'bg-semantic-background-subtle',
                 className
             )}
-            style={selected ? { backgroundColor: colors.semantic.background.subtle } : undefined}
-            onClick={onPress ? handleClick : undefined}
+            style={tinted ? { backgroundColor: colors.semantic.background.subtle } : undefined}
+            {...(onPress ? { tabIndex: 0, onClick: () => onPress(), onKeyDown: handleKeyDown } : {})}
             {...(testID !== undefined ? { 'data-testid': testID } : {})}
         >
             {children}
@@ -110,45 +124,55 @@ const TableRow = ({ selected = false, onPress, children, className, testID }: Ta
 
 // ─── HeaderCell ───────────────────────────────────────────────────────────────
 
-const TableHeaderCell = ({ align = 'left', colSpan, children, className, testID }: TableHeaderCellProps) => (
-    <th
-        className={cn(
-            'h-10 px-4 font-medium text-semantic-text-secondary',
-            align === 'right' && 'text-right',
-            align === 'center' && 'text-center',
-            align === 'left' && 'text-left',
-            className
-        )}
-        colSpan={colSpan}
-        {...(testID !== undefined ? { 'data-testid': testID } : {})}
-    >
-        {children}
-    </th>
-);
+const TableHeaderCell = ({ align = 'left', colSpan, children, className, testID }: TableHeaderCellProps) => {
+    const { compact, bordered } = useTableContext();
+    return (
+        <th
+            className={cn(
+                'px-4 font-medium text-semantic-text-muted',
+                compact ? 'h-8' : 'h-10',
+                bordered && 'border border-semantic-border-default',
+                align === 'right' && 'text-right',
+                align === 'center' && 'text-center',
+                align === 'left' && 'text-left',
+                className
+            )}
+            colSpan={colSpan}
+            {...(testID !== undefined ? { 'data-testid': testID } : {})}
+        >
+            {children}
+        </th>
+    );
+};
 
 // ─── Cell ─────────────────────────────────────────────────────────────────────
 
-const TableCell = ({ align = 'left', colSpan, children, className, testID }: TableCellProps) => (
-    <td
-        className={cn(
-            'p-4 align-middle',
-            align === 'right' && 'text-right',
-            align === 'center' && 'text-center',
-            align === 'left' && 'text-left',
-            className
-        )}
-        colSpan={colSpan}
-        {...(testID !== undefined ? { 'data-testid': testID } : {})}
-    >
-        {children}
-    </td>
-);
+const TableCell = ({ align = 'left', colSpan, children, className, testID }: TableCellProps) => {
+    const { compact, bordered } = useTableContext();
+    return (
+        <td
+            className={cn(
+                'align-middle',
+                compact ? 'px-4 py-2' : 'p-4',
+                bordered && 'border border-semantic-border-default',
+                align === 'right' && 'text-right',
+                align === 'center' && 'text-center',
+                align === 'left' && 'text-left',
+                className
+            )}
+            colSpan={colSpan}
+            {...(testID !== undefined ? { 'data-testid': testID } : {})}
+        >
+            {children}
+        </td>
+    );
+};
 
 // ─── Caption ──────────────────────────────────────────────────────────────────
 
 const TableCaption = ({ children, className, testID }: TableCaptionProps) => (
     <caption
-        className={cn('mt-4 text-sm text-semantic-text-secondary', className)}
+        className={cn('mt-4 text-sm text-semantic-text-muted', className)}
         {...(testID !== undefined ? { 'data-testid': testID } : {})}
     >
         {children}

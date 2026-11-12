@@ -11,6 +11,7 @@ import { cn } from '../../utils/cn';
 export type KbdProps = {
     children?: ReactNode;
     className?: string;
+    testID?: string;
 };
 
 /**
@@ -21,11 +22,11 @@ export type KbdProps = {
  * <Text>Press <Kbd>⌘K</Kbd> to open the command palette.</Text>
  * ```
  *
- * On web it renders a semantic `<kbd>` element (via rn-web's `accessibilityRole`
- * mapping). On native it renders a styled `<Text>`. The visual treatment is
- * identical: small monospace text in a pill with a subtle border.
+ * On web it renders a semantic `<kbd>` element; on native, where no such
+ * element exists, a styled `<Text>`. The visual treatment is identical: small
+ * monospace text in a pill with a subtle border.
  */
-export const Kbd = ({ children, className }: KbdProps) => {
+export const Kbd = ({ children, className, testID }: KbdProps) => {
     const colors = useThemeColors();
     const isDark = useColorScheme() === 'dark';
 
@@ -33,8 +34,48 @@ export const Kbd = ({ children, className }: KbdProps) => {
     const borderColor = isDark ? colors.color.neutral['600'] : colors.color.neutral['300'];
     const textColor = isDark ? colors.color.neutral['200'] : colors.color.neutral['700'];
 
+    const classes = cn(
+        'inline-flex flex-row items-center rounded-sm border px-1 py-0.5',
+        isDark
+            ? 'bg-neutral-800 border-neutral-600 text-neutral-200'
+            : 'bg-neutral-100 border-neutral-300 text-neutral-700',
+        className
+    );
+    const fontSize = px(colors.fontSize.xs);
+    const lineHeight = fontSize * Number(colors.lineHeight.normal);
+    const fontFamily = colors.fontFamily.mono ?? 'monospace';
+
+    // react-native-web has no role that maps to <kbd>, so the element is
+    // rendered directly. The platform check keeps the DOM tag off native.
+    if (Platform.OS === 'web') {
+        return (
+            <kbd
+                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                className={classes}
+                style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    alignSelf: 'center',
+                    backgroundColor: bgColor,
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: px(colors.radius.sm),
+                    padding: `2px ${px(colors.spacing['1'])}px`,
+                    // Subtle bottom shadow gives the classic key look.
+                    boxShadow: `0 1px 0 ${borderColor}`,
+                    color: textColor,
+                    fontFamily,
+                    fontSize,
+                    fontWeight: colors.fontWeight.medium,
+                    lineHeight: `${lineHeight}px`,
+                }}
+            >
+                {children}
+            </kbd>
+        );
+    }
+
     const containerStyle: ViewStyle = {
-        display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -45,60 +86,19 @@ export const Kbd = ({ children, className }: KbdProps) => {
         borderRadius: px(colors.radius.sm),
         paddingHorizontal: px(colors.spacing['1']),
         paddingVertical: 2,
-        // Subtle bottom shadow gives the classic key look.
-        ...(Platform.OS === 'web'
-            ? ({
-                  boxShadow: `0 1px 0 ${borderColor}`,
-                  display: 'inline-flex',
-              } as object)
-            : {}),
     };
 
     const textStyle: TextStyle = {
         color: textColor,
-        // Monospace font for key labels.
-        fontFamily: colors.fontFamily.mono ?? 'monospace',
-        fontSize: px(colors.fontSize.xs),
+        fontFamily,
+        fontSize,
         fontWeight: colors.fontWeight.medium as '500',
-        lineHeight: px(colors.fontSize.xs) * Number(colors.lineHeight.normal),
+        lineHeight,
     };
 
-    // On web, map to the semantic <kbd> element via accessibilityRole.
-    // react-native-web renders role="term" as <dfn> and doesn't have a
-    // dedicated kbd mapping, so we use a raw className + aria approach.
-    // The 'none' role avoids a superfluous ARIA landmark while keeping
-    // the native <kbd> tag in the DOM (set via `aria-label` / class).
-    const extraWebProps =
-        Platform.OS === 'web'
-            ? ({
-                  // rn-web: 'none' skips the role attribute so the outer
-                  // View is just a plain <div>; we rely on the inner
-                  // <span> with data-kbd for semantic annotation.
-                  accessibilityRole: 'none' as const,
-              } as object)
-            : {};
-
     return (
-        <View
-            {...extraWebProps}
-            className={cn(
-                'inline-flex flex-row items-center rounded-sm border px-1 py-0.5',
-                isDark
-                    ? 'bg-neutral-800 border-neutral-600 text-neutral-200'
-                    : 'bg-neutral-100 border-neutral-300 text-neutral-700',
-                className
-            )}
-            style={containerStyle}
-        >
-            {/* On web, data-kbd is used for CSS targeting / semantics.
-                On native this attribute is silently ignored. */}
-            <RNText
-                {...(Platform.OS === 'web' ? ({ 'data-kbd': '' } as object) : {})}
-                accessibilityRole="none"
-                style={textStyle}
-            >
-                {children}
-            </RNText>
+        <View {...(testID !== undefined ? { testID } : {})} className={classes} style={containerStyle}>
+            <RNText style={textStyle}>{children}</RNText>
         </View>
     );
 };

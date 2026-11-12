@@ -1,14 +1,16 @@
 'use client';
 
 import type { ComponentType, ReactNode, Ref } from 'react';
-import { useCallback, useState } from 'react';
+import { isValidElement, useCallback, useState } from 'react';
 import type { PressableProps, StyleProp, View, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { Slot } from '../../slot';
 import type { Theme } from '../../theme/generated-tokens';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { type ButtonGroupContextValue, useButtonGroupContext } from '../ButtonGroup/button-group-context';
 import { Spinner } from '../Spinner';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
@@ -84,10 +86,30 @@ const BASE_STYLE: ViewStyle = {
     justifyContent: 'center',
 };
 
+// Inside a ButtonGroup only the outer corners of the group stay rounded, so
+// neighboring buttons read as one joined control.
+const joinedCornerStyle = (group: ButtonGroupContextValue | null): ViewStyle | null => {
+    if (!group || group.position === 'only') {
+        return null;
+    }
+    const squareStart = group.position !== 'first';
+    const squareEnd = group.position !== 'last';
+    if (group.orientation === 'horizontal') {
+        return {
+            ...(squareStart ? { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 } : null),
+            ...(squareEnd ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : null),
+        };
+    }
+    return {
+        ...(squareStart ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : null),
+        ...(squareEnd ? { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : null),
+    };
+};
+
 export const Button = ({
     children,
     variant = 'primary',
-    size = 'md',
+    size: sizeProp = 'md',
     disabled,
     loading,
     leadingIcon: LeadingIcon,
@@ -95,12 +117,20 @@ export const Button = ({
     asChild,
     className,
     onPress,
+    onPressIn,
+    onPressOut,
+    onHoverIn,
+    onHoverOut,
+    accessibilityState,
     testID,
     style,
     ref,
     ...rest
 }: ButtonProps) => {
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const group = useButtonGroupContext();
+    const size = group?.size ?? sizeProp;
     const isInoperative = Boolean(disabled) || Boolean(loading);
     // rn-web's `Pressable` does not reliably apply a `style` callback's
     // returned values to the rendered DOM (the static portions get
@@ -111,13 +141,37 @@ export const Button = ({
     // radius, fontSize, fontFamily, and fontWeight all the way through.
     const [hovered, setHovered] = useState(false);
     const [pressed, setPressed] = useState(false);
-    const handleHoverIn = useCallback(() => setHovered(true), []);
-    const handleHoverOut = useCallback(() => {
-        setHovered(false);
-        setPressed(false);
-    }, []);
-    const handlePressIn = useCallback(() => setPressed(true), []);
-    const handlePressOut = useCallback(() => setPressed(false), []);
+    // Consumer handlers run after the internal ones, so passing e.g.
+    // `onPressIn` never turns off the pressed/hover visuals.
+    const handleHoverIn = useCallback<NonNullable<PressableProps['onHoverIn']>>(
+        (ev) => {
+            setHovered(true);
+            onHoverIn?.(ev);
+        },
+        [onHoverIn]
+    );
+    const handleHoverOut = useCallback<NonNullable<PressableProps['onHoverOut']>>(
+        (ev) => {
+            setHovered(false);
+            setPressed(false);
+            onHoverOut?.(ev);
+        },
+        [onHoverOut]
+    );
+    const handlePressIn = useCallback<NonNullable<PressableProps['onPressIn']>>(
+        (ev) => {
+            setPressed(true);
+            onPressIn?.(ev);
+        },
+        [onPressIn]
+    );
+    const handlePressOut = useCallback<NonNullable<PressableProps['onPressOut']>>(
+        (ev) => {
+            setPressed(false);
+            onPressOut?.(ev);
+        },
+        [onPressOut]
+    );
     // When disabled, drop the variant's hover/active class fragments and
     // append `pointer-events-none cursor-not-allowed` so the className
     // path matches the inline-style path: no hover tint, no press tint,
@@ -223,8 +277,9 @@ export const Button = ({
         BASE_STYLE,
         { backgroundColor: stateBg },
         sizeContainer,
+        joinedCornerStyle(group),
         { opacity: isInoperative ? 0.6 : stateInteractionOpacity },
-    ];
+    ].filter((entry): entry is ViewStyle => entry !== null);
     // Resolve the consumer's `style` against the same hover/press state
     // we just computed — this preserves the historical contract where a
     // callback `style` receives the live interaction flags. The RN
@@ -251,22 +306,51 @@ export const Button = ({
         onPress?.(ev);
     };
 
+    // `disabled` and `busy` always reflect the real state; a consumer
+    // `accessibilityState` can only add to them (e.g. `selected`).
+    const mergedAccessibilityState = {
+        ...accessibilityState,
+        disabled: isInoperative,
+        busy: Boolean(loading),
+    };
+
     if (asChild) {
+        // A DOM child (`<a>`, `<button>`) only understands `onClick`. Any
+        // other child gets both handlers: RN's press system (Pressable, Text)
+        // needs `onPress` and replaces a passed `onClick` with its own, while
+        // components that render a DOM element (router links, a plain View on
+        // web) only react to `onClick`. Either way exactly one of them fires.
+        const isDomChild = isValidElement(children) && typeof children.type === 'string';
         const slotProps: Record<string, unknown> = {
             ref,
             className: classes,
             style: slotStyle,
-            onClick: handlePress as unknown as (...args: unknown[]) => unknown,
             ...rest,
         };
+        slotProps.onClick = isInoperative
+            ? // Stops an `<a href>` child from navigating while inoperative.
+              (ev: { preventDefault?: () => void }) => ev.preventDefault?.()
+            : (handlePress as unknown as (...args: unknown[]) => unknown);
+        if (isDomChild) {
+            if (testID !== undefined) {
+                slotProps['data-testid'] = testID;
+            }
+        } else {
+            slotProps.accessibilityState = mergedAccessibilityState;
+            if (isInoperative) {
+                slotProps.disabled = true;
+            } else {
+                slotProps.onPress = handlePress;
+            }
+            if (testID !== undefined) {
+                slotProps.testID = testID;
+            }
+        }
         if (isInoperative) {
             slotProps['aria-disabled'] = true;
         }
         if (loading) {
             slotProps['aria-busy'] = true;
-        }
-        if (testID !== undefined) {
-            slotProps['data-testid'] = testID;
         }
         return <Slot {...slotProps}>{children}</Slot>;
     }
@@ -285,20 +369,20 @@ export const Button = ({
             {...(testID !== undefined ? { testID } : {})}
             role="button"
             accessibilityRole="button"
-            accessibilityState={{ disabled: isInoperative, busy: Boolean(loading) }}
+            className={classes}
+            style={pressableStyle}
+            {...pressableExtra}
+            {...rest}
+            accessibilityState={mergedAccessibilityState}
             disabled={isInoperative}
             onPress={handlePress}
             onHoverIn={handleHoverIn}
             onHoverOut={handleHoverOut}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
-            className={classes}
-            style={pressableStyle}
-            {...pressableExtra}
-            {...rest}
         >
             {loading ? (
-                <Spinner size={ICON_SIZE[size]} label="Loading" color={textColor} />
+                <Spinner size={ICON_SIZE[size]} label={t('button.loadingLabel')} color={textColor} />
             ) : LeadingIcon ? (
                 <LeadingIcon size={ICON_SIZE[size]} color={textColor} />
             ) : null}

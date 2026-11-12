@@ -14,10 +14,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Modal, Platform, Pressable } from 'react-native';
+import { Modal, Platform, Pressable, View } from 'react-native';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import { dataAttributes } from '../../utils/overlay-utils';
+import { ButtonGroupContext } from '../ButtonGroup/button-group-context';
 import {
+    SHEET_SCRIM_FILL,
     SheetBody,
     SheetClose,
     SheetDescription,
@@ -29,6 +33,7 @@ import {
     SheetTitle,
     SheetTrigger,
     SIZE_PERCENT,
+    sheetPanelLabelProps,
     useSheetContext,
 } from './Sheet.shared';
 
@@ -53,7 +58,7 @@ const SCRIM_COLOR = 'rgba(0, 0, 0, 0.40)';
 const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => {
+export const SheetPanel = ({ children, className, testID, 'aria-label': ariaLabel }: SheetPanelProps) => {
     const ctx = useSheetContext('SheetPanel');
     const colors = useThemeColors();
     const panelRef = useRef<HTMLDivElement | null>(null);
@@ -113,11 +118,6 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         focusFirst();
 
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                ctx.setOpen(false);
-                return;
-            }
             if (event.key !== 'Tab') {
                 return;
             }
@@ -154,7 +154,18 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
             const restoreTo = ctx.triggerRef.current ?? previouslyFocused;
             restoreTo?.focus?.();
         };
-    }, [ctx.open, ctx.setOpen, ctx.triggerRef]);
+    }, [ctx.open, ctx.triggerRef]);
+
+    useEscapeLayer(ctx.open, () => ctx.setOpen(false));
+
+    // Modal's close request is the Android hardware back button. On web,
+    // react-native-web's Modal also raises it on Escape keyup, which would
+    // close this layer even when an overlay above it just handled the key.
+    const requestClose = useCallback(() => {
+        if (Platform.OS !== 'web') {
+            ctx.setOpen(false);
+        }
+    }, [ctx]);
 
     const onBackdropPress = useCallback(() => {
         if (ctx.dismissible) {
@@ -191,7 +202,7 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         left: 0,
         right: 0,
         bottom: 0,
-        ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : { backgroundColor: SCRIM_COLOR }),
+        ...(Platform.OS === 'web' ? ({ zIndex: 50 } as ViewStyle) : {}),
     };
 
     const sizeStyle = isHorizontal
@@ -199,55 +210,65 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         : { height: dim, width: '100%' as unknown as number };
 
     return (
-        <Modal
-            visible={ctx.open}
-            transparent
-            animationType={
-                Platform.OS === 'web' ? 'none' : ctx.side === 'bottom' || ctx.side === 'top' ? 'slide' : 'fade'
-            }
-            onRequestClose={() => ctx.setOpen(false)}
-        >
-            <Pressable
-                accessibilityRole="none"
-                aria-hidden={true}
-                ref={(node) => {
-                    overlayDomRef.current = node as unknown as HTMLElement | null;
-                }}
-                style={overlayStyle}
-                onPress={onBackdropPress}
+        // A surface is its own visual context: buttons inside it must not pick
+        // up the size and joined corners of a ButtonGroup that happens to
+        // contain the trigger.
+        <ButtonGroupContext.Provider value={null}>
+            <Modal
+                visible={ctx.open}
+                transparent
+                animationType={
+                    Platform.OS === 'web' ? 'none' : ctx.side === 'bottom' || ctx.side === 'top' ? 'slide' : 'fade'
+                }
+                onRequestClose={requestClose}
             >
-                <Pressable
-                    onPress={(event) => event.stopPropagation?.()}
-                    ref={(node) => {
-                        panelRef.current = node as unknown as HTMLDivElement | null;
-                    }}
-                    role="dialog"
-                    accessibilityRole="none"
-                    aria-modal={true}
-                    aria-labelledby={ctx.titleId}
-                    aria-describedby={ctx.descriptionId}
-                    data-side={ctx.side}
-                    {...(testID !== undefined ? { testID } : {})}
-                    className={cn('bg-semantic-background-elevated', className)}
-                    style={[
-                        panelStyle,
-                        sizeStyle as ViewStyle,
-                        translateStyle,
-                        {
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: -2 },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 20,
-                            elevation: 24,
-                            ...(ctx.side === 'bottom' ? { borderTopLeftRadius: 16, borderTopRightRadius: 16 } : {}),
-                            ...(ctx.side === 'top' ? { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 } : {}),
-                        },
-                    ]}
-                >
-                    {children}
-                </Pressable>
-            </Pressable>
-        </Modal>
+                <View style={overlayStyle}>
+                    <Pressable
+                        accessibilityRole="none"
+                        aria-hidden={true}
+                        tabIndex={-1}
+                        ref={(node) => {
+                            overlayDomRef.current = node as unknown as HTMLElement | null;
+                        }}
+                        style={[SHEET_SCRIM_FILL, Platform.OS === 'web' ? null : { backgroundColor: SCRIM_COLOR }]}
+                        onPress={onBackdropPress}
+                    />
+                    {/* A View, not a Pressable: a Pressable is one accessibility
+                    element on iOS, which would collapse everything inside
+                    the sheet into a single unreadable node. */}
+                    <View
+                        ref={(node) => {
+                            panelRef.current = node as unknown as HTMLDivElement | null;
+                        }}
+                        role="dialog"
+                        accessibilityRole="none"
+                        aria-modal={true}
+                        {...sheetPanelLabelProps(ctx, ariaLabel)}
+                        {...dataAttributes({ side: ctx.side })}
+                        {...(testID !== undefined ? { testID } : {})}
+                        className={cn('bg-semantic-background-elevated', className)}
+                        style={[
+                            panelStyle,
+                            sizeStyle as ViewStyle,
+                            translateStyle,
+                            {
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: -2 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 20,
+                                elevation: 24,
+                                ...(ctx.side === 'bottom' ? { borderTopLeftRadius: 16, borderTopRightRadius: 16 } : {}),
+                                ...(ctx.side === 'top'
+                                    ? { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }
+                                    : {}),
+                            },
+                        ]}
+                    >
+                        {children}
+                    </View>
+                </View>
+            </Modal>
+        </ButtonGroupContext.Provider>
     );
 };
 

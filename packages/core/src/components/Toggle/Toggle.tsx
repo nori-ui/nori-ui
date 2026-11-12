@@ -348,6 +348,23 @@ type ToggleGroupCommonProps = {
     testID?: string;
     'aria-label'?: string;
     accessibilityLabel?: string;
+    /** DOM id / nativeID of the group. Injected by `Field.Control`. */
+    id?: string;
+    /** Id of the element that labels the group. Injected by `Field.Control`. */
+    'aria-labelledby'?: string;
+    /** React Native equivalent of `aria-labelledby`. Injected by `Field.Control`. */
+    accessibilityLabelledBy?: string;
+    /** Ids of the description / error elements. Injected by `Field.Control`. */
+    'aria-describedby'?: string;
+    /** React Native equivalent of `aria-describedby`. Injected by `Field.Control`. */
+    accessibilityDescribedBy?: string;
+    /** Marks the group as invalid. Injected by `Field.Control` when the Field has an error. */
+    'aria-invalid'?: boolean;
+    /**
+     * Accepted so the group can sit inside `Field.Control`. Not rendered:
+     * ARIA does not allow `aria-required` on `role="group"`.
+     */
+    'aria-required'?: boolean;
 };
 
 export type ToggleGroupSingleProps = ToggleGroupCommonProps & {
@@ -376,8 +393,10 @@ export type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps
  * - `type="multiple"` — value is `string[]`. Clicking toggles a value
  *   in/out of the array. ARIA exposes a plain `role="group"`.
  * - `type="single"` — value is `string | undefined`. Clicking sets it;
- *   re-clicking the active one clears it. ARIA exposes `role="radiogroup"`
- *   so AT users hear "1 of N selected" semantics.
+ *   re-clicking the active one clears it. ARIA also exposes
+ *   `role="group"`: the items are `aria-pressed` buttons, and unlike radios
+ *   the selection can be cleared. Passing the `value` prop at all (even as
+ *   `undefined`) makes the group controlled.
  *
  * Keyboard: `ArrowRight` / `ArrowLeft` move focus between items (roving
  * tabindex), `Home` / `End` jump to the ends, and `Space` / `Enter`
@@ -394,6 +413,12 @@ export const ToggleGroup = (props: ToggleGroupProps) => {
         testID,
         'aria-label': ariaLabel,
         accessibilityLabel,
+        id,
+        'aria-labelledby': ariaLabelledBy,
+        accessibilityLabelledBy,
+        'aria-describedby': ariaDescribedBy,
+        accessibilityDescribedBy,
+        'aria-invalid': ariaInvalid,
     } = props;
 
     // Controlled / uncontrolled state, branching on `type`.
@@ -417,9 +442,11 @@ export const ToggleGroup = (props: ToggleGroupProps) => {
             if (isSingle) {
                 const current = isControlled ? (props as ToggleGroupSingleProps).value : innerSingle;
                 const updated = current === next ? undefined : next;
-                if (!isControlled) {
-                    setInnerSingle(updated);
-                }
+                // Mirrored even while controlled: clearing a single-select
+                // group sets `value` to `undefined`, which reads as
+                // uncontrolled, and the fallback must then be the cleared
+                // state rather than a stale earlier selection.
+                setInnerSingle(updated);
                 (props as ToggleGroupSingleProps).onChange?.(updated);
             } else {
                 const current: string[] =
@@ -538,14 +565,25 @@ export const ToggleGroup = (props: ToggleGroupProps) => {
         ]
     );
 
-    const groupRole = isSingle ? 'radiogroup' : 'group';
+    // Items are toggle buttons (`aria-pressed`) in both modes: a single-select
+    // group can be cleared by pressing the active item again, which radios
+    // cannot express, so the container is a plain `group`, not a `radiogroup`.
     const label = ariaLabel ?? accessibilityLabel;
 
     const groupProps: Record<string, unknown> = {
-        role: groupRole,
-        accessibilityRole: groupRole,
+        role: 'group',
+        accessibilityRole: 'group',
         ...(label ? { 'aria-label': label, accessibilityLabel: label } : {}),
         ...(disabled ? { 'aria-disabled': true } : {}),
+        ...(id !== undefined ? { id, nativeID: id } : {}),
+        ...(ariaLabelledBy !== undefined
+            ? { 'aria-labelledby': ariaLabelledBy, accessibilityLabelledBy: accessibilityLabelledBy ?? ariaLabelledBy }
+            : accessibilityLabelledBy !== undefined
+              ? { accessibilityLabelledBy }
+              : {}),
+        ...(ariaDescribedBy !== undefined ? { 'aria-describedby': ariaDescribedBy } : {}),
+        ...(accessibilityDescribedBy !== undefined ? { accessibilityDescribedBy } : {}),
+        ...(ariaInvalid ? { 'aria-invalid': true } : {}),
         ...(testID !== undefined ? { testID } : {}),
     };
 

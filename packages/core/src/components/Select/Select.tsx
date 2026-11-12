@@ -11,13 +11,24 @@ import {
     useRef,
     useState,
 } from 'react';
-import { createPortal } from 'react-dom';
-import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from 'react-native';
-import { Modal, Platform, Pressable, Text as RNText, ScrollView, useWindowDimensions, View } from 'react-native';
+import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from 'react-native';
+import {
+    Modal,
+    Platform,
+    Pressable,
+    Text as RNText,
+    TextInput as RNTextInput,
+    ScrollView,
+    useWindowDimensions,
+    View,
+} from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import { SelectPortal } from './SelectPortal';
 
 export type SelectOption<T = unknown> = {
     /** Unique value within the select. */
@@ -190,14 +201,14 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
         loadOptions,
         pageSize = DEFAULT_PAGE_SIZE,
         searchable: searchableProp,
-        searchPlaceholder = 'Search…',
+        searchPlaceholder: searchPlaceholderProp,
         filterOption,
         renderOption,
-        placeholder = 'Select…',
+        placeholder: placeholderProp,
         locale,
         sortByLocale = true,
-        noOptionsMessage = 'No options',
-        loadingMessage = 'Loading…',
+        noOptionsMessage: noOptionsMessageProp,
+        loadingMessage: loadingMessageProp,
         disabled = false,
         dir = 'ltr',
         virtualized: virtualizedProp,
@@ -218,8 +229,17 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
     const maxChips = multiple ? ((props as SelectMultiProps<T>).maxChips ?? 3) : undefined;
 
     const baseId = useId();
+    const listboxId = `${baseId}-listbox`;
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const searchPlaceholder = searchPlaceholderProp ?? t('select.searchPlaceholder');
+    const placeholder = placeholderProp ?? t('select.placeholder');
+    const noOptionsMessage = noOptionsMessageProp ?? t('select.noOptions');
+    const loadingMessage = loadingMessageProp ?? t('select.loading');
     const [open, setOpen] = useState(false);
+    // Joins the shared overlay stack so Escape closes only this popup, not a
+    // Dialog or Sheet the Select sits in.
+    useEscapeLayer(open, () => setOpen(false));
 
     // We always store values as a ReadonlyArray<string> internally so the
     // toggle / replace logic stays uniform; for single mode the array is
@@ -261,23 +281,49 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
 
     const isAsync = loadOptions !== undefined;
 
+    // Read the loader through a ref so an inline `loadOptions={...}` (a new
+    // function identity on every parent render) does not restart the fetch.
+    const loadOptionsRef = useRef(loadOptions);
+    useEffect(() => {
+        loadOptionsRef.current = loadOptions;
+    });
+
+    // Every option the loader has ever returned, keyed by value. The visible
+    // page list is cleared on each open / search, so selected labels, chips
+    // and the `onChange` payload resolve from here instead.
+    const [knownOptions, setKnownOptions] = useState<ReadonlyMap<string, SelectOption<T>>>(() => new Map());
+    const rememberOptions = useCallback((items: ReadonlyArray<SelectOption<T>>) => {
+        if (items.length === 0) {
+            return;
+        }
+        setKnownOptions((prev) => {
+            const next = new Map(prev);
+            for (const item of items) {
+                next.set(item.value, item);
+            }
+            return next;
+        });
+    }, []);
+
     // When the search changes in async mode, reset the loaded list and
     // refetch from offset 0. The request id guards against stale resolution.
     useEffect(() => {
-        if (!isAsync || !loadOptions || !open) {
+        const load = loadOptionsRef.current;
+        if (!isAsync || !load || !open) {
             return;
         }
         const requestId = ++asyncRequestId.current;
         setAsyncLoading(true);
         setAsyncItems([]);
         setAsyncTotal(undefined);
-        loadOptions({ search: debouncedSearch, offset: 0, limit: pageSize })
+        load({ search: debouncedSearch, offset: 0, limit: pageSize })
             .then((result) => {
                 if (requestId !== asyncRequestId.current) {
                     return;
                 }
                 setAsyncItems(result.items.slice());
                 setAsyncTotal(result.total);
+                rememberOptions(result.items);
             })
             .catch(() => {
                 // Swallow — consumers can wrap loadOptions to handle errors.
@@ -287,11 +333,35 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                     setAsyncLoading(false);
                 }
             });
-    }, [debouncedSearch, isAsync, loadOptions, pageSize, open]);
+    }, [debouncedSearch, isAsync, pageSize, open, rememberOptions]);
+
+    // A value set before the popup was ever opened has no label yet. Fetch the
+    // first page once per unresolved value so the trigger can show it; values
+    // beyond that page stay unresolved until the user loads them.
+    const labelLookupAttempts = useRef(new Set<string>());
+    useEffect(() => {
+        const load = loadOptionsRef.current;
+        if (!isAsync || !load || open) {
+            return;
+        }
+        const unresolved = currentValues.filter(
+            (value) => !knownOptions.has(value) && !labelLookupAttempts.current.has(value)
+        );
+        if (unresolved.length === 0) {
+            return;
+        }
+        for (const value of unresolved) {
+            labelLookupAttempts.current.add(value);
+        }
+        load({ search: '', offset: 0, limit: pageSize })
+            .then((result) => rememberOptions(result.items))
+            .catch(() => undefined);
+    }, [isAsync, open, currentValues, knownOptions, pageSize, rememberOptions]);
 
     // Helper to load the next page in async mode.
     const loadMore = useCallback(() => {
-        if (!isAsync || !loadOptions || asyncLoading) {
+        const load = loadOptionsRef.current;
+        if (!isAsync || !load || asyncLoading) {
             return;
         }
         const haveAll = asyncTotal !== undefined && asyncItems.length >= asyncTotal;
@@ -300,12 +370,13 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
         }
         const requestId = ++asyncRequestId.current;
         setAsyncLoading(true);
-        loadOptions({ search: debouncedSearch, offset: asyncItems.length, limit: pageSize })
+        load({ search: debouncedSearch, offset: asyncItems.length, limit: pageSize })
             .then((result) => {
                 if (requestId !== asyncRequestId.current) {
                     return;
                 }
                 setAsyncItems((prev) => prev.concat(result.items));
+                rememberOptions(result.items);
                 if (result.total !== undefined) {
                     setAsyncTotal(result.total);
                 }
@@ -316,7 +387,7 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                     setAsyncLoading(false);
                 }
             });
-    }, [asyncItems.length, asyncLoading, asyncTotal, debouncedSearch, isAsync, loadOptions, pageSize]);
+    }, [asyncItems.length, asyncLoading, asyncTotal, debouncedSearch, isAsync, pageSize, rememberOptions]);
 
     // Build the displayed option list — filter (static) or async items, then
     // optionally locale-sort.
@@ -341,20 +412,29 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
         return filtered;
     }, [isAsync, asyncItems, staticOptions, filterOption, debouncedSearch, locale, sortByLocale]);
 
-    const selectedOption = useMemo(() => {
-        const all = isAsync ? asyncItems : (staticOptions ?? []);
-        return all.find((o) => o.value === current);
-    }, [asyncItems, isAsync, staticOptions, current]);
+    /** Value → option lookup used to resolve labels for the current selection. */
+    const optionByValue = useMemo<ReadonlyMap<string, SelectOption<T>>>(() => {
+        if (isAsync) {
+            return knownOptions;
+        }
+        const map = new Map<string, SelectOption<T>>();
+        for (const option of staticOptions ?? []) {
+            if (!map.has(option.value)) {
+                map.set(option.value, option);
+            }
+        }
+        return map;
+    }, [isAsync, knownOptions, staticOptions]);
+
+    const selectedOption = current !== undefined ? optionByValue.get(current) : undefined;
 
     /** Multi-mode: resolved options for every currently-selected value, in selection order. */
     const selectedOptions = useMemo<ReadonlyArray<SelectOption<T>>>(() => {
         if (!multiple) {
             return [];
         }
-        const all = isAsync ? asyncItems : (staticOptions ?? []);
-        const map = new Map(all.map((o) => [o.value, o]));
-        return currentValues.map((v) => map.get(v)).filter((o): o is SelectOption<T> => o !== undefined);
-    }, [multiple, currentValues, asyncItems, isAsync, staticOptions]);
+        return currentValues.map((v) => optionByValue.get(v)).filter((o): o is SelectOption<T> => o !== undefined);
+    }, [multiple, currentValues, optionByValue]);
 
     const searchable = searchableProp ?? (isAsync || (staticOptions !== undefined && staticOptions.length >= 10));
     const virtualized = virtualizedProp ?? visibleOptions.length > 100;
@@ -384,13 +464,8 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                     setInnerValues(nextValues);
                 }
                 // Resolve options for callback — preserves order of nextValues.
-                const allOpts: ReadonlyArray<SelectOption<T>> = [
-                    ...(staticOptions ?? []),
-                    ...(asyncItems as ReadonlyArray<SelectOption<T>>),
-                ];
-                const optMap = new Map(allOpts.map((o) => [o.value, o]));
                 const selectedOpts = nextValues
-                    .map((v) => optMap.get(v))
+                    .map((v) => (v === option.value ? option : optionByValue.get(v)))
                     .filter((o): o is SelectOption<T> => o !== undefined);
                 (props as SelectMultiProps<T>).onChange?.(nextValues, selectedOpts);
                 // Multi mode: keep the popup open, keep the search input — the
@@ -405,8 +480,7 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
             setOpen(false);
             setSearchInput('');
         },
-        // biome-ignore lint/correctness/useExhaustiveDependencies: `props` is the discriminated union — destructuring it would defeat the narrowing; the asyncItems / staticOptions captures intentionally re-trigger the callback when the option pool changes
-        [multiple, isControlled, currentValues, maxSelected, staticOptions, asyncItems, props]
+        [multiple, isControlled, currentValues, maxSelected, optionByValue, props]
     );
 
     /** Multi-mode helper to clear all selected values. */
@@ -613,6 +687,7 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const triggerRef = useRef<HTMLElement | null>(null);
     const popupRef = useRef<HTMLDivElement | null>(null);
+    const listboxRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
         if (
             Platform.OS !== 'web' ||
@@ -689,7 +764,7 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
         };
     }, [open, measureTrigger]);
 
-    // Auto-focus the popup container when it opens without a search field —
+    // Auto-focus the listbox when it opens without a search field —
     // otherwise key events have nowhere to land and the user gets a popup
     // they can only operate with the mouse. With a search field, the input's
     // own auto-focus effect already handles this.
@@ -698,7 +773,7 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
             return;
         }
         const id = requestAnimationFrame(() => {
-            const node = popupRef.current as unknown as { focus?: () => void } | null;
+            const node = listboxRef.current as unknown as { focus?: () => void } | null;
             node?.focus?.();
         });
         return () => cancelAnimationFrame(id);
@@ -799,11 +874,10 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                     role: 'combobox',
                     accessibilityRole: 'combobox',
                     'aria-expanded': open,
-                    'aria-controls': `${baseId}-listbox`,
+                    'aria-controls': listboxId,
                     'aria-haspopup': 'listbox',
                     tabIndex: disabled ? -1 : 0,
                     ...(id !== undefined ? { id, nativeID: id } : {}),
-                    ...(name !== undefined ? { name } : {}),
                     ...(ariaLabel !== undefined ? { 'aria-label': ariaLabel, accessibilityLabel: ariaLabel } : {}),
                     ...(ariaLabelledBy !== undefined
                         ? { 'aria-labelledby': ariaLabelledBy, accessibilityLabelledBy: ariaLabelledBy }
@@ -844,34 +918,29 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                 <defaultSemanticIcons.chevronDown size={16} color={colors.semantic.text.muted} />
             </Pressable>
 
+            {/* react-native-web drops `name` from its primitives, so form participation needs a real input. */}
+            {Platform.OS === 'web' && name !== undefined ? (
+                multiple ? (
+                    currentValues.map((value) => (
+                        <input key={value} type="hidden" name={name} value={value} disabled={disabled} />
+                    ))
+                ) : (
+                    <input type="hidden" name={name} value={current ?? ''} disabled={disabled} />
+                )
+            ) : null}
+
             {open ? renderPopup() : null}
         </View>
     );
 
-    // Local helper so we can portal to <body> on web. Why: even with
-    // position:fixed, an ancestor with `transform`, `filter`, or `will-change`
-    // creates a containing block that traps fixed positioning AND a stacking
-    // context that traps z-index. The docs preview frames trip both. Portaling
-    // to body removes all ambiguity — the popup is a top-level sibling of
-    // <body>'s other children. On native, RN doesn't have a portal here, so
-    // we render in place; native overflow is rarely a clipping problem
-    // because RN doesn't have stacking-context-creating CSS properties.
     function renderPopup(): React.ReactNode {
+        const activeDescendant =
+            visibleOptions[activeIndex] !== undefined ? getOptionId(listboxId, activeIndex) : undefined;
         const popup = (
             <View
                 ref={(node) => {
                     popupRef.current = node as unknown as HTMLDivElement | null;
                 }}
-                {...({
-                    role: 'listbox',
-                    id: `${baseId}-listbox`,
-                    ...(multiple ? { 'aria-multiselectable': true } : {}),
-                    // Without a search field there's no input to capture
-                    // keystrokes — make the popup itself focusable and own
-                    // arrow / Enter / Escape / type-ahead. With a search
-                    // field these belong to the input below.
-                    ...(searchable ? {} : { tabIndex: -1, onKeyDown: handlePopupKeyDown }),
-                } as Record<string, unknown>)}
                 style={popupStyle}
             >
                 {searchable ? (
@@ -880,34 +949,62 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
                         onChange={setSearchInput}
                         onKeyDown={handleSearchKeyDown}
                         placeholder={searchPlaceholder}
+                        label={t('select.searchLabel')}
                         dir={dir}
+                        listboxId={listboxId}
+                        activeDescendant={activeDescendant}
                     />
                 ) : null}
                 {multiple && currentValues.length > 0 ? (
                     <MultiSelectionHeader count={currentValues.length} onClearAll={clearAll} />
                 ) : null}
-                <SelectList
-                    options={visibleOptions}
-                    activeIndex={activeIndex}
-                    currentValue={current}
-                    selectedValues={currentValues}
-                    multiple={multiple}
-                    onSelect={onSelect}
-                    onActiveChange={setActiveIndex}
-                    {...(renderOption !== undefined ? { renderOption } : {})}
-                    itemHeight={itemHeight}
-                    maxHeight={maxMenuHeight}
-                    virtualized={virtualized}
-                    loading={isAsync && asyncLoading}
-                    loadingMessage={loadingMessage}
-                    noOptionsMessage={noOptionsMessage}
-                    listboxId={`${baseId}-listbox`}
-                    onScroll={onListScroll}
-                />
+                <View
+                    ref={(node) => {
+                        listboxRef.current = node as unknown as HTMLDivElement | null;
+                    }}
+                    {...({
+                        role: 'listbox',
+                        id: listboxId,
+                        nativeID: listboxId,
+                        ...(multiple ? { 'aria-multiselectable': true } : {}),
+                        // Without a search field there's no input to capture
+                        // keystrokes — make the listbox itself focusable and
+                        // own arrow / Enter / Escape / type-ahead. With a
+                        // search field these belong to the input above.
+                        ...(searchable
+                            ? {}
+                            : {
+                                  tabIndex: -1,
+                                  onKeyDown: handlePopupKeyDown,
+                                  ...(activeDescendant !== undefined
+                                      ? { 'aria-activedescendant': activeDescendant }
+                                      : {}),
+                              }),
+                    } as Record<string, unknown>)}
+                >
+                    <SelectList
+                        options={visibleOptions}
+                        activeIndex={activeIndex}
+                        currentValue={current}
+                        selectedValues={currentValues}
+                        multiple={multiple}
+                        onSelect={onSelect}
+                        onActiveChange={setActiveIndex}
+                        {...(renderOption !== undefined ? { renderOption } : {})}
+                        itemHeight={itemHeight}
+                        maxHeight={maxMenuHeight}
+                        virtualized={virtualized}
+                        loading={isAsync && asyncLoading}
+                        loadingMessage={loadingMessage}
+                        noOptionsMessage={noOptionsMessage}
+                        listboxId={listboxId}
+                        onScroll={onListScroll}
+                    />
+                </View>
             </View>
         );
-        if (Platform.OS === 'web' && typeof document !== 'undefined') {
-            return createPortal(popup, document.body);
+        if (Platform.OS === 'web') {
+            return <SelectPortal>{popup}</SelectPortal>;
         }
         // Native: wrap in a transparent Modal so the popup renders above
         // all in-tree content (RN has no `position:'fixed'` and an
@@ -933,17 +1030,32 @@ export const Select = <T = unknown>(props: SelectProps<T>) => {
     }
 };
 
-// ---------- search input (web-native input wrapped in a pressable container) ----------
+// ---------- search input ----------
+
+const getOptionId = (listboxId: string, index: number): string => `${listboxId}-option-${index}`;
 
 type SearchInputProps = {
     value: string;
     onChange: (next: string) => void;
     onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
     placeholder: string;
+    /** Accessible name — the field has no visible label. */
+    label: string;
     dir: 'ltr' | 'rtl';
+    listboxId: string;
+    activeDescendant: string | undefined;
 };
 
-const SearchInput = ({ value, onChange, onKeyDown, placeholder, dir }: SearchInputProps) => {
+const SearchInput = ({
+    value,
+    onChange,
+    onKeyDown,
+    placeholder,
+    label,
+    dir,
+    listboxId,
+    activeDescendant,
+}: SearchInputProps) => {
     const colors = useThemeColors();
     const inputRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
@@ -959,29 +1071,61 @@ const SearchInput = ({ value, onChange, onKeyDown, placeholder, dir }: SearchInp
                 borderBottomColor: colors.semantic.border.default,
             }}
         >
-            <input
-                ref={inputRef}
-                type="text"
-                value={value}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder={placeholder}
-                dir={dir}
-                aria-label="Search options"
-                style={{
-                    width: '100%',
-                    // Inline `padding: '6px 8px'` shorthand intentionally kept as a
-                    // string for the native HTML <input> — it's not an RN style prop.
-                    padding: `${px(colors.spacing['2']) - 2}px ${px(colors.spacing['2'])}px`,
-                    fontFamily: colors.fontFamily.body,
-                    fontSize: px(colors.fontSize.sm),
-                    color: colors.semantic.text.default,
-                    backgroundColor: colors.semantic.background.elevated,
-                    border: `1px solid ${colors.semantic.border.default}`,
-                    borderRadius: px(colors.radius.sm),
-                    outline: 'none',
-                }}
-            />
+            {Platform.OS === 'web' ? (
+                // A DOM input rather than RN's TextInput: react-native-web's
+                // TextInput swallows `onKeyDown`, which the list navigation needs.
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={value}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder={placeholder}
+                    dir={dir}
+                    aria-label={label}
+                    aria-autocomplete="list"
+                    aria-controls={listboxId}
+                    aria-activedescendant={activeDescendant}
+                    autoComplete="off"
+                    style={{
+                        width: '100%',
+                        // Inline `padding: '6px 8px'` shorthand intentionally kept as a
+                        // string for the native HTML <input> — it's not an RN style prop.
+                        padding: `${px(colors.spacing['2']) - 2}px ${px(colors.spacing['2'])}px`,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        color: colors.semantic.text.default,
+                        backgroundColor: colors.semantic.background.elevated,
+                        border: `1px solid ${colors.semantic.border.default}`,
+                        borderRadius: px(colors.radius.sm),
+                        outline: 'none',
+                    }}
+                />
+            ) : (
+                <RNTextInput
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={placeholder}
+                    placeholderTextColor={colors.semantic.text.muted}
+                    accessibilityLabel={label}
+                    autoFocus
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    returnKeyType="search"
+                    style={{
+                        paddingHorizontal: px(colors.spacing['2']),
+                        paddingVertical: px(colors.spacing['2']) - 2,
+                        fontFamily: colors.fontFamily.body,
+                        fontSize: px(colors.fontSize.sm),
+                        color: colors.semantic.text.default,
+                        backgroundColor: colors.semantic.background.elevated,
+                        borderWidth: 1,
+                        borderColor: colors.semantic.border.default,
+                        borderRadius: px(colors.radius.sm),
+                        textAlign: dir === 'rtl' ? 'right' : 'left',
+                    }}
+                />
+            )}
         </View>
     );
 };
@@ -1027,6 +1171,57 @@ const SelectList = <T,>({
 }: SelectListProps<T>) => {
     const colors = useThemeColors();
     const [scrollTop, setScrollTop] = useState(0);
+    const scrollRef = useRef<ScrollView | null>(null);
+    const scrollTopRef = useRef(0);
+    const viewportHeightRef = useRef(maxHeight);
+    // Native-only: measured y of each option inside the scroll content, so
+    // group headers (whose height is not `itemHeight`) are accounted for.
+    const optionOffsetsRef = useRef(new Map<number, number>());
+    // Set when the pointer moved the active option. Hovering a row means it is
+    // already on screen, and scrolling it would shift the list under the cursor.
+    const activatedByPointerRef = useRef(false);
+
+    // Keep the keyboard-active option inside the viewport.
+    useEffect(() => {
+        if (activatedByPointerRef.current) {
+            activatedByPointerRef.current = false;
+            return;
+        }
+        let top: number;
+        if (virtualized) {
+            top = activeIndex * itemHeight;
+        } else if (Platform.OS === 'web') {
+            // react-native-web Views are `position: relative`, so `offsetTop`
+            // is the row's offset inside the scroll content.
+            const node =
+                typeof document === 'undefined' ? null : document.getElementById(getOptionId(listboxId, activeIndex));
+            if (!node) {
+                return;
+            }
+            top = node.offsetTop;
+        } else {
+            top = optionOffsetsRef.current.get(activeIndex) ?? activeIndex * itemHeight;
+        }
+        const viewportHeight = viewportHeightRef.current;
+        const current = scrollTopRef.current;
+        let next = current;
+        if (top < current) {
+            next = top;
+        } else if (top + itemHeight > current + viewportHeight) {
+            next = top + itemHeight - viewportHeight;
+        }
+        if (next === current) {
+            return;
+        }
+        scrollTopRef.current = next;
+        if (virtualized) {
+            // Render the target window right away instead of waiting for the
+            // scroll event, so the active row exists as soon as it is active.
+            setScrollTop(next);
+        }
+        const scroller = scrollRef.current as { scrollTo?: (options: { y: number; animated: boolean }) => void } | null;
+        scroller?.scrollTo?.({ y: next, animated: false });
+    }, [activeIndex, virtualized, itemHeight, listboxId]);
 
     const totalHeight = options.length * itemHeight;
     const visibleStart = virtualized ? Math.max(0, Math.floor(scrollTop / itemHeight) - VIRTUAL_OVERSCAN) : 0;
@@ -1035,8 +1230,10 @@ const SelectList = <T,>({
         : options.length;
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        scrollTopRef.current = offsetY;
         if (virtualized) {
-            setScrollTop(event.nativeEvent.contentOffset.y);
+            setScrollTop(offsetY);
         }
         onScroll(event);
     };
@@ -1127,8 +1324,22 @@ const SelectList = <T,>({
                 {...({
                     role: 'option',
                     accessibilityRole: 'none',
+                    id: getOptionId(listboxId, i),
+                    nativeID: getOptionId(listboxId, i),
                     'aria-selected': selected,
-                    onMouseEnter: () => onActiveChange(i),
+                    onMouseEnter: () => {
+                        if (i !== activeIndex) {
+                            activatedByPointerRef.current = true;
+                            onActiveChange(i);
+                        }
+                    },
+                    ...(!virtualized && Platform.OS !== 'web'
+                        ? {
+                              onLayout: (event: LayoutChangeEvent) => {
+                                  optionOffsetsRef.current.set(i, event.nativeEvent.layout.y);
+                              },
+                          }
+                        : {}),
                     ...(opt.disabled ? { 'aria-disabled': true, disabled: true } : {}),
                 } as Record<string, unknown>)}
                 onPress={() => onSelect(opt)}
@@ -1152,11 +1363,13 @@ const SelectList = <T,>({
 
     // ScrollView is the cross-platform container — react-native-web emits
     // scroll events with the same `nativeEvent.contentOffset` shape as
-    // native, so the handler is identical on both. Web also gets the
-    // `nativeID` prop mapped to the underlying div's `id` for a11y.
+    // native, so the handler is identical on both.
     return (
         <ScrollView
-            nativeID={listboxId}
+            ref={scrollRef}
+            onLayout={(event) => {
+                viewportHeightRef.current = event.nativeEvent.layout.height;
+            }}
             onScroll={handleScroll}
             scrollEventThrottle={16}
             style={{ maxHeight }}
@@ -1237,6 +1450,7 @@ const MultiTriggerLabel = <T,>({
     maxChips: number;
 }) => {
     const colors = useThemeColors();
+    const { t } = useTranslation();
     if (options.length === 0) {
         return (
             <RNText
@@ -1267,7 +1481,7 @@ const MultiTriggerLabel = <T,>({
                 }}
                 numberOfLines={1}
             >
-                {options.length} selected
+                {t('select.selectedCount', { count: options.length })}
             </RNText>
         );
     }
@@ -1316,6 +1530,8 @@ const MultiTriggerLabel = <T,>({
 
 const MultiSelectionHeader = ({ count, onClearAll }: { count: number; onClearAll: () => void }) => {
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const clearAllLabel = t('select.clearAll');
     return (
         <View
             style={{
@@ -1336,13 +1552,13 @@ const MultiSelectionHeader = ({ count, onClearAll }: { count: number; onClearAll
                     fontVariant: ['tabular-nums'],
                 }}
             >
-                {count} selected
+                {t('select.selectedCount', { count })}
             </RNText>
             <Pressable
                 role="button"
                 accessibilityRole="button"
-                aria-label="Clear all"
-                accessibilityLabel="Clear all"
+                aria-label={clearAllLabel}
+                accessibilityLabel={clearAllLabel}
                 onPress={onClearAll}
                 style={({ pressed }) => ({
                     paddingHorizontal: px(colors.spacing['2']),
@@ -1359,7 +1575,7 @@ const MultiSelectionHeader = ({ count, onClearAll }: { count: number; onClearAll
                         fontWeight: colors.fontWeight.medium as '500',
                     }}
                 >
-                    Clear all
+                    {clearAllLabel}
                 </RNText>
             </Pressable>
         </View>

@@ -48,6 +48,10 @@ export type UsePaginationReturn = {
     last: () => void;
 };
 
+/** Floors a count-like input, mapping `NaN` / `Infinity` to `fallback` so the page math stays finite. */
+const toFiniteInt = (value: number, fallback: number): number =>
+    Number.isFinite(value) ? Math.floor(value) : fallback;
+
 const range = (from: number, to: number): number[] => {
     if (to < from) {
         return [];
@@ -91,19 +95,19 @@ export function usePagination(args: UsePaginationArgs): UsePaginationReturn {
     const onChangeRef = useRef(onPageChange);
     onChangeRef.current = onPageChange;
 
-    const safePageCount = Math.max(1, Math.floor(pageCount));
+    const safePageCount = Math.max(1, toFiniteInt(pageCount, 1));
     const rawPage = isControlled ? (controlledPage as number) : uncontrolledPage;
-    const currentPage = Math.min(Math.max(1, Math.floor(rawPage)), safePageCount);
+    const currentPage = Math.min(Math.max(1, toFiniteInt(rawPage, 1)), safePageCount);
 
     const goToPage = useCallback(
         (next: number) => {
-            const clamped = Math.min(Math.max(1, Math.floor(next)), Math.max(1, Math.floor(pageCount)));
+            const clamped = Math.min(Math.max(1, toFiniteInt(next, 1)), safePageCount);
             if (!isControlled) {
                 setUncontrolledPage(clamped);
             }
             onChangeRef.current?.(clamped);
         },
-        [isControlled, pageCount]
+        [isControlled, safePageCount]
     );
 
     const prev = useCallback(() => goToPage(currentPage - 1), [goToPage, currentPage]);
@@ -113,8 +117,8 @@ export function usePagination(args: UsePaginationArgs): UsePaginationReturn {
 
     const pages = useMemo<ReadonlyArray<PaginationItemDescriptor>>(() => {
         const items: PaginationItemDescriptor[] = [];
-        const safeSibling = Math.max(0, Math.floor(siblingCount));
-        const safeBoundary = Math.max(0, Math.floor(boundaryCount));
+        const safeSibling = Math.max(0, toFiniteInt(siblingCount, 1));
+        const safeBoundary = Math.max(0, toFiniteInt(boundaryCount, 1));
 
         // First / Prev
         if (showFirstLast) {

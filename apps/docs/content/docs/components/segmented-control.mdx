@@ -92,6 +92,20 @@ focus enters the control.
 <SegmentedControl label="View mode" options={…} />
 ```
 
+## Using it inside `Field`
+
+`<Field>` wires its label, description, and error to `SegmentedControl` by passing
+these props. You can also set any of them yourself when you use `SegmentedControl`
+without a `Field`:
+
+- `id` — the ID that `Field.Label` points at.
+- `aria-labelledby` — ID of the element that names the control.
+- `aria-describedby` — IDs of the description and/or error text.
+- `aria-invalid` — marks the control as invalid while the `Field` has an error.
+- `aria-required` — marks the control as required when the `Field` is `required`.
+- `accessibilityLabel` — the label text itself. `Field` sets it on iOS, where `aria-labelledby` has no effect.
+- `accessibilityLabelledBy` and `accessibilityDescribedBy` — the React Native counterparts of `aria-labelledby` and `aria-describedby` (Android).
+
 ## Props
 
 <PropsTable component="SegmentedControl" />

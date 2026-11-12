@@ -16,10 +16,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Modal, Pressable } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import { dataAttributes } from '../../utils/overlay-utils';
+import { ButtonGroupContext } from '../ButtonGroup/button-group-context';
 import {
+    SHEET_SCRIM_FILL,
     SheetBody,
     SheetClose,
     SheetDescription,
@@ -32,6 +36,7 @@ import {
     SheetTitle,
     SheetTrigger,
     SIZE_PERCENT,
+    sheetPanelLabelProps,
     useSheetContext,
 } from './Sheet.shared';
 
@@ -57,7 +62,7 @@ const SCRIM_COLOR = 'rgba(0, 0, 0, 0.40)';
 const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => {
+export const SheetPanel = ({ children, className, testID, 'aria-label': ariaLabel }: SheetPanelProps) => {
     const ctx = useSheetContext('SheetPanel');
     const colors = useThemeColors();
     const panelRef = useRef<HTMLDivElement | null>(null);
@@ -85,7 +90,7 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         node.style.backgroundColor = entered ? SCRIM_COLOR : 'rgba(0,0,0,0)';
     }, [entered]);
 
-    // Focus-trap, scroll-lock, Escape-close.
+    // Focus-trap and scroll-lock.
     useEffect(() => {
         if (!ctx.open || typeof document === 'undefined') {
             return;
@@ -111,11 +116,6 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         focusFirst();
 
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                ctx.setOpen(false);
-                return;
-            }
             if (event.key !== 'Tab') {
                 return;
             }
@@ -152,7 +152,15 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
             const restoreTo = ctx.triggerRef.current ?? previouslyFocused;
             restoreTo?.focus?.();
         };
-    }, [ctx.open, ctx.setOpen, ctx.triggerRef]);
+    }, [ctx.open, ctx.triggerRef]);
+
+    useEscapeLayer(ctx.open, () => ctx.setOpen(false));
+
+    // react-native-web's Modal raises a close request on Escape keyup. Escape
+    // is handled by the shared layer stack above, so the request is ignored;
+    // otherwise this sheet would close even when an overlay above it just
+    // handled the key.
+    const requestClose = useCallback(() => {}, []);
 
     const onBackdropPress = useCallback(() => {
         if (ctx.dismissible) {
@@ -190,58 +198,66 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
     } as ViewStyle;
 
     return (
-        <Modal visible={ctx.open} transparent animationType="none" onRequestClose={() => ctx.setOpen(false)}>
-            <Pressable
-                accessibilityRole="none"
-                aria-hidden={true}
-                ref={(node) => {
-                    overlayDomRef.current = node as unknown as HTMLElement | null;
-                }}
-                style={overlayStyle}
-                onPress={onBackdropPress}
-            >
-                <Pressable
-                    onPress={(event) => event.stopPropagation?.()}
-                    ref={(node) => {
-                        panelRef.current = node as unknown as HTMLDivElement | null;
-                    }}
-                    role="dialog"
-                    accessibilityRole="none"
-                    aria-modal={true}
-                    aria-labelledby={ctx.titleId}
-                    aria-describedby={ctx.descriptionId}
-                    data-side={ctx.side}
-                    {...(testID !== undefined ? { testID } : {})}
-                    className={cn('bg-semantic-background-elevated', className)}
-                    style={[
-                        panelStyle,
-                        sizeStyle as ViewStyle,
-                        translateStyle,
-                        {
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: -2 },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 20,
-                            elevation: 24,
-                            ...(ctx.side === 'bottom'
-                                ? {
-                                      borderTopLeftRadius: 16,
-                                      borderTopRightRadius: 16,
-                                  }
-                                : {}),
-                            ...(ctx.side === 'top'
-                                ? {
-                                      borderBottomLeftRadius: 16,
-                                      borderBottomRightRadius: 16,
-                                  }
-                                : {}),
-                        },
-                    ]}
-                >
-                    {children}
-                </Pressable>
-            </Pressable>
-        </Modal>
+        // A surface is its own visual context: buttons inside it must not pick
+        // up the size and joined corners of a ButtonGroup that happens to
+        // contain the trigger.
+        <ButtonGroupContext.Provider value={null}>
+            <Modal visible={ctx.open} transparent animationType="none" onRequestClose={requestClose}>
+                <View style={overlayStyle}>
+                    <Pressable
+                        accessibilityRole="none"
+                        aria-hidden={true}
+                        tabIndex={-1}
+                        ref={(node) => {
+                            overlayDomRef.current = node as unknown as HTMLElement | null;
+                        }}
+                        style={SHEET_SCRIM_FILL}
+                        onPress={onBackdropPress}
+                    />
+                    {/* A View, not a Pressable: a Pressable is one accessibility
+                    element on iOS, which would collapse everything inside
+                    the sheet into a single unreadable node. */}
+                    <View
+                        ref={(node) => {
+                            panelRef.current = node as unknown as HTMLDivElement | null;
+                        }}
+                        role="dialog"
+                        accessibilityRole="none"
+                        aria-modal={true}
+                        {...sheetPanelLabelProps(ctx, ariaLabel)}
+                        {...dataAttributes({ side: ctx.side })}
+                        {...(testID !== undefined ? { testID } : {})}
+                        className={cn('bg-semantic-background-elevated', className)}
+                        style={[
+                            panelStyle,
+                            sizeStyle as ViewStyle,
+                            translateStyle,
+                            {
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: -2 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 20,
+                                elevation: 24,
+                                ...(ctx.side === 'bottom'
+                                    ? {
+                                          borderTopLeftRadius: 16,
+                                          borderTopRightRadius: 16,
+                                      }
+                                    : {}),
+                                ...(ctx.side === 'top'
+                                    ? {
+                                          borderBottomLeftRadius: 16,
+                                          borderBottomRightRadius: 16,
+                                      }
+                                    : {}),
+                            },
+                        ]}
+                    >
+                        {children}
+                    </View>
+                </View>
+            </Modal>
+        </ButtonGroupContext.Provider>
     );
 };
 
@@ -257,6 +273,8 @@ export const Sheet = Object.assign(SheetRoot, {
     Footer: SheetFooter,
     Close: SheetClose,
 });
+
+export const Drawer = Sheet;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

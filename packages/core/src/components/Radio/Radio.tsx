@@ -13,7 +13,7 @@ import {
     useState,
 } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Pressable, Text as RNText, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -28,8 +28,11 @@ type RadioGroupContextValue = {
     disabled: boolean;
     orientation: RadioGroupOrientation;
     name: string | undefined;
+    /** The option that is the tab stop while nothing is selected: the first enabled one. */
+    firstEnabledValue: string | undefined;
     register: (value: string, ref: RefObject<HTMLElement | null>) => void;
     unregister: (value: string) => void;
+    setOptionDisabled: (value: string, disabled: boolean) => void;
 };
 
 const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
@@ -58,8 +61,16 @@ export type RadioGroupProps = {
      * @defaultValue 'vertical'
      */
     orientation?: RadioGroupOrientation;
-    /** HTML `name` for form integration on web. Optional but recommended. */
+    /**
+     * Form field name (web only). The selected value is submitted under this
+     * name with an enclosing HTML `<form>`.
+     */
     name?: string;
+    /**
+     * Accessible name for the group. `Field.Control` sets this on iOS, where
+     * `aria-labelledby` has no effect.
+     */
+    accessibilityLabel?: string;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -138,6 +149,7 @@ export const RadioGroup = ({
     testID,
     id,
     nativeID,
+    accessibilityLabel,
     'aria-labelledby': ariaLabelledBy,
     accessibilityLabelledBy,
     'aria-describedby': ariaDescribedBy,
@@ -151,18 +163,45 @@ export const RadioGroup = ({
 
     const refs = useRef<RadioRefMap>(new Map());
     const orderRef = useRef<string[]>([]);
+    const disabledValuesRef = useRef<Set<string>>(new Set());
+    const [firstEnabledValue, setFirstEnabledValue] = useState<string | undefined>(undefined);
 
-    const register = useCallback((v: string, ref: RefObject<HTMLElement | null>) => {
-        refs.current.set(v, ref);
-        if (!orderRef.current.includes(v)) {
-            orderRef.current.push(v);
-        }
+    const syncFirstEnabled = useCallback(() => {
+        setFirstEnabledValue(orderRef.current.find((v) => !disabledValuesRef.current.has(v)));
     }, []);
 
-    const unregister = useCallback((v: string) => {
-        refs.current.delete(v);
-        orderRef.current = orderRef.current.filter((x) => x !== v);
-    }, []);
+    const register = useCallback(
+        (v: string, ref: RefObject<HTMLElement | null>) => {
+            refs.current.set(v, ref);
+            if (!orderRef.current.includes(v)) {
+                orderRef.current.push(v);
+            }
+            syncFirstEnabled();
+        },
+        [syncFirstEnabled]
+    );
+
+    const unregister = useCallback(
+        (v: string) => {
+            refs.current.delete(v);
+            disabledValuesRef.current.delete(v);
+            orderRef.current = orderRef.current.filter((x) => x !== v);
+            syncFirstEnabled();
+        },
+        [syncFirstEnabled]
+    );
+
+    const setOptionDisabled = useCallback(
+        (v: string, isOptionDisabled: boolean) => {
+            if (isOptionDisabled) {
+                disabledValuesRef.current.add(v);
+            } else {
+                disabledValuesRef.current.delete(v);
+            }
+            syncFirstEnabled();
+        },
+        [syncFirstEnabled]
+    );
 
     const select = useCallback(
         (next: string) => {
@@ -182,6 +221,25 @@ export const RadioGroup = ({
         ref?.current?.focus?.();
     }, []);
 
+    // Walks from `startIndex` in `direction` (wrapping) to the nearest
+    // enabled option, then selects and focuses it. Disabled options are
+    // never reachable from the keyboard.
+    const selectEnabledFrom = useCallback(
+        (startIndex: number, direction: 1 | -1) => {
+            const order = orderRef.current;
+            const len = order.length;
+            for (let step = 0; step < len; step += 1) {
+                const candidate = order[(((startIndex + step * direction) % len) + len) % len];
+                if (candidate !== undefined && !disabledValuesRef.current.has(candidate)) {
+                    select(candidate);
+                    focusValue(candidate);
+                    return;
+                }
+            }
+        },
+        [focusValue, select]
+    );
+
     const moveBy = useCallback(
         (offset: 1 | -1) => {
             const order = orderRef.current;
@@ -190,15 +248,9 @@ export const RadioGroup = ({
             }
             const idx = current ? order.indexOf(current) : -1;
             const start = idx === -1 ? (offset === 1 ? -1 : 0) : idx;
-            const len = order.length;
-            const next = order[(start + offset + len) % len];
-            if (!next) {
-                return;
-            }
-            select(next);
-            focusValue(next);
+            selectEnabledFrom(start + offset, offset);
         },
-        [current, focusValue, select]
+        [current, selectEnabledFrom]
     );
 
     const handleKeyDown = useCallback(
@@ -222,30 +274,32 @@ export const RadioGroup = ({
                 }
                 case 'Home': {
                     event.preventDefault();
-                    const first = order[0];
-                    if (first) {
-                        select(first);
-                        focusValue(first);
-                    }
+                    selectEnabledFrom(0, 1);
                     return;
                 }
                 case 'End': {
                     event.preventDefault();
-                    const last = order[order.length - 1];
-                    if (last) {
-                        select(last);
-                        focusValue(last);
-                    }
+                    selectEnabledFrom(order.length - 1, -1);
                     return;
                 }
             }
         },
-        [focusValue, moveBy, select]
+        [moveBy, selectEnabledFrom]
     );
 
     const ctxValue = useMemo<RadioGroupContextValue>(
-        () => ({ value: current, select, disabled, orientation, name, register, unregister }),
-        [current, select, disabled, orientation, name, register, unregister]
+        () => ({
+            value: current,
+            select,
+            disabled,
+            orientation,
+            name,
+            firstEnabledValue,
+            register,
+            unregister,
+            setOptionDisabled,
+        }),
+        [current, select, disabled, orientation, name, firstEnabledValue, register, unregister, setOptionDisabled]
     );
 
     // RN's View doesn't model onKeyDown in its TS surface but RN-Web passes
@@ -259,6 +313,7 @@ export const RadioGroup = ({
         ...(testID !== undefined ? { testID } : {}),
         ...(id !== undefined ? { id } : {}),
         ...(nativeID !== undefined ? { nativeID } : {}),
+        ...(accessibilityLabel !== undefined ? { accessibilityLabel } : {}),
         ...(ariaLabelledBy !== undefined ? { 'aria-labelledby': ariaLabelledBy } : {}),
         ...(accessibilityLabelledBy !== undefined ? { accessibilityLabelledBy } : {}),
         ...(ariaDescribedBy !== undefined ? { 'aria-describedby': ariaDescribedBy } : {}),
@@ -276,6 +331,13 @@ export const RadioGroup = ({
                 {...(className !== undefined ? { className } : {})}
             >
                 {children}
+                {/* react-native-web drops `name`, so on web a hidden input
+                 * carries the selection into an enclosing HTML form. Like
+                 * native radios, nothing is submitted while disabled or
+                 * while no option is selected. */}
+                {Platform.OS === 'web' && name !== undefined && current !== undefined && !disabled ? (
+                    <input type="hidden" name={name} value={current} />
+                ) : null}
             </RadioGroupViewport>
         </RadioGroupContext.Provider>
     );
@@ -328,10 +390,17 @@ const RadioOption = ({ value, label, disabled, children, className, testID }: Ra
     const selected = ctx.value === value;
     const isDisabled = disabled || ctx.disabled;
 
+    // Depend on the stable registry functions, not the whole context: the
+    // context changes on every selection, and re-registering then would move
+    // this option to the end of the group's keyboard order.
+    const { register, unregister, setOptionDisabled } = ctx;
     useEffect(() => {
-        ctx.register(value, ownRef);
-        return () => ctx.unregister(value);
-    }, [ctx, value]);
+        register(value, ownRef);
+        return () => unregister(value);
+    }, [register, unregister, value]);
+    useEffect(() => {
+        setOptionDisabled(value, Boolean(isDisabled));
+    }, [setOptionDisabled, value, isDisabled]);
 
     const onPress = useCallback(() => {
         if (isDisabled) {
@@ -340,11 +409,15 @@ const RadioOption = ({ value, label, disabled, children, className, testID }: Ra
         ctx.select(value);
     }, [ctx, value, isDisabled]);
 
-    // Roving tabindex: only the selected option (or the first when nothing
-    // is selected) participates in the tab order.
-    const tabIndex = selected || (ctx.value === undefined && isFirstOption(ctx, value)) ? 0 : -1;
+    // Roving tabindex: only the selected option (or the first enabled one
+    // when nothing is selected) participates in the tab order.
+    const tabIndex = selected || (ctx.value === undefined && ctx.firstEnabledValue === value) ? 0 : -1;
 
-    const accessibilityLabel = label ?? value;
+    // With custom `children` the visible content is the accessible name; an
+    // explicit label here would override it. `value` is only the fallback
+    // for a radio that renders no text at all.
+    const hasCustomContent = children !== undefined && children !== null;
+    const accessibilityLabel = label ?? (hasCustomContent ? undefined : value);
 
     const radioProps: Record<string, unknown> = {
         ref: (node: HTMLElement | null) => {
@@ -354,13 +427,11 @@ const RadioOption = ({ value, label, disabled, children, className, testID }: Ra
         accessibilityRole: 'radio',
         'aria-checked': selected,
         accessibilityState: { checked: selected, disabled: Boolean(isDisabled) },
-        accessibilityLabel,
-        'aria-label': accessibilityLabel,
+        ...(accessibilityLabel !== undefined ? { accessibilityLabel, 'aria-label': accessibilityLabel } : {}),
         tabIndex,
         onPress,
         ...(isDisabled ? { 'aria-disabled': true, disabled: true } : {}),
         ...(testID !== undefined ? { testID } : {}),
-        ...(ctx.name ? { name: ctx.name } : {}),
     };
 
     const dotOuterStyle: ViewStyle = {
@@ -394,20 +465,6 @@ const RadioOption = ({ value, label, disabled, children, className, testID }: Ra
         </Pressable>
     );
 };
-
-// Tiny helper: when no value is selected yet, the first registered Radio is
-// the tabbable one. This is computed inside Radio (not the context) so we
-// don't have to re-render every Radio whenever the order changes.
-function isFirstOption(ctx: RadioGroupContextValue, value: string): boolean {
-    // We only have access to register/unregister; Radio doesn't get a peek
-    // at the order list. The simple-but-correct fallback: every Radio renders
-    // tabIndex=0 when value is undefined, which is harmless for one-radio
-    // groups and equivalent to the standard "tab into the first" for
-    // multi-radio groups (browsers honor the first tabIndex=0 they hit).
-    void ctx;
-    void value;
-    return true;
-}
 
 /**
  * Public `Radio` value — the per-option component plus its `.Group` static

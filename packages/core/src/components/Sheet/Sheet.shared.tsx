@@ -18,13 +18,22 @@ import {
     useContext,
     useId,
     useRef,
-    useState,
 } from 'react';
 import { Pressable, Text as RNText, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
+import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import {
+    hasTextContent,
+    slotPressProps,
+    slotTestIdProps,
+    useOverlayLabels,
+    useOverlayOpenState,
+    useRegisterOverlayLabel,
+} from '../../utils/overlay-utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,6 +76,10 @@ export type SheetContextValue = {
     setOpen: (next: boolean) => void;
     titleId: string;
     descriptionId: string;
+    hasTitle: boolean;
+    hasDescription: boolean;
+    registerTitle: () => () => void;
+    registerDescription: () => () => void;
     triggerRef: { current: HTMLElement | null };
     side: SheetSide;
     size: SheetSize;
@@ -112,19 +125,8 @@ export const SheetRoot = ({
     dismissible = true,
     children,
 }: SheetProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
+    const labels = useOverlayLabels();
 
     const baseId = useId();
     const triggerRef = useRef<HTMLElement | null>(null);
@@ -134,6 +136,7 @@ export const SheetRoot = ({
         setOpen,
         titleId: `${baseId}-title`,
         descriptionId: `${baseId}-description`,
+        ...labels,
         triggerRef,
         side,
         size,
@@ -159,18 +162,15 @@ export const SheetTrigger = ({ asChild = true, children, className, testID }: Sh
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            ctx.setOpen(true);
-        };
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     ctx.triggerRef.current = node;
                 }}
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, onPress)}
+                aria-haspopup="dialog"
+                aria-expanded={ctx.open}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -184,6 +184,10 @@ export const SheetTrigger = ({ asChild = true, children, className, testID }: Sh
                 ctx.triggerRef.current = node as unknown as HTMLElement | null;
             }}
             onPress={onPress}
+            role="button"
+            accessibilityRole="button"
+            {...({ 'aria-haspopup': 'dialog' } as Record<string, unknown>)}
+            aria-expanded={ctx.open}
             {...(testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
@@ -221,6 +225,7 @@ export type SheetTitleProps = { children?: ReactNode; className?: string };
 export const SheetTitle = ({ children, className }: SheetTitleProps) => {
     const ctx = useSheetContext('SheetTitle');
     const colors = useThemeColors();
+    useRegisterOverlayLabel(ctx.registerTitle);
     return (
         <RNText
             nativeID={ctx.titleId}
@@ -247,6 +252,7 @@ export type SheetDescriptionProps = { children?: ReactNode; className?: string }
 export const SheetDescription = ({ children, className }: SheetDescriptionProps) => {
     const ctx = useSheetContext('SheetDescription');
     const colors = useThemeColors();
+    useRegisterOverlayLabel(ctx.registerDescription);
     return (
         <RNText
             nativeID={ctx.descriptionId}
@@ -315,34 +321,53 @@ export type SheetCloseProps = {
     children?: ReactNode;
     className?: string;
     testID?: string;
+    /**
+     * Accessible name. Defaults to the translated "Close" when the button has
+     * no text of its own (icon-only); visible text is used as the name otherwise.
+     */
     accessibilityLabel?: string;
 };
 
-export const SheetClose = ({
-    asChild = true,
-    children,
-    className,
-    testID,
-    accessibilityLabel = 'Close',
-}: SheetCloseProps) => {
+/**
+ * Element that closes the sheet when activated. With `asChild` (default),
+ * wraps the child. Without children it renders a default ✕ button in the
+ * panel's top-right corner.
+ */
+export const SheetClose = ({ asChild = true, children, className, testID, accessibilityLabel }: SheetCloseProps) => {
     const ctx = useSheetContext('SheetClose');
+    const colors = useThemeColors();
+    const { t } = useTranslation();
+    const label = accessibilityLabel ?? t('common.close');
     const onPress = useCallback(() => ctx.setOpen(false), [ctx]);
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            ctx.setOpen(false);
-        };
         return (
             <Slot
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, onPress)}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
             </Slot>
+        );
+    }
+
+    if (children !== undefined && children !== null) {
+        // Visible text is the accessible name; the fallback label would
+        // announce "Close" for a button that reads "Cancel".
+        const needsLabel = accessibilityLabel !== undefined || !hasTextContent(children);
+        return (
+            <Pressable
+                onPress={onPress}
+                role="button"
+                accessibilityRole="button"
+                {...(needsLabel ? { accessibilityLabel: label, 'aria-label': label } : {})}
+                {...(testID !== undefined ? { testID } : {})}
+                {...(className !== undefined ? { className } : {})}
+            >
+                {wrapStringChildren(children)}
+            </Pressable>
         );
     }
 
@@ -351,12 +376,23 @@ export const SheetClose = ({
             onPress={onPress}
             role="button"
             accessibilityRole="button"
-            accessibilityLabel={accessibilityLabel}
-            aria-label={accessibilityLabel}
+            accessibilityLabel={label}
+            aria-label={label}
             {...(testID !== undefined ? { testID } : {})}
-            {...(className !== undefined ? { className } : {})}
+            className={cn('absolute right-3 top-3 w-8 h-8 items-center justify-center rounded-md', className)}
+            style={{
+                position: 'absolute',
+                right: px(colors.spacing['3']),
+                top: px(colors.spacing['3']),
+                // 32×32 close hit target — component-density literal — not from theme
+                width: 32,
+                height: 32,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: px(colors.radius.md),
+            }}
         >
-            {wrapStringChildren(children)}
+            <defaultSemanticIcons.close size={18} color={colors.semantic.text.muted} />
         </Pressable>
     );
 };
@@ -374,4 +410,23 @@ export type SheetPanelProps = {
     children?: ReactNode;
     className?: string;
     testID?: string;
+    /** Accessible name when the sheet has no `Sheet.Title`. */
+    'aria-label'?: string;
 };
+
+/**
+ * Accessible-name props for the panel surface. `aria-labelledby` /
+ * `aria-describedby` are only emitted for a Title / Description that is
+ * actually mounted, so the ids never dangle.
+ */
+export function sheetPanelLabelProps(ctx: SheetContextValue, ariaLabel: string | undefined): Record<string, string> {
+    return {
+        ...(ariaLabel !== undefined ? { 'aria-label': ariaLabel } : {}),
+        ...(ctx.hasTitle && ariaLabel === undefined ? { 'aria-labelledby': ctx.titleId } : {}),
+        ...(ctx.hasDescription ? { 'aria-describedby': ctx.descriptionId } : {}),
+    };
+}
+
+// Fills the overlay container behind the panel. A sibling of the panel (not
+// its parent) so hiding it from assistive tech does not hide the sheet itself.
+export const SHEET_SCRIM_FILL = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const;

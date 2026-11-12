@@ -15,6 +15,8 @@
  * Web behaviour:
  *   - Global ⌘K / Ctrl+K shortcut opens the palette.
  *   - Search input filters items by substring (case-insensitive).
+ *   - ArrowUp / ArrowDown move the active item from the search input, Enter
+ *     selects it. Focus stays in the input (`aria-activedescendant`).
  *   - Escape closes (inherited from Dialog).
  *
  * Native behaviour:
@@ -30,6 +32,7 @@ import {
     Children,
     cloneElement,
     createContext,
+    Fragment,
     isValidElement,
     type ReactElement,
     type ReactNode,
@@ -41,6 +44,7 @@ import {
     useState,
 } from 'react';
 import { Platform, Pressable, Text as RNText, TextInput as RNTextInput, ScrollView, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -55,6 +59,11 @@ type CommandContextValue = {
     setOpen: (next: boolean) => void;
     query: string;
     setQuery: (q: string) => void;
+    /** DOM id of the keyboard-active item, or `null` when none is active. */
+    activeId: string | null;
+    setActiveId: (id: string | null) => void;
+    /** DOM id of the item list — the search input's `aria-controls` target. */
+    listId: string;
 };
 
 const CommandContext = createContext<CommandContextValue | null>(null);
@@ -90,6 +99,8 @@ const CommandRoot = ({ open, defaultOpen = false, onOpenChange, children }: Comm
     const isControlled = open !== undefined;
     const current = isControlled ? (open as boolean) : inner;
     const [query, setQuery] = useState('');
+    const [activeId, setActiveId] = useState<string | null>(null);
+    const listId = useId();
 
     const setOpen = useCallback(
         (next: boolean) => {
@@ -125,6 +136,9 @@ const CommandRoot = ({ open, defaultOpen = false, onOpenChange, children }: Comm
         setOpen,
         query,
         setQuery,
+        activeId,
+        setActiveId,
+        listId,
     };
 
     return <CommandContext.Provider value={ctxValue}>{children}</CommandContext.Provider>;
@@ -140,6 +154,11 @@ export type CommandTriggerProps = {
     testID?: string;
 };
 
+type TriggerChildProps = {
+    onClick?: (e: unknown) => void;
+    onPress?: (e: unknown) => void;
+};
+
 /**
  * Element that opens the command palette when activated.
  * On web it also receives aria-haspopup="dialog" and aria-expanded.
@@ -149,31 +168,29 @@ const CommandTrigger = ({ children, className, testID }: CommandTriggerProps) =>
 
     const open = () => ctx.setOpen(true);
 
+    const child = isValidElement(children) ? (children as ReactElement<TriggerChildProps>) : null;
+    const pressAndOpen = (e: unknown) => {
+        child?.props.onPress?.(e);
+        open();
+    };
+    const clickAndOpen = (e: unknown) => {
+        child?.props.onClick?.(e);
+        open();
+    };
+
     if (Platform.OS === 'web') {
-        if (isValidElement(children)) {
-            const child = children as ReactElement<{
-                onClick?: (e: unknown) => void;
-                onPress?: (e: unknown) => void;
-                'aria-haspopup'?: string;
-                'aria-expanded'?: string | boolean;
-            }>;
-            const existingOnClick = child.props.onClick;
-            const existingOnPress = child.props.onPress;
-            const fire = (e: unknown) => {
-                existingOnClick?.(e);
-                existingOnPress?.(e);
-                open();
-            };
-            // Only forward onPress if the child already has it (i.e. it's a RN
-            // Pressable-style element). Plain HTML elements (button, a, etc.)
-            // don't have onPress and React DOM warns when it receives it.
+        if (child) {
             const extraProps: Record<string, unknown> = {
-                onClick: fire,
+                onClick: clickAndOpen,
                 'aria-haspopup': 'dialog',
                 'aria-expanded': ctx.open ? 'true' : 'false',
             };
-            if (existingOnPress !== undefined) {
-                extraProps.onPress = fire;
+            // Components such as <Button> activate through `onPress` and
+            // discard a foreign `onClick`, while a plain <View> only forwards
+            // `onClick` — so a component child gets both. DOM elements get
+            // `onClick` alone because React DOM warns about `onPress`.
+            if (typeof child.type !== 'string') {
+                extraProps.onPress = pressAndOpen;
             }
             return cloneElement(child, extraProps as Parameters<typeof cloneElement>[1]);
         }
@@ -191,10 +208,18 @@ const CommandTrigger = ({ children, className, testID }: CommandTriggerProps) =>
         );
     }
 
-    // Native
+    // Native: a pressable child (e.g. <Button>) claims the touch, so the
+    // wrapper below never sees it — the child needs the handler itself. The
+    // wrapper still covers children that are not pressable (<View>, text).
     return (
         <Pressable testID={testID} onPress={open} accessibilityRole="button">
-            {children}
+            {child ? (
+                cloneElement(child, { onPress: pressAndOpen })
+            ) : typeof children === 'string' || typeof children === 'number' ? (
+                <RNText>{children}</RNText>
+            ) : (
+                children
+            )}
         </Pressable>
     );
 };
@@ -204,7 +229,7 @@ const CommandTrigger = ({ children, className, testID }: CommandTriggerProps) =>
 // ---------------------------------------------------------------------------
 
 export type CommandDialogProps = {
-    /** Placeholder text for the search input. @defaultValue 'Type a command or search…' */
+    /** Placeholder text for the search input. @defaultValue the `command.placeholder` translation ('Type a command or search…') */
     placeholder?: string;
     children?: ReactNode;
     className?: string;
@@ -217,15 +242,57 @@ export type CommandDialogProps = {
  * Wraps Dialog.Content and adds a search TextInput above the item list.
  * Children are typically Command.Empty and Command.Group elements.
  */
-const CommandDialogInner = ({
-    placeholder = 'Type a command or search…',
-    children,
-    className,
-    testID,
-}: CommandDialogProps) => {
+const CommandDialogInner = ({ placeholder: placeholderProp, children, className, testID }: CommandDialogProps) => {
     const ctx = useCommandContext('Command.Dialog');
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const placeholder = placeholderProp ?? t('command.placeholder');
     const inputRef = useRef<HTMLInputElement | null>(null);
+    const listRef = useRef<HTMLDivElement | null>(null);
+    const { open: isOpen, query, setActiveId } = ctx;
+
+    // The first match is the active item whenever the result set changes, so
+    // Enter runs the top result without an arrow press first.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `query` is the trigger — the rendered options change with it
+    useEffect(() => {
+        if (!isOpen || Platform.OS !== 'web') {
+            return;
+        }
+        setActiveId(getEnabledOptions(listRef.current)[0]?.id ?? null);
+    }, [isOpen, query, setActiveId]);
+
+    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const isArrow = e.key === 'ArrowDown' || e.key === 'ArrowUp';
+        // Enter while an IME composition is open confirms the composition.
+        if ((!isArrow && e.key !== 'Enter') || e.nativeEvent.isComposing) {
+            return;
+        }
+        const options = getEnabledOptions(listRef.current);
+        if (options.length === 0) {
+            return;
+        }
+        e.preventDefault();
+        const currentIndex = options.findIndex((option) => option.id === ctx.activeId);
+        if (e.key === 'Enter') {
+            (options[currentIndex] ?? options[0])?.click();
+            return;
+        }
+        const delta = e.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex =
+            currentIndex === -1
+                ? delta === 1
+                    ? 0
+                    : options.length - 1
+                : (currentIndex + delta + options.length) % options.length;
+        const next = options[nextIndex];
+        if (!next) {
+            return;
+        }
+        setActiveId(next.id);
+        if (typeof next.scrollIntoView === 'function') {
+            next.scrollIntoView({ block: 'nearest' });
+        }
+    };
 
     // Auto-focus search input when the dialog opens
     useEffect(() => {
@@ -290,6 +357,9 @@ const CommandDialogInner = ({
                                 role="combobox"
                                 aria-expanded={true}
                                 aria-autocomplete="list"
+                                aria-controls={ctx.listId}
+                                aria-activedescendant={ctx.activeId ?? undefined}
+                                onKeyDown={handleInputKeyDown}
                                 autoComplete="off"
                                 spellCheck={false}
                                 placeholder={placeholder}
@@ -309,7 +379,12 @@ const CommandDialogInner = ({
                             />
                         </div>
                         {/* Items list */}
-                        <div role="listbox" style={{ overflowY: 'auto', flex: 1, maxHeight: 400 }}>
+                        <div
+                            ref={listRef}
+                            id={ctx.listId}
+                            role="listbox"
+                            style={{ overflowY: 'auto', flex: 1, maxHeight: 400 }}
+                        >
                             {children}
                         </div>
                     </div>
@@ -353,6 +428,7 @@ export type CommandEmptyProps = {
  */
 const CommandEmpty = ({ children, className, testID }: CommandEmptyProps) => {
     const colors = useThemeColors();
+    const { t } = useTranslation();
 
     if (Platform.OS === 'web') {
         return (
@@ -373,7 +449,7 @@ const CommandEmpty = ({ children, className, testID }: CommandEmptyProps) => {
                     } as React.CSSProperties
                 }
             >
-                {children}
+                {children ?? t('command.empty')}
             </div>
         );
     }
@@ -387,7 +463,7 @@ const CommandEmpty = ({ children, className, testID }: CommandEmptyProps) => {
             }}
         >
             <RNText style={{ color: colors.semantic.text.muted, fontSize: 14 }}>
-                {typeof children === 'string' ? children : 'No results found.'}
+                {typeof children === 'string' ? children : t('command.empty')}
             </RNText>
         </View>
     );
@@ -498,6 +574,8 @@ export type CommandItemProps = {
 const CommandItem = ({ onSelect, disabled = false, children, className, testID }: CommandItemProps) => {
     const ctx = useCommandContext('Command.Item');
     const colors = useThemeColors();
+    const itemId = useId();
+    const active = ctx.activeId === itemId;
 
     const text = extractText(children);
     const visible = matchesQuery(text, ctx.query);
@@ -518,8 +596,9 @@ const CommandItem = ({ onSelect, disabled = false, children, className, testID }
         return (
             <div
                 data-testid={testID}
+                id={itemId}
                 role="option"
-                aria-selected="false"
+                aria-selected={active}
                 aria-disabled={disabled}
                 tabIndex={disabled ? -1 : 0}
                 className={cn('nori-command-item', className)}
@@ -530,21 +609,17 @@ const CommandItem = ({ onSelect, disabled = false, children, className, testID }
                         handleSelect();
                     }
                 }}
-                onMouseEnter={(e) => {
+                // Pointer, focus, and arrow keys all move the same active
+                // item, so exactly one row is highlighted at a time.
+                onMouseEnter={() => {
                     if (!disabled) {
-                        (e.currentTarget as HTMLElement).style.background = `${colors.semantic.interactive.primary}14`;
+                        ctx.setActiveId(itemId);
                     }
                 }}
-                onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'transparent';
-                }}
-                onFocus={(e) => {
+                onFocus={() => {
                     if (!disabled) {
-                        (e.currentTarget as HTMLElement).style.background = `${colors.semantic.interactive.primary}14`;
+                        ctx.setActiveId(itemId);
                     }
-                }}
-                onBlur={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'transparent';
                 }}
                 style={
                     {
@@ -553,6 +628,7 @@ const CommandItem = ({ onSelect, disabled = false, children, className, testID }
                         justifyContent: 'space-between',
                         padding: `${colors.spacing['2']}px ${colors.spacing['4']}px`,
                         cursor: disabled ? 'not-allowed' : 'pointer',
+                        background: active ? `${colors.semantic.interactive.primary}14` : 'transparent',
                         opacity: disabled ? 0.5 : 1,
                         fontSize: 14,
                         color: colors.semantic.text.default,
@@ -665,65 +741,61 @@ function matchesQuery(text: string, query: string): boolean {
 }
 
 /**
- * Count how many Command.Item children would be visible for the given query.
- * Inspects direct CommandItem-shaped children only (duck-typed by `onSelect` prop).
+ * Count how many items under `children` are visible for the given query.
+ *
+ * Children are classified by component identity: `Command.Empty` never
+ * counts, `Command.Group` and fragments are looked through, and anything else
+ * (a `Command.Item` or a consumer's own item wrapper) counts when its text
+ * matches.
  */
 function countVisibleItems(children: ReactNode, query: string): number {
     let count = 0;
     Children.forEach(children, (child) => {
-        if (!isValidElement(child)) {
+        if (!isValidElement(child) || child.type === CommandEmpty) {
             return;
         }
-        const props = child.props as Record<string, unknown>;
-        // CommandItem is duck-typed: has `onSelect` or no `heading`
-        if ('onSelect' in props || !('heading' in props)) {
-            const text = extractText(props.children as ReactNode);
-            if (matchesQuery(text, query)) {
-                count++;
-            }
+        const childChildren = (child.props as { children?: ReactNode }).children;
+        if (child.type === CommandGroup || child.type === Fragment) {
+            count += countVisibleItems(childChildren, query);
+            return;
+        }
+        if (matchesQuery(extractText(childChildren), query)) {
+            count++;
         }
     });
     return count;
 }
 
+/** Selectable option elements inside the list, in DOM (visual) order. */
+function getEnabledOptions(list: HTMLElement | null): HTMLElement[] {
+    if (!list) {
+        return [];
+    }
+    return Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+        (option) => option.getAttribute('aria-disabled') !== 'true'
+    );
+}
+
 // ---------------------------------------------------------------------------
-// Public Dialog wrapper: auto-show Empty when no group renders anything
+// Public Dialog wrapper: auto-show Empty when no item is visible
 // ---------------------------------------------------------------------------
 
 /**
- * Wraps CommandDialogInner to automatically surface Command.Empty when all
- * items are filtered away. This is what is exposed as `Command.Dialog`.
+ * Wraps CommandDialogInner to surface Command.Empty only when every item is
+ * filtered away. This is what is exposed as `Command.Dialog`.
  */
 const CommandDialogWrapper = (props: CommandDialogProps) => {
     const ctx = useCommandContext('Command.Dialog');
     const { children, ...rest } = props;
 
-    let anyVisible = false;
-    let emptyNode: ReactNode = null;
-
-    Children.forEach(children, (child) => {
-        if (!isValidElement(child)) {
-            return;
-        }
-        const childProps = child.props as Record<string, unknown>;
-
-        // Detect Empty: has no heading, no onSelect, no icon — purely a display node
-        if (!('heading' in childProps) && !('onSelect' in childProps) && !('icon' in childProps)) {
-            emptyNode = child;
-            return;
-        }
-
-        // It's a Group — count visible items in its children
-        const groupChildren = childProps.children as ReactNode;
-        const count = countVisibleItems(groupChildren, ctx.query);
-        if (count > 0) {
-            anyVisible = true;
-        }
-    });
+    const childList = Children.toArray(children);
+    const isEmptyElement = (child: ReactNode) => isValidElement(child) && child.type === CommandEmpty;
+    const emptyNode = childList.find(isEmptyElement);
+    const anyVisible = countVisibleItems(children, ctx.query) > 0;
 
     return (
         <CommandDialogInner {...rest}>
-            {anyVisible ? children : (emptyNode ?? <CommandEmpty>No results found.</CommandEmpty>)}
+            {anyVisible ? childList.filter((child) => !isEmptyElement(child)) : (emptyNode ?? <CommandEmpty />)}
         </CommandDialogInner>
     );
 };

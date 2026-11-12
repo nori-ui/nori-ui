@@ -326,3 +326,100 @@ describe('<Select multiple>', () => {
         });
     });
 });
+
+describe('<Select> async selection', () => {
+    const REMOTE: SelectOption[] = [
+        { value: 'r1', label: 'Remote 1' },
+        { value: 'r2', label: 'Remote 2' },
+    ];
+    const loader = () =>
+        jest.fn(({ search }: { search: string }) =>
+            Promise.resolve({ items: REMOTE.filter((o) => o.label.toLowerCase().includes(search.toLowerCase())) })
+        );
+
+    it('shows the label of a preselected value before the popup is ever opened', async () => {
+        render(<Select loadOptions={loader()} value="r2" testID="sel" />);
+        await waitFor(() => expect(screen.getByTestId('sel')).toHaveTextContent('Remote 2'));
+    });
+
+    it('keeps the selected label when a later search no longer returns that option', async () => {
+        render(<Select loadOptions={loader()} testID="sel" />);
+        fireEvent.click(screen.getByRole('combobox'));
+        fireEvent.click(await screen.findByText('Remote 1'));
+        expect(screen.getByTestId('sel')).toHaveTextContent('Remote 1');
+
+        fireEvent.click(screen.getByRole('combobox'));
+        fireEvent.change(screen.getByLabelText('Search options'), { target: { value: 'Remote 2' } });
+        await waitFor(() => expect(screen.queryByRole('option', { name: 'Remote 1' })).toBeNull());
+        expect(screen.getByRole('combobox')).toHaveTextContent('Remote 1');
+    });
+
+    it('does not refetch when the parent re-renders with a new inline loadOptions', async () => {
+        const fetchPage = loader();
+        const Parent = ({ tick }: { tick: number }) => (
+            <Select loadOptions={(params) => fetchPage(params)} placeholder={`Pick ${tick}`} testID="sel" />
+        );
+        const { rerender } = render(<Parent tick={0} />);
+        fireEvent.click(screen.getByRole('combobox'));
+        await screen.findByText('Remote 1');
+        rerender(<Parent tick={1} />);
+        rerender(<Parent tick={2} />);
+        await screen.findByText('Remote 1');
+        expect(fetchPage).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('<Select> active option', () => {
+    it('points aria-activedescendant at the active option', () => {
+        render(<Select options={FRUITS} searchable={false} testID="sel" />);
+        fireEvent.click(screen.getByRole('combobox'));
+        const listbox = screen.getByRole('listbox');
+        fireEvent.keyDown(listbox, { key: 'ArrowDown' });
+        const activeId = listbox.getAttribute('aria-activedescendant');
+        expect(activeId).toBeTruthy();
+        expect(document.getElementById(activeId as string)).toBe(screen.getByRole('option', { name: 'Banana' }));
+    });
+
+    it('virtualized: renders the active option when the keyboard moves past the rendered window', () => {
+        const many = Array.from({ length: 500 }, (_, i) => ({ value: `o-${i}`, label: `Option ${i}` }));
+        render(<Select options={many} searchable={false} testID="sel" />);
+        fireEvent.click(screen.getByRole('combobox'));
+        expect(screen.queryByRole('option', { name: 'Option 499' })).toBeNull();
+        fireEvent.keyDown(screen.getByRole('listbox'), { key: 'End' });
+        expect(screen.getByRole('option', { name: 'Option 499' })).toBeInTheDocument();
+    });
+});
+
+describe('<Select> form + i18n', () => {
+    it('submits the value through a named hidden input', () => {
+        const { container } = render(
+            <form>
+                <Select options={FRUITS} defaultValue="banana" name="fruit" />
+            </form>
+        );
+        const form = container.querySelector('form') as HTMLFormElement;
+        expect(new FormData(form).getAll('fruit')).toEqual(['banana']);
+    });
+
+    it('multiple: submits one entry per selected value', () => {
+        const { container } = render(
+            <form>
+                <Select multiple options={FRUITS} defaultValue={['apple', 'cherry']} name="fruit" />
+            </form>
+        );
+        const form = container.querySelector('form') as HTMLFormElement;
+        expect(new FormData(form).getAll('fruit')).toEqual(['apple', 'cherry']);
+    });
+
+    it('takes default strings from the i18n dictionary, explicit props still win', () => {
+        const i18n = { 'select.placeholder': 'Auswählen…', 'select.noOptions': 'Keine Optionen' };
+        render(
+            <NoriProvider i18n={i18n}>
+                <Select options={[]} testID="translated" />
+                <Select options={[]} placeholder="Pick one" testID="explicit" />
+            </NoriProvider>
+        );
+        expect(screen.getByTestId('translated')).toHaveTextContent('Auswählen…');
+        expect(screen.getByTestId('explicit')).toHaveTextContent('Pick one');
+    });
+});

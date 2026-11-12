@@ -98,4 +98,11 @@ describe('<Progress>', () => {
         render(<Progress value={10} label="Saving" aria-label="File upload progress" />);
         expect(screen.getByRole('progressbar').getAttribute('aria-label')).toBe('File upload progress');
     });
+
+    it('treats a NaN value as indeterminate instead of emitting NaN', () => {
+        render(<Progress value={Number.NaN} max={Number.NaN} aria-label="Loading" />);
+        const bar = screen.getByRole('progressbar');
+        expect(bar.hasAttribute('aria-valuenow')).toBe(false);
+        expect(bar.getAttribute('aria-valuemax')).toBe('100');
+    });
 });

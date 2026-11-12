@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { Button } from '../../Button';
 import { Command } from '../Command';
 
 describe('<Command> web', () => {
@@ -176,5 +177,84 @@ describe('<Command> web', () => {
 
         fireEvent.click(screen.getByTestId('disabled-item'));
         expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('a <Button> child of Trigger opens the palette', () => {
+        render(
+            <Command>
+                <Command.Trigger>
+                    <Button>Search</Button>
+                </Command.Trigger>
+                <Command.Dialog>
+                    <Command.Item onSelect={() => {}}>Calendar</Command.Item>
+                </Command.Dialog>
+            </Command>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+        expect(screen.getByText('Calendar')).toBeInTheDocument();
+    });
+
+    it('shows items of a Group without heading and items placed directly in the Dialog', () => {
+        render(
+            <Command defaultOpen>
+                <Command.Dialog>
+                    <Command.Empty>No results found.</Command.Empty>
+                    <Command.Group>
+                        <Command.Item onSelect={() => {}}>Calendar</Command.Item>
+                    </Command.Group>
+                    <Command.Item>Calculator</Command.Item>
+                </Command.Dialog>
+            </Command>
+        );
+        expect(screen.getByText('Calendar')).toBeInTheDocument();
+        expect(screen.getByText('Calculator')).toBeInTheDocument();
+        expect(screen.queryByText('No results found.')).toBeNull();
+    });
+
+    it('falls back to the translated empty message when no Command.Empty is given', () => {
+        render(
+            <Command defaultOpen>
+                <Command.Dialog placeholder="Filter…">
+                    <Command.Item onSelect={() => {}}>Calendar</Command.Item>
+                </Command.Dialog>
+            </Command>
+        );
+        fireEvent.change(screen.getByPlaceholderText('Filter…'), { target: { value: 'zzz' } });
+        expect(screen.getByText('No results found.')).toBeInTheDocument();
+    });
+
+    it('arrow keys in the search input move the active item, Enter selects it', () => {
+        const onCalendar = jest.fn();
+        const onCalculator = jest.fn();
+        render(
+            <Command defaultOpen>
+                <Command.Dialog placeholder="Filter…">
+                    <Command.Group heading="Suggestions">
+                        <Command.Item onSelect={onCalendar}>Calendar</Command.Item>
+                        <Command.Item disabled onSelect={() => {}}>
+                            Disabled
+                        </Command.Item>
+                        <Command.Item onSelect={onCalculator}>Calculator</Command.Item>
+                    </Command.Group>
+                </Command.Dialog>
+            </Command>
+        );
+        const input = screen.getByPlaceholderText('Filter…');
+        const calendar = screen.getByRole('option', { name: 'Calendar' });
+        const calculator = screen.getByRole('option', { name: 'Calculator' });
+
+        // The first result is active as soon as the palette is open.
+        expect(calendar).toHaveAttribute('aria-selected', 'true');
+        expect(input).toHaveAttribute('aria-activedescendant', calendar.id);
+
+        // ArrowDown skips the disabled item.
+        fireEvent.keyDown(input, { key: 'ArrowDown' });
+        expect(calculator).toHaveAttribute('aria-selected', 'true');
+        expect(calendar).toHaveAttribute('aria-selected', 'false');
+        expect(input).toHaveAttribute('aria-activedescendant', calculator.id);
+
+        fireEvent.keyDown(input, { key: 'Enter' });
+        expect(onCalculator).toHaveBeenCalledTimes(1);
+        expect(onCalendar).not.toHaveBeenCalled();
     });
 });

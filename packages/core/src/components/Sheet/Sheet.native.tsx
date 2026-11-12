@@ -16,10 +16,12 @@
 
 import { useCallback } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Modal, Pressable } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { ButtonGroupContext } from '../ButtonGroup/button-group-context';
 import {
+    SHEET_SCRIM_FILL,
     SheetBody,
     SheetClose,
     SheetDescription,
@@ -30,6 +32,7 @@ import {
     SheetTitle,
     SheetTrigger,
     SIZE_PERCENT,
+    sheetPanelLabelProps,
     useSheetContext,
 } from './Sheet.shared';
 
@@ -51,7 +54,7 @@ export {
 
 const SCRIM_COLOR = 'rgba(0, 0, 0, 0.40)';
 
-export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => {
+export const SheetPanel = ({ children, className, testID, 'aria-label': ariaLabel }: SheetPanelProps) => {
     const ctx = useSheetContext('SheetPanel');
     const colors = useThemeColors();
 
@@ -80,7 +83,6 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: SCRIM_COLOR,
     };
 
     const sizeStyle: ViewStyle = isHorizontal
@@ -88,41 +90,55 @@ export const SheetPanel = ({ children, className, testID }: SheetPanelProps) => 
         : { height: dim as number, width: '100%' as unknown as number };
 
     return (
-        <Modal
-            visible={ctx.open}
-            transparent
-            animationType={ctx.side === 'bottom' || ctx.side === 'top' ? 'slide' : 'fade'}
-            onRequestClose={() => ctx.setOpen(false)}
-        >
-            <Pressable accessibilityRole="none" aria-hidden={true} style={overlayStyle} onPress={onBackdropPress}>
-                <Pressable
-                    onPress={(event) => event.stopPropagation?.()}
-                    role="dialog"
-                    accessibilityRole="none"
-                    aria-modal={true}
-                    aria-labelledby={ctx.titleId}
-                    aria-describedby={ctx.descriptionId}
-                    data-side={ctx.side}
-                    {...(testID !== undefined ? { testID } : {})}
-                    className={cn('bg-semantic-background-elevated', className)}
-                    style={[
-                        panelStyle,
-                        sizeStyle,
-                        {
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: -2 },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 20,
-                            elevation: 24,
-                            ...(ctx.side === 'bottom' ? { borderTopLeftRadius: 16, borderTopRightRadius: 16 } : {}),
-                            ...(ctx.side === 'top' ? { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 } : {}),
-                        },
-                    ]}
-                >
-                    {children}
-                </Pressable>
-            </Pressable>
-        </Modal>
+        // A surface is its own visual context: buttons inside it must not pick
+        // up the size and joined corners of a ButtonGroup that happens to
+        // contain the trigger.
+        <ButtonGroupContext.Provider value={null}>
+            <Modal
+                visible={ctx.open}
+                transparent
+                animationType={ctx.side === 'bottom' || ctx.side === 'top' ? 'slide' : 'fade'}
+                onRequestClose={() => ctx.setOpen(false)}
+            >
+                <View style={overlayStyle}>
+                    <Pressable
+                        accessibilityRole="none"
+                        aria-hidden={true}
+                        tabIndex={-1}
+                        style={[SHEET_SCRIM_FILL, { backgroundColor: SCRIM_COLOR }]}
+                        onPress={onBackdropPress}
+                    />
+                    {/* A View, not a Pressable: a Pressable is one accessibility
+                    element on iOS, which would collapse everything inside
+                    the sheet into a single unreadable node. */}
+                    <View
+                        role="dialog"
+                        accessibilityRole="none"
+                        aria-modal={true}
+                        {...sheetPanelLabelProps(ctx, ariaLabel)}
+                        {...(testID !== undefined ? { testID } : {})}
+                        className={cn('bg-semantic-background-elevated', className)}
+                        style={[
+                            panelStyle,
+                            sizeStyle,
+                            {
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: -2 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 20,
+                                elevation: 24,
+                                ...(ctx.side === 'bottom' ? { borderTopLeftRadius: 16, borderTopRightRadius: 16 } : {}),
+                                ...(ctx.side === 'top'
+                                    ? { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }
+                                    : {}),
+                            },
+                        ]}
+                    >
+                        {children}
+                    </View>
+                </View>
+            </Modal>
+        </ButtonGroupContext.Provider>
     );
 };
 

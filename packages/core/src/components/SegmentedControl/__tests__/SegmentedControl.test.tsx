@@ -75,3 +75,14 @@ describe('<SegmentedControl>', () => {
         expect((screen.getAllByRole('radio')[0] as HTMLElement).getAttribute('aria-checked')).toBe('true');
     });
 });
+
+describe('<SegmentedControl> keyboard focus', () => {
+    it('moves DOM focus to the newly selected segment on arrow keys', () => {
+        render(<SegmentedControl defaultValue="day" options={OPTIONS} />);
+        const radios = screen.getAllByRole('radio') as HTMLElement[];
+        radios[0]?.focus();
+        fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowRight' });
+        expect(document.activeElement).toBe(radios[1]);
+        expect(radios[1]?.tabIndex).toBe(0);
+    });
+});

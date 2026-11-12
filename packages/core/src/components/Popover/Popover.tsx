@@ -12,12 +12,15 @@ import {
     useRef,
     useState,
 } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 import { Dimensions, Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import { measureAnchorRect, slotPressProps, slotTestIdProps, useOverlayOpenState } from '../../utils/overlay-utils';
+import { ButtonGroupContext } from '../ButtonGroup/button-group-context';
 
 export type PopoverSide = 'top' | 'right' | 'bottom' | 'left';
 export type PopoverAlign = 'start' | 'center' | 'end';
@@ -85,19 +88,7 @@ export type PopoverProps = {
  * ancestor `overflow: hidden`.
  */
 const PopoverRoot = ({ open, defaultOpen = false, onOpenChange, children }: PopoverProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
 
     const baseId = useId();
     const triggerRef = useRef<HTMLElement | null>(null);
@@ -109,12 +100,7 @@ const PopoverRoot = ({ open, defaultOpen = false, onOpenChange, children }: Popo
     // biggest source of "the popup got cut off" bugs.
     const [triggerRect, setTriggerRect] = useState<TriggerRect | null>(null);
     const measureTrigger = useCallback(() => {
-        const node = triggerRef.current;
-        if (!node || typeof node.getBoundingClientRect !== 'function') {
-            return;
-        }
-        const rect = node.getBoundingClientRect();
-        setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+        measureAnchorRect(triggerRef.current, setTriggerRect);
     }, []);
 
     const ctxValue: PopoverContextValue = {
@@ -154,26 +140,16 @@ export const PopoverTrigger = ({ asChild = true, children, className, testID }: 
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        // Pass both onClick (web HTML buttons) AND onPress (RN Pressable /
-        // our own Button) so the trigger fires regardless of which event
-        // model the wrapped child speaks. The child's existing handler
-        // runs first, then we toggle.
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            ctx.measureTrigger();
-            ctx.setOpen(!ctx.open);
-        };
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     ctx.triggerRef.current = node;
                 }}
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
+                {...slotPressProps(child, onPress)}
                 aria-haspopup="dialog"
                 aria-expanded={ctx.open}
                 aria-controls={ctx.contentId}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -187,6 +163,8 @@ export const PopoverTrigger = ({ asChild = true, children, className, testID }: 
                 ctx.triggerRef.current = node as unknown as HTMLElement | null;
             }}
             onPress={onPress}
+            role="button"
+            accessibilityRole="button"
             {...({
                 'aria-haspopup': 'dialog',
                 'aria-expanded': ctx.open,
@@ -311,9 +289,18 @@ export const PopoverContent = ({
     // popups (which need to know content height to render above the trigger).
     const [contentSize, setContentSize] = useState<{ width: number; height: number } | null>(null);
 
-    // Web-only side effects: outside-click close, Escape close, re-measure
-    // on resize. RN Modal handles its own dismissal on native (tap-outside
-    // is the transparent overlay's onPress).
+    useEscapeLayer(ctx.open, () => ctx.setOpen(false));
+
+    // Native: the trigger's window rect anchors the content inside the Modal.
+    useEffect(() => {
+        if (ctx.open && Platform.OS !== 'web') {
+            ctx.measureTrigger();
+        }
+    }, [ctx.open, ctx.measureTrigger]);
+
+    // Web-only side effects: outside-click close, re-measure on resize.
+    // RN Modal handles its own dismissal on native (tap-outside is the
+    // transparent overlay's onPress).
     useEffect(() => {
         if (!ctx.open) {
             return;
@@ -339,22 +326,14 @@ export const PopoverContent = ({
             }
             ctx.setOpen(false);
         };
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                ctx.setOpen(false);
-            }
-        };
         const onResize = () => ctx.measureTrigger();
         const onScroll = () => ctx.measureTrigger();
 
         document.addEventListener('mousedown', onDocMouseDown);
-        document.addEventListener('keydown', onKeyDown);
         window.addEventListener('resize', onResize);
         window.addEventListener('scroll', onScroll, true);
         return () => {
             document.removeEventListener('mousedown', onDocMouseDown);
-            document.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('resize', onResize);
             window.removeEventListener('scroll', onScroll, true);
         };
@@ -378,7 +357,7 @@ export const PopoverContent = ({
     // react-native-web maps to window.innerWidth; native uses the same API
     // for the device window. Subtract margin on both sides so content
     // doesn't kiss the screen edge.
-    const viewportWidth = Dimensions.get('window').width;
+    const { width: viewportWidth, height: viewportHeight } = Dimensions.get('window');
     const maxContentWidth = Math.max(MIN_WIDTH, viewportWidth - VIEWPORT_MARGIN * 2);
 
     const contentBaseStyle: ViewStyle = {
@@ -405,13 +384,26 @@ export const PopoverContent = ({
     // `maxContentWidth` (the cap we apply via maxWidth above) — content
     // is allowed to grow up to that size, so assuming worst-case avoids
     // a one-frame overflow before measurement settles.
-    const measuredWidth = contentSize?.width ?? maxContentWidth;
+    // Native lays the content out at its natural size on the first frame, so
+    // the minimum width is the closer estimate there.
+    const measuredWidth = contentSize?.width ?? (Platform.OS === 'web' ? maxContentWidth : MIN_WIDTH);
     const clampedLeft = position
         ? Math.min(
               Math.max(VIEWPORT_MARGIN, position.left),
               Math.max(VIEWPORT_MARGIN, viewportWidth - measuredWidth - VIEWPORT_MARGIN)
           )
         : 0;
+
+    // Native: same anchoring math as web, clamped on both axes because the
+    // Modal covers the whole window and nothing can scroll into view. Until
+    // `onLayout` reports the content size the estimate is used; the Modal's
+    // fade-in covers that first frame.
+    const nativeTop = position
+        ? Math.min(
+              Math.max(VIEWPORT_MARGIN, position.top),
+              Math.max(VIEWPORT_MARGIN, viewportHeight - (contentSize?.height ?? 0) - VIEWPORT_MARGIN)
+          )
+        : 80;
 
     const positionedStyle: ViewStyle =
         Platform.OS === 'web'
@@ -430,7 +422,11 @@ export const PopoverContent = ({
                       left: -9999,
                       zIndex: 50,
                   } as ViewStyle)
-            : {};
+            : {
+                  position: 'absolute',
+                  top: nativeTop,
+                  left: position ? clampedLeft : VIEWPORT_MARGIN * 2,
+              };
 
     const content = (
         <View
@@ -450,6 +446,16 @@ export const PopoverContent = ({
                     setContentSize({ width: rect.width, height: rect.height });
                 }
             }}
+            {...(Platform.OS !== 'web'
+                ? {
+                      onLayout: (event: LayoutChangeEvent) => {
+                          const { width, height } = event.nativeEvent.layout;
+                          if (!contentSize || contentSize.width !== width || contentSize.height !== height) {
+                              setContentSize({ width, height });
+                          }
+                      },
+                  }
+                : {})}
             {...({
                 role: 'dialog',
                 id: ctx.contentId,
@@ -462,7 +468,10 @@ export const PopoverContent = ({
             )}
             style={[contentBaseStyle, positionedStyle]}
         >
-            {children}
+            {/* A surface is its own visual context: buttons inside it must
+                not pick up the size and joined corners of a ButtonGroup that
+                happens to contain the trigger. */}
+            <ButtonGroupContext.Provider value={null}>{children}</ButtonGroupContext.Provider>
         </View>
     );
 
@@ -471,48 +480,33 @@ export const PopoverContent = ({
     }
 
     // Native: use Modal as the floating layer with a transparent backdrop.
-    // Tap on the backdrop closes the popover.
+    // Tap on the backdrop closes the popover. `statusBarTranslucent` keeps
+    // the Modal's origin at the window origin on Android, matching the
+    // window coordinates the trigger was measured in.
     return (
-        <Modal visible={ctx.open} transparent animationType="fade" onRequestClose={() => ctx.setOpen(false)}>
-            <Pressable
-                accessibilityRole="none"
-                aria-hidden={true}
-                onPress={() => ctx.setOpen(false)}
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'transparent',
-                }}
-            >
+        <Modal
+            visible={ctx.open}
+            transparent
+            statusBarTranslucent
+            animationType="fade"
+            onRequestClose={() => ctx.setOpen(false)}
+        >
+            <View style={NATIVE_FILL}>
+                {/* The backdrop is a sibling of the content, so hiding it from
+                    assistive tech leaves the popover itself reachable. */}
                 <Pressable
-                    onPress={(event) => event.stopPropagation?.()}
-                    style={{
-                        position: 'absolute',
-                        top: ctx.triggerRect
-                            ? side === 'top'
-                                ? Math.max(VIEWPORT_MARGIN, ctx.triggerRect.top - GAP - 80)
-                                : ctx.triggerRect.top + ctx.triggerRect.height + GAP
-                            : 80,
-                        // Clamp horizontally so a wide popover near the
-                        // right edge can still grow leftward without
-                        // overflowing the screen.
-                        left: ctx.triggerRect
-                            ? Math.min(
-                                  Math.max(VIEWPORT_MARGIN, ctx.triggerRect.left),
-                                  Math.max(VIEWPORT_MARGIN, viewportWidth - measuredWidth - VIEWPORT_MARGIN)
-                              )
-                            : VIEWPORT_MARGIN * 2,
-                    }}
-                >
-                    {content}
-                </Pressable>
-            </Pressable>
+                    accessibilityRole="none"
+                    aria-hidden={true}
+                    onPress={() => ctx.setOpen(false)}
+                    style={NATIVE_FILL}
+                />
+                {content}
+            </View>
         </Modal>
     );
 };
+
+const NATIVE_FILL: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
 
 /**
  * Public `Popover` value — the root function plus its `.Trigger` and `.Content`

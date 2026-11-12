@@ -1,6 +1,6 @@
 ---
 title: Toggle
-description: A two-state button — standalone for toolbar actions, or clustered as Toggle.Group for radiogroup-style choices.
+description: A two-state button — standalone for toolbar actions, or clustered as Toggle.Group for single or multiple choices.
 since: 0.3.0
 tags: [control, form, toolbar]
 platform: both
@@ -18,7 +18,7 @@ import { PropsTable } from '@/components/props-table';
 
 - A single bistable button — think of the **B** / **I** / **U** buttons in a rich-text toolbar.
 - Cluster several with `<Toggle.Group>` for shared selection semantics (toolbar-multiple, alignment-single).
-- ARIA: `role="button"` + `aria-pressed` per item. `<Toggle.Group>` adds `role="group"` (multiple) or `role="radiogroup"` (single).
+- ARIA: `role="button"` + `aria-pressed` per item. `<Toggle.Group>` adds `role="group"` in both modes: a single-select group stays a group of pressed buttons because its selection can be cleared, which a radio group cannot express.
 
 <Callout title="Toggle vs Switch vs Checkbox vs SegmentedControl">
     These four controls look similar but ship different semantics — pick the one that matches the *meaning* of the choice, not the shape of the visual.
@@ -97,7 +97,7 @@ meaningful.
 ## `<Toggle.Group>`
 
 Clusters several Toggle items with shared selection semantics.
-Roving-tabindex keyboard nav follows the WAI-ARIA radiogroup pattern:
+Roving-tabindex keyboard nav follows the WAI-ARIA toolbar pattern:
 arrow keys move focus, `Home` / `End` jump to the ends, `Space` /
 `Enter` toggles the focused item. Default-variant grouped items share
 borders so the cluster reads as one segmented chip — first item rounds

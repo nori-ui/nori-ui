@@ -1,9 +1,10 @@
 'use client';
 
-import { Children, cloneElement, isValidElement, type ReactNode } from 'react';
+import { Children, isValidElement, type ReactNode, useMemo } from 'react';
 import type { ViewStyle } from 'react-native';
 import { View } from 'react-native';
 import { cn } from '../../utils/cn';
+import { ButtonGroupContext, type ButtonGroupContextValue, type ButtonGroupPosition } from './button-group-context';
 
 export type ButtonGroupOrientation = 'horizontal' | 'vertical';
 export type ButtonGroupSize = 'sm' | 'md' | 'lg';
@@ -13,9 +14,9 @@ export type ButtonGroupProps = {
     /** Flex direction for the group. @defaultValue 'horizontal' */
     orientation?: ButtonGroupOrientation;
     /**
-     * Size hint passed to children via `data-group-size`. Buttons inside
-     * the group can read this to self-size consistently. When omitted, each
-     * Button retains its own `size` prop.
+     * Size applied to every Button inside the group, overriding each
+     * Button's own `size`. When omitted, each Button retains its own `size`
+     * prop.
      */
     size?: ButtonGroupSize;
     className?: string;
@@ -27,12 +28,10 @@ export type ButtonGroupProps = {
  * buttons lose outer edge radius; adjacent borders merge so the group looks
  * like a single segmented control.
  *
- * The radius treatment is implemented by injecting `data-position` attributes
- * (first / middle / last) onto each direct child. A companion CSS rule in the
- * nori preset (or a Tailwind variant) can target `[data-position=first]`,
- * `[data-position=middle]`, and `[data-position=last]` to strip the
- * appropriate border-radius corners. When using Button from `@nori-ui/core`,
- * no extra setup is needed — the tokens preset ships the rules.
+ * Each direct child is told its position (first / middle / last) and the
+ * group's `size` through context; `Button` reads it to drop the corner
+ * radius on its joined edges and to size itself. This works the same on web
+ * and native.
  *
  * ```tsx
  * <ButtonGroup>
@@ -41,40 +40,29 @@ export type ButtonGroupProps = {
  *   <Button variant="secondary">Month</Button>
  * </ButtonGroup>
  * ```
- *
- * > **v2 note:** Corner-radius stripping is applied via CSS data-attribute
- * > selectors on web. On native, middle-button radius adjustment is a future
- * > enhancement (currently the group renders with standard per-button radius).
  */
 export const ButtonGroup = ({ children, orientation = 'horizontal', size, className, testID }: ButtonGroupProps) => {
     const isHorizontal = orientation === 'horizontal';
 
     const containerStyle: ViewStyle = {
         flexDirection: isHorizontal ? 'row' : 'column',
-        // gap: 0 so buttons touch; shared-border effect comes from CSS on web
-        // and from touching edges on native.
+        // gap: 0 so buttons touch and read as one joined control.
         gap: 0,
         alignSelf: 'flex-start',
         overflow: 'hidden',
     };
 
-    // Inject `data-position` on each valid child so CSS (web) or future
-    // native logic can target first / middle / last positions.
     const childArray = Children.toArray(children).filter(isValidElement);
     const total = childArray.length;
 
     const clonedChildren = childArray.map((child, index) => {
-        const position = index === 0 ? 'first' : index === total - 1 ? 'last' : 'middle';
-        const extraProps: Record<string, unknown> = {
-            'data-position': position,
-            'data-group-orientation': orientation,
-        };
-        if (size !== undefined) {
-            extraProps['data-group-size'] = size;
-        }
-
-        // Clone the child element with the injected data attributes.
-        return cloneElement(child, extraProps);
+        const position: ButtonGroupPosition =
+            total === 1 ? 'only' : index === 0 ? 'first' : index === total - 1 ? 'last' : 'middle';
+        return (
+            <ButtonGroupSlot key={child.key ?? index} orientation={orientation} position={position} size={size}>
+                {child}
+            </ButtonGroupSlot>
+        );
     });
 
     return (
@@ -86,4 +74,22 @@ export const ButtonGroup = ({ children, orientation = 'horizontal', size, classN
             {clonedChildren}
         </View>
     );
+};
+
+const ButtonGroupSlot = ({
+    orientation,
+    position,
+    size,
+    children,
+}: {
+    orientation: ButtonGroupOrientation;
+    position: ButtonGroupPosition;
+    size: ButtonGroupSize | undefined;
+    children: ReactNode;
+}) => {
+    const value = useMemo<ButtonGroupContextValue>(
+        () => ({ orientation, position, size }),
+        [orientation, position, size]
+    );
+    return <ButtonGroupContext.Provider value={value}>{children}</ButtonGroupContext.Provider>;
 };

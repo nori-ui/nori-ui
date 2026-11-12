@@ -117,7 +117,9 @@ onto the underlying control automatically:
 
 On native, React Native equivalents are forwarded instead:
 `accessibilityLabelledBy` (mirrors `aria-labelledby`) and
-`accessibilityDescribedBy` (mirrors `aria-describedby`).
+`accessibilityDescribedBy` (mirrors `aria-describedby`). On iOS, where
+`aria-labelledby` has no effect, `Field` passes the label text as
+`accessibilityLabel` instead.
 
 You can also pass any of these props explicitly when using `Switch` without a
 `Field` wrapper.

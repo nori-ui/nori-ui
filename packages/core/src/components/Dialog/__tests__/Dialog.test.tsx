@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { Button } from '../../Button';
+import { DropdownMenu } from '../../DropdownMenu';
 import { Dialog } from '../Dialog';
 
 describe('<Dialog>', () => {
@@ -161,6 +162,113 @@ describe('<Dialog>', () => {
         expect(describedBy).not.toBeNull();
         expect(document.getElementById(labelledBy as string)?.textContent).toBe('The title');
         expect(document.getElementById(describedBy as string)?.textContent).toBe('Some context');
+    });
+
+    it('asChild trigger calls the wrapped child handler exactly once', () => {
+        const onPress = jest.fn();
+        render(
+            <Dialog>
+                <Dialog.Trigger>
+                    <Button testID="trigger" onPress={onPress}>
+                        Open
+                    </Button>
+                </Dialog.Trigger>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
+            </Dialog>
+        );
+        fireEvent.click(screen.getByTestId('trigger'));
+        expect(onPress).toHaveBeenCalledTimes(1);
+        expect(screen.getByTestId('dialog')).toBeInTheDocument();
+    });
+
+    it('keeps focus in a form field when the parent re-renders with an inline onOpenChange', () => {
+        const Form = () => {
+            const [value, setValue] = useState('');
+            return (
+                <Dialog open onOpenChange={() => {}}>
+                    <Dialog.Content>
+                        <Dialog.Title>Edit</Dialog.Title>
+                        <button type="button">First</button>
+                        <input data-testid="field" value={value} onChange={(event) => setValue(event.target.value)} />
+                    </Dialog.Content>
+                </Dialog>
+            );
+        };
+        render(<Form />);
+        const field = screen.getByTestId('field');
+        field.focus();
+        fireEvent.change(field, { target: { value: 'a' } });
+        expect(document.activeElement).toBe(field);
+    });
+
+    it('Escape closes only the topmost layer when a menu is open inside the dialog', () => {
+        render(
+            <Dialog defaultOpen>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                    <DropdownMenu>
+                        <DropdownMenu.Trigger>
+                            <button type="button">Options</button>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Content>
+                            <DropdownMenu.Item>Edit</DropdownMenu.Item>
+                        </DropdownMenu.Content>
+                    </DropdownMenu>
+                </Dialog.Content>
+            </Dialog>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(screen.getByRole('menu')).toBeInTheDocument();
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByRole('menu')).toBeNull();
+        expect(screen.getByTestId('dialog')).toBeInTheDocument();
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByTestId('dialog')).toBeNull();
+    });
+
+    it('does not hide the dialog from assistive tech behind an aria-hidden ancestor', () => {
+        render(
+            <Dialog defaultOpen>
+                <Dialog.Content testID="dialog">
+                    <Dialog.Title>Hi</Dialog.Title>
+                </Dialog.Content>
+            </Dialog>
+        );
+        expect(screen.getByTestId('dialog').closest('[aria-hidden="true"]')).toBeNull();
+    });
+
+    it('emits no dangling aria-labelledby without a title and accepts aria-label instead', () => {
+        render(
+            <Dialog defaultOpen>
+                <Dialog.Content testID="dialog" aria-label="Settings">
+                    <button type="button">Ok</button>
+                </Dialog.Content>
+            </Dialog>
+        );
+        const dialog = screen.getByTestId('dialog');
+        expect(dialog).not.toHaveAttribute('aria-labelledby');
+        expect(dialog).not.toHaveAttribute('aria-describedby');
+        expect(dialog).toHaveAttribute('aria-label', 'Settings');
+    });
+
+    it('a close button with visible text is named by that text, an icon-only one by the fallback label', () => {
+        render(
+            <Dialog defaultOpen>
+                <Dialog.Content>
+                    <Dialog.Title>Hi</Dialog.Title>
+                    <Dialog.Close asChild={false} testID="text-close">
+                        Cancel
+                    </Dialog.Close>
+                    <Dialog.Close asChild={false} testID="icon-close" />
+                </Dialog.Content>
+            </Dialog>
+        );
+        expect(screen.getByTestId('text-close')).not.toHaveAttribute('aria-label');
+        expect(screen.getByTestId('icon-close')).toHaveAttribute('aria-label', 'Close');
     });
 
     it('throws when DialogContent is rendered outside Dialog', () => {

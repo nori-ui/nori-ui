@@ -26,7 +26,6 @@ import {
     useContext,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import type { GestureResponderEvent, ViewStyle } from 'react-native';
@@ -104,7 +103,7 @@ type FloatButtonBaseProps = {
      * @defaultValue false
      */
     respectSafeArea?: boolean;
-    /** Anchor link — renders as an `<a>` on web. */
+    /** Anchor link — the button itself renders as an `<a>` on web. Ignored while `disabled` or `loading`. */
     href?: string;
     /** RTL flips left/right placements. @defaultValue 'ltr' */
     dir?: 'ltr' | 'rtl';
@@ -235,21 +234,13 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
     // Tooltip visibility (web: hover/focus; native-in-group: always when group open)
     const [tooltipVisible, setTooltipVisible] = useState(false);
 
-    // Track press-tap separately so we don't run onLongPress -> onPress.
-    const longPressFiredRef = useRef(false);
-
     const handlePress = useCallback(
         (event: GestureResponderEvent) => {
             if (disabled || loading) {
                 return;
             }
-            if (longPressFiredRef.current) {
-                longPressFiredRef.current = false;
-                return;
-            }
-            // If we're inside a Group, close it after a press (unless this IS the
-            // group's trigger — group trigger is rendered from inside Group itself,
-            // not by a child FloatButton).
+            // Inside a Group, pressing an action closes the group. The group's
+            // own trigger gets a context whose `close` is a no-op.
             if (groupCtx) {
                 groupCtx.close();
             }
@@ -263,7 +254,8 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
             if (disabled || loading) {
                 return;
             }
-            longPressFiredRef.current = true;
+            // No "long-press fired" bookkeeping: Pressable already suppresses
+            // the `onPress` that would follow a long-press on both platforms.
             onLongPress?.(event);
         },
         [disabled, loading, onLongPress]
@@ -304,6 +296,11 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
           };
 
     const a11yLabel = accessibilityLabel ?? label ?? tooltip;
+
+    // With `href` on web the Pressable itself renders as the `<a>`, so there
+    // is one tab stop and one activation path. A disabled or loading button
+    // drops the `href`; otherwise Enter would still navigate.
+    const isLink = Platform.OS === 'web' && href !== undefined && !disabled && !loading;
 
     if (process.env.NODE_ENV !== 'production' && !a11yLabel && icon) {
         console.warn('<FloatButton>: provide `accessibilityLabel` or `label` for icon-only buttons (WCAG 2.2).');
@@ -366,17 +363,22 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
                   transitionProperty: 'opacity, transform',
                   transitionDuration: '180ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                  pointerEvents: visible ? 'auto' : 'none',
               } as ViewStyle)
             : null),
+        // A faded-out button must not swallow touches meant for the content
+        // underneath it, on either platform.
+        pointerEvents: visible ? 'auto' : 'none',
     };
 
     // ----- the button itself (Pressable + visual style) -----
     const buttonNode = (
         <Pressable
             {...(testID !== undefined ? { testID } : {})}
-            role="button"
-            accessibilityRole="button"
+            role={isLink ? 'link' : 'button'}
+            accessibilityRole={isLink ? 'link' : 'button'}
+            {...(isLink ? ({ href } as object) : null)}
+            // Keeps keyboard focus off the button while it is faded out.
+            {...(visible ? null : { tabIndex: -1 as const })}
             accessibilityLabel={a11yLabel}
             aria-label={a11yLabel}
             disabled={disabled || loading}
@@ -444,38 +446,26 @@ const FloatButtonRoot = (props: FloatButtonProps) => {
         </Pressable>
     );
 
-    // Web `<a>` wrapper for href integration. Non-anchor on native.
-    const linkedButton =
-        href && Platform.OS === 'web' ? (
-            <a
-                href={href}
-                aria-label={a11yLabel}
-                style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex' }}
-                onClick={(e) => {
-                    if (onPressFn) {
-                        // Let consumer's handler decide; if they call preventDefault we honor it.
-                        (onPressFn as (e: { preventDefault?: () => void }) => void)({
-                            preventDefault: () => e.preventDefault(),
-                        });
-                    }
-                }}
-            >
-                {buttonNode}
-            </a>
-        ) : (
-            buttonNode
-        );
-
     // Tooltip chip — always visible on native when inside an open group;
     // hover/focus on web. Skipped if no tooltip text.
     const showTooltip = tooltip && (Platform.OS === 'web' ? tooltipVisible : (groupCtx?.open ?? false));
 
     return (
-        <View className={cn(className)} style={wrapperStyle}>
+        <View
+            className={cn(className)}
+            style={wrapperStyle}
+            {...(visible
+                ? null
+                : {
+                      'aria-hidden': true,
+                      accessibilityElementsHidden: true,
+                      importantForAccessibility: 'no-hide-descendants' as const,
+                  })}
+        >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(colors.spacing['2']) }}>
                 {showTooltip ? <TooltipChip text={tooltip!} /> : null}
                 <View style={{ position: 'relative' }}>
-                    {linkedButton}
+                    {buttonNode}
                     {badge ? <BadgeOverlay badge={badge} size={size} /> : null}
                 </View>
             </View>
@@ -559,8 +549,20 @@ const FloatButtonGroup: FC<FloatButtonGroupProps> = ({
         [open, close, direction]
     );
 
-    // Trigger button (uses the same FloatButton render path but without
-    // group-context positioning so it stays in the corner).
+    // The trigger renders inside the group context (for sizing and layout)
+    // but must not run the "close after press" step that action items get:
+    // that would report `onOpenChange(false)` right before the toggle.
+    const triggerCtxValue = useMemo<FloatButtonGroupContextValue>(
+        () => ({ ...groupCtxValue, close: () => undefined }),
+        [groupCtxValue]
+    );
+    // Outside `click` mode a tap on the trigger still dismisses an open group.
+    const closeIfOpen = useCallback(() => {
+        if (open) {
+            close();
+        }
+    }, [open, close]);
+
     const triggerIcon = open
         ? (collapseIcon ?? <RotatedIcon node={expandIcon ?? buttonProps.icon} />)
         : (expandIcon ?? buttonProps.icon);
@@ -576,14 +578,16 @@ const FloatButtonGroup: FC<FloatButtonGroupProps> = ({
                 dir={buttonProps.dir ?? 'ltr'}
             >
                 {open ? <View style={groupActionsLayoutStyle(direction)}>{actionItems}</View> : null}
-                <FloatButton
-                    {...(buttonProps as FloatButtonProps)}
-                    icon={triggerIcon}
-                    {...(trigger === 'click' ? { onPress: toggle } : {})}
-                    {...(trigger === 'longPress' ? { onLongPress: toggle } : {})}
-                    aria-haspopup="menu"
-                    aria-expanded={open}
-                />
+                <FloatButtonGroupContext.Provider value={triggerCtxValue}>
+                    <FloatButton
+                        {...(buttonProps as FloatButtonProps)}
+                        icon={triggerIcon}
+                        onPress={trigger === 'click' ? toggle : closeIfOpen}
+                        {...(trigger === 'longPress' ? { onLongPress: toggle } : {})}
+                        aria-haspopup="menu"
+                        aria-expanded={open}
+                    />
+                </FloatButtonGroupContext.Provider>
             </GroupLayout>
         </FloatButtonGroupContext.Provider>
     );
@@ -596,40 +600,67 @@ const FloatButtonGroup: FC<FloatButtonGroupProps> = ({
 // =============================================================================
 
 export type FloatButtonBackToTopProps = Omit<FloatButtonProps, 'icon' | 'onPress' | 'onClick' | 'visible'> & {
-    /** Scroll target ref — RN ScrollView. Defaults to window on web. */
+    /**
+     * Scroll target ref — an RN `ScrollView`. Pressing the button scrolls it
+     * to the top. On web it is also the element whose scroll position drives
+     * the automatic visibility; without it the window is used.
+     */
     scrollRef?: { current: ScrollView | null };
-    /** Show only when the scroll target is past this many px from the top. @defaultValue 400 */
+    /** Show only when the scroll target is past this many px from the top. Web only. @defaultValue 400 */
     visibilityThreshold?: number;
+    /**
+     * Controlled visibility. Web tracks the scroll position by itself, so
+     * this is optional there. Native cannot observe a `ScrollView` from the
+     * outside: derive it from your `onScroll` handler, e.g.
+     * `visible={scrollY > 400}`. Left unset on native, the button is always
+     * shown.
+     */
+    visible?: boolean;
 };
+
+/** The DOM element behind a react-native-web `ScrollView` ref, if there is one. */
+function getScrollElement(scrollRef: FloatButtonBackToTopProps['scrollRef']): HTMLElement | null {
+    const node: unknown = scrollRef?.current?.getScrollableNode?.();
+    return typeof HTMLElement !== 'undefined' && node instanceof HTMLElement ? node : null;
+}
 
 const FloatButtonBackToTop: FC<FloatButtonBackToTopProps> = ({
     scrollRef,
     visibilityThreshold = 400,
     variant = 'surface',
+    visible: visibleProp,
     ...rest
 }) => {
     const { t } = useTranslation();
-    const [visible, setVisible] = useState(false);
+    const [pastThreshold, setPastThreshold] = useState(false);
+    const isControlled = visibleProp !== undefined;
 
-    // Web: bind to window scroll. Native: caller wires onScroll on their
-    // ScrollView and updates an external state — we expose a passive read here.
     useEffect(() => {
-        if (Platform.OS !== 'web' || typeof window === 'undefined') {
+        if (isControlled || Platform.OS !== 'web' || typeof window === 'undefined') {
             return;
         }
-        const onScroll = () => setVisible(window.scrollY > visibilityThreshold);
+        const element = getScrollElement(scrollRef);
+        const target: HTMLElement | Window = element ?? window;
+        const onScroll = () => {
+            setPastThreshold((element ? element.scrollTop : window.scrollY) > visibilityThreshold);
+        };
         onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, [visibilityThreshold]);
+        target.addEventListener('scroll', onScroll, { passive: true });
+        return () => target.removeEventListener('scroll', onScroll);
+    }, [isControlled, scrollRef, visibilityThreshold]);
 
     const onPress = useCallback(() => {
-        if (Platform.OS === 'web' && typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        const scrollView = scrollRef?.current;
+        if (scrollView) {
+            scrollView.scrollTo?.({ y: 0, animated: true });
             return;
         }
-        scrollRef?.current?.scrollTo?.({ y: 0, animated: true });
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }, [scrollRef]);
+
+    const visible = visibleProp ?? (Platform.OS === 'web' ? pastThreshold : true);
 
     return (
         <FloatButton
@@ -716,7 +747,29 @@ const BadgeOverlay = ({ badge, size }: { badge: FloatButtonBadge; size: FloatBut
     );
 };
 
+const SPIN_KEYFRAMES_NAME = 'nori-fb-spin';
+
+/**
+ * `animationName` only references keyframes; nothing else in the library
+ * defines them, so the rule is added to the document once, on first use.
+ */
+function useSpinKeyframes(): void {
+    useEffect(() => {
+        if (Platform.OS !== 'web' || typeof document === 'undefined') {
+            return;
+        }
+        if (document.getElementById(SPIN_KEYFRAMES_NAME)) {
+            return;
+        }
+        const style = document.createElement('style');
+        style.id = SPIN_KEYFRAMES_NAME;
+        style.textContent = `@keyframes ${SPIN_KEYFRAMES_NAME} { to { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+    }, []);
+}
+
 const SmallSpinner = ({ color, size }: { color: string; size: number }) => {
+    useSpinKeyframes();
     // Tiny CSS spinner on web; on native, defer to an opacity pulse for v1
     // (avoids importing the spinner component into the FloatButton bundle).
     if (Platform.OS === 'web') {
@@ -730,7 +783,7 @@ const SmallSpinner = ({ color, size }: { color: string; size: number }) => {
                         borderWidth: 2,
                         borderColor: 'transparent',
                         borderTopColor: color,
-                        animationName: 'fb-spin',
+                        animationName: SPIN_KEYFRAMES_NAME,
                         animationDuration: '700ms',
                         animationIterationCount: 'infinite',
                         animationTimingFunction: 'linear',
@@ -754,10 +807,13 @@ const SmallSpinner = ({ color, size }: { color: string; size: number }) => {
 };
 
 const Backdrop = ({ onPress, positioning }: { onPress: () => void; positioning: 'fixed' | 'absolute' }) => {
+    const { t } = useTranslation();
+    const label = t('common.close', { defaultValue: 'Close' });
     return (
         <Pressable
             onPress={onPress}
-            accessibilityLabel="Close"
+            accessibilityLabel={label}
+            aria-label={label}
             style={{
                 position:
                     Platform.OS === 'web' && positioning === 'fixed' ? ('fixed' as unknown as 'absolute') : 'absolute',

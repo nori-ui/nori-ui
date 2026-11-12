@@ -1,15 +1,19 @@
 'use client';
 
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Children, createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
     FlatList,
     type FlatListProps,
+    type LayoutChangeEvent,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
     Pressable,
+    Text as RNText,
     StyleSheet,
     useWindowDimensions,
     View,
-    type ViewToken,
 } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
 
@@ -21,6 +25,7 @@ type CarouselContextValue = {
     index: number;
     count: number;
     loop: boolean;
+    orientation: 'horizontal' | 'vertical';
     scrollToIndex: (idx: number) => void;
     next: () => void;
     prev: () => void;
@@ -48,6 +53,8 @@ export type CarouselProps = {
     onIndexChange?: (index: number) => void;
     loop?: boolean;
     orientation?: 'horizontal' | 'vertical';
+    /** Accessible name of the carousel. Defaults to the i18n `carousel.label` string. */
+    'aria-label'?: string;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -58,9 +65,13 @@ const CarouselRoot = ({
     defaultIndex = 0,
     onIndexChange,
     loop = false,
+    orientation = 'horizontal',
+    'aria-label': ariaLabel,
     children,
+    className,
     testID,
 }: CarouselProps) => {
+    const { t } = useTranslation();
     const [inner, setInner] = useState(defaultIndex);
     const isControlled = controlledIndex !== undefined;
     const index = isControlled ? (controlledIndex as number) : inner;
@@ -77,13 +88,9 @@ const CarouselRoot = ({
         [isControlled, onIndexChange]
     );
 
-    const scrollToIndex = useCallback(
-        (idx: number) => {
-            flatListRef.current?.scrollToIndex({ index: idx, animated: true });
-            setIndex(idx);
-        },
-        [setIndex]
-    );
+    // `Carousel.Content` scrolls the list whenever the index changes, so buttons,
+    // dots, `defaultIndex` and a parent-driven `index` all move it the same way.
+    const scrollToIndex = setIndex;
 
     const next = useCallback(() => {
         if (count === 0) {
@@ -108,8 +115,15 @@ const CarouselRoot = ({
     }, [index, count, loop, scrollToIndex]);
 
     return (
-        <CarouselContext.Provider value={{ index, count, loop, scrollToIndex, next, prev, flatListRef, setCount }}>
-            <View testID={testID} className={cn('relative overflow-hidden')} style={styles.root}>
+        <CarouselContext.Provider
+            value={{ index, count, loop, orientation, scrollToIndex, next, prev, flatListRef, setCount }}
+        >
+            <View
+                testID={testID}
+                accessibilityLabel={ariaLabel ?? t('carousel.label')}
+                className={cn('relative overflow-hidden', className)}
+                style={styles.root}
+            >
                 {children}
             </View>
         </CarouselContext.Provider>
@@ -126,49 +140,86 @@ export type CarouselContentProps = {
     testID?: string;
 };
 
-const CarouselContent = ({ children, testID }: CarouselContentProps) => {
+const CarouselContent = ({ children, className, testID }: CarouselContentProps) => {
     const ctx = useCarouselContext('Carousel.Content');
-    const { width } = useWindowDimensions();
-    const items = Array.isArray(children) ? children : children ? [children] : [];
+    const { index, orientation, flatListRef, setCount, scrollToIndex } = ctx;
+    const horizontal = orientation === 'horizontal';
+    const windowSize = useWindowDimensions();
+    // Slides are as large as this container, not the window: inside a padded
+    // parent a window-sized page would drift further off with every swipe.
+    const [measured, setMeasured] = useState<number | null>(null);
+    const pageSize = measured ?? (horizontal ? windowSize.width : windowSize.height);
+    const items = Children.toArray(children);
+    const itemCount = items.length;
 
-    const onViewableItemsChanged = useCallback(
-        ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
-            const first = viewableItems[0];
-            if (first && first.index !== null) {
-                ctx.setCount(items.length);
-            }
-        },
-        [ctx.setCount, items.length]
-    );
-
-    // Keep count in sync with items (runs after every render where items.length changes)
     useEffect(() => {
-        ctx.setCount(items.length);
-    }, [items.length, ctx.setCount]);
+        setCount(itemCount);
+    }, [itemCount, setCount]);
+
+    const handleLayout = (event: LayoutChangeEvent) => {
+        const { width, height } = event.nativeEvent.layout;
+        const next = horizontal ? width : height;
+        if (next > 0) {
+            setMeasured(next);
+        }
+    };
+
+    // Where the list currently rests. Lets the effect below tell an index change
+    // that still needs a scroll from one that a swipe has already performed.
+    const positionRef = useRef<{ index: number; pageSize: number } | null>(null);
+
+    useEffect(() => {
+        if (index < 0 || index >= itemCount) {
+            return;
+        }
+        const position = positionRef.current;
+        if (position !== null && position.index === index && position.pageSize === pageSize) {
+            return;
+        }
+        // Animate only a real index change; the first positioning and a resize should jump.
+        const animated = position !== null && position.pageSize === pageSize;
+        positionRef.current = { index, pageSize };
+        flatListRef.current?.scrollToOffset({ offset: index * pageSize, animated });
+    }, [index, itemCount, pageSize, flatListRef]);
+
+    const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const { x, y } = event.nativeEvent.contentOffset;
+        const settled = Math.max(0, Math.min(itemCount - 1, Math.round((horizontal ? x : y) / pageSize)));
+        positionRef.current = { index: settled, pageSize };
+        if (settled !== index) {
+            scrollToIndex(settled);
+        }
+    };
 
     const renderItem: FlatListProps<ReactNode>['renderItem'] = ({ item }) => (
-        <View style={{ width }}>{item as ReactNode}</View>
+        <View style={horizontal ? { width: pageSize } : { height: pageSize }}>{item}</View>
     );
 
     return (
-        <FlatList
-            ref={ctx.flatListRef as React.RefObject<FlatList<ReactNode>>}
-            data={items as ReactNode[]}
-            renderItem={renderItem}
-            keyExtractor={(_, i) => String(i)}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            testID={testID}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
-            getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
-        />
+        <View
+            className={cn(className)}
+            style={horizontal ? styles.contentHorizontal : styles.contentVertical}
+            onLayout={handleLayout}
+        >
+            <FlatList
+                ref={flatListRef as React.RefObject<FlatList<ReactNode>>}
+                data={items}
+                renderItem={renderItem}
+                keyExtractor={(_, i) => String(i)}
+                horizontal={horizontal}
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                testID={testID}
+                onMomentumScrollEnd={handleMomentumScrollEnd}
+                getItemLayout={(_, i) => ({ length: pageSize, offset: pageSize * i, index: i })}
+            />
+        </View>
     );
 };
 
 // ---------------------------------------------------------------------------
-// Item — just a wrapper (children are unwrapped and wrapped by FlatList)
+// Item
 // ---------------------------------------------------------------------------
 
 export type CarouselItemProps = {
@@ -177,9 +228,8 @@ export type CarouselItemProps = {
     testID?: string;
 };
 
-// On native, CarouselItem is a pass-through — FlatList wraps children directly.
-const CarouselItem = ({ children, testID }: CarouselItemProps) => (
-    <View testID={testID} style={styles.item}>
+const CarouselItem = ({ children, className, testID }: CarouselItemProps) => (
+    <View testID={testID} className={cn(className)} style={styles.item}>
         {children}
     </View>
 );
@@ -194,15 +244,31 @@ export type CarouselButtonProps = {
     children?: ReactNode;
 };
 
-const CarouselPrevious = ({ testID, children }: CarouselButtonProps) => {
+const NavGlyph = ({ glyph }: { glyph: string }) => {
+    const colors = useThemeColors();
+    return (
+        <RNText
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            style={[styles.navGlyph, { color: colors.semantic.text.default }]}
+        >
+            {glyph}
+        </RNText>
+    );
+};
+
+const CarouselPrevious = ({ className, testID, children }: CarouselButtonProps) => {
     const ctx = useCarouselContext('Carousel.Previous');
     const colors = useThemeColors();
+    const { t } = useTranslation();
     const disabled = !ctx.loop && ctx.index === 0;
     return (
         <Pressable
-            accessibilityLabel="Previous slide"
+            accessibilityLabel={t('carousel.previous')}
             accessibilityRole="button"
+            accessibilityState={{ disabled }}
             disabled={disabled}
+            className={cn(className)}
             testID={testID}
             onPress={ctx.prev}
             style={[
@@ -211,20 +277,23 @@ const CarouselPrevious = ({ testID, children }: CarouselButtonProps) => {
                 { opacity: disabled ? 0.4 : 1, backgroundColor: colors.semantic.background.elevated },
             ]}
         >
-            {children}
+            {children ?? <NavGlyph glyph="‹" />}
         </Pressable>
     );
 };
 
-const CarouselNext = ({ testID, children }: CarouselButtonProps) => {
+const CarouselNext = ({ className, testID, children }: CarouselButtonProps) => {
     const ctx = useCarouselContext('Carousel.Next');
     const colors = useThemeColors();
+    const { t } = useTranslation();
     const disabled = !ctx.loop && ctx.index >= ctx.count - 1;
     return (
         <Pressable
-            accessibilityLabel="Next slide"
+            accessibilityLabel={t('carousel.next')}
             accessibilityRole="button"
+            accessibilityState={{ disabled }}
             disabled={disabled}
+            className={cn(className)}
             testID={testID}
             onPress={ctx.next}
             style={[
@@ -233,7 +302,7 @@ const CarouselNext = ({ testID, children }: CarouselButtonProps) => {
                 { opacity: disabled ? 0.4 : 1, backgroundColor: colors.semantic.background.elevated },
             ]}
         >
-            {children}
+            {children ?? <NavGlyph glyph="›" />}
         </Pressable>
     );
 };
@@ -247,13 +316,15 @@ export type CarouselDotsProps = {
     testID?: string;
 };
 
-const CarouselDots = ({ testID }: CarouselDotsProps) => {
+const CarouselDots = ({ className, testID }: CarouselDotsProps) => {
     const ctx = useCarouselContext('Carousel.Dots');
+    const colors = useThemeColors();
+    const { t } = useTranslation();
     if (ctx.count === 0) {
         return null;
     }
     return (
-        <View testID={testID} style={styles.dotsRow} accessibilityRole="tablist">
+        <View testID={testID} className={cn(className)} style={styles.dotsRow} accessibilityRole="tablist">
             {Array.from({ length: ctx.count }, (_, i) => (
                 <Pressable
                     // biome-ignore lint/suspicious/noArrayIndexKey: dot index IS its stable identity
@@ -261,9 +332,18 @@ const CarouselDots = ({ testID }: CarouselDotsProps) => {
                     onPress={() => ctx.scrollToIndex(i)}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: i === ctx.index }}
-                    accessibilityLabel={`Go to slide ${i + 1}`}
-                    style={[styles.dot, i === ctx.index ? styles.dotActive : styles.dotInactive]}
-                />
+                    accessibilityLabel={t('carousel.goToSlide', { index: i + 1 })}
+                    // The dot stays small; the pressable around it is the 24pt target WCAG 2.2 asks for.
+                    style={styles.dotTarget}
+                >
+                    <View
+                        style={[
+                            styles.dot,
+                            i === ctx.index ? styles.dotActive : styles.dotInactive,
+                            { backgroundColor: colors.semantic.text.default },
+                        ]}
+                    />
+                </Pressable>
             ))}
         </View>
     );
@@ -277,12 +357,20 @@ const styles = StyleSheet.create({
     root: {
         position: 'relative',
     },
+    contentHorizontal: {
+        width: '100%',
+    },
+    contentVertical: {
+        flex: 1,
+    },
     item: {
         flex: 1,
     },
     navBtn: {
         position: 'absolute',
         top: '50%',
+        // Half the button height: `top: 50%` alone places the top edge at the center.
+        marginTop: -16,
         zIndex: 10,
         width: 32,
         height: 32,
@@ -296,15 +384,25 @@ const styles = StyleSheet.create({
     navBtnRight: {
         right: 8,
     },
+    navGlyph: {
+        fontSize: 22,
+        lineHeight: 24,
+    },
     dotsRow: {
         position: 'absolute',
-        bottom: 12,
+        bottom: 4,
         left: 0,
         right: 0,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 6,
+    },
+    dotTarget: {
+        minWidth: 24,
+        height: 24,
+        paddingHorizontal: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     dot: {
         height: 6,
@@ -312,11 +410,10 @@ const styles = StyleSheet.create({
     },
     dotActive: {
         width: 12,
-        backgroundColor: 'white',
     },
     dotInactive: {
         width: 6,
-        backgroundColor: 'rgba(255,255,255,0.5)',
+        opacity: 0.5,
     },
 });
 

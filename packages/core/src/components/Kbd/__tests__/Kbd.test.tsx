@@ -23,4 +23,9 @@ describe('<Kbd>', () => {
         const el = container.firstChild as HTMLElement;
         expect(el.className).toContain('my-kbd');
     });
+
+    it('renders a semantic <kbd> element on web', () => {
+        render(<Kbd testID="key">Esc</Kbd>);
+        expect(screen.getByTestId('key').tagName).toBe('KBD');
+    });
 });

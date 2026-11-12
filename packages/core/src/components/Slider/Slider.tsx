@@ -9,7 +9,7 @@ import {
     useRef,
     useState,
 } from 'react';
-import type { GestureResponderEvent, ViewStyle } from 'react-native';
+import type { AccessibilityActionEvent, GestureResponderEvent, ViewStyle } from 'react-native';
 import { Platform, View } from 'react-native';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -57,6 +57,28 @@ export type SliderProps = {
     'aria-label'?: string;
     /** Per-thumb label provider — `(index) => string`. Required for multi-thumb sliders to announce sensibly. */
     ariaLabelForThumb?: (thumbIndex: number) => string;
+    /**
+     * Accessible name for the thumbs when there is no `aria-label`.
+     * `Field.Control` sets this on iOS, where `aria-labelledby` has no effect.
+     */
+    accessibilityLabel?: string;
+    /** DOM id / nativeID of the first thumb, so a label can target it. Injected by `Field.Control`. */
+    id?: string;
+    /** Id of the element that labels the slider. Injected by `Field.Control`. */
+    'aria-labelledby'?: string;
+    /** React Native equivalent of `aria-labelledby`. Injected by `Field.Control`. */
+    accessibilityLabelledBy?: string;
+    /** Ids of the description / error elements. Injected by `Field.Control`. */
+    'aria-describedby'?: string;
+    /** React Native equivalent of `aria-describedby`. Injected by `Field.Control`. */
+    accessibilityDescribedBy?: string;
+    /** Marks the slider as invalid. Injected by `Field.Control` when the Field has an error. */
+    'aria-invalid'?: boolean;
+    /**
+     * Accepted so the slider can sit inside `Field.Control`. Not rendered:
+     * ARIA does not allow `aria-required` on `role="slider"`.
+     */
+    'aria-required'?: boolean;
     /** Fixed track length when orientation="vertical". @defaultValue 200 */
     length?: number;
     className?: string;
@@ -134,13 +156,20 @@ export const Slider = ({
     inverted = false,
     disabled = false,
     ariaLabelForThumb,
+    accessibilityLabel,
+    id,
+    'aria-label': ariaLabelProp,
+    'aria-labelledby': ariaLabelledBy,
+    accessibilityLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    accessibilityDescribedBy,
+    'aria-invalid': ariaInvalid,
     length = 200,
     className,
     testID,
-    ...rest
 }: SliderProps) => {
     const colors = useThemeColors();
-    const ariaLabel = rest['aria-label'];
+    const ariaLabel = ariaLabelProp ?? accessibilityLabel;
     const isVertical = orientation === 'vertical';
     // `reversed` flips the visual mapping: default vertical sliders have
     // max at the TOP (drag UP to increase, matching audio faders / volume
@@ -162,7 +191,11 @@ export const Slider = ({
     // window resize, since onLayout doesn't fire for window-relative shifts.
     // On native we use `measureInWindow` to get window-relative coords that
     // line up with `event.nativeEvent.pageX/pageY` from the responder.
-    const measure = useCallback(() => {
+    //
+    // `onMeasured` runs once the rect is fresh: synchronously on web, and
+    // from the `measureInWindow` callback on native, where the measurement
+    // is asynchronous.
+    const measure = useCallback((onMeasured?: () => void) => {
         const node = trackRef.current;
         if (!node) {
             return;
@@ -174,23 +207,28 @@ export const Slider = ({
             }
             const rect = webNode.getBoundingClientRect();
             trackRectRef.current = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+            onMeasured?.();
             return;
         }
         if (typeof node.measureInWindow === 'function') {
             node.measureInWindow((x, y, width, height) => {
                 trackRectRef.current = { x, y, width, height };
+                onMeasured?.();
             });
+            return;
         }
+        onMeasured?.();
     }, []);
+    const measureOnLayout = useCallback(() => measure(), [measure]);
 
     useEffect(() => {
         if (Platform.OS !== 'web') {
             return;
         }
-        measure();
-        window.addEventListener('resize', measure);
-        return () => window.removeEventListener('resize', measure);
-    }, [measure]);
+        measureOnLayout();
+        window.addEventListener('resize', measureOnLayout);
+        return () => window.removeEventListener('resize', measureOnLayout);
+    }, [measureOnLayout]);
 
     const setValues = useCallback(
         (next: number[]) => {
@@ -258,11 +296,30 @@ export const Slider = ({
         [current]
     );
 
-    const draggingRef = useRef<{ index: number; pointerId: number } | null>(null);
+    // `index` is null between a native touch start and the async track
+    // measurement that decides which thumb the touch belongs to.
+    const draggingRef = useRef<{ index: number | null; pointerId: number } | null>(null);
     // Auto-publishes drag state to a `<SliderGestureProvider>` ancestor
     // (no-op if none is mounted). Containers that need to disable scroll
     // during a drag read the same context via `useSliderInteractionActive`.
     const gesturePublisher = useSliderGesturePublisher();
+
+    // Unmounting mid-drag never delivers the release event, which would
+    // leave a provider's ScrollView (or a consumer's own scroll lock)
+    // disabled for good.
+    const onInteractionEndRef = useRef(onInteractionEnd);
+    onInteractionEndRef.current = onInteractionEnd;
+    useEffect(
+        () => () => {
+            if (!draggingRef.current) {
+                return;
+            }
+            draggingRef.current = null;
+            gesturePublisher.end();
+            onInteractionEndRef.current?.();
+        },
+        [gesturePublisher]
+    );
 
     const onTrackPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
@@ -295,7 +352,7 @@ export const Slider = ({
     const onTrackPointerMove = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
             const drag = draggingRef.current;
-            if (!drag || drag.pointerId !== event.pointerId) {
+            if (!drag || drag.index === null || drag.pointerId !== event.pointerId) {
                 return;
             }
             const targetValue = valueFromClient(event.clientX, event.clientY);
@@ -317,6 +374,17 @@ export const Slider = ({
             onInteractionEnd?.();
         },
         [commitValues, current, gesturePublisher, onInteractionEnd]
+    );
+
+    // Moves one thumb by a keyboard / screen-reader step and commits.
+    const moveThumbTo = useCallback(
+        (index: number, nextValue: number) => {
+            const snapped = snap(nextValue, min, max, step);
+            const next = updateAt(current, index, snapped, gap);
+            setValues(next);
+            commitValues(next);
+        },
+        [current, min, max, step, gap, setValues, commitValues]
     );
 
     const handleThumbKeyDown = useCallback(
@@ -361,12 +429,29 @@ export const Slider = ({
                     return;
             }
             event.preventDefault();
-            const snapped = snap(nextValue, min, max, step);
-            const next = updateAt(current, index, snapped, gap);
-            setValues(next);
-            commitValues(next);
+            moveThumbTo(index, nextValue);
         },
-        [disabled, current, max, min, step, reversed, gap, setValues, commitValues]
+        [disabled, current, max, min, step, reversed, moveThumbTo]
+    );
+
+    // VoiceOver / TalkBack adjust a thumb through the increment / decrement
+    // accessibility actions (swipe up / down, volume keys) instead of keys.
+    const handleThumbAccessibilityAction = useCallback(
+        (index: number) => (event: AccessibilityActionEvent) => {
+            if (disabled) {
+                return;
+            }
+            const cv = current[index];
+            if (cv === undefined) {
+                return;
+            }
+            if (event.nativeEvent.actionName === 'increment') {
+                moveThumbTo(index, cv + step);
+            } else if (event.nativeEvent.actionName === 'decrement') {
+                moveThumbTo(index, cv - step);
+            }
+        },
+        [disabled, current, step, moveThumbTo]
     );
 
     // Visual layout. The thumb sits on top of the track at its value's
@@ -455,6 +540,9 @@ export const Slider = ({
               // already paints within the track's rounded corners thanks to
               // matching borderRadius, so we don't need to clip.
           };
+    // Without this, a touch drag on mobile web scrolls or zooms the page
+    // and the browser cancels the pointer stream mid-drag.
+    const trackTouchStyle = Platform.OS === 'web' ? ({ touchAction: 'none' } as ViewStyle) : null;
 
     const containerStyle: ViewStyle = isVertical
         ? {
@@ -481,19 +569,28 @@ export const Slider = ({
             if (disabled) {
                 return;
             }
-            // Re-measure on grant to capture any layout shift that happened
-            // between mount and the first touch (e.g. inside an animated
-            // ScrollView). Doing it here is cheap and guarantees fresh
-            // coords for the upcoming move sequence.
-            measure();
             const { pageX, pageY } = event.nativeEvent;
-            const targetValue = valueFromClient(pageX, pageY);
-            const idx = closestThumbIndex(targetValue);
-            const next = updateAt(current, idx, targetValue, gap);
-            setValues(next);
-            draggingRef.current = { index: idx, pointerId: 0 };
+            const drag: { index: number | null; pointerId: number } = { index: null, pointerId: 0 };
+            draggingRef.current = drag;
             gesturePublisher.begin();
             onInteractionStart?.();
+            // The track may have moved since the last layout pass (a parent
+            // ScrollView scrolled), and `measureInWindow` reports back
+            // asynchronously, so the touch is only resolved to a value once
+            // the fresh rect has arrived.
+            measure(() => {
+                const targetValue = valueFromClient(pageX, pageY);
+                const idx = closestThumbIndex(targetValue);
+                const next = updateAt(current, idx, targetValue, gap);
+                setValues(next);
+                if (draggingRef.current === drag) {
+                    drag.index = idx;
+                } else {
+                    // The finger already lifted (a tap): the release handler
+                    // had no value to commit yet, so commit here.
+                    commitValues(next);
+                }
+            });
         },
         [
             disabled,
@@ -503,28 +600,34 @@ export const Slider = ({
             current,
             gap,
             setValues,
+            commitValues,
             gesturePublisher,
             onInteractionStart,
         ]
     );
     const onTrackResponderMove = useCallback(
         (event: GestureResponderEvent) => {
-            if (!draggingRef.current) {
+            const drag = draggingRef.current;
+            if (!drag || drag.index === null) {
                 return;
             }
             const { pageX, pageY } = event.nativeEvent;
             const targetValue = valueFromClient(pageX, pageY);
-            const next = updateAt(current, draggingRef.current.index, targetValue, gap);
+            const next = updateAt(current, drag.index, targetValue, gap);
             setValues(next);
         },
         [valueFromClient, current, gap, setValues]
     );
     const onTrackResponderRelease = useCallback(() => {
-        if (!draggingRef.current) {
+        const drag = draggingRef.current;
+        if (!drag) {
             return;
         }
         draggingRef.current = null;
-        commitValues(current);
+        // A pending measurement commits its own value when it lands.
+        if (drag.index !== null) {
+            commitValues(current);
+        }
         gesturePublisher.end();
         onInteractionEnd?.();
     }, [commitValues, current, gesturePublisher, onInteractionEnd]);
@@ -566,6 +669,7 @@ export const Slider = ({
             role="group"
             accessibilityRole="adjustable"
             {...(ariaLabel !== undefined ? { 'aria-label': ariaLabel, accessibilityLabel: ariaLabel } : {})}
+            {...(ariaLabelledBy !== undefined ? { 'aria-labelledby': ariaLabelledBy } : {})}
             {...(disabled ? { 'aria-disabled': true } : {})}
             className={cn(
                 isVertical ? 'flex-col items-center' : 'flex-row items-center',
@@ -576,10 +680,10 @@ export const Slider = ({
         >
             <View
                 ref={trackRef}
-                onLayout={measure}
+                onLayout={measureOnLayout}
                 {...trackPointerProps}
                 className={cn('relative bg-neutral-200 rounded-full')}
-                style={trackStyle}
+                style={[trackStyle, trackTouchStyle]}
             >
                 {/* Inner clipper holds the range fill so its left/right
                  * edges round naturally against the track's borderRadius.
@@ -601,6 +705,9 @@ export const Slider = ({
                 </View>
                 {current.map((val, index) => {
                     const ratio = (val - min) / (max - min || 1);
+                    const thumbLabel = ariaLabelForThumb?.(index) ?? ariaLabel;
+                    const labelledBy = accessibilityLabelledBy ?? ariaLabelledBy;
+                    const describedBy = accessibilityDescribedBy ?? ariaDescribedBy;
                     const thumbProps: Record<string, unknown> = {
                         role: 'slider',
                         accessibilityRole: 'adjustable',
@@ -608,12 +715,35 @@ export const Slider = ({
                         'aria-valuemax': max,
                         'aria-valuenow': val,
                         'aria-orientation': orientation,
-                        'aria-label': ariaLabelForThumb?.(index) ?? ariaLabel,
+                        'aria-label': thumbLabel,
+                        // A label of the thumb's own wins; otherwise the
+                        // Field's label names it.
+                        ...(thumbLabel === undefined && ariaLabelledBy !== undefined
+                            ? { 'aria-labelledby': ariaLabelledBy }
+                            : {}),
+                        ...(ariaDescribedBy !== undefined ? { 'aria-describedby': ariaDescribedBy } : {}),
+                        ...(ariaInvalid ? { 'aria-invalid': true } : {}),
+                        ...(id !== undefined && index === 0 ? { id, nativeID: id } : {}),
                         tabIndex: disabled ? -1 : 0,
                         onKeyDown: handleThumbKeyDown(index),
                         'data-thumb-index': index,
                         'data-value': val,
                         'data-ratio': ratio,
+                        // Native-only: without these the thumb is not a
+                        // screen-reader element, so VoiceOver / TalkBack can
+                        // neither read the value nor adjust it.
+                        ...(Platform.OS === 'web'
+                            ? {}
+                            : {
+                                  accessible: true,
+                                  accessibilityLabel: thumbLabel,
+                                  accessibilityValue: { min, max, now: val },
+                                  accessibilityState: { disabled },
+                                  accessibilityActions: [{ name: 'increment' }, { name: 'decrement' }],
+                                  onAccessibilityAction: handleThumbAccessibilityAction(index),
+                                  ...(labelledBy !== undefined ? { accessibilityLabelledBy: labelledBy } : {}),
+                                  ...(describedBy !== undefined ? { accessibilityDescribedBy: describedBy } : {}),
+                              }),
                     };
                     return (
                         <View

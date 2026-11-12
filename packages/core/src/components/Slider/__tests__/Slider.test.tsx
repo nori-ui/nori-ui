@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { Slider } from '../Slider';
+import { SliderGestureProvider, useSliderInteractionActive } from '../slider-gesture-context';
 
 describe('<Slider>', () => {
     it('renders one thumb per value (single + range)', () => {
@@ -145,5 +146,23 @@ describe('<Slider>', () => {
         expect(fill).toBeDefined();
         expect(fill?.style.left).toBe('20%');
         expect(fill?.style.right).toBe('20%');
+    });
+});
+
+describe('<Slider> drag lifecycle', () => {
+    it('releases the gesture lock when unmounted mid-drag', () => {
+        const ScrollLock = () => <span data-testid="lock">{useSliderInteractionActive() ? 'locked' : 'free'}</span>;
+        const Harness = ({ show }: { show: boolean }) => (
+            <SliderGestureProvider>
+                <ScrollLock />
+                {show ? <Slider defaultValue={[40]} aria-label="Volume" /> : null}
+            </SliderGestureProvider>
+        );
+        const { rerender } = render(<Harness show />);
+        const track = screen.getByRole('slider').parentElement as HTMLElement;
+        fireEvent.pointerDown(track, { pointerId: 1, clientX: 10, clientY: 0 });
+        expect(screen.getByTestId('lock').textContent).toBe('locked');
+        rerender(<Harness show={false} />);
+        expect(screen.getByTestId('lock').textContent).toBe('free');
     });
 });

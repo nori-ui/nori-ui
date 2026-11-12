@@ -23,13 +23,16 @@
  *   - No collapse — the panel is always expanded on native v1.
  *
  * Accessibility:
- *   - role="navigation" + aria-label on the <aside>.
- *   - Each MenuItem is a button with aria-current="page" when active.
+ *   - Navigation landmark with a translated label on both platforms.
+ *   - Each MenuItem is a button; `aria-current="page"` (web) or the
+ *     selected state (native) marks the active one.
+ *   - A collapsed, icon-only MenuItem keeps its label as the accessible name.
  */
 
 import { createContext, type ReactNode, useCallback, useContext, useId, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Platform, Pressable, Text as RNText, ScrollView, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -73,6 +76,8 @@ export type SidebarProps = {
     side?: SidebarSide;
     /** Visual variant. @defaultValue 'standard' */
     variant?: SidebarVariant;
+    /** Override the navigation landmark's label. @defaultValue translated "Sidebar" */
+    ariaLabel?: string;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -84,6 +89,27 @@ export type SidebarProps = {
 
 const EXPANDED_WIDTH = 240;
 const COLLAPSED_WIDTH = 56;
+
+/**
+ * Translucent tint of a theme color. Appending a hex alpha suffix only works
+ * for `#rrggbb`, so hex is converted explicitly; any other format goes
+ * through `color-mix` on web. Native has no equivalent, so `undefined` there
+ * means "no tint".
+ */
+function tint(color: string, alpha: number): string | undefined {
+    const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color)?.[1];
+    if (hex) {
+        const full = hex.length === 3 ? hex.replace(/./g, '$&$&') : hex;
+        const r = Number.parseInt(full.slice(0, 2), 16);
+        const g = Number.parseInt(full.slice(2, 4), 16);
+        const b = Number.parseInt(full.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    if (Platform.OS === 'web') {
+        return `color-mix(in srgb, ${color} ${alpha * 100}%, transparent)`;
+    }
+    return undefined;
+}
 
 // ---------------------------------------------------------------------------
 // Root
@@ -99,10 +125,13 @@ const SidebarRoot = ({
     onCollapsedChange,
     side = 'left',
     variant = 'standard',
+    ariaLabel,
     children,
     className,
     testID,
 }: SidebarProps) => {
+    const { t } = useTranslation();
+    const label = ariaLabel ?? t('sidebar.ariaLabel', { defaultValue: 'Sidebar' });
     const [inner, setInner] = useState<boolean>(defaultCollapsed);
     const isControlled = collapsed !== undefined;
     const current = isControlled ? (collapsed as boolean) : inner;
@@ -175,8 +204,10 @@ const SidebarRoot = ({
         ...containerStyle,
         ...variantStyle,
         backgroundColor: colors.semantic.background.elevated,
-        borderRightWidth: variant !== 'floating' ? 1 : 0,
-        borderRightColor: colors.semantic.border.default,
+        // The divider sits on the edge that faces the page content.
+        ...(side === 'right'
+            ? { borderLeftWidth: variant !== 'floating' ? 1 : 0, borderLeftColor: colors.semantic.border.default }
+            : { borderRightWidth: variant !== 'floating' ? 1 : 0, borderRightColor: colors.semantic.border.default }),
     };
 
     if (Platform.OS === 'web') {
@@ -184,7 +215,7 @@ const SidebarRoot = ({
             <SidebarContext.Provider value={ctxValue}>
                 <nav
                     id={navId}
-                    aria-label="Sidebar"
+                    aria-label={label}
                     data-collapsed={current}
                     data-side={side}
                     data-variant={variant}
@@ -203,7 +234,7 @@ const SidebarRoot = ({
 
     return (
         <SidebarContext.Provider value={ctxValue}>
-            <View style={rootStyle} testID={testID} accessibilityRole="menu" accessibilityLabel="Sidebar">
+            <View style={rootStyle} testID={testID} role="navigation" accessibilityLabel={label}>
                 {children}
             </View>
         </SidebarContext.Provider>
@@ -383,10 +414,8 @@ const SidebarGroupLabel = ({ children, className, testID }: SidebarGroupLabelPro
         return null;
     }
 
-    const style: ViewStyle = {
-        paddingHorizontal: px(colors.spacing['4']),
-        paddingVertical: px(colors.spacing['1']),
-    };
+    const paddingHorizontal = px(colors.spacing['4']);
+    const paddingVertical = px(colors.spacing['1']);
 
     const textStyle = {
         fontSize: 11,
@@ -401,7 +430,7 @@ const SidebarGroupLabel = ({ children, className, testID }: SidebarGroupLabelPro
             <div
                 data-testid={testID}
                 className={cn('nori-sidebar-group-label', className)}
-                style={style as React.CSSProperties}
+                style={{ padding: `${paddingVertical}px ${paddingHorizontal}px` }}
             >
                 <span style={textStyle as React.CSSProperties}>{children}</span>
             </div>
@@ -409,7 +438,7 @@ const SidebarGroupLabel = ({ children, className, testID }: SidebarGroupLabelPro
     }
 
     return (
-        <View style={style} testID={testID}>
+        <View style={{ paddingHorizontal, paddingVertical }} testID={testID}>
             <RNText style={textStyle}>{children}</RNText>
         </View>
     );
@@ -439,14 +468,15 @@ const SidebarMenu = ({ children, className, testID }: SidebarMenuProps) => {
             <ul
                 data-testid={testID}
                 className={cn('nori-sidebar-menu', className)}
-                style={
-                    {
-                        ...(style as React.CSSProperties),
-                        listStyle: 'none',
-                        margin: 0,
-                        padding: `0 ${colors.spacing['2']}px`,
-                    } as React.CSSProperties
-                }
+                style={{
+                    // `gap` only applies to a flex container.
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: px(colors.spacing['1']),
+                    listStyle: 'none',
+                    margin: 0,
+                    padding: `0 ${px(colors.spacing['2'])}px`,
+                }}
             >
                 {children}
             </ul>
@@ -472,6 +502,11 @@ export type SidebarMenuItemProps = {
     disabled?: boolean;
     /** Press handler. */
     onPress?: () => void;
+    /**
+     * Accessible name for the collapsed, icon-only state. Only needed when
+     * `children` is not a plain string (a string is used automatically).
+     */
+    label?: string;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -489,6 +524,7 @@ const SidebarMenuItem = ({
     active = false,
     disabled = false,
     onPress,
+    label,
     children,
     className,
     testID,
@@ -507,8 +543,10 @@ const SidebarMenuItem = ({
         ...(ctx.collapsed ? { justifyContent: 'center', paddingHorizontal: px(colors.spacing['2']) } : {}),
     };
 
-    const activeBg = colors.semantic.interactive.primary;
-    const labelStr = typeof children === 'string' ? children : undefined;
+    const activeBg = active ? tint(colors.semantic.interactive.primary, 0.1) : undefined;
+    const labelStr = label ?? (typeof children === 'string' ? children : undefined);
+    // Collapsed, the visible text is gone, so the name has to be set explicitly.
+    const collapsedLabel = ctx.collapsed ? labelStr : undefined;
 
     const labelTextStyle = {
         fontSize: 14,
@@ -525,7 +563,8 @@ const SidebarMenuItem = ({
                     data-testid={testID}
                     aria-current={active ? 'page' : undefined}
                     aria-disabled={disabled}
-                    title={ctx.collapsed && labelStr ? labelStr : undefined}
+                    title={collapsedLabel}
+                    aria-label={collapsedLabel}
                     disabled={disabled}
                     onClick={disabled ? undefined : onPress}
                     className={cn('nori-sidebar-menu-item', className)}
@@ -540,10 +579,10 @@ const SidebarMenuItem = ({
                             cursor: disabled ? 'not-allowed' : 'pointer',
                             borderRadius: colors.radius.md,
                             padding: ctx.collapsed
-                                ? `${colors.spacing['2']}px`
-                                : `${colors.spacing['2']}px ${colors.spacing['3']}px`,
+                                ? `${px(colors.spacing['2'])}px`
+                                : `${px(colors.spacing['2'])}px ${px(colors.spacing['3'])}px`,
                             justifyContent: ctx.collapsed ? 'center' : 'flex-start',
-                            background: active ? `${activeBg}1a` : 'transparent',
+                            background: activeBg ?? 'transparent',
                             opacity: disabled ? 0.5 : 1,
                         } as React.CSSProperties
                     }
@@ -578,11 +617,12 @@ const SidebarMenuItem = ({
             testID={testID}
             onPress={disabled ? undefined : onPress}
             disabled={disabled}
-            accessibilityRole="menuitem"
+            accessibilityRole="button"
+            {...(collapsedLabel !== undefined ? { accessibilityLabel: collapsedLabel } : {})}
             accessibilityState={{ selected: active, disabled }}
             style={({ pressed }: { pressed: boolean }) => [
                 itemStyle,
-                active ? { backgroundColor: `${activeBg}1a` } : {},
+                activeBg !== undefined ? { backgroundColor: activeBg } : {},
                 pressed && { opacity: 0.7 },
             ]}
         >

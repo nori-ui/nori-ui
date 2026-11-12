@@ -55,7 +55,7 @@ import {
     useState,
 } from 'react';
 import type { LayoutChangeEvent, ViewStyle } from 'react-native';
-import { Platform, Pressable, Text as RNText, ScrollView, View } from 'react-native';
+import { Linking, Platform, Pressable, Text as RNText, ScrollView, View } from 'react-native';
 import { useTranslation } from '../../i18n/use-translation';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
@@ -200,7 +200,8 @@ export type BreadcrumbProps = {
 // =============================================================================
 
 type BreadcrumbContextValue = {
-    separator: BreadcrumbSeparatorValue;
+    /** `undefined` selects the default chevron. */
+    separator: BreadcrumbSeparatorValue | undefined;
     dir: 'ltr' | 'rtl';
     currentPageLabel: string;
     siblingMenuLabel: string;
@@ -312,6 +313,36 @@ function renderSeparator(separator: BreadcrumbSeparatorValue | undefined, ctx: B
         return <SeparatorText>{separator}</SeparatorText>;
     }
     return separator;
+}
+
+// =============================================================================
+// Platform helpers
+// =============================================================================
+
+/**
+ * Native has no `<a href>`, so a crumb with an `href` and no handler of its
+ * own is opened through the OS. A rejected `openURL` (no app registered for
+ * the scheme) must not surface as an unhandled promise rejection.
+ */
+function openHref(href: string): void {
+    Linking.openURL(href).catch((error: unknown) => {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn(`<Breadcrumb> could not open "${href}".`, error);
+        }
+    });
+}
+
+/**
+ * Ref callback that marks a web subtree `inert`, taking it out of the tab
+ * order and the accessibility tree. Set through the DOM because
+ * react-native-web does not forward an `inert` prop.
+ */
+function markInert(node: unknown): void {
+    if (Platform.OS !== 'web') {
+        return;
+    }
+    const element = node as { setAttribute?: (name: string, value: string) => void } | null;
+    element?.setAttribute?.('inert', '');
 }
 
 // =============================================================================
@@ -678,7 +709,7 @@ const BreadcrumbRoot = ({
 
     // Compound mode — context only; the list / items render themselves.
     const ctxValue: BreadcrumbContextValue = {
-        separator: separator ?? '',
+        separator,
         dir,
         currentPageLabel: resolvedCurrentPageLabel,
         siblingMenuLabel: resolvedSiblingMenuLabel,
@@ -691,7 +722,6 @@ const BreadcrumbRoot = ({
                 {...(testID !== undefined ? { testID } : {})}
                 role="navigation"
                 aria-label={resolvedAriaLabel}
-                accessible
                 accessibilityLabel={resolvedAriaLabel}
                 className={cn('flex-row items-center', className)}
                 style={
@@ -838,28 +868,31 @@ const BreadcrumbItemsRenderer = ({
     const renderedCells: ReactNode[] = [];
     const measurementCells: ReactNode[] = [];
 
+    const ellipsisCell = (
+        <Fragment key="__ellipsis__">
+            <BreadcrumbEllipsisInternal
+                ellipsisLabel={ellipsisLabel}
+                expandLabel={expandLabel}
+                expandBehavior={expandBehavior}
+                hiddenItems={allHiddenItems}
+                onExpandInline={() => setInlineExpanded(true)}
+            />
+        </Fragment>
+    );
+    const ellipsisSeparatorCell = (fromIndex: number) => (
+        <Fragment key="__sep_ellipsis__">
+            {renderSeparator(separator, {
+                fromIndex,
+                visibleCount: visibleItemsForRender.length + 1,
+                dir,
+            })}
+        </Fragment>
+    );
+
     visibleItemsForRender.forEach((item, idx) => {
         if (idx === ellipsisInsertAt && allHiddenItems.length > 0) {
-            renderedCells.push(
-                <Fragment key="__ellipsis__">
-                    <BreadcrumbEllipsisInternal
-                        ellipsisLabel={ellipsisLabel}
-                        expandLabel={expandLabel}
-                        expandBehavior={expandBehavior}
-                        hiddenItems={allHiddenItems}
-                        onExpandInline={() => setInlineExpanded(true)}
-                    />
-                </Fragment>
-            );
-            renderedCells.push(
-                <Fragment key="__sep_ellipsis__">
-                    {renderSeparator(separator, {
-                        fromIndex: idx - 1,
-                        visibleCount: visibleItemsForRender.length + 1,
-                        dir,
-                    })}
-                </Fragment>
-            );
+            renderedCells.push(ellipsisCell);
+            renderedCells.push(ellipsisSeparatorCell(idx - 1));
         }
 
         const itemKey = item.key ?? `item-${normalizedItems.indexOf(item)}`;
@@ -886,6 +919,16 @@ const BreadcrumbItemsRenderer = ({
             );
         }
     });
+
+    // With nothing kept after the collapse point (`itemsAfterCollapse={0}`)
+    // the ellipsis belongs behind the last visible item, a slot the loop
+    // above never reaches.
+    if (allHiddenItems.length > 0 && ellipsisInsertAt >= visibleItemsForRender.length) {
+        if (visibleItemsForRender.length > 0) {
+            renderedCells.push(ellipsisSeparatorCell(visibleItemsForRender.length - 1));
+        }
+        renderedCells.push(ellipsisCell);
+    }
 
     if (collapseOnOverflow && expandBehavior !== 'scroll') {
         countCollapse.visible.forEach((item, idx) => {
@@ -962,7 +1005,6 @@ const BreadcrumbItemsRenderer = ({
             {...(testID !== undefined ? { testID } : {})}
             role="navigation"
             aria-label={ariaLabel}
-            accessible
             accessibilityLabel={ariaLabel}
             className={cn('flex-row items-center', className)}
             style={wrapperStyle}
@@ -981,9 +1023,14 @@ const BreadcrumbItemsRenderer = ({
                 list
             )}
 
-            {/* Hidden measurement copy. Offscreen on both platforms. */}
+            {/*
+              Hidden measurement copy. Offscreen on both platforms. It holds
+              real links and buttons, so on web it is also `inert`; otherwise
+              keyboard users would tab through every crumb a second time.
+            */}
             {collapseOnOverflow && expandBehavior !== 'scroll' ? (
                 <View
+                    ref={markInert}
                     aria-hidden
                     accessibilityElementsHidden
                     importantForAccessibility="no-hide-descendants"
@@ -1125,7 +1172,13 @@ const BreadcrumbItemRenderer = ({ item, currentPageLabel, siblingMenuLabel, maxL
 const BreadcrumbInteractive = ({ item, children }: { item: BreadcrumbItemData; children: ReactNode }) => {
     const colors = useThemeColors();
     const handlePress = useCallback(() => {
-        item.onSelect?.();
+        if (item.onSelect) {
+            item.onSelect();
+            return;
+        }
+        if (item.href) {
+            openHref(item.href);
+        }
     }, [item]);
 
     if (Platform.OS === 'web' && item.href) {
@@ -1200,7 +1253,13 @@ const SiblingRow = ({ sibling }: { sibling: BreadcrumbSibling }) => {
     const colors = useThemeColors();
     const Icon = sibling.icon;
     const handlePress = useCallback(() => {
-        sibling.onSelect?.();
+        if (sibling.onSelect) {
+            sibling.onSelect();
+            return;
+        }
+        if (sibling.href) {
+            openHref(sibling.href);
+        }
     }, [sibling]);
 
     const inner = (
@@ -1486,8 +1545,15 @@ export const BreadcrumbLink = ({ href, onPress, asChild, children, className, te
         );
     }
 
+    const handlePress = onPress ?? (href ? () => openHref(href) : undefined);
+
     return (
-        <Pressable onPress={onPress} accessibilityRole="link" role="link" {...(testID !== undefined ? { testID } : {})}>
+        <Pressable
+            onPress={handlePress}
+            accessibilityRole="link"
+            role="link"
+            {...(testID !== undefined ? { testID } : {})}
+        >
             {typeof children === 'string' || typeof children === 'number' ? (
                 <RNText
                     style={{

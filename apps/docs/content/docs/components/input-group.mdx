@@ -105,6 +105,20 @@ Pass `disabled` or `error` on the group itself to dim/mark the whole compound, o
 
 <PropsTable component="InputGroupAddon" />
 
+### Using it inside `Field`
+
+`<Field>` wires its label, description, and error to `InputGroup` by passing
+these props. You can also set any of them yourself when you use `InputGroup`
+without a `Field`:
+
+- `id` — the ID that `Field.Label` points at.
+- `aria-labelledby` — ID of the element that names the control.
+- `aria-describedby` — IDs of the description and/or error text.
+- `aria-invalid` — marks the control as invalid while the `Field` has an error.
+- `aria-required` — marks the control as required when the `Field` is `required`.
+- `accessibilityLabel` — the label text itself. `Field` sets it on iOS, where `aria-labelledby` has no effect.
+- `accessibilityLabelledBy` and `accessibilityDescribedBy` — the React Native counterparts of `aria-labelledby` and `aria-describedby` (Android).
+
 ### `<InputGroup.Input>`
 
 Inherits every prop from [`TextInput`](./text-input).

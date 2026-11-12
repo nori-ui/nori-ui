@@ -33,7 +33,7 @@ describe('<DataTable> web', () => {
 
     it('clicking a sortable header sorts ascending', () => {
         render(<DataTable data={data} columns={columns} />);
-        const nameSort = screen.getByLabelText('Sort by name');
+        const nameSort = screen.getByLabelText('Sort by Name');
         fireEvent.click(nameSort);
         const cells = screen.getAllByRole('cell');
         // After asc sort by name: Alice, Bob, Charlie
@@ -46,7 +46,7 @@ describe('<DataTable> web', () => {
 
     it('clicking a sorted header again sorts descending', () => {
         render(<DataTable data={data} columns={columns} />);
-        const nameSort = screen.getByLabelText('Sort by name');
+        const nameSort = screen.getByLabelText('Sort by Name');
         fireEvent.click(nameSort);
         fireEvent.click(nameSort);
         const cells = screen.getAllByRole('cell');
@@ -102,5 +102,22 @@ describe('<DataTable> web', () => {
         }
         fireEvent.click(row);
         expect(handler).toHaveBeenCalledWith(data[0]);
+    });
+
+    it('returns to the first page whenever the sort changes', () => {
+        const bigData: Row[] = Array.from({ length: 25 }, (_, i) => ({
+            id: String(i + 1),
+            name: `Person ${String(i + 1).padStart(2, '0')}`,
+            age: 20 + i,
+        }));
+        render(<DataTable data={bigData} columns={columns} pageSize={10} />);
+        const nameSort = screen.getByLabelText('Sort by Name');
+        fireEvent.click(nameSort);
+        fireEvent.click(screen.getByLabelText('Next page'));
+        expect(screen.getByText('Person 11')).toBeInTheDocument();
+        // asc -> desc while on page 2
+        fireEvent.click(nameSort);
+        expect(screen.getByText('Person 25')).toBeInTheDocument();
+        expect(screen.queryByText('Person 11')).not.toBeInTheDocument();
     });
 });

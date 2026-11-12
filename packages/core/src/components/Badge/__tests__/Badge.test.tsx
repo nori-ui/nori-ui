@@ -38,4 +38,13 @@ describe('<Badge>', () => {
         );
         expect(screen.getByTestId('b').className).toContain('my-badge');
     });
+
+    it('merges a consumer style over its own', () => {
+        render(
+            <Badge testID="b" style={{ marginLeft: 8 }}>
+                New
+            </Badge>
+        );
+        expect(screen.getByTestId('b').style.marginLeft).toBe('8px');
+    });
 });

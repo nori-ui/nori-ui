@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { ImageStyle, ViewStyle } from 'react-native';
 import { Image as RNImage, Text as RNText, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -78,9 +79,11 @@ const initialsFromName = (name: string | undefined): string => {
  */
 export const Avatar = ({ src, name, size = 'md', fallback, className, testID }: AvatarProps) => {
     const colors = useThemeColors();
-    const [imageFailed, setImageFailed] = useState(false);
+    const { t } = useTranslation();
+    // Remembers which URL failed rather than a bare flag, so a new `src` gets its own attempt.
+    const [failedSrc, setFailedSrc] = useState<string | undefined>(undefined);
     const dim = SIZE_PX[size];
-    const showImage = src !== undefined && src.length > 0 && !imageFailed;
+    const showImage = src !== undefined && src.length > 0 && failedSrc !== src;
 
     const containerStyle: ViewStyle = {
         width: dim,
@@ -98,7 +101,7 @@ export const Avatar = ({ src, name, size = 'md', fallback, className, testID }: 
     };
 
     const initials = initialsFromName(name);
-    const accessibilityLabel = name ?? 'Avatar';
+    const accessibilityLabel = name ?? t('avatar.label');
 
     return (
         <View
@@ -114,7 +117,7 @@ export const Avatar = ({ src, name, size = 'md', fallback, className, testID }: 
                     source={{ uri: src }}
                     style={imageStyle}
                     accessibilityLabel={accessibilityLabel}
-                    onError={() => setImageFailed(true)}
+                    onError={() => setFailedSrc(src)}
                 />
             ) : fallback !== undefined ? (
                 fallback

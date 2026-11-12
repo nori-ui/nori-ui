@@ -39,6 +39,31 @@ describe('<Accordion>', () => {
         expect(screen.getByText('B body')).toBeInTheDocument();
     });
 
+    it('takes collapsed content out of the tab order and starts it collapsed', () => {
+        render(
+            <Accordion type="single" defaultValue="b">
+                <Accordion.Item value="a">
+                    <Accordion.Trigger>A</Accordion.Trigger>
+                    <Accordion.Content testID="a-body">
+                        <input aria-label="Name" />
+                    </Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="b">
+                    <Accordion.Trigger>B</Accordion.Trigger>
+                    <Accordion.Content testID="b-body">B body</Accordion.Content>
+                </Accordion.Item>
+            </Accordion>
+        );
+        const closed = screen.getByTestId('a-body');
+        expect(closed.hasAttribute('inert')).toBe(true);
+        expect(closed.style.maxHeight).toBe('0px');
+        expect(screen.getByTestId('b-body').hasAttribute('inert')).toBe(false);
+
+        fireEvent.click(screen.getByText('A'));
+        expect(closed.hasAttribute('inert')).toBe(false);
+        expect(screen.getByTestId('b-body').hasAttribute('inert')).toBe(true);
+    });
+
     it('single mode: clicking a closed trigger opens it and closes the previous one', () => {
         render(
             <Accordion type="single" defaultValue="a">

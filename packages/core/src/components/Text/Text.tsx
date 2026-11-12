@@ -10,6 +10,11 @@ export type TextVariant = 'body-xs' | 'body-sm' | 'body-md' | 'body-lg' | 'headi
 
 export type TextProps = RNTextProps & {
     variant?: TextVariant;
+    /**
+     * Heading level exposed to assistive technology (`<h1>`–`<h6>` on web).
+     * Heading variants default to their own level: `heading-2` is level 2.
+     */
+    'aria-level'?: number;
     className?: string;
     testID?: string;
 };
@@ -24,7 +29,11 @@ const VARIANT_CLASSES: Record<TextVariant, string> = {
     'heading-3': 'text-2xl leading-tight font-semibold',
 };
 
-const HEADING_VARIANTS: Readonly<Set<TextVariant>> = new Set(['heading-1', 'heading-2', 'heading-3']);
+const HEADING_LEVELS: Partial<Record<TextVariant, number>> = {
+    'heading-1': 1,
+    'heading-2': 2,
+    'heading-3': 3,
+};
 
 // Per-variant resolution from the active theme. Keys here name the
 // fontSize / fontWeight / lineHeight tokens the variant pulls from. The
@@ -66,8 +75,15 @@ const VARIANT_KEYS: Record<TextVariant, VariantKeys> = {
  */
 export const Text = ({ variant = 'body-md', className, testID, children, ...rest }: TextProps) => {
     const colors = useThemeColors();
-    const isHeading = HEADING_VARIANTS.has(variant);
-    const role = isHeading ? 'header' : rest.accessibilityRole;
+    const headingLevel = HEADING_LEVELS[variant];
+    const isHeading = headingLevel !== undefined;
+    // A heading variant is a heading unless the consumer assigned another role.
+    // react-native-web renders a heading without a level as <h1>, so the level
+    // always travels with the role.
+    const headingProps =
+        isHeading && rest.accessibilityRole === undefined && rest.role === undefined
+            ? { accessibilityRole: 'header' as const, 'aria-level': headingLevel }
+            : {};
 
     const keys = VARIANT_KEYS[variant];
     const sizePx = px(colors.fontSize[keys.fontSize]);
@@ -98,8 +114,8 @@ export const Text = ({ variant = 'body-md', className, testID, children, ...rest
     return (
         <RNText
             testID={testID}
+            {...headingProps}
             {...rest}
-            {...(role !== undefined ? { accessibilityRole: role } : {})}
             className={cn(VARIANT_CLASSES[variant], className)}
             style={[themedStyle, styleProp]}
         >

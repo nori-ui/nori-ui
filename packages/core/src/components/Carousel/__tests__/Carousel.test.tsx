@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Carousel } from '../Carousel';
 
 // jsdom returns zero-width elements by default. Give the list a measurable size
@@ -15,13 +15,24 @@ beforeAll(() => {
         writable: true,
         value: 0,
     });
-    // scrollIntoView is not implemented in jsdom
-    Element.prototype.scrollIntoView = jest.fn();
+    // jsdom does not lay out or scroll; move the list the way a browser would.
+    Element.prototype.scrollTo = function scrollTo(this: Element, options?: ScrollToOptions | number) {
+        if (typeof options === 'object') {
+            this.scrollLeft = options.left ?? this.scrollLeft;
+        }
+    } as Element['scrollTo'];
 });
 
-function BasicCarousel({ loop = false }: { loop?: boolean }) {
+type BasicCarouselProps = {
+    loop?: boolean;
+    index?: number;
+    defaultIndex?: number;
+    onIndexChange?: (index: number) => void;
+};
+
+function BasicCarousel({ loop = false, ...rest }: BasicCarouselProps) {
     return (
-        <Carousel loop={loop} testID="carousel">
+        <Carousel loop={loop} testID="carousel" {...rest}>
             <Carousel.Content testID="content">
                 <Carousel.Item testID="slide-1">Slide 1</Carousel.Item>
                 <Carousel.Item testID="slide-2">Slide 2</Carousel.Item>
@@ -58,11 +69,13 @@ describe('<Carousel>', () => {
         expect(screen.getByRole('button', { name: 'Next slide' })).not.toBeDisabled();
     });
 
-    it('clicking next advances index (scrollIntoView called)', () => {
-        render(<BasicCarousel />);
-        const next = screen.getByRole('button', { name: 'Next slide' });
-        fireEvent.click(next);
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    it('clicking next moves to the second slide', () => {
+        const onIndexChange = jest.fn();
+        render(<BasicCarousel onIndexChange={onIndexChange} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Next slide' }));
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+        expect(screen.getAllByRole('tab')[1]).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByTestId('content').scrollLeft).toBe(400);
     });
 
     it('when loop=true, prev is enabled at index 0', () => {
@@ -83,12 +96,53 @@ describe('<Carousel>', () => {
         expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
     });
 
-    it('clicking a dot calls scrollTo (scrollIntoView invoked)', () => {
-        (Element.prototype.scrollIntoView as jest.Mock).mockClear();
+    it('clicking a dot scrolls to its slide', () => {
         render(<BasicCarousel />);
-        const tabs = screen.getAllByRole('tab');
-        fireEvent.click(tabs[2]);
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+        fireEvent.click(screen.getAllByRole('tab')[2] as HTMLElement);
+        expect(screen.getByTestId('content').scrollLeft).toBe(800);
+        expect(screen.getAllByRole('tab')[2]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('defaultIndex shows that slide, not just its dot', () => {
+        render(<BasicCarousel defaultIndex={2} />);
+        expect(screen.getByTestId('content').scrollLeft).toBe(800);
+    });
+
+    it('a parent-driven index scrolls the list', () => {
+        const { rerender } = render(<BasicCarousel index={0} />);
+        rerender(<BasicCarousel index={1} />);
+        expect(screen.getByTestId('content').scrollLeft).toBe(400);
+    });
+
+    it('does not report the slides a programmatic scroll passes on its way', () => {
+        jest.useFakeTimers();
+        try {
+            const onIndexChange = jest.fn();
+            render(<BasicCarousel onIndexChange={onIndexChange} />);
+            const content = screen.getByTestId('content');
+            fireEvent.click(screen.getAllByRole('tab')[2] as HTMLElement);
+            // A smooth scroll passes slide 1 before it arrives at slide 2.
+            content.scrollLeft = 400;
+            fireEvent.scroll(content);
+            content.scrollLeft = 800;
+            fireEvent.scroll(content);
+            act(() => {
+                jest.advanceTimersByTime(500);
+            });
+            expect(onIndexChange.mock.calls).toEqual([[2]]);
+
+            // Once it has settled, the user's own scrolling is followed again.
+            content.scrollLeft = 0;
+            fireEvent.scroll(content);
+            expect(onIndexChange).toHaveBeenLastCalledWith(0);
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    it('is named "Carousel" rather than after its test id', () => {
+        render(<BasicCarousel />);
+        expect(screen.getByRole('region', { name: 'Carousel' })).toBeInTheDocument();
     });
 
     it('content has scroll-snap styles', () => {

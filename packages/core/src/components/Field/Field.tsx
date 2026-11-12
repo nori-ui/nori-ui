@@ -13,7 +13,7 @@ import {
     useMemo,
     useRef,
 } from 'react';
-import { Pressable, Text as RNText, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { useTranslation } from '../../i18n/use-translation';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -33,6 +33,8 @@ type FieldContextValue = {
     name?: string;
     error?: string | null;
     isGroup: boolean;
+    /** Plain-text label, when the label is a string. Names the control on iOS. */
+    labelText?: string;
 };
 
 const FieldContext = createContext<FieldContextValue | null>(null);
@@ -58,6 +60,41 @@ const COMPOUND_DISPLAY_NAMES = ['Field.Label', 'Field.Description', 'Field.Error
 
 const isCompoundChild = (child: ReactNode): boolean =>
     COMPOUND_DISPLAY_NAMES.some((name) => childHasDisplayName(child, name));
+
+/**
+ * Finds the first element matching `predicate`, looking through fragments
+ * and wrapper elements (a `Field.Label` inside a layout `View` still counts).
+ * The search stops at compound parts and at nested Fields, whose parts
+ * belong to that inner Field.
+ */
+const findFieldPart = (
+    children: ReactNode,
+    predicate: (child: ReactElement) => boolean,
+    isNestedField: (child: ReactElement) => boolean
+): ReactElement | undefined => {
+    let found: ReactElement | undefined;
+    Children.forEach(children, (child) => {
+        if (found !== undefined || !isValidElement(child)) {
+            return;
+        }
+        if (predicate(child)) {
+            found = child;
+            return;
+        }
+        if (isCompoundChild(child) || isNestedField(child)) {
+            return;
+        }
+        found = findFieldPart(
+            (child as ReactElement<{ children?: ReactNode }>).props.children,
+            predicate,
+            isNestedField
+        );
+    });
+    return found;
+};
+
+const isNonEmptyNode = (node: ReactNode): boolean =>
+    node !== undefined && node !== null && node !== false && node !== '';
 
 export type FieldProps = {
     // Shorthand slot props
@@ -105,55 +142,56 @@ const FieldRoot = ({
     const errorId = `${fieldId}-error`;
 
     // ---------- mode detection ----------
-    const isCompoundMode = useMemo(() => {
-        let found = false;
-        Children.forEach(children, (child) => {
-            if (isCompoundChild(child)) {
-                found = true;
-            }
-        });
-        return found;
-    }, [children]);
+    const isCompoundMode = useMemo(
+        () => findFieldPart(children, isCompoundChild, isNestedFieldElement) !== undefined,
+        [children]
+    );
 
     // ---------- derive hasDescription / hasError ----------
     const hasDescription = useMemo(() => {
         if (!isCompoundMode) {
-            return description !== undefined && description !== null && description !== false && description !== '';
+            return isNonEmptyNode(description);
         }
-        let found = false;
-        Children.forEach(children, (child) => {
-            if (childHasDisplayName(child, 'Field.Description')) {
-                found = true;
-            }
-        });
-        return found;
+        return (
+            findFieldPart(
+                children,
+                (child) => childHasDisplayName(child, 'Field.Description'),
+                isNestedFieldElement
+            ) !== undefined
+        );
     }, [isCompoundMode, description, children]);
 
     const hasError = useMemo(() => {
         if (!isCompoundMode) {
             return Boolean(error);
         }
-        // compound mode: scan for Field.Error child with truthy children
-        let found = false;
-        Children.forEach(children, (child) => {
-            if (childHasDisplayName(child, 'Field.Error') && isValidElement(child)) {
-                const el = child as ReactElement<{ children?: ReactNode }>;
-                if (
-                    el.props.children !== undefined &&
-                    el.props.children !== null &&
-                    el.props.children !== false &&
-                    el.props.children !== ''
-                ) {
-                    found = true;
-                }
-            }
-        });
+        // compound mode: scan for a Field.Error part with truthy children
+        const errorPart = findFieldPart(
+            children,
+            (child) =>
+                childHasDisplayName(child, 'Field.Error') &&
+                isNonEmptyNode((child as ReactElement<{ children?: ReactNode }>).props.children),
+            isNestedFieldElement
+        );
         // also check the legacy `error` prop usage in compound mode
-        if (!found && error !== null && error !== undefined && error !== false && error !== '') {
-            found = true;
-        }
-        return found;
+        return errorPart !== undefined || isNonEmptyNode(error);
     }, [isCompoundMode, error, children]);
+
+    // iOS has no `aria-labelledby`, so a string label is also handed to the
+    // control as its accessibility label.
+    const labelText = useMemo(() => {
+        const toText = (node: ReactNode): string | undefined =>
+            typeof node === 'string' || typeof node === 'number' ? String(node) : undefined;
+        if (!isCompoundMode) {
+            return toText(label);
+        }
+        const labelPart = findFieldPart(
+            children,
+            (child) => childHasDisplayName(child, 'Field.Label'),
+            isNestedFieldElement
+        );
+        return toText((labelPart as ReactElement<{ children?: ReactNode }> | undefined)?.props.children);
+    }, [isCompoundMode, label, children]);
 
     const describedBy = useMemo(() => {
         const ids: string[] = [];
@@ -182,6 +220,7 @@ const FieldRoot = ({
         // In shorthand mode the error prop may be ReactNode; only pass when it is a string/null.
         ...(error !== null && error !== undefined && typeof error === 'string' ? { error } : {}),
         isGroup,
+        ...(labelText !== undefined ? { labelText } : {}),
     };
 
     // ---------- dev warning for mixed usage ----------
@@ -312,6 +351,15 @@ const FieldControl = ({ children }: { children: ReactElement }) => {
         accessibilityLabelledBy: ctx.labelId,
         'aria-labelledby': ctx.labelId,
     };
+    if (
+        Platform.OS === 'ios' &&
+        ctx.labelText !== undefined &&
+        child.props.accessibilityLabel === undefined &&
+        child.props['aria-label'] === undefined &&
+        child.props.label === undefined
+    ) {
+        merged.accessibilityLabel = ctx.labelText;
+    }
     if (ctx.name !== undefined && child.props.name === undefined) {
         merged.name = ctx.name;
     }
@@ -379,6 +427,10 @@ export type FieldGroupProps = Omit<FieldProps, 'name'>;
 
 const FieldGroup = (props: FieldGroupProps) => <FieldRoot {...(props as FieldProps)} isGroup />;
 FieldGroup.displayName = 'Field.Group';
+
+function isNestedFieldElement(child: ReactElement): boolean {
+    return child.type === FieldRoot || child.type === FieldGroup;
+}
 
 export const Field = Object.assign(FieldRoot as (props: FieldProps) => ReactElement, {
     Label: FieldLabel,

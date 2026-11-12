@@ -134,4 +134,57 @@ describe('<Table> web', () => {
         );
         expect(container.querySelector('td')?.getAttribute('colspan')).toBe('3');
     });
+
+    it('activates a pressable row from the keyboard', () => {
+        const handler = jest.fn();
+        render(
+            <Table>
+                <Table.Body>
+                    <Table.Row onPress={handler}>
+                        <Table.Cell>open me</Table.Cell>
+                    </Table.Row>
+                </Table.Body>
+            </Table>
+        );
+        const row = screen.getByRole('row');
+        expect(row).toHaveAttribute('tabindex', '0');
+        fireEvent.keyDown(row, { key: 'Enter' });
+        fireEvent.keyDown(row, { key: ' ' });
+        expect(handler).toHaveBeenCalledTimes(2);
+    });
+
+    it('striped tints every second body row', () => {
+        render(
+            <Table striped>
+                <Table.Body>
+                    <Table.Row testID="r1">
+                        <Table.Cell>one</Table.Cell>
+                    </Table.Row>
+                    <Table.Row testID="r2">
+                        <Table.Cell>two</Table.Cell>
+                    </Table.Row>
+                    <Table.Row testID="r3">
+                        <Table.Cell>three</Table.Cell>
+                    </Table.Row>
+                </Table.Body>
+            </Table>
+        );
+        expect(screen.getByTestId('r1').style.backgroundColor).toBe('');
+        expect(screen.getByTestId('r2').style.backgroundColor).not.toBe('');
+        expect(screen.getByTestId('r3').style.backgroundColor).toBe('');
+    });
+
+    it('compact reduces cell padding', () => {
+        render(
+            <Table compact>
+                <Table.Body>
+                    <Table.Row>
+                        <Table.Cell testID="cell">dense</Table.Cell>
+                    </Table.Row>
+                </Table.Body>
+            </Table>
+        );
+        expect(screen.getByTestId('cell').className).toContain('py-2');
+        expect(screen.getByTestId('cell').className).not.toContain('p-4');
+    });
 });

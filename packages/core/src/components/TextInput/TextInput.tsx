@@ -1,9 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { useRef } from 'react';
+import type { ReactNode, Ref } from 'react';
+import { useMemo } from 'react';
 import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
-import { TextInput as RNTextInput, View } from 'react-native';
+import { Platform, TextInput as RNTextInput, View } from 'react-native';
+import { composeRefs } from '../../slot/compose-refs';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -17,7 +18,13 @@ export type TextInputProps = Omit<RNTextInputProps, 'editable'> & {
     className?: string;
     testID?: string;
     id?: string;
+    /**
+     * Form field name (web only). Set on the underlying `<input>` /
+     * `<textarea>` so an enclosing HTML `<form>` submits the value.
+     */
     name?: string;
+    /** Ref to the underlying input, e.g. to call `.focus()` or `.blur()`. */
+    ref?: Ref<RNTextInput>;
     /** Controlled text handler. Optional so uncontrolled usage works too. */
     onChangeText?: (text: string) => void;
     /** Multi-line mode — flipped by TextArea. Default false. */
@@ -57,10 +64,28 @@ export const TextInput = ({
     onChangeText,
     multiline,
     numberOfLines,
+    ref,
     ...rest
 }: TextInputProps) => {
     const colors = useThemeColors();
-    const inputRef = useRef<RNTextInput | null>(null);
+
+    // react-native-web's TextInput does not forward `name`, so on web it is
+    // written onto the DOM node directly. That makes the real input take
+    // part in HTML form submission, controlled or not.
+    const inputRef = useMemo(() => {
+        const applyName = (node: RNTextInput | null) => {
+            if (Platform.OS !== 'web' || node === null) {
+                return;
+            }
+            const element = node as unknown as Partial<Pick<HTMLElement, 'setAttribute' | 'removeAttribute'>>;
+            if (name !== undefined) {
+                element.setAttribute?.('name', name);
+            } else {
+                element.removeAttribute?.('name');
+            }
+        };
+        return composeRefs<RNTextInput>(applyName, ref);
+    }, [name, ref]);
 
     const restAny = rest as Record<string, unknown>;
     const hasError = restAny['aria-invalid'] === true || restAny['aria-invalid'] === 'true';
@@ -73,8 +98,13 @@ export const TextInput = ({
         inputExtras.id = id;
         inputExtras.nativeID = id;
     }
-    if (name !== undefined) {
-        inputExtras.name = name;
+    if (disabled) {
+        // `editable={false}` alone renders a focusable `readonly` input on
+        // web that is not announced as disabled.
+        inputExtras['aria-disabled'] = true;
+        if (Platform.OS === 'web') {
+            inputExtras.disabled = true;
+        }
     }
     if (multiline !== undefined) {
         inputExtras.multiline = multiline;

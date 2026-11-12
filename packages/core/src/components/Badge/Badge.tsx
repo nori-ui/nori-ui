@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Text as RNText, View } from 'react-native';
 import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
@@ -27,6 +27,8 @@ export type BadgeProps = {
     appearance?: BadgeAppearance;
     children?: ReactNode;
     className?: string;
+    /** Merged over the badge's own container style, so it can override any of it. */
+    style?: StyleProp<ViewStyle>;
     testID?: string;
 };
 
@@ -50,7 +52,7 @@ const BASE_CONTAINER_LAYOUT: ViewStyle = {
  * 950/700/100 scale so a soft success badge reads as a calm tinted chip
  * on either surface, never as a glaring pastel on a dark page.
  */
-export const Badge = ({ tone = 'neutral', appearance = 'soft', children, className, testID }: BadgeProps) => {
+export const Badge = ({ tone = 'neutral', appearance = 'soft', children, className, style, testID }: BadgeProps) => {
     const colors = useThemeColors();
     const isDark = useColorScheme() === 'dark';
     const invertedText = colors.semantic.text.inverted;
@@ -89,6 +91,8 @@ export const Badge = ({ tone = 'neutral', appearance = 'soft', children, classNa
             },
         };
     } else if (tone === 'success') {
+        // The theme carries one color per status (plus `dangerText`); the soft
+        // surface and text shades below have no token and stay literal.
         palette = {
             soft: isDark ? { bg: '#14532d', fg: '#bbf7d0' } : { bg: '#dcfce7', fg: '#166534' },
             solid: { bg: colors.color.success, fg: invertedText },
@@ -102,9 +106,9 @@ export const Badge = ({ tone = 'neutral', appearance = 'soft', children, classNa
         };
     } else {
         palette = {
-            soft: isDark ? { bg: '#7f1d1d', fg: '#fecaca' } : { bg: '#fee2e2', fg: '#991b1b' },
+            soft: isDark ? { bg: '#7f1d1d', fg: '#fecaca' } : { bg: '#fee2e2', fg: colors.color.dangerText },
             solid: { bg: colors.color.danger, fg: invertedText },
-            outline: { border: colors.color.danger, fg: isDark ? '#fecaca' : '#991b1b' },
+            outline: { border: colors.color.danger, fg: isDark ? '#fecaca' : colors.color.dangerText },
         };
     }
 
@@ -142,7 +146,7 @@ export const Badge = ({ tone = 'neutral', appearance = 'soft', children, classNa
         <View
             {...(testID !== undefined ? { testID } : {})}
             className={cn('inline-flex flex-row items-center gap-1 rounded-full px-2 py-0.5 border', className)}
-            style={containerStyle}
+            style={[containerStyle, style]}
         >
             <RNText style={{ ...baseText, color: textColor }}>{children}</RNText>
         </View>
