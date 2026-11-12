@@ -32,6 +32,7 @@ import CardBasic from './demos/card-basic';
 import CarouselBasic from './demos/carousel-basic';
 import CheckboxBasic from './demos/checkbox-basic';
 import CheckboxIndeterminate from './demos/checkbox-indeterminate';
+import ChipBasic from './demos/chip-basic';
 import CollapsibleBasic from './demos/collapsible-basic';
 import ComboboxBasic from './demos/combobox-basic';
 import CommandBasic from './demos/command-basic';
@@ -64,6 +65,8 @@ import InputOTPBasic from './demos/input-otp-basic';
 import ItemBasic from './demos/item-basic';
 import KbdBasic from './demos/kbd-basic';
 import LabelBasic from './demos/label-basic';
+import LinkBasic from './demos/link-basic';
+import NumberInputBasic from './demos/number-input-basic';
 import PaginationBasic from './demos/pagination-basic';
 import PaginationCompact from './demos/pagination-compact';
 import PaginationCompound from './demos/pagination-compound';
@@ -74,12 +77,14 @@ import PaginationJumper from './demos/pagination-jumper';
 import PaginationPageSize from './demos/pagination-page-size';
 import PaginationRange from './demos/pagination-range';
 import PaginationSiblings from './demos/pagination-siblings';
+import PasswordInputBasic from './demos/password-input-basic';
 import PopoverBasic from './demos/popover-basic';
 import PopoverForm from './demos/popover-form';
 import ProgressBasic from './demos/progress-basic';
 import ProgressIndeterminate from './demos/progress-indeterminate';
 import ProgressTones from './demos/progress-tones';
 import RadioBasic from './demos/radio-basic';
+import RatingBasic from './demos/rating-basic';
 import SegmentedControlBasic from './demos/segmented-control-basic';
 import SelectAsync from './demos/select-async';
 import SelectBasic from './demos/select-basic';
@@ -100,6 +105,7 @@ import SliderMulti from './demos/slider-multi';
 import SliderRtl from './demos/slider-rtl';
 import SliderVertical from './demos/slider-vertical';
 import SpinnerBasic from './demos/spinner-basic';
+import StepperBasic from './demos/stepper-basic';
 import SwitchBasic from './demos/switch-basic';
 import TableBasic from './demos/table-basic';
 import TabsBasic from './demos/tabs-basic';
@@ -218,6 +224,12 @@ export const previews = {
     'button-group-basic': { Component: ButtonGroupBasic, ...previewSources['button-group-basic'], ...NO_CHROME },
     'card-basic': { Component: CardBasic, ...previewSources['card-basic'], ...DIR_ONLY },
     'text-input-basic': { Component: TextInputBasic, ...previewSources['text-input-basic'] },
+    'number-input-basic': { Component: NumberInputBasic, ...previewSources['number-input-basic'] },
+    'password-input-basic': {
+        Component: PasswordInputBasic,
+        ...previewSources['password-input-basic'],
+        ...DIR_ONLY,
+    },
     'text-area-basic': { Component: TextAreaBasic, ...previewSources['text-area-basic'] },
     'input-group-prefix': { Component: InputGroupPrefix, ...previewSources['input-group-prefix'], ...DIR_ONLY },
     'input-group-suffix': { Component: InputGroupSuffix, ...previewSources['input-group-suffix'], ...DIR_ONLY },
@@ -228,6 +240,9 @@ export const previews = {
         ...previewSources['checkbox-indeterminate'],
     },
     'radio-basic': { Component: RadioBasic, ...previewSources['radio-basic'] },
+    'rating-basic': { Component: RatingBasic, ...previewSources['rating-basic'] },
+    'chip-basic': { Component: ChipBasic, ...previewSources['chip-basic'] },
+    'stepper-basic': { Component: StepperBasic, ...previewSources['stepper-basic'] },
     'dialog-basic': { Component: DialogBasic, ...previewSources['dialog-basic'] },
     'empty-basic': { Component: EmptyBasic, ...previewSources['empty-basic'], ...NO_CHROME },
     'float-button-basic': { Component: FloatButtonBasic, ...previewSources['float-button-basic'] },
@@ -305,6 +320,7 @@ export const previews = {
     },
     'field-group': { Component: FieldGroup, ...previewSources['field-group'], ...DIR_ONLY },
     'label-basic': { Component: LabelBasic, ...previewSources['label-basic'], ...DIR_ONLY },
+    'link-basic': { Component: LinkBasic, ...previewSources['link-basic'], ...DIR_ONLY },
     'dropdown-menu-basic': { Component: DropdownMenuBasic, ...previewSources['dropdown-menu-basic'], ...DIR_ONLY },
     'context-menu-basic': { Component: ContextMenuBasic, ...previewSources['context-menu-basic'], ...DIR_ONLY },
     'sheet-basic': { Component: SheetBasic, ...previewSources['sheet-basic'], ...DIR_ONLY },

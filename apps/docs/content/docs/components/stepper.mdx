@@ -1,0 +1,170 @@
+---
+title: Stepper
+description: Progress indicator for multi-step flows such as checkout and onboarding.
+since: 1.12.0
+tags: [navigation, progress]
+platform: both
+category: navigation
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Stepper" />
+
+## At a glance
+
+- Shows where the user is in a fixed sequence of steps. It is a progress indicator, not a number input.
+- Compose `<Stepper>` with one `<Stepper.Step>` per step. Each step must be a direct child.
+- `value` is the zero-based index of the current step. Each step derives its status from its position: `complete` before `value`, `current` at `value`, `upcoming` after it.
+- A step renders a numbered indicator (a check icon once complete, a warning icon on error), a connector line, a `title`, and an optional `description`.
+- The stepper displays progress only. Your own code changes `value` and renders the content of the current step.
+
+## Preview
+
+<Preview name="stepper-basic" />
+
+## Usage
+
+### `value`
+
+`value` is required. Pass the index of the current step, starting at `0`. Pass the number of steps to mark every step complete.
+
+```tsx
+import { Stepper } from '@nori-ui/core';
+
+export function CheckoutProgress() {
+    return (
+        <Stepper value={1} aria-label="Checkout progress">
+            <Stepper.Step title="Cart" />
+            <Stepper.Step title="Shipping" description="Address and method" />
+            <Stepper.Step title="Payment" />
+            <Stepper.Step title="Review" />
+        </Stepper>
+    );
+}
+```
+
+With `value={1}`, "Cart" is complete, "Shipping" is current, and "Payment" and "Review" are upcoming.
+
+### `orientation`
+
+| Value                  | Layout                                                              |
+|------------------------|---------------------------------------------------------------------|
+| `horizontal` (default) | Steps side by side, labels centered under the indicators            |
+| `vertical`             | Steps stacked, labels beside the indicators, connector lines between |
+
+Use `vertical` on narrow phone screens or when steps have long descriptions: titles and descriptions wrap inside the available width instead of being squeezed into columns.
+
+```tsx
+import { Stepper } from '@nori-ui/core';
+
+export function AccountSetup() {
+    return (
+        <Stepper value={1} orientation="vertical" aria-label="Account setup">
+            <Stepper.Step title="Create account" description="Email and password" />
+            <Stepper.Step title="Verify email" description="Enter the six-digit code we sent you" />
+            <Stepper.Step title="Choose a plan" />
+        </Stepper>
+    );
+}
+```
+
+### `onStepPress`
+
+Passing `onStepPress` turns every `complete` step into a button, so the user can go back. The handler receives the zero-based index of the pressed step. Current, upcoming, and error steps are never pressable.
+
+```tsx
+import { Button, Stepper, VStack } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function Onboarding() {
+    const [step, setStep] = useState(0);
+    return (
+        <VStack gap={4}>
+            <Stepper value={step} onStepPress={setStep} aria-label="Onboarding">
+                <Stepper.Step title="Profile" />
+                <Stepper.Step title="Team" />
+                <Stepper.Step title="Done" />
+            </Stepper>
+            <Button onPress={() => setStep((current) => Math.min(current + 1, 3))}>Continue</Button>
+        </VStack>
+    );
+}
+```
+
+### `aria-label` / `accessibilityLabel`
+
+The accessible name of the list. Defaults to the translated `stepper.ariaLabel` string ("Progress"). Pass a specific name such as "Checkout progress" when a page has more than one stepper. `accessibilityLabel` is the native alias and is used when `aria-label` is absent.
+
+### `style`, `className`, `testID`, `ref`
+
+`style` and `className` apply to the list container and are merged after the built-in styles. `ref` points to the list container.
+
+## `Stepper.Step`
+
+### `title` and `description`
+
+`title` is required and must be a string, because it is part of the step's accessible name. `description` is optional and accepts any React node.
+
+### `status`
+
+`status` overrides the status derived from the step's position.
+
+| Value      | Indicator                    | Meaning                         |
+|------------|------------------------------|---------------------------------|
+| `complete` | Filled circle with a check   | Finished                        |
+| `current`  | Outlined circle with the number, bold title | The step the user is on |
+| `upcoming` | Muted circle with the number | Not reached yet                 |
+| `error`    | Filled circle with a warning icon, danger-colored title | Needs attention |
+
+`error` is never derived automatically; set it yourself, for example after a failed validation.
+
+```tsx
+import { Stepper } from '@nori-ui/core';
+
+export function CheckoutWithError() {
+    return (
+        <Stepper value={2} aria-label="Checkout progress">
+            <Stepper.Step title="Cart" />
+            <Stepper.Step title="Shipping" status="error" description="Address could not be verified" />
+            <Stepper.Step title="Payment" />
+        </Stepper>
+    );
+}
+```
+
+<Callout title="Steps must be direct children">
+    A step reads its number from its position among the direct children of `<Stepper>`. Do not wrap steps in a fragment or in another component. Rendering `<Stepper.Step>` outside a `<Stepper>` throws an error.
+</Callout>
+
+## Accessibility
+
+- The stepper is a `role="list"` and each step is a `role="listitem"`.
+- The current step carries `aria-current="step"`.
+- Every step has an accessible name that states position, title, and status: "Step 2 of 4: Shipping, current". When a step is pressable, that name is on its button.
+- Status is never shown by color alone: complete steps show a check icon, error steps show a warning icon, and the current step has a bold title.
+- Pressable steps are `role="button"`, reachable with Tab and activated with `Enter` or `Space`.
+
+### Translations
+
+| Key                       | Default                                              |
+|---------------------------|------------------------------------------------------|
+| `stepper.ariaLabel`       | `Progress`                                           |
+| `stepper.stepLabel`       | `Step {{step}} of {{total}}: {{title}}, {{status}}`  |
+| `stepper.status.complete` | `completed`                                          |
+| `stepper.status.current`  | `current`                                            |
+| `stepper.status.upcoming` | `upcoming`                                           |
+| `stepper.status.error`    | `error`                                              |
+
+## Props
+
+### `<Stepper>`
+
+<PropsTable component="Stepper" />
+
+### `<Stepper.Step>`
+
+<PropsTable component="StepperStep" />
