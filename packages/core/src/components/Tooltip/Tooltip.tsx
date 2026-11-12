@@ -12,12 +12,14 @@ import {
     useRef,
     useState,
 } from 'react';
-import type { ViewStyle } from 'react-native';
-import { Platform, Pressable, Text as RNText, View } from 'react-native';
+import type { LayoutChangeEvent, ViewStyle } from 'react-native';
+import { Dimensions, Modal, Platform, Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import { measureAnchorRect, slotTestIdProps, useOverlayOpenState } from '../../utils/overlay-utils';
 
 export type TooltipSide = 'top' | 'right' | 'bottom' | 'left';
 export type TooltipAlign = 'start' | 'center' | 'end';
@@ -95,13 +97,13 @@ export type TooltipProps = {
  * Behavior:
  *   - Open on hover (web mouseover) or focus, after `delayMs`.
  *   - Close on hover-out, blur, or Escape.
- *   - Native: long-press the trigger (500ms) to reveal; tap-anywhere or
- *     re-press to dismiss.
+ *   - Native: long-press the trigger (500ms) to reveal; tap anywhere to
+ *     dismiss.
  *
  * Cross-platform: web renders the content inline with `position: fixed`
  * + a measured trigger rect so it escapes any ancestor `overflow:
- * hidden`. Native renders inline with `position: absolute` — the parent
- * needs to allow overflow for the chip to peek out.
+ * hidden`. Native renders the chip in a transparent `Modal`, anchored to
+ * the trigger's window rect, so no ancestor can clip it.
  */
 const TooltipRoot = ({
     open,
@@ -111,19 +113,7 @@ const TooltipRoot = ({
     closeDelayMs = DEFAULT_CLOSE_DELAY_MS,
     children,
 }: TooltipProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
 
     // Open / close timers. Both are cleared on unmount and on every new
     // request — so rapid hover-in / hover-out doesn't leave a stale timer
@@ -190,12 +180,7 @@ const TooltipRoot = ({
     // biggest source of "the tooltip got cut off" bugs.
     const [triggerRect, setTriggerRect] = useState<TriggerRect | null>(null);
     const measureTrigger = useCallback(() => {
-        const node = triggerRef.current;
-        if (!node || typeof node.getBoundingClientRect !== 'function') {
-            return;
-        }
-        const rect = node.getBoundingClientRect();
-        setTriggerRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+        measureAnchorRect(triggerRef.current, setTriggerRect);
     }, []);
 
     const ctxValue: TooltipContextValue = {
@@ -263,36 +248,22 @@ export const TooltipTrigger = ({ asChild = true, children, className, testID }: 
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        // Compose the wrapped child's existing handlers with ours so any
-        // app-level onClick / onFocus / onPress still fires. The tooltip
-        // event runs AFTER the child's so consumer code wins on conflict.
-        const compose =
-            <T,>(existing: ((e: T) => void) | undefined, next: (e: T) => void) =>
-            (event: T) => {
-                existing?.(event);
-                next(event);
-            };
+        // Only the tooltip's own handlers go to Slot — it chains the child's
+        // handlers of the same name, so app-level onFocus / onPress still fire.
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     ctx.triggerRef.current = node;
                 }}
-                onMouseEnter={compose(child.props.onMouseEnter as ((e: unknown) => void) | undefined, handleMouseEnter)}
-                onMouseLeave={compose(child.props.onMouseLeave as ((e: unknown) => void) | undefined, handleMouseLeave)}
-                onFocus={compose(child.props.onFocus as ((e: unknown) => void) | undefined, handleFocus)}
-                onBlur={compose(child.props.onBlur as ((e: unknown) => void) | undefined, handleBlur)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
                 {...(Platform.OS !== 'web'
-                    ? {
-                          onLongPress: compose(
-                              child.props.onLongPress as ((e: unknown) => void) | undefined,
-                              handleLongPress
-                          ),
-                          onPress: compose(child.props.onPress as ((e: unknown) => void) | undefined, handlePress),
-                          delayLongPress: LONG_PRESS_MS,
-                      }
+                    ? { onLongPress: handleLongPress, onPress: handlePress, delayLongPress: LONG_PRESS_MS }
                     : {})}
                 aria-describedby={ctx.open ? ctx.contentId : undefined}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -435,8 +406,17 @@ export const TooltipContent = ({
     const domRef = useRef<HTMLDivElement | null>(null);
     const [entered, setEntered] = useState(false);
 
-    // Web-only: Escape closes. Re-measure trigger on resize/scroll so the
-    // chip stays anchored during page motion.
+    useEscapeLayer(ctx.open, () => ctx.setOpen(false));
+
+    // Native: the trigger's window rect anchors the chip inside the Modal.
+    useEffect(() => {
+        if (ctx.open && Platform.OS !== 'web') {
+            ctx.measureTrigger();
+        }
+    }, [ctx.open, ctx.measureTrigger]);
+
+    // Web-only: re-measure trigger on resize/scroll so the chip stays
+    // anchored during page motion.
     useEffect(() => {
         if (!ctx.open) {
             return;
@@ -450,24 +430,16 @@ export const TooltipContent = ({
 
         ctx.measureTrigger();
 
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                ctx.setOpen(false);
-            }
-        };
         const onResize = () => ctx.measureTrigger();
         const onScroll = () => ctx.measureTrigger();
 
-        document.addEventListener('keydown', onKeyDown);
         window.addEventListener('resize', onResize);
         window.addEventListener('scroll', onScroll, true);
         return () => {
-            document.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('resize', onResize);
             window.removeEventListener('scroll', onScroll, true);
         };
-    }, [ctx.open, ctx.measureTrigger, ctx.setOpen]);
+    }, [ctx.open, ctx.measureTrigger]);
 
     // Reset measured size and entrance flag when tooltip closes so a
     // reopen re-measures and re-animates fresh.
@@ -551,17 +523,9 @@ export const TooltipContent = ({
                       left: -9999,
                       zIndex: 60,
                   } as ViewStyle)
-            : ({
-                  // Native: rely on the parent allowing overflow. We anchor
-                  // by absolute positioning relative to wherever the
-                  // tooltip is mounted in the tree (typically right next
-                  // to the trigger).
-                  position: 'absolute',
-                  top: position?.top ?? 0,
-                  left: position?.left ?? 0,
-              } as ViewStyle);
+            : nativePositionStyle(position, contentSize);
 
-    return (
+    const content = (
         <View
             ref={(node) => {
                 ctx.contentRef.current = node as unknown as HTMLDivElement | null;
@@ -580,6 +544,16 @@ export const TooltipContent = ({
                     setContentSize({ width: rect.width, height: rect.height });
                 }
             }}
+            {...(Platform.OS !== 'web'
+                ? {
+                      onLayout: (event: LayoutChangeEvent) => {
+                          const { width, height } = event.nativeEvent.layout;
+                          if (!contentSize || contentSize.width !== width || contentSize.height !== height) {
+                              setContentSize({ width, height });
+                          }
+                      },
+                  }
+                : {})}
             {...({
                 role: 'tooltip',
                 id: ctx.contentId,
@@ -606,7 +580,61 @@ export const TooltipContent = ({
             </RNText>
         </View>
     );
+
+    if (Platform.OS === 'web') {
+        return content;
+    }
+
+    // Native: a transparent Modal is the only layer that is positioned in
+    // window coordinates (the ones the trigger is measured in) and that no
+    // ancestor can clip. Its backdrop gives tap-anywhere dismissal.
+    // `statusBarTranslucent` keeps the Modal's origin at the window origin
+    // on Android.
+    return (
+        <Modal
+            visible={ctx.open}
+            transparent
+            statusBarTranslucent
+            animationType="fade"
+            onRequestClose={() => ctx.setOpen(false)}
+        >
+            <View style={NATIVE_FILL}>
+                <Pressable
+                    accessibilityRole="none"
+                    aria-hidden={true}
+                    onPress={() => ctx.setOpen(false)}
+                    style={NATIVE_FILL}
+                />
+                {content}
+            </View>
+        </Modal>
+    );
 };
+
+const NATIVE_FILL: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
+// Keeps the chip off the screen edge on native, where nothing can scroll.
+const NATIVE_VIEWPORT_MARGIN = 8;
+
+function nativePositionStyle(
+    position: { top: number; left: number } | null,
+    contentSize: { width: number; height: number } | null
+): ViewStyle {
+    if (!position) {
+        // The trigger could not be measured; keep the chip on screen.
+        return { position: 'absolute', top: NATIVE_VIEWPORT_MARGIN, left: NATIVE_VIEWPORT_MARGIN };
+    }
+    const viewport = Dimensions.get('window');
+    const clamp = (value: number, size: number, limit: number) =>
+        Math.min(
+            Math.max(NATIVE_VIEWPORT_MARGIN, value),
+            Math.max(NATIVE_VIEWPORT_MARGIN, limit - size - NATIVE_VIEWPORT_MARGIN)
+        );
+    return {
+        position: 'absolute',
+        top: clamp(position.top, contentSize?.height ?? 0, viewport.height),
+        left: clamp(position.left, contentSize?.width ?? 0, viewport.width),
+    };
+}
 
 /**
  * Public `Tooltip` value — the root function plus its `.Trigger` and

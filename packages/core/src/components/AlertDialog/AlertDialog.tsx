@@ -19,6 +19,16 @@ import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import {
+    dataAttributes,
+    slotPressProps,
+    slotTestIdProps,
+    useOverlayLabels,
+    useOverlayOpenState,
+    useRegisterOverlayLabel,
+} from '../../utils/overlay-utils';
+import { ButtonGroupContext } from '../ButtonGroup/button-group-context';
 import { BlurBackdrop } from '../Dialog/blur-backdrop';
 
 type AlertDialogContextValue = {
@@ -26,6 +36,10 @@ type AlertDialogContextValue = {
     setOpen: (next: boolean) => void;
     titleId: string;
     descriptionId: string;
+    hasTitle: boolean;
+    hasDescription: boolean;
+    registerTitle: () => () => void;
+    registerDescription: () => () => void;
     triggerRef: { current: HTMLElement | null };
     cancelRef: { current: HTMLElement | null };
 };
@@ -67,19 +81,8 @@ export type AlertDialogProps = {
  * affordance for forgettable interactions.
  */
 const AlertDialogRoot = ({ open, defaultOpen = false, onOpenChange, children }: AlertDialogProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
+    const labels = useOverlayLabels();
 
     const baseId = useId();
     const triggerRef = useRef<HTMLElement | null>(null);
@@ -90,6 +93,7 @@ const AlertDialogRoot = ({ open, defaultOpen = false, onOpenChange, children }: 
         setOpen,
         titleId: `${baseId}-title`,
         descriptionId: `${baseId}-description`,
+        ...labels,
         triggerRef,
         cancelRef,
     };
@@ -115,21 +119,15 @@ export const AlertDialogTrigger = ({ asChild = true, children, className, testID
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        // Pass both onClick (web HTML button) and onPress (RN Pressable / our
-        // own Button) so the trigger fires regardless of the wrapped child's
-        // event model.
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            ctx.setOpen(true);
-        };
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     ctx.triggerRef.current = node;
                 }}
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, onPress)}
+                aria-haspopup="dialog"
+                aria-expanded={ctx.open}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -143,6 +141,10 @@ export const AlertDialogTrigger = ({ asChild = true, children, className, testID
                 ctx.triggerRef.current = node as unknown as HTMLElement | null;
             }}
             onPress={onPress}
+            role="button"
+            accessibilityRole="button"
+            {...({ 'aria-haspopup': 'dialog' } as Record<string, unknown>)}
+            aria-expanded={ctx.open}
             {...(testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
@@ -261,7 +263,16 @@ export type AlertDialogContentProps = {
     children?: ReactNode;
     className?: string;
     testID?: string;
+    /** Accessible name when the dialog has no `AlertDialog.Title`. */
+    'aria-label'?: string;
 };
+
+// Fills the overlay container behind the dialog surface. A sibling of the
+// surface (not its parent) so hiding it from assistive tech does not hide
+// the dialog itself.
+const SCRIM_FILL: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
+
+const noop = () => {};
 
 /**
  * The visible alert dialog surface — overlay + centered card. Renders only
@@ -269,7 +280,12 @@ export type AlertDialogContentProps = {
  * on close. Crucially, neither overlay click nor Escape closes — the user
  * MUST press an explicit Cancel/Action button.
  */
-export const AlertDialogContent = ({ children, className, testID }: AlertDialogContentProps) => {
+export const AlertDialogContent = ({
+    children,
+    className,
+    testID,
+    'aria-label': ariaLabel,
+}: AlertDialogContentProps) => {
     const ctx = useAlertDialogContext('AlertDialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -328,6 +344,10 @@ export const AlertDialogContent = ({ children, className, testID }: AlertDialogC
             node.style.setProperty('-webkit-backdrop-filter', 'blur(0px)');
         }
     }, [entered]);
+
+    // Escape must not dismiss an alert dialog, but the layer still registers
+    // so the key does not close an overlay underneath it either.
+    useEscapeLayer(ctx.open, noop);
 
     useEffect(() => {
         if (!ctx.open) {
@@ -437,53 +457,67 @@ export const AlertDialogContent = ({ children, className, testID }: AlertDialogC
     }, []);
 
     return (
-        <Modal
-            visible={ctx.open}
-            transparent
-            // Web: 'none' so RN's built-in fade doesn't fight our own
-            // overlay/content transitions (its layer-level fade caused
-            // backdrop-filter to "snap in" at the end on Dialog — same
-            // failure mode applies here). Native keeps 'fade' since we
-            // have no CSS transition path there.
-            animationType={Platform.OS === 'web' ? 'none' : 'fade'}
-            onRequestClose={onRequestClose}
-        >
-            {/* Native blur layer; renders nothing on web (CSS handles
-                it) or when expo-blur isn't installed. */}
-            <BlurBackdrop intensity={60} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-            <View
-                ref={(node) => {
-                    overlayDomRef.current = node as unknown as HTMLElement | null;
-                }}
-                accessibilityRole="none"
-                aria-hidden={true}
-                style={overlayStyle}
-                // Note: this is a <View>, not a <Pressable>. The overlay must NOT
-                // dismiss on click for an alert dialog.
+        // A surface is its own visual context: buttons inside it must not pick
+        // up the size and joined corners of a ButtonGroup that happens to
+        // contain the trigger.
+        <ButtonGroupContext.Provider value={null}>
+            <Modal
+                visible={ctx.open}
+                transparent
+                // Web: 'none' so RN's built-in fade doesn't fight our own
+                // overlay/content transitions (its layer-level fade caused
+                // backdrop-filter to "snap in" at the end on Dialog — same
+                // failure mode applies here). Native keeps 'fade' since we
+                // have no CSS transition path there.
+                animationType={Platform.OS === 'web' ? 'none' : 'fade'}
+                onRequestClose={onRequestClose}
             >
-                <View
-                    ref={(node) => {
-                        contentRef.current = node as unknown as HTMLDivElement | null;
-                    }}
-                    role="alertdialog"
-                    accessibilityRole="alert"
-                    aria-modal={true}
-                    aria-labelledby={ctx.titleId}
-                    aria-describedby={ctx.descriptionId}
-                    {...(testID !== undefined ? { testID } : {})}
-                    {...({ 'data-nori-alert-dialog-content': 'true' } as Record<string, string>)}
-                    className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
-                    style={[contentStyle, { backgroundColor: colors.semantic.background.elevated }]}
-                >
+                {/* Native blur layer; renders nothing on web (CSS handles
+                it) or when expo-blur isn't installed. */}
+                <BlurBackdrop
+                    intensity={60}
+                    tint={scheme === 'dark' ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                />
+                <View style={overlayStyle}>
+                    {/* A <View>, not a <Pressable>: the scrim must NOT dismiss
+                    on click for an alert dialog. */}
                     <View
-                        className="flex-col gap-1.5"
-                        style={{ flexDirection: 'column', gap: px(colors.spacing['2']) - 2 }}
+                        ref={(node) => {
+                            overlayDomRef.current = node as unknown as HTMLElement | null;
+                        }}
+                        accessibilityRole="none"
+                        aria-hidden={true}
+                        style={SCRIM_FILL}
+                    />
+                    <View
+                        ref={(node) => {
+                            contentRef.current = node as unknown as HTMLDivElement | null;
+                        }}
+                        role="alertdialog"
+                        accessibilityRole="alert"
+                        aria-modal={true}
+                        {...(ariaLabel !== undefined ? { 'aria-label': ariaLabel } : {})}
+                        {...(ctx.hasTitle && ariaLabel === undefined ? { 'aria-labelledby': ctx.titleId } : {})}
+                        {...(ctx.hasDescription ? { 'aria-describedby': ctx.descriptionId } : {})}
+                        {...(testID !== undefined ? { testID } : {})}
+                        {...dataAttributes({ noriAlertDialogContent: 'true' })}
+                        className={cn(
+                            'w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3',
+                            className
+                        )}
+                        style={[contentStyle, { backgroundColor: colors.semantic.background.elevated }]}
                     >
-                        {children}
+                        <View
+                            className="flex-col gap-1.5"
+                            style={{ flexDirection: 'column', gap: px(colors.spacing['2']) - 2 }}
+                        >
+                            {children}
+                        </View>
                     </View>
                 </View>
-            </View>
-        </Modal>
+            </Modal>
+        </ButtonGroupContext.Provider>
     );
 };
 
@@ -496,6 +530,7 @@ export type AlertDialogTextProps = {
 export const AlertDialogTitle = ({ children, className }: AlertDialogTextProps) => {
     const ctx = useAlertDialogContext('AlertDialogTitle');
     const colors = useThemeColors();
+    useRegisterOverlayLabel(ctx.registerTitle);
     return (
         <RNText
             nativeID={ctx.titleId}
@@ -519,6 +554,7 @@ export const AlertDialogTitle = ({ children, className }: AlertDialogTextProps) 
 export const AlertDialogDescription = ({ children, className }: AlertDialogTextProps) => {
     const ctx = useAlertDialogContext('AlertDialogDescription');
     const colors = useThemeColors();
+    useRegisterOverlayLabel(ctx.registerDescription);
     return (
         <RNText
             nativeID={ctx.descriptionId}
@@ -562,18 +598,10 @@ export const AlertDialogAction = ({ asChild = true, children, className, testID,
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        // Wrap both event names so an HTML button (onClick) and an RN
-        // Pressable / Button (onPress) both fire — and both still call the
-        // child's own handler if present.
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            handle(event);
-        };
         return (
             <Slot
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, handle)}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -622,18 +650,13 @@ export const AlertDialogCancel = ({ asChild = true, children, className, testID,
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            handle(event);
-        };
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     ctx.cancelRef.current = node;
                 }}
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, handle)}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}

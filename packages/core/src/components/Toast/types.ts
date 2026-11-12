@@ -96,4 +96,10 @@ export type ToasterProps = {
     expand?: boolean;
     /** Default duration in ms for toasts that don't pass their own. @defaultValue 4000 */
     duration?: number;
+    /**
+     * Color scheme of the toasts. Defaults to the library's active scheme
+     * (the same one every other component follows), so there is normally no
+     * need to set it.
+     */
+    theme?: 'light' | 'dark';
 };

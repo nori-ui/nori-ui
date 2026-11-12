@@ -12,7 +12,9 @@
  */
 
 import { type ReactNode, useMemo, useState } from 'react';
-import { Pressable, Text as RNText, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, type TextStyle, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { usePagination } from '../Pagination/use-pagination';
 import { Table } from '../Table/Table';
 import type { TableAlign } from '../Table/Table.shared';
@@ -95,13 +97,28 @@ function sortData<T extends object>(data: T[], sort: SortState | null): T[] {
     });
 }
 
+// Matches what Table.HeaderCell gives a plain string header on each platform.
+const HEADER_TEXT: TextStyle =
+    Platform.OS === 'web' ? { fontSize: 14, fontWeight: '500' } : { fontSize: 12, fontWeight: '600' };
+
 // ─── Sort indicator ───────────────────────────────────────────────────────────
 
 function SortIndicator({ direction }: { direction?: SortDirection }) {
-    if (direction === undefined) {
-        return <span style={{ marginLeft: 4, opacity: 0.3 }}>⇅</span>;
-    }
-    return <span style={{ marginLeft: 4 }}>{direction === 'asc' ? '↑' : '↓'}</span>;
+    const colors = useThemeColors();
+    const glyph = direction === undefined ? '⇅' : direction === 'asc' ? '↑' : '↓';
+    return (
+        // Decorative: the arrow would otherwise be read out as part of the button name.
+        <RNText
+            aria-hidden={true}
+            style={{
+                marginLeft: 4,
+                color: colors.semantic.text.muted,
+                ...(direction === undefined ? { opacity: 0.3 } : {}),
+            }}
+        >
+            {glyph}
+        </RNText>
+    );
 }
 
 // ─── DataTable ────────────────────────────────────────────────────────────────
@@ -119,6 +136,8 @@ export function DataTable<T extends object>({
     testID,
     className,
 }: DataTableProps<T>) {
+    const colors = useThemeColors();
+    const { t } = useTranslation();
     const [sort, setSort] = useState<SortState | null>(defaultSort ?? null);
 
     const sorted = useMemo(() => sortData(data, sort), [data, sort]);
@@ -132,17 +151,15 @@ export function DataTable<T extends object>({
     }, [sorted, page, pageSize]);
 
     const handleSort = (colId: string) => {
-        setSort((prev) => {
-            if (prev?.id !== colId) {
-                goToPage(1);
-                return { id: colId, direction: 'asc' };
-            }
-            if (prev.direction === 'asc') {
-                return { id: colId, direction: 'desc' };
-            }
-            goToPage(1);
-            return null;
-        });
+        let nextSort: SortState | null = null;
+        if (sort?.id !== colId) {
+            nextSort = { id: colId, direction: 'asc' };
+        } else if (sort.direction === 'asc') {
+            nextSort = { id: colId, direction: 'desc' };
+        }
+        setSort(nextSort);
+        // Every sort change reorders the rows, so the current page no longer shows the same data.
+        goToPage(1);
     };
 
     // Build table props without spreading undefined into exactOptionalPropertyTypes
@@ -176,18 +193,27 @@ export function DataTable<T extends object>({
                     <Table.Row>
                         {columns.map((col) => {
                             const align = col.align;
+                            // A string header names the button. Any other header node is left to
+                            // name it through its own content, which a label would override.
+                            const sortLabel =
+                                typeof col.header === 'string'
+                                    ? t('dataTable.sortBy', { column: col.header })
+                                    : undefined;
                             return (
                                 <Table.HeaderCell key={col.id} {...(align !== undefined ? { align } : {})}>
                                     {col.sortable ? (
                                         <Pressable
                                             accessibilityRole="button"
-                                            accessibilityLabel={`Sort by ${col.id}`}
-                                            aria-label={`Sort by ${col.id}`}
+                                            {...(sortLabel !== undefined
+                                                ? { accessibilityLabel: sortLabel, 'aria-label': sortLabel }
+                                                : {})}
                                             onPress={() => handleSort(col.id)}
                                             style={{ flexDirection: 'row', alignItems: 'center' }}
                                         >
                                             {typeof col.header === 'string' ? (
-                                                <RNText>{col.header}</RNText>
+                                                <RNText style={[HEADER_TEXT, { color: colors.semantic.text.muted }]}>
+                                                    {col.header}
+                                                </RNText>
                                             ) : (
                                                 col.header
                                             )}
@@ -207,7 +233,7 @@ export function DataTable<T extends object>({
                     {pageSlice.length === 0 ? (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length}>
-                                <EmptyState>{emptyState ?? 'No data'}</EmptyState>
+                                <EmptyState>{emptyState ?? t('table.empty')}</EmptyState>
                             </Table.Cell>
                         </Table.Row>
                     ) : (
@@ -251,10 +277,11 @@ export function DataTable<T extends object>({
 // ─── Internal sub-components ──────────────────────────────────────────────────
 
 function EmptyState({ children }: { children: ReactNode }) {
+    const colors = useThemeColors();
     return (
         <View style={{ paddingVertical: 32, alignItems: 'center' }}>
             {typeof children === 'string' ? (
-                <RNText style={{ color: '#888', fontSize: 14 }}>{children}</RNText>
+                <RNText style={{ color: colors.semantic.text.muted, fontSize: 14 }}>{children}</RNText>
             ) : (
                 children
             )}
@@ -275,6 +302,11 @@ function PaginationControls({
     canNext: boolean;
     goToPage: (p: number) => void;
 }) {
+    const colors = useThemeColors();
+    const { t } = useTranslation();
+    const previousLabel = t('pagination.previous');
+    const nextLabel = t('pagination.next');
+    const textStyle = { fontSize: 14, color: colors.semantic.text.default };
     return (
         <View
             style={{
@@ -288,25 +320,25 @@ function PaginationControls({
             <Pressable
                 onPress={canPrev ? () => goToPage(page - 1) : undefined}
                 accessibilityRole="button"
-                accessibilityLabel="Previous page"
-                aria-label="Previous page"
+                accessibilityLabel={previousLabel}
+                aria-label={previousLabel}
                 aria-disabled={!canPrev}
                 style={{ opacity: canPrev ? 1 : 0.4, paddingHorizontal: 8 }}
             >
-                <RNText style={{ fontSize: 14 }}>‹ Prev</RNText>
+                <RNText style={textStyle}>‹ {t('dataTable.previousShort')}</RNText>
             </Pressable>
-            <RNText style={{ fontSize: 14 }} aria-live="polite">
+            <RNText style={textStyle} aria-live="polite">
                 {page} / {pageCount}
             </RNText>
             <Pressable
                 onPress={canNext ? () => goToPage(page + 1) : undefined}
                 accessibilityRole="button"
-                accessibilityLabel="Next page"
-                aria-label="Next page"
+                accessibilityLabel={nextLabel}
+                aria-label={nextLabel}
                 aria-disabled={!canNext}
                 style={{ opacity: canNext ? 1 : 0.4, paddingHorizontal: 8 }}
             >
-                <RNText style={{ fontSize: 14 }}>Next ›</RNText>
+                <RNText style={textStyle}>{t('dataTable.nextShort')} ›</RNText>
             </Pressable>
         </View>
     );

@@ -1,0 +1,269 @@
+---
+title: Chip
+description: Compact interactive pill for filters, selections, and removable tags.
+since: 1.12.0
+tags: [control, filter, tag]
+platform: both
+category: controls
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Chip" />
+
+## At a glance
+
+- One component, four behaviors. The props you pass decide which one you get:
+
+| Props passed                                                   | Behavior      | Semantics                              |
+|----------------------------------------------------------------|---------------|----------------------------------------|
+| none of the below                                              | Static label  | Plain text, no role                    |
+| `onPress`                                                      | Action chip   | `role="button"`                        |
+| `selected`, `defaultSelected`, or `onSelectedChange`           | Filter chip   | `role="button"` with `aria-pressed`    |
+| `onRemove`                                                     | Removable tag | Adds a second button after the chip body |
+
+- `Chip.Group` shares one selection (`type="single"` or `type="multiple"`) across several chips.
+- A selected chip shows a checkmark, so selection never depends on color alone.
+
+<Callout title="Chip vs Badge vs Toggle">
+    - **Chip**: the user can press, select, or remove it.
+    - **[Badge](/docs/components/badge)**: a status label that is never interactive.
+    - **[Toggle](/docs/components/toggle)**: a toolbar button with an on/off state (Bold, Pin). `Toggle.Group` renders a joined segmented row; `Chip.Group` renders separate pills that wrap onto several lines.
+</Callout>
+
+## Preview
+
+<Preview name="chip-basic" />
+
+## Usage
+
+### Static chip
+
+A chip without `onPress`, selection props, or `onRemove` renders as plain text in a pill. Pass the text as `children` or as `label`; both render the same content.
+
+```tsx
+import { Chip, HStack } from '@nori-ui/core';
+
+export function StaticChips() {
+    return (
+        <HStack gap={2}>
+            <Chip>Draft</Chip>
+            <Chip label="Archived" />
+        </HStack>
+    );
+}
+```
+
+### Action chip: `onPress`
+
+`onPress` turns the chip into a button. It receives no arguments.
+
+```tsx
+import { Chip } from '@nori-ui/core';
+
+export function AddFilterChip() {
+    return <Chip onPress={() => console.log('open filter menu')}>Add filter</Chip>;
+}
+```
+
+### Filter chip: `selected`, `defaultSelected`, `onSelectedChange`
+
+Passing any of these three props makes the chip a toggle button that exposes `aria-pressed`.
+
+- Controlled: pass `selected` and update it in `onSelectedChange`.
+- Uncontrolled: pass `defaultSelected` and let the chip track its own state.
+
+`onSelectedChange` receives the next state as a boolean. If `onPress` is also set, it fires after `onSelectedChange`.
+
+```tsx
+import { Chip, HStack } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function FilterChips() {
+    const [onlyOpen, setOnlyOpen] = useState(false);
+    return (
+        <HStack gap={2}>
+            <Chip selected={onlyOpen} onSelectedChange={setOnlyOpen}>
+                Open issues
+            </Chip>
+            <Chip defaultSelected>Assigned to me</Chip>
+        </HStack>
+    );
+}
+```
+
+### Removable tag: `onRemove`
+
+`onRemove` renders a trailing remove button. The chip does not remove itself; update your own state in the handler. The remove button is a separate focusable control placed after the chip body, never nested inside it, and is at least 24px wide and tall.
+
+Its accessible name is the translated `chip.remove` string (default: `Remove {{label}}`). The label inserted is the `label` prop, or the chip's text content when `children` is a plain string.
+
+```tsx
+import { Chip, HStack } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function RemovableTags() {
+    const [tags, setTags] = useState(['React Native', 'TypeScript', 'Expo']);
+    return (
+        <HStack gap={2}>
+            {tags.map((tag) => (
+                <Chip key={tag} variant="soft" onRemove={() => setTags((prev) => prev.filter((other) => other !== tag))}>
+                    {tag}
+                </Chip>
+            ))}
+        </HStack>
+    );
+}
+```
+
+### `label` with non-text content
+
+When `children` is not plain text (an avatar, an icon), pass `label` as well. It becomes the accessible name of the chip button and the name used by the remove button.
+
+```tsx
+import { Avatar, Chip } from '@nori-ui/core';
+
+export function PersonChip() {
+    return (
+        <Chip label="Ada Lovelace" onPress={() => console.log('open profile')} onRemove={() => console.log('remove')}>
+            <Avatar name="Ada Lovelace" size="sm" />
+        </Chip>
+    );
+}
+```
+
+### `icon`
+
+`icon` takes an icon component (not an element) and renders it before the label. The component receives `size` and `color`. While a chip is selected, the checkmark replaces the icon.
+
+```tsx
+import { Chip } from '@nori-ui/core';
+import { MapPin } from 'lucide-react-native';
+
+export function LocationChip() {
+    return (
+        <Chip icon={MapPin} onPress={() => console.log('pick location')}>
+            Berlin
+        </Chip>
+    );
+}
+```
+
+### `variant`
+
+| Value               | Look                                         |
+|---------------------|----------------------------------------------|
+| `outline` (default) | Border, transparent background               |
+| `soft`              | Tinted background, no visible border         |
+| `solid`             | Filled background, inverted text             |
+
+A selected chip switches to the theme's primary color in every variant.
+
+### `size`
+
+| Value          | Height | Remove button width |
+|----------------|--------|---------------------|
+| `sm`           | 28px   | 24px                |
+| `md` (default) | 32px   | 28px                |
+
+```tsx
+import { Chip, HStack } from '@nori-ui/core';
+
+export function ChipLooks() {
+    return (
+        <HStack gap={2} align="center">
+            <Chip variant="outline" size="sm">Outline, small</Chip>
+            <Chip variant="soft">Soft</Chip>
+            <Chip variant="solid">Solid</Chip>
+        </HStack>
+    );
+}
+```
+
+### `disabled`
+
+`disabled` dims the chip, sets `aria-disabled` on its buttons, and blocks `onPress`, `onSelectedChange`, and `onRemove`.
+
+```tsx
+import { Chip } from '@nori-ui/core';
+
+export function LockedChip() {
+    return (
+        <Chip disabled defaultSelected onRemove={() => console.log('never fires')}>
+            Locked
+        </Chip>
+    );
+}
+```
+
+### `style`, `className`, `testID`, `ref`
+
+`style` and `className` apply to the outer pill and are merged after the built-in styles. `ref` points to the outer pill. `testID` is set on the outer pill; the chip body button gets `${testID}-button` and the remove button gets `${testID}-remove`.
+
+## `Chip.Group`
+
+`Chip.Group` lays chips out in a wrapping row and owns their selection. Give every selectable chip a unique `value`. A chip with a `value` inside a group ignores its own `selected`, `defaultSelected`, and `onSelectedChange`.
+
+### `type`, `value`, `defaultValue`, `onChange`
+
+`type` is required and decides the shape of the value:
+
+| `type`     | `value` and `defaultValue` | `onChange` receives   | Pressing the selected chip |
+|------------|----------------------------|-----------------------|----------------------------|
+| `multiple` | `string[]`                 | `string[]`            | Removes it from the array  |
+| `single`   | `string \| undefined`      | `string \| undefined` | Clears the selection       |
+
+Controlled: pass `value` and `onChange`. Uncontrolled: pass `defaultValue`.
+
+```tsx
+import { Chip, VStack } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function ChipGroups() {
+    const [topics, setTopics] = useState<string[]>(['design']);
+    const [sort, setSort] = useState<string | undefined>('newest');
+    return (
+        <VStack gap={4}>
+            <Chip.Group type="multiple" value={topics} onChange={setTopics} aria-label="Filter by topic">
+                <Chip value="design">Design</Chip>
+                <Chip value="engineering">Engineering</Chip>
+                <Chip value="product">Product</Chip>
+            </Chip.Group>
+            <Chip.Group type="single" value={sort} onChange={setSort} aria-label="Sort order">
+                <Chip value="newest">Newest</Chip>
+                <Chip value="popular">Popular</Chip>
+            </Chip.Group>
+        </VStack>
+    );
+}
+```
+
+### Group-level `variant`, `size`, `disabled`
+
+`variant` and `size` on the group apply to every chip that does not set its own. `disabled` on the group disables every chip.
+
+### `aria-label` / `accessibilityLabel`
+
+Name the group so assistive technology can announce it ("Filter by topic, group"). `aria-label` is used on web and native; `accessibilityLabel` is the native alias and is used when `aria-label` is absent.
+
+## Accessibility
+
+- A static chip has no role. An interactive chip body is a `role="button"`; a filter chip adds `aria-pressed`.
+- The remove button is its own `role="button"` with a translated name. Override the text through the `chip.remove` i18n key.
+- `Chip.Group` is a `role="group"`. Every chip stays in the tab order (Tab / Shift+Tab); there is no arrow-key navigation, because chips wrap onto several lines and can contain two buttons.
+- `Enter` and `Space` activate the focused button.
+- All press targets are at least 24 by 24px.
+- Selected state is shown by a checkmark and by color.
+
+## Props
+
+### `<Chip>`
+
+<PropsTable component="Chip" />
+
+### `<Chip.Group>`
+
+<PropsTable component="ChipGroup" />

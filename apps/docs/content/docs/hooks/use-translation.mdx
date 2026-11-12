@@ -7,47 +7,156 @@ platform: both
 category: hooks
 ---
 
-The library's i18n primitive. Every visible string in `@nori-ui/core` is sourced through this hook — overriding a key in your `<NoriProvider i18n={…}>` rewires every component that uses it.
+The library's i18n primitive. The built-in strings in `@nori-ui/core` (labels such as "Next page") are resolved through this hook, so overriding a key in `<NoriProvider i18n={…}>` changes every component that uses it. You can also call the hook in your own components.
 
 ## Usage
 
 ```tsx
-import { useTranslation } from '@nori-ui/core/client';
+'use client';
 
-function GreetButton({ name }: { name: string }) {
+import { useTranslation } from '@nori-ui/core/client';
+import { Text } from 'react-native';
+
+export function Greeting({ name }: { name: string }) {
     const { t } = useTranslation();
-    return <button type="button">{t('greet.hello', { name, defaultValue: 'Hello, {{name}}' })}</button>;
+    return <Text>{t('greeting.hello', { name, defaultValue: 'Hello, {{name}}' })}</Text>;
 }
 ```
+
+`'use client'` is needed in Next.js only. The hook works without a `<NoriProvider>`; it then resolves against the built-in English dictionary.
 
 ## API
 
 ### Returns
 
+An object with one property:
+
 | Name | Type | Description |
 |---|---|---|
-| `t` | `(key: string, options?: { defaultValue?: string; count?: number; [k: string]: unknown }) => string` | Resolve a key against the current dictionary. Falls back to `defaultValue` if the key is missing. |
-| `language` | `string` | Active BCP 47 locale (read-only). |
+| `t` | `(key: string \| string[], options?: I18nOptions) => string` | Resolves a key to a string. |
 
-## Behavior notes
+The hook does not return the active locale. Read that with `useLocale()` from `@nori-ui/core/client`.
 
-- **Interpolation** uses `{{name}}` syntax — double braces, no spaces.
-- **Pluralization** follows i18next conventions: `count`-based suffixes (`_zero`, `_one`, `_two`, `_few`, `_many`, `_other`).
-- **`defaultValue`** is required for every call by convention — it documents the fallback inline and keeps your translation files self-describing.
-- **Missing keys** return `defaultValue` and emit a dev warning so missing translations are visible in development.
+### `I18nOptions`
 
-## Adding a custom dictionary
+| Name | Type | Description |
+|---|---|---|
+| `count` | `number` | Selects the plural form. See [Pluralization](#pluralization). |
+| `defaultValue` | `string` | Text to use when no key matches. |
+| any other key | `unknown` | Interpolation value for a `{{placeholder}}` of the same name. |
+
+## Resolution order
+
+For a dictionary (or no `i18n` prop at all), `t(key, options)` resolves in this order:
+
+1. The dictionary passed to `<NoriProvider i18n={…}>`.
+2. The library's built-in English dictionary.
+3. `options.defaultValue`.
+4. The key itself.
+
+When `key` is an array, each key is tried in order against steps 1 and 2 before falling back to `defaultValue`, then to the last key in the array.
+
+A missing key does not log a warning and does not throw. The key string appearing in the UI is the only signal.
+
+When `i18n` is a function, the library calls it with `(key, options)` and returns its result unchanged. None of the steps above apply, including interpolation and pluralization; the function is responsible for them.
+
+## Interpolation
+
+Placeholders use double braces: `{{name}}`. Whitespace inside the braces is allowed (`{{ name }}`). A placeholder whose value is missing, `undefined`, or `null` is replaced with an empty string.
+
+## Pluralization
+
+Passing `count` appends a suffix to the key before lookup:
+
+- `count === 1` looks up `<key>_one`.
+- Every other count, including `0`, looks up `<key>_other`.
+
+Only these two suffixes exist. The other i18next suffixes (`_zero`, `_two`, `_few`, `_many`) are not looked up. A call with `count` does not fall back to the bare key: define both `<key>_one` and `<key>_other`, or pass a `defaultValue`.
+
+`count` is also available as an interpolation value:
 
 ```tsx
-import { NoriProvider } from '@nori-ui/core/client';
+'use client';
 
-<NoriProvider i18n={{ en: { 'pagination.next': 'More results →' } }}>
-    {children}
-</NoriProvider>
+import { NoriProvider, useTranslation } from '@nori-ui/core/client';
+import { Text } from 'react-native';
+
+const dictionary = {
+    'cart.items_one': '{{count}} item',
+    'cart.items_other': '{{count}} items',
+};
+
+function CartSummary({ count }: { count: number }) {
+    const { t } = useTranslation();
+    return <Text>{t('cart.items', { count })}</Text>;
+}
+
+export function Cart() {
+    return (
+        <NoriProvider i18n={dictionary}>
+            <CartSummary count={3} />
+        </NoriProvider>
+    );
+}
 ```
 
-Keys you don't override fall through to the library default dictionary.
+`Cart` renders "3 items".
+
+## Overriding built-in strings
+
+The dictionary is a flat object from key to string. It is not nested by language; pass the dictionary for the language you want to display.
+
+```tsx
+'use client';
+
+import { Pagination } from '@nori-ui/core';
+import { NoriProvider } from '@nori-ui/core/client';
+
+const dictionary = {
+    'pagination.next': 'More results',
+    'pagination.previous': 'Fewer results',
+};
+
+export function SearchResultsPager() {
+    return (
+        <NoriProvider i18n={dictionary}>
+            <Pagination pageCount={12} />
+        </NoriProvider>
+    );
+}
+```
+
+Keys you do not override fall through to the built-in dictionary. The built-in keys are exported as `defaultDictionary` from `@nori-ui/core`.
+
+## Passing a translate function
+
+`i18n` also accepts a function with the signature `(key: string | string[], options?: I18nOptions) => string`. This is the call shape of i18next's `t`, so an existing translation setup can serve the library's strings. The library calls the function for every string, so it has to handle the library's keys (listed in `defaultDictionary`).
+
+```tsx
+'use client';
+
+import { defaultDictionary, type TranslateFn } from '@nori-ui/core';
+import { NoriProvider } from '@nori-ui/core/client';
+import type { ReactNode } from 'react';
+
+const german: Record<string, string> = {
+    'pagination.next': 'Nächste Seite',
+    'pagination.previous': 'Vorherige Seite',
+};
+
+const translate: TranslateFn = (key, options) => {
+    const firstKey = Array.isArray(key) ? (key[0] ?? '') : key;
+    return german[firstKey] ?? defaultDictionary[firstKey] ?? options?.defaultValue ?? firstKey;
+};
+
+export function Providers({ children }: { children: ReactNode }) {
+    return <NoriProvider i18n={translate}>{children}</NoriProvider>;
+}
+```
+
+This minimal function does no interpolation or pluralization; a real one (or i18next's `t`) does both itself.
 
 ## Related
 
-- [Theming](/docs/theming) — the sibling provider.
+- [Getting started: Provider](/docs/getting-started#provider) — all `NoriProvider` props.
+- [Theming](/docs/theming) — the `theme` prop on the same provider.

@@ -1,9 +1,9 @@
 'use client';
 
-import type { Theme } from '@nori-ui/tokens';
-import { type KeyboardEvent, type ReactNode, useCallback, useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useCallback, useRef, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import type { Theme } from '../../theme/generated-tokens';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -36,6 +36,25 @@ export type SegmentedControlProps<T extends string = string> = {
     size?: SegmentedControlSize;
     /** Hide the visible labels — when set, segments must have `aria-label`. */
     label?: string;
+    /**
+     * Accessible name for the group when there is no `label`.
+     * `Field.Control` sets this on iOS, where `aria-labelledby` has no effect.
+     */
+    accessibilityLabel?: string;
+    /** DOM id / nativeID of the group. Injected by `Field.Control`. */
+    id?: string;
+    /** Id of the element that labels the group. Injected by `Field.Control`. */
+    'aria-labelledby'?: string;
+    /** React Native equivalent of `aria-labelledby`. Injected by `Field.Control`. */
+    accessibilityLabelledBy?: string;
+    /** Ids of the description / error elements. Injected by `Field.Control`. */
+    'aria-describedby'?: string;
+    /** React Native equivalent of `aria-describedby`. Injected by `Field.Control`. */
+    accessibilityDescribedBy?: string;
+    /** Marks the group as invalid. Injected by `Field.Control` when the Field has an error. */
+    'aria-invalid'?: boolean;
+    /** Marks the group as required. Injected by `Field.Control` when the Field is required. */
+    'aria-required'?: boolean;
     className?: string;
     testID?: string;
 };
@@ -91,6 +110,14 @@ export const SegmentedControl = <T extends string>({
     disabled = false,
     size = 'md',
     label,
+    accessibilityLabel,
+    id,
+    'aria-labelledby': ariaLabelledBy,
+    accessibilityLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    accessibilityDescribedBy,
+    'aria-invalid': ariaInvalid,
+    'aria-required': ariaRequired,
     className,
     testID,
 }: SegmentedControlProps<T>) => {
@@ -98,6 +125,8 @@ export const SegmentedControl = <T extends string>({
     const [inner, setInner] = useState<T | undefined>(defaultValue);
     const isControlled = value !== undefined;
     const current = isControlled ? value : inner;
+
+    const segmentRefs = useRef<Map<string, { focus?: () => void } | null>>(new Map());
 
     const select = useCallback(
         (next: T) => {
@@ -143,6 +172,9 @@ export const SegmentedControl = <T extends string>({
                 const candidate = options[nextIdx];
                 if (candidate && !candidate.disabled) {
                     select(candidate.value);
+                    // Selection follows focus: without moving focus the ring
+                    // stays on a segment that just left the tab order.
+                    segmentRefs.current.get(candidate.value)?.focus?.();
                     return;
                 }
                 nextIdx = (nextIdx + direction + options.length) % options.length;
@@ -160,8 +192,22 @@ export const SegmentedControl = <T extends string>({
         role: 'radiogroup',
         accessibilityRole: 'radiogroup',
         onKeyDown: handleKeyDown,
-        ...(label !== undefined ? { 'aria-label': label, accessibilityLabel: label } : {}),
+        ...(label !== undefined
+            ? { 'aria-label': label, accessibilityLabel: label }
+            : accessibilityLabel !== undefined
+              ? { accessibilityLabel }
+              : {}),
         ...(disabled ? { 'aria-disabled': true } : {}),
+        ...(id !== undefined ? { id, nativeID: id } : {}),
+        ...(ariaLabelledBy !== undefined
+            ? { 'aria-labelledby': ariaLabelledBy, accessibilityLabelledBy: accessibilityLabelledBy ?? ariaLabelledBy }
+            : accessibilityLabelledBy !== undefined
+              ? { accessibilityLabelledBy }
+              : {}),
+        ...(ariaDescribedBy !== undefined ? { 'aria-describedby': ariaDescribedBy } : {}),
+        ...(accessibilityDescribedBy !== undefined ? { accessibilityDescribedBy } : {}),
+        ...(ariaInvalid ? { 'aria-invalid': true } : {}),
+        ...(ariaRequired ? { 'aria-required': true } : {}),
         ...(testID !== undefined ? { testID } : {}),
     };
 
@@ -197,6 +243,9 @@ export const SegmentedControl = <T extends string>({
                 return (
                     <Pressable
                         key={option.value}
+                        ref={(node: unknown) => {
+                            segmentRefs.current.set(option.value, node as { focus?: () => void } | null);
+                        }}
                         role="radio"
                         accessibilityRole="radio"
                         aria-checked={selected}

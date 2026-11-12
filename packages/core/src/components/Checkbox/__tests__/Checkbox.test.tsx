@@ -95,3 +95,39 @@ describe('<Checkbox>', () => {
         expect(el.getAttribute('aria-invalid')).toBe('true');
     });
 });
+
+describe('<Checkbox> disabled and form behavior', () => {
+    it('still shows the check mark when checked and disabled', () => {
+        const { container: enabled } = render(<Checkbox checked />);
+        const { container: disabled } = render(<Checkbox checked disabled />);
+        const { container: unchecked } = render(<Checkbox disabled />);
+        expect(enabled.querySelector('svg')).not.toBeNull();
+        expect(disabled.querySelector('svg')).not.toBeNull();
+        expect(unchecked.querySelector('svg')).toBeNull();
+    });
+
+    it('submits its name with an HTML form only while checked', () => {
+        render(
+            <form data-testid="form">
+                <Checkbox name="terms" testID="c" />
+            </form>
+        );
+        const form = screen.getByTestId('form') as HTMLFormElement;
+        expect(new FormData(form).get('terms')).toBeNull();
+        fireEvent.click(screen.getByTestId('c'));
+        expect(new FormData(form).get('terms')).toBe('on');
+    });
+
+    it('asChild: forwards id and the Field aria props to the child', () => {
+        render(
+            <Checkbox asChild id="cb" aria-labelledby="lbl" aria-describedby="desc" aria-invalid>
+                <button type="button" data-testid="c" />
+            </Checkbox>
+        );
+        const el = screen.getByTestId('c');
+        expect(el.id).toBe('cb');
+        expect(el.getAttribute('aria-labelledby')).toBe('lbl');
+        expect(el.getAttribute('aria-describedby')).toBe('desc');
+        expect(el.getAttribute('aria-invalid')).toBe('true');
+    });
+});

@@ -169,3 +169,61 @@ describe('<Radio.Group> inside <Field.Group>', () => {
         expect(rg.getAttribute('aria-required')).toBe('true');
     });
 });
+
+describe('<Radio.Group> disabled options and naming', () => {
+    it('arrow keys skip a disabled option', () => {
+        const onChange = jest.fn();
+        render(
+            <Radio.Group defaultValue="a" onChange={onChange} testID="rg">
+                <Radio value="a" label="A" testID="a" />
+                <Radio value="b" label="B" disabled testID="b" />
+                <Radio value="c" label="C" testID="c" />
+            </Radio.Group>
+        );
+        fireEvent.keyDown(screen.getByTestId('rg'), { key: 'ArrowDown' });
+        expect(onChange).toHaveBeenLastCalledWith('c');
+        expect(screen.getByTestId('b').getAttribute('aria-checked')).toBe('false');
+        expect(document.activeElement).toBe(screen.getByTestId('c'));
+    });
+
+    it('with no selection, only the first enabled option is a tab stop', () => {
+        render(
+            <Radio.Group>
+                <Radio value="a" label="A" disabled testID="a" />
+                <Radio value="b" label="B" testID="b" />
+                <Radio value="c" label="C" testID="c" />
+            </Radio.Group>
+        );
+        expect(screen.getByTestId('a').tabIndex).toBe(-1);
+        expect(screen.getByTestId('b').tabIndex).toBe(0);
+        expect(screen.getByTestId('c').tabIndex).toBe(-1);
+    });
+
+    it('does not override visible custom content with the raw value as aria-label', () => {
+        render(
+            <Radio.Group>
+                <Radio value="plan_pro_monthly" testID="custom">
+                    <span>Pro plan</span>
+                </Radio>
+                <Radio value="bare" testID="bare" />
+            </Radio.Group>
+        );
+        expect(screen.getByTestId('custom').hasAttribute('aria-label')).toBe(false);
+        expect(screen.getByTestId('bare').getAttribute('aria-label')).toBe('bare');
+    });
+
+    it('submits the selected value under the group name with an HTML form', () => {
+        render(
+            <form data-testid="form">
+                <Radio.Group name="plan">
+                    <Radio value="free" label="Free" />
+                    <Radio value="pro" label="Pro" testID="pro" />
+                </Radio.Group>
+            </form>
+        );
+        const form = screen.getByTestId('form') as HTMLFormElement;
+        expect(new FormData(form).get('plan')).toBeNull();
+        fireEvent.click(screen.getByTestId('pro'));
+        expect(new FormData(form).getAll('plan')).toEqual(['pro']);
+    });
+});

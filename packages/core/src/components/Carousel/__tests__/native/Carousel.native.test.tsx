@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Dimensions, Text, View } from 'react-native';
 import { NoriProvider } from '../../../../provider';
 import { Carousel } from '../../Carousel.native';
 
@@ -88,5 +88,51 @@ describe('<Carousel> native', () => {
         fireEvent.press(getByTestId('btn-next'));
         // With loop and 2 items, pressing next from 0 goes to 1
         expect(onIndexChange).toHaveBeenCalledWith(1);
+    });
+
+    it('swiping to another slide updates the index, the dots and the buttons', () => {
+        const onIndexChange = jest.fn();
+        const { getByTestId, getAllByRole } = render(
+            wrap(
+                <Carousel onIndexChange={onIndexChange}>
+                    <Carousel.Content testID="content">
+                        <Carousel.Item>
+                            <Text>Slide 1</Text>
+                        </Carousel.Item>
+                        <Carousel.Item>
+                            <Text>Slide 2</Text>
+                        </Carousel.Item>
+                    </Carousel.Content>
+                    <Carousel.Previous testID="btn-prev" />
+                    <Carousel.Dots />
+                </Carousel>
+            )
+        );
+        expect(getByTestId('btn-prev')).toBeDisabled();
+        const pageWidth = Dimensions.get('window').width;
+        fireEvent(getByTestId('content'), 'momentumScrollEnd', {
+            nativeEvent: { contentOffset: { x: pageWidth, y: 0 } },
+        });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+        expect(getByTestId('btn-prev')).toBeEnabled();
+        expect(getAllByRole('tab')[1]?.props.accessibilityState).toEqual({ selected: true });
+    });
+
+    it('Previous and Next show a chevron when given no children', () => {
+        const { getByText } = render(
+            wrap(
+                <Carousel>
+                    <Carousel.Content>
+                        <Carousel.Item>
+                            <Text>Slide 1</Text>
+                        </Carousel.Item>
+                    </Carousel.Content>
+                    <Carousel.Previous />
+                    <Carousel.Next />
+                </Carousel>
+            )
+        );
+        expect(getByText('‹', { includeHiddenElements: true })).toBeTruthy();
+        expect(getByText('›', { includeHiddenElements: true })).toBeTruthy();
     });
 });

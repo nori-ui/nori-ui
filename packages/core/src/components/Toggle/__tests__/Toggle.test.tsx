@@ -130,14 +130,55 @@ describe('<Toggle.Group type="single">', () => {
         expect(center.getAttribute('aria-pressed')).toBe('false');
     });
 
-    it('uses role="radiogroup" for single selection', () => {
+    it('pairs role="group" with aria-pressed buttons for single selection', () => {
         render(
             <Toggle.Group type="single" testID="g">
-                <Toggle.Item value="a">A</Toggle.Item>
+                <Toggle.Item value="a" testID="a">
+                    A
+                </Toggle.Item>
                 <Toggle.Item value="b">B</Toggle.Item>
             </Toggle.Group>
         );
-        expect(screen.getByTestId('g').getAttribute('role')).toBe('radiogroup');
+        expect(screen.getByTestId('g').getAttribute('role')).toBe('group');
+        expect(screen.getByTestId('a').getAttribute('role')).toBe('button');
+        expect(screen.getByTestId('a').hasAttribute('aria-pressed')).toBe(true);
+    });
+
+    it('controlled group starting at undefined can be cleared again', () => {
+        const Harness = () => {
+            const [value, setValue] = useState<string | undefined>(undefined);
+            return (
+                <Toggle.Group type="single" value={value} onChange={setValue}>
+                    <Toggle.Item value="a">A</Toggle.Item>
+                    <Toggle.Item value="b" testID="b">
+                        B
+                    </Toggle.Item>
+                </Toggle.Group>
+            );
+        };
+        render(<Harness />);
+        const b = screen.getByTestId('b');
+        fireEvent.click(b);
+        expect(b.getAttribute('aria-pressed')).toBe('true');
+        fireEvent.click(b);
+        expect(b.getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('stays uncontrolled when a wrapper forwards an undefined value next to defaultValue', () => {
+        const forwarded: { value?: string } = {};
+        render(
+            <Toggle.Group type="single" value={forwarded.value} defaultValue="a">
+                <Toggle.Item value="a" testID="a">
+                    A
+                </Toggle.Item>
+                <Toggle.Item value="b" testID="b">
+                    B
+                </Toggle.Item>
+            </Toggle.Group>
+        );
+        expect(screen.getByTestId('a').getAttribute('aria-pressed')).toBe('true');
+        fireEvent.click(screen.getByTestId('b'));
+        expect(screen.getByTestId('b').getAttribute('aria-pressed')).toBe('true');
     });
 });
 

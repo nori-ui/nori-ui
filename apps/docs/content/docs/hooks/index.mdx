@@ -1,15 +1,22 @@
 ---
 title: Hooks
-description: Public hooks shipped by @nori-ui/core — i18n, theming, animation, and pagination logic, all cross-platform and tree-shakable.
+description: Public hooks shipped by @nori-ui/core — i18n, theming, and pagination logic, all cross-platform.
 ---
 
-The library exposes a small surface of hooks alongside its components. Each hook is cross-platform (web + React Native), tree-shakable, and has its own documentation page below.
+The library exposes a small set of hooks alongside its components. Each hook works on web and React Native and has its own documentation page.
 
 | Hook | Purpose |
 |---|---|
 | [`usePagination`](/docs/hooks/use-pagination) | Headless pagination math — sibling/boundary windowing, prev/next/first/last actions, controlled or uncontrolled. |
-| [`useTranslation`](/docs/hooks/use-translation) | The library's i18n primitive — read keys with interpolation and pluralization. |
+| [`useTranslation`](/docs/hooks/use-translation) | The library's i18n primitive — read keys with interpolation and `_one` / `_other` plurals. |
 | [`useThemeColors`](/docs/hooks/use-theme-colors) | Read the resolved theme tokens (colors, spacing, radii, typography) for the current color scheme. |
-| [`useAnimatedNumber`](/docs/hooks/use-animated-number) | Animate a numeric value over time — works on web (CSS transitions) and native (Reanimated worklets). |
 
-All hooks must be imported from `@nori-ui/core/client` (they're client-only) and require a `<NoriProvider>` ancestor for theme + i18n context.
+`@nori-ui/core/client` also exports `useTheme` (an alias of `useThemeColors`), `useColorScheme` (returns `'light'` or `'dark'`), `useLocale` (returns the active BCP 47 locale tag), and `useSemanticIcon`.
+
+## Importing
+
+Import hooks from `@nori-ui/core/client`. In a Next.js App Router project, the file that calls a hook needs `'use client'` at the top, because hooks only run in Client Components. Expo apps need no directive.
+
+## Provider
+
+Hooks do not require a `<NoriProvider>` ancestor. Every context has a default value: without a provider, the theme hooks return the default (teal) theme, `useTranslation` resolves against the built-in English dictionary, and `useLocale` returns the runtime locale. Add a [`<NoriProvider>`](/docs/getting-started#provider) when you want to change any of these.

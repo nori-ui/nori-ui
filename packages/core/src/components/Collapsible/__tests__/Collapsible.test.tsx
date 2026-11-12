@@ -32,6 +32,23 @@ describe('<Collapsible>', () => {
         expect(screen.getByTestId('content').getAttribute('aria-hidden')).toBe('false');
     });
 
+    it('takes closed content out of the tab order and restores it when opened', () => {
+        render(
+            <Collapsible>
+                <Collapsible.Trigger testID="trigger">Show</Collapsible.Trigger>
+                <Collapsible.Content testID="content">
+                    <input aria-label="Name" />
+                </Collapsible.Content>
+            </Collapsible>
+        );
+        const content = screen.getByTestId('content');
+        expect(content.hasAttribute('inert')).toBe(true);
+        fireEvent.click(screen.getByTestId('trigger'));
+        expect(content.hasAttribute('inert')).toBe(false);
+        fireEvent.click(screen.getByTestId('trigger'));
+        expect(content.hasAttribute('inert')).toBe(true);
+    });
+
     it('renders content as visible (aria-hidden=false) when defaultOpen is set', () => {
         render(
             <Collapsible defaultOpen>

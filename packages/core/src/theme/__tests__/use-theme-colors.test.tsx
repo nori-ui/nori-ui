@@ -1,8 +1,9 @@
 /**
  * @jest-environment jsdom
  */
-import { themeDark as dark, theme as light } from '@nori-ui/tokens';
+
 import { render, screen, waitFor } from '@testing-library/react';
+import { themeDark as dark, theme as light } from '../generated-tokens';
 import { useThemeColors } from '../use-theme-colors';
 
 function ResolvedBg() {

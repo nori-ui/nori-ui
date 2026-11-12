@@ -37,8 +37,35 @@ describe('<Text>', () => {
                 H
             </Text>
         );
-        // RN-Web maps role="heading" via aria-level
         const el = screen.getByTestId('t');
         expect(el.getAttribute('role')).toBe('heading');
+    });
+
+    it('gives each heading variant its own level instead of making them all level 1', () => {
+        render(
+            <>
+                <Text variant="heading-1">One</Text>
+                <Text variant="heading-2">Two</Text>
+                <Text variant="heading-3">Three</Text>
+            </>
+        );
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('One');
+        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Two');
+        expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Three');
+    });
+
+    it('lets the consumer override the heading level and the role', () => {
+        render(
+            <>
+                <Text variant="heading-1" aria-level={4}>
+                    Visually large
+                </Text>
+                <Text variant="heading-2" accessibilityRole="link" testID="link">
+                    Styled link
+                </Text>
+            </>
+        );
+        expect(screen.getByRole('heading', { level: 4 })).toHaveTextContent('Visually large');
+        expect(screen.getByTestId('link').getAttribute('role')).toBe('link');
     });
 });

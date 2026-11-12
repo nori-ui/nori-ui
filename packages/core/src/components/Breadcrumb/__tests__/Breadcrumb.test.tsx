@@ -155,6 +155,39 @@ describe('<Breadcrumb> — items mode', () => {
         expect(screen.getAllByText('•')).toHaveLength(2);
     });
 
+    it('compound mode falls back to the default chevron when no separator is given', () => {
+        render(
+            <Breadcrumb>
+                <Breadcrumb.List>
+                    <Breadcrumb.Item>
+                        <Breadcrumb.Link href="/">A</Breadcrumb.Link>
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item>
+                        <Breadcrumb.Page>B</Breadcrumb.Page>
+                    </Breadcrumb.Item>
+                </Breadcrumb.List>
+            </Breadcrumb>
+        );
+        expect(document.querySelectorAll('[role="presentation"] svg')).toHaveLength(1);
+    });
+
+    it('keeps the ellipsis when itemsAfterCollapse is 0', () => {
+        render(
+            <Breadcrumb
+                collapseOnOverflow={false}
+                maxItems={2}
+                itemsBeforeCollapse={1}
+                itemsAfterCollapse={0}
+                expandBehavior="inline"
+                items={[{ label: 'A', href: '/a' }, { label: 'B', href: '/b' }, { label: 'C' }]}
+            />
+        );
+        expect(screen.queryByText('B')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Show full path' }));
+        expect(screen.getByText('B')).toBeInTheDocument();
+        expect(screen.getByText('C')).toBeInTheDocument();
+    });
+
     it('throws a clear error when a compound subcomponent is rendered standalone', () => {
         const original = console.error;
         console.error = () => {};
@@ -234,6 +267,14 @@ describe('<Breadcrumb> — items mode', () => {
         render(<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Settings' }]} />);
         expect(screen.getAllByText('Home')).toHaveLength(2);
         expect(screen.getAllByText('Settings')).toHaveLength(2);
+    });
+
+    it('keeps the measurement copy out of the tab order', () => {
+        render(<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Settings' }]} />);
+        const reachable = Array.from(document.querySelectorAll('a[href]')).filter(
+            (link) => link.closest('[inert]') === null
+        );
+        expect(reachable).toHaveLength(1);
     });
 });
 

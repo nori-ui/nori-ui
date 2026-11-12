@@ -115,7 +115,7 @@ type PaginationContextValue = {
         last: string;
         gotoPage: (page: number) => string;
         ellipsis: string;
-        currentPage: string;
+        currentPage: (page: number) => string;
         rangeFmt: (from: number, to: number, total: number) => string;
         pageOfFmt: (page: number, total: number) => string;
         pageSize: string;
@@ -370,7 +370,7 @@ function ariaLabelFor(item: PaginationItemDescriptor, labels: PaginationContextV
         case 'ellipsis':
             return labels.ellipsis;
         case 'page':
-            return item.selected ? labels.currentPage : labels.gotoPage(item.page ?? 0);
+            return item.selected ? labels.currentPage(item.page ?? 0) : labels.gotoPage(item.page ?? 0);
     }
 }
 
@@ -516,7 +516,7 @@ const PaginationRoot = (props: PaginationProps) => {
             first: firstLabel ?? t('pagination.first', { defaultValue: 'First page' }),
             last: lastLabel ?? t('pagination.last', { defaultValue: 'Last page' }),
             ellipsis: t('pagination.ellipsis', { defaultValue: 'More pages' }),
-            currentPage: t('pagination.currentPage', { defaultValue: 'Current page' }),
+            currentPage: (n) => t('pagination.currentPage', { page: n, defaultValue: `Page ${n}, current page` }),
             gotoPage: (n) => t('pagination.gotoPage', { page: n, defaultValue: `Go to page ${n}` }),
             rangeFmt: (from, to, total) =>
                 t('pagination.range', {
@@ -544,27 +544,26 @@ const PaginationRoot = (props: PaginationProps) => {
         };
     }, []);
 
+    // A non-finite `pageCount` (e.g. `total / pageSize` before data arrives)
+    // is treated as a single page instead of leaking `NaN` into labels.
+    const safePageCount = Number.isFinite(pageCount) ? Math.max(1, Math.floor(pageCount)) : 1;
+
+    // Set only while a page-size change resets the page, so that reset
+    // reports the new size instead of the one from the last render.
+    const pendingPageSizeRef = useRef<number | undefined>(undefined);
+
     const handlePageChange = useCallback(
         (next: number) => {
-            onPageChange?.(next, effectivePageSize !== undefined ? { pageSize: effectivePageSize } : undefined);
+            const size = pendingPageSizeRef.current ?? effectivePageSize;
+            onPageChange?.(next, size !== undefined ? { pageSize: size } : undefined);
             if (announceTimer.current) {
                 clearTimeout(announceTimer.current);
             }
             announceTimer.current = setTimeout(() => {
-                setAnnouncement(labels.pageOfFmt(next, Math.max(1, pageCount)));
+                setAnnouncement(labels.pageOfFmt(next, safePageCount));
             }, ANNOUNCE_DEBOUNCE_MS);
         },
-        [onPageChange, effectivePageSize, labels, pageCount]
-    );
-
-    const setPageSize = useCallback(
-        (next: number) => {
-            if (pageSizeProp === undefined) {
-                setInternalPageSize(next);
-            }
-            onPageChange?.(1, { pageSize: next });
-        },
-        [onPageChange, pageSizeProp]
+        [onPageChange, effectivePageSize, labels, safePageCount]
     );
 
     const pagination = usePagination({
@@ -577,13 +576,31 @@ const PaginationRoot = (props: PaginationProps) => {
         onPageChange: handlePageChange,
     });
 
-    if (hideOnSinglePage && Math.max(1, pageCount) <= 1) {
+    const { goToPage } = pagination;
+    const setPageSize = useCallback(
+        (next: number) => {
+            if (pageSizeProp === undefined) {
+                setInternalPageSize(next);
+            }
+            // Going through `goToPage` also resets the uncontrolled page, so
+            // the UI lands on page 1 together with the reported change.
+            pendingPageSizeRef.current = next;
+            try {
+                goToPage(1);
+            } finally {
+                pendingPageSizeRef.current = undefined;
+            }
+        },
+        [goToPage, pageSizeProp]
+    );
+
+    if (hideOnSinglePage && safePageCount <= 1) {
         return null;
     }
 
     const ctxValue: PaginationContextValue = {
         page: pagination.page,
-        pageCount: Math.max(1, pageCount),
+        pageCount: safePageCount,
         pageSize: effectivePageSize,
         itemCount,
         siblingCount,
@@ -608,7 +625,6 @@ const PaginationRoot = (props: PaginationProps) => {
                     role="navigation"
                     aria-label={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
                     accessibilityLabel={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
-                    accessible
                     className={cn('flex-row items-center flex-wrap', className)}
                     style={{
                         flexDirection: 'row',
@@ -666,7 +682,6 @@ const PaginationRoot = (props: PaginationProps) => {
                 role="navigation"
                 aria-label={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
                 accessibilityLabel={ariaLabel ?? t('pagination.ariaLabel', { defaultValue: 'Pagination' })}
-                accessible
                 className={cn(isCompact ? 'flex-col items-stretch' : 'flex-row items-center flex-wrap', className)}
                 style={{
                     // Compact mode lays out as a column so the Range/PageSize
@@ -686,7 +701,7 @@ const PaginationRoot = (props: PaginationProps) => {
                         onNext={pagination.next}
                         canPrev={pagination.canPrev}
                         canNext={pagination.canNext}
-                        pageLabel={labels.pageOfFmt(pagination.page, Math.max(1, pageCount))}
+                        pageLabel={labels.pageOfFmt(pagination.page, safePageCount)}
                     />
                 ) : (
                     <ItemsRenderer items={pagination.pages} onItemPress={onItemPress} />
@@ -809,7 +824,7 @@ const PaginationItem: FC<{ page: number; asChild?: boolean; children?: ReactNode
     const ctx = usePaginationContext('Pagination.Item');
     const selected = page === ctx.page;
     const onPress = () => ctx.goToPage(page);
-    const ariaLabel = selected ? ctx.labels.currentPage : ctx.labels.gotoPage(page);
+    const ariaLabel = selected ? ctx.labels.currentPage(page) : ctx.labels.gotoPage(page);
 
     if (asChild) {
         return (
@@ -888,7 +903,8 @@ const PaginationRange: FC = () => {
         }
         return null;
     }
-    const from = (ctx.page - 1) * ctx.pageSize + 1;
+    // Clamped to `itemCount` so an empty list reads "0–0 of 0", not "1–0 of 0".
+    const from = Math.min(ctx.itemCount, (ctx.page - 1) * ctx.pageSize + 1);
     const to = Math.min(ctx.itemCount, ctx.page * ctx.pageSize);
     const message = ctx.labels.rangeFmt(from, to, ctx.itemCount);
     return (

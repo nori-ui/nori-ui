@@ -75,6 +75,29 @@ describe('<Slot>', () => {
         expect(el).toHaveStyle({ color: 'blue', fontSize: '14px' });
     });
 
+    it('keeps array and function styles intact instead of spreading them into an object', () => {
+        const seen: unknown[] = [];
+        const Probe = ({ style }: { style?: unknown }) => {
+            seen.push(style);
+            return null;
+        };
+        const childStyle = [{ color: 'blue' }, { margin: 4 }];
+        render(
+            <Slot style={{ fontSize: 14 }}>
+                <Probe style={childStyle} />
+            </Slot>
+        );
+        expect(seen[0]).toEqual([{ fontSize: 14 }, childStyle]);
+
+        render(
+            <Slot style={{ fontSize: 14 }}>
+                <Probe style={({ pressed }: { pressed: boolean }) => ({ opacity: pressed ? 0.5 : 1 })} />
+            </Slot>
+        );
+        const resolved = (seen[1] as (state: { pressed: boolean }) => unknown)({ pressed: true });
+        expect(resolved).toEqual([{ fontSize: 14 }, { opacity: 0.5 }]);
+    });
+
     it('accepts polymorphic children — e.g. a custom component that forwards props', () => {
         const MyLink = forwardRef<HTMLAnchorElement, { className?: string; children?: React.ReactNode; href?: string }>(
             function MyLink({ className, href, children }, ref) {

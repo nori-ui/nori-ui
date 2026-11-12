@@ -1,0 +1,236 @@
+---
+title: Link
+description: Inline or standalone text link — a real anchor on web, a pressable link that opens the URL on native.
+since: 1.12.0
+tags: [navigation, link, typography]
+platform: both
+category: navigation
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Link" />
+
+## At a glance
+
+- On web, `Link` renders a real `<a href>` element. Open in new tab, copy link address, and crawling work as they do for any anchor.
+- On native, `Link` renders a pressable text with `role="link"`. Pressing it opens `href` with `Linking.openURL`.
+- `onPress` replaces the default navigation on both platforms.
+- `external` opens the link in a new tab on web and adds a translated "opens in a new tab" hint to the accessible name.
+- `asChild` merges the link styling into a router link (Next.js `Link`, expo-router `Link`).
+- Colors, font family, and font size come from the active theme.
+
+## Preview
+
+<Preview name="link-basic" />
+
+## Usage
+
+`children` is the link text. `href` is the destination.
+
+```tsx
+import { Link } from '@nori-ui/core';
+
+export const Example = () => <Link href="https://reactnative.dev">React Native documentation</Link>;
+```
+
+### Inside a sentence
+
+A `Link` can sit inside a [`Text`](/docs/components/text). Set `size="inherit"` so the link takes the font size of the surrounding text.
+
+```tsx
+import { Link, Text } from '@nori-ui/core';
+
+export const Example = () => (
+    <Text variant="body-sm">
+        By continuing you agree to the{' '}
+        <Link href="/terms" size="inherit">
+            terms of service
+        </Link>
+        .
+    </Text>
+);
+```
+
+## `href` and `onPress`
+
+| Props set | Web | Native |
+| --- | --- | --- |
+| `href` only | The browser follows the anchor. | `Linking.openURL(href)` is called. |
+| `href` and `onPress` | `onPress` is called and the navigation is canceled. Modified clicks (Cmd, Ctrl, Shift, Alt, middle button) skip `onPress`, so the browser can open a new tab. | `onPress` is called. `Linking.openURL` is not called. |
+| `onPress` only | The element has `role="link"`, is a tab stop, and calls `onPress` on click and on Enter. | `onPress` is called. |
+
+Keep `href` when you pass `onPress` for client-side navigation. The anchor then still has a real address for "open in new tab" and "copy link".
+
+```tsx
+import { Link } from '@nori-ui/core';
+
+export const Example = ({ onOpenSettings }: { onOpenSettings: () => void }) => (
+    <Link href="/settings" onPress={onOpenSettings}>
+        Settings
+    </Link>
+);
+```
+
+If `Linking.openURL` fails on native, `Link` logs a warning in development builds and does nothing else.
+
+## `external`
+
+Set `external` for destinations outside your app. Default: `false`.
+
+On web, `external` does three things:
+
+1. Sets `target="_blank"`, so the link opens in a new tab.
+2. Sets `rel="noopener noreferrer"`, so the new page cannot reach `window.opener`.
+3. Appends a visually hidden hint to the accessible name. A link with the text "Privacy policy" is announced as "Privacy policy, opens in a new tab". The hint text is the `link.opensInNewTab` dictionary key.
+
+On native, `external` has no effect. Every `href` already opens outside the app.
+
+```tsx
+import { Link } from '@nori-ui/core';
+
+export const Example = () => (
+    <Link href="https://example.com/privacy" external>
+        Privacy policy
+    </Link>
+);
+```
+
+To translate the hint, pass the key to the provider:
+
+```tsx
+import { Link, NoriProvider } from '@nori-ui/core';
+
+export const Example = () => (
+    <NoriProvider i18n={{ 'link.opensInNewTab': 'öffnet in neuem Tab' }}>
+        <Link href="https://example.com/datenschutz" external>
+            Datenschutz
+        </Link>
+    </NoriProvider>
+);
+```
+
+## `variant`
+
+| Value | Color | On hover and keyboard focus (web) |
+| --- | --- | --- |
+| `default` (default) | Primary interactive color | Primary hover color |
+| `muted` | Muted text color | Default text color |
+
+## `underline`
+
+| Value | Behavior |
+| --- | --- |
+| `always` (default) | The link is always underlined. |
+| `hover` | The link is underlined on pointer hover and keyboard focus. Web only: on native the link is never underlined. |
+| `none` | The link is never underlined. |
+
+Use `always` for links inside running text. Color alone does not distinguish a link from the text around it for every reader (WCAG 1.4.1).
+
+```tsx
+import { Link, VStack } from '@nori-ui/core';
+
+export const Example = () => (
+    <VStack gap={2}>
+        <Link href="/pricing" variant="muted" underline="hover">
+            Pricing
+        </Link>
+        <Link href="/changelog" variant="muted" underline="none">
+            Changelog
+        </Link>
+    </VStack>
+);
+```
+
+## `size`
+
+`size` sets the font size on the same scale as the `body-*` variants of `Text`.
+
+| Value | Matches `Text` variant |
+| --- | --- |
+| `xs` | `body-xs` |
+| `sm` | `body-sm` |
+| `md` (default) | `body-md` |
+| `lg` | `body-lg` |
+| `inherit` | Sets no font size. A link nested in a `Text` takes the size of that text. |
+
+## `disabled`
+
+A disabled link cannot be pressed, is dimmed, and has `aria-disabled="true"`. On web the `href` attribute is removed, so the link leaves the tab order and cannot be followed. Default: `false`.
+
+```tsx
+import { Link } from '@nori-ui/core';
+
+export const Example = () => (
+    <Link href="/billing" disabled>
+        Billing
+    </Link>
+);
+```
+
+## `asChild`
+
+With `asChild`, `Link` does not render its own element. It merges its `className`, themed `style`, `testID`, and (on web) the `external` attributes into its single child element. The child owns navigation. Use this for router links. Default: `false`.
+
+Next.js:
+
+```tsx
+import { Link } from '@nori-ui/core';
+import NextLink from 'next/link';
+
+export const Example = () => (
+    <Link asChild>
+        <NextLink href="/dashboard">Dashboard</NextLink>
+    </Link>
+);
+```
+
+expo-router:
+
+```tsx
+import { Link } from '@nori-ui/core';
+import { Link as RouterLink } from 'expo-router';
+
+export const Example = () => (
+    <Link asChild>
+        <RouterLink href="/dashboard">Dashboard</RouterLink>
+    </Link>
+);
+```
+
+Limits of `asChild`:
+
+- The hover color, the `underline="hover"` behavior, and the focus ring are not applied. The child element keeps its own hover and focus styling.
+- The "opens in a new tab" hint is not added to the accessible name. Add it to the child's text if you need it.
+
+## `className`, `style`, `testID`, and `ref`
+
+- `className` adds Tailwind / NativeWind classes to the link element.
+- `style` is merged after the themed style, so its values win.
+- `testID` identifies the link in tests. On web it becomes `data-testid`.
+- `ref` points to the underlying text element. On web that is the `<a>` element.
+
+```tsx
+import { Link } from '@nori-ui/core';
+
+export const Example = () => (
+    <Link href="/docs" className="font-medium" style={{ letterSpacing: 0.2 }} testID="docs-link">
+        Documentation
+    </Link>
+);
+```
+
+## Accessibility
+
+- Role: `link` on both platforms. On web the element is an `<a>` whenever `href` is set and the link is not disabled.
+- Keyboard (web): Tab moves focus to the link. Enter activates it. A link with `onPress` and no `href` is also a tab stop and activates on Enter.
+- Focus: keyboard focus draws a 2px outline in the primary interactive color with a 2px offset. Pointer focus does not draw it.
+- Native: pressing dims the link as feedback. The touch target is extended beyond the text so that it is at least 24px high.
+- State: a disabled link exposes `aria-disabled="true"` on web and the disabled accessibility state on native.
+- Name: the accessible name is the text in `children`, plus the new-tab hint when `external` is set on web.
+
+## Props
+
+<PropsTable component="Link" />

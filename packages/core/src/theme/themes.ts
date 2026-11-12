@@ -1,5 +1,5 @@
-import { themeDark as defaultDark, theme as defaultLight, type Theme } from '@nori-ui/tokens';
 import type { NoriTheme } from './context';
+import { themeDark as defaultDark, theme as defaultLight } from './generated-tokens';
 
 /**
  * Built-in theme presets. Pass any of these to `<NoriProvider theme={...}>`
@@ -115,16 +115,9 @@ const RAMPS = {
     },
 } as const satisfies Record<string, PrimaryRamp>;
 
-/**
- * Build a NoriTheme by swapping the primary ramp into the default.
- *
- * The unknown-cast is unavoidable: the generated `Theme` type narrows
- * each color hex to its specific string literal (e.g. `'#0d9488'` for
- * `primary.600`), so a generic `PrimaryRamp` ramp can't be assigned
- * structurally. The runtime shape is identical — we just convince TS.
- */
+/** Build a NoriTheme by swapping the primary ramp into the default. */
 function buildPreset(ramp: PrimaryRamp): NoriTheme {
-    const dark = defaultDark as unknown as Theme;
+    const dark = defaultDark;
     return {
         light: {
             ...defaultLight,
@@ -138,7 +131,7 @@ function buildPreset(ramp: PrimaryRamp): NoriTheme {
                     primaryPressed: ramp['800'],
                 },
             },
-        } as unknown as Theme,
+        },
         dark: {
             ...dark,
             color: { ...dark.color, primary: ramp },
@@ -154,7 +147,7 @@ function buildPreset(ramp: PrimaryRamp): NoriTheme {
                     primaryPressed: ramp['200'],
                 },
             },
-        } as unknown as Theme,
+        },
     };
 }
 

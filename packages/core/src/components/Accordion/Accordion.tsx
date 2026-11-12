@@ -21,6 +21,7 @@ import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useWebDisclosureTransition } from '../Collapsible/Collapsible';
 
 export type AccordionType = 'single' | 'multiple';
 
@@ -424,8 +425,9 @@ export type AccordionContentProps = {
     className?: string;
     testID?: string;
     /**
-     * Keep the content mounted even when collapsed. Useful for forms that
-     * shouldn't lose state, or content that's expensive to mount.
+     * Accepted for API compatibility; currently has no effect. The content
+     * always stays mounted while collapsed (hidden from the keyboard and
+     * from assistive technology), so form state inside it is never lost.
      * @defaultValue false
      */
     forceMount?: boolean;
@@ -436,20 +438,13 @@ export type AccordionContentProps = {
 const ACCORDION_ANIM_DURATION_MS = 200;
 
 /**
- * The collapsible body. On web it always mounts but slides open / closed
- * via an animated max-height + opacity transition (200ms ease). On native
- * it mounts in a measure-pass on first render to capture the natural
- * content height, then animates `height` + `opacity` via the shared
- * `useAnimatedNumber` primitive (200ms, cubic-bezier(0.16, 1, 0.3, 1) —
- * matches the Switch thumb slide).
- *
- * Implementation note: the web-side height + transition styles are pushed
- * onto the outer wrapper's DOM node via a ref + useEffect rather than
- * through the View's `style` prop. Reason: rn-web's style filter drops
- * keys it doesn't recognise as RN style props (`transition`, `maxHeight`
- * shorthand, etc.), taking the whole fragment with them. Direct DOM
- * mutation bypasses that filter — same trick used by Dialog's backdrop
- * blur.
+ * The collapsible body. It always stays mounted. On web it slides open /
+ * closed via a max-height + opacity transition (see
+ * `useWebDisclosureTransition`). On native the content is laid out
+ * absolutely inside a clipping wrapper, so its natural height can be
+ * measured at any time, and the wrapper animates `height` + `opacity` via
+ * the shared `useAnimatedNumber` primitive (200ms,
+ * cubic-bezier(0.16, 1, 0.3, 1), matching the Switch thumb slide).
  */
 export const AccordionContent = ({
     children,
@@ -460,10 +455,8 @@ export const AccordionContent = ({
     const item = useAccordionItemContext('Accordion.Content');
     const colors = useThemeColors();
     const wrapperRef = useRef<HTMLElement | null>(null);
-    const innerRef = useRef<HTMLElement | null>(null);
-    // Natural (open-state) height of the content, captured on first
-    // layout. Re-captured if the layout reports a different size while
-    // open (e.g. dynamic content).
+    // Natural (open-state) height of the content. Updated whenever the
+    // content's own layout reports a different size, e.g. dynamic content.
     const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
     const innerStyle: ViewStyle = {
         ...CONTENT_INNER_LAYOUT_BASE,
@@ -472,65 +465,7 @@ export const AccordionContent = ({
         paddingBottom: px(colors.spacing['3']),
     };
 
-    // Slide open/close on web. We measure the natural height of the inner
-    // content each time the open state flips, then animate the wrapper's
-    // maxHeight to/from 0. Setting maxHeight: 'none' after the transition
-    // would let the content grow if it later changes — but for the v0
-    // accordion we expect static content, so we leave maxHeight at the
-    // measured value (good enough; resize observer can come later).
-    useEffect(() => {
-        if (Platform.OS !== 'web') {
-            return;
-        }
-        const wrapper = wrapperRef.current;
-        const inner = innerRef.current;
-        if (!wrapper || !inner) {
-            return;
-        }
-
-        // First-render shortcut: skip the animation when an item starts
-        // already open (avoids the "all items open then animate closed"
-        // flash on mount).
-        const isFirstPaint = wrapper.dataset.noriPainted !== '1';
-        wrapper.dataset.noriPainted = '1';
-
-        wrapper.style.overflow = 'hidden';
-        wrapper.style.transitionProperty = 'max-height, opacity';
-        wrapper.style.transitionDuration = `${ACCORDION_ANIM_DURATION_MS}ms`;
-        wrapper.style.transitionTimingFunction = 'cubic-bezier(0.16, 1, 0.3, 1)';
-
-        if (item.open) {
-            const target = inner.scrollHeight;
-            if (isFirstPaint) {
-                wrapper.style.maxHeight = `${target}px`;
-                wrapper.style.opacity = '1';
-                return;
-            }
-            // Animate from current measured 0px to the target height.
-            wrapper.style.maxHeight = '0px';
-            wrapper.style.opacity = '0';
-            // Force a reflow so the start state actually applies before
-            // we set the end state — otherwise the browser collapses
-            // both into a single repaint and skips the animation.
-            void wrapper.offsetHeight;
-            requestAnimationFrame(() => {
-                wrapper.style.maxHeight = `${target}px`;
-                wrapper.style.opacity = '1';
-            });
-        } else {
-            // Going from open → closed. Set the explicit current height
-            // first so we have something to transition FROM (auto/none
-            // doesn't transition).
-            const current = inner.scrollHeight;
-            wrapper.style.maxHeight = `${current}px`;
-            wrapper.style.opacity = '1';
-            void wrapper.offsetHeight;
-            requestAnimationFrame(() => {
-                wrapper.style.maxHeight = '0px';
-                wrapper.style.opacity = '0';
-            });
-        }
-    }, [item.open]);
+    useWebDisclosureTransition(item.open, wrapperRef, ACCORDION_ANIM_DURATION_MS);
 
     // Native height + opacity animation. Driven by `useAnimatedNumber`,
     // which dispatches per-property to a static-key reanimated worklet
@@ -556,84 +491,34 @@ export const AccordionContent = ({
                 return;
             }
             const next = e.nativeEvent.layout.height;
-            if (next > 0 && next !== measuredHeight) {
+            // Sub-pixel jitter must not restart the height animation.
+            if (next > 0 && (measuredHeight === null || Math.abs(next - measuredHeight) > 0.5)) {
                 setMeasuredHeight(next);
             }
         },
         [measuredHeight]
     );
 
-    // Native path: always mount the inner so we can measure its natural
-    // height once. Before measurement, we render with `position:
-    // absolute, opacity: 0` so the layout pass runs off-screen and
-    // doesn't affect the surrounding flow (avoids the "flash of fully-
-    // open content" on first paint of an initially-closed item).
-    // After measurement, the outer Animated.View drives height +
-    // opacity together.
+    // Native path. The content is absolutely positioned inside the clipping
+    // wrapper: an absolute child keeps its natural height no matter how tall
+    // the wrapper currently is, so `onLayout` reports the real content
+    // height before the first open, mid-animation, and when the content
+    // grows later. `left`/`right` stretch it to the wrapper's width so
+    // wrapping text measures at the width it is displayed at.
     if (Platform.OS !== 'web') {
-        const animatedWrapperStyle: ViewStyle = {
-            overflow: 'hidden',
-        };
-        // Pre-measurement: render the inner off-screen for one layout
-        // pass. The wrapper claims 0 height in the flow so the next
-        // sibling is positioned correctly until we know the real size.
-        if (measuredHeight === null) {
-            return (
-                <AnimatedView
-                    {...(testID !== undefined ? { testID } : {})}
-                    accessibilityRole="none"
-                    aria-labelledby={item.triggerId}
-                    aria-hidden={!item.open}
-                    style={[animatedWrapperStyle, { height: 0 }]}
-                    className={cn('overflow-hidden', className)}
-                >
-                    <View
-                        onLayout={onInnerLayout}
-                        className={cn('px-4 pt-1 pb-3')}
-                        // Absolute + left/right:0 stretches the measurement
-                        // pass to the parent's full width, so wrapping text
-                        // measures at its REAL natural height. Without
-                        // left/right, Yoga gives an absolute child width 0
-                        // and the measurement collapses to a few pixels.
-                        style={[innerStyle, { position: 'absolute', left: 0, right: 0, opacity: 0 }]}
-                    >
-                        {typeof children === 'string' ? (
-                            <RNText
-                                style={{
-                                    color: colors.semantic.text.muted,
-                                    fontFamily: colors.fontFamily.body,
-                                    fontSize: px(colors.fontSize.sm),
-                                    lineHeight: px(colors.fontSize.sm) * Number(colors.lineHeight.normal),
-                                }}
-                            >
-                                {children}
-                            </RNText>
-                        ) : (
-                            children
-                        )}
-                    </View>
-                </AnimatedView>
-            );
-        }
         return (
             <AnimatedView
                 {...(testID !== undefined ? { testID } : {})}
                 accessibilityRole="none"
                 aria-labelledby={item.triggerId}
                 aria-hidden={!item.open}
-                style={[animatedWrapperStyle, heightAnim as object]}
+                style={[{ overflow: 'hidden' }, measuredHeight === null ? { height: 0 } : (heightAnim as object)]}
                 className={cn('overflow-hidden', className)}
             >
-                <AnimatedView style={opacityAnim as object}>
-                    {/* No `onLayout` on this inner — once we've captured
-                        the natural height in the measurement pass above,
-                        re-measuring here during the animation would see
-                        the CLIPPED height (the parent is mid-transition
-                        between 0 and the target) and clobber
-                        `measuredHeight` with that smaller value, freezing
-                        the open state at one line. Single-shot measurement
-                        is fine for static content; remeasuring on content
-                        change is a follow-up. */}
+                <AnimatedView
+                    onLayout={onInnerLayout}
+                    style={[{ position: 'absolute', left: 0, right: 0, top: 0 }, opacityAnim as object]}
+                >
                     <View className={cn('px-4 pt-1 pb-3')} style={innerStyle}>
                         {typeof children === 'string' ? (
                             <RNText
@@ -668,13 +553,7 @@ export const AccordionContent = ({
             aria-hidden={!item.open}
             className={cn('overflow-hidden', className)}
         >
-            <View
-                ref={(node: unknown) => {
-                    innerRef.current = node as HTMLElement | null;
-                }}
-                className={cn('px-4 pt-1 pb-3')}
-                style={innerStyle}
-            >
+            <View className={cn('px-4 pt-1 pb-3')} style={innerStyle}>
                 {typeof children === 'string' ? (
                     <RNText
                         style={{

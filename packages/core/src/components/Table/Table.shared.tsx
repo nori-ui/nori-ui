@@ -10,7 +10,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
+import { Children, createContext, createElement, useContext } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ export type TableProps = {
     striped?: boolean;
     /** Reduced cell padding for dense layouts. */
     compact?: boolean;
-    /** Draw borders around all cells. */
+    /** Draw borders around all cells (web). On native only the outer border is drawn. */
     bordered?: boolean;
     children?: ReactNode;
     className?: string;
@@ -68,7 +68,7 @@ export type TableContextValue = {
     striped: boolean;
     compact: boolean;
     bordered: boolean;
-    /** Zero-based row index for striped row coloring — incremented per Body row */
+    /** Zero-based position of the row within its `Table.Body`, used for striped coloring. */
     rowIndex: number;
     setRowIndex: (n: number) => void;
 };
@@ -82,6 +82,21 @@ export const TableContext = createContext<TableContextValue>({
 });
 
 export const useTableContext = (): TableContextValue => useContext(TableContext);
+
+/**
+ * Gives each direct child of a `Table.Body` its position, so rows can stripe
+ * themselves. Rows have to be direct children: a fragment or a wrapper
+ * component that renders several rows counts as one position.
+ */
+export function IndexedRows({ children }: { children?: ReactNode }) {
+    const ctx = useTableContext();
+    if (!ctx.striped) {
+        return children;
+    }
+    return Children.map(children, (child, rowIndex) =>
+        createElement(TableContext.Provider, { value: { ...ctx, rowIndex } }, child)
+    );
+}
 
 // ─── Compound builder ─────────────────────────────────────────────────────────
 

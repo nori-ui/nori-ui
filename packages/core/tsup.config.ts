@@ -50,6 +50,11 @@ export default defineConfig({
         'animation/animated-view.web': 'src/animation/animated-view.web.ts',
     },
     format: ['esm', 'cjs'],
+    // Split the CJS build too (tsup only splits ESM by default). Without it
+    // every CJS entry inlines its own copy of the theme and i18n contexts, so
+    // a `NoriProvider` required from `/client` never reaches a `Button`
+    // required from the root entry.
+    splitting: true,
     tsconfig: './tsconfig.build.json',
     // Declarations are emitted separately via `tsc -p tsconfig.dts.json`
     // (see the package `build` script). tsup's rollup-plugin-dts bundles the
@@ -62,9 +67,7 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     target: 'es2022',
-    // @nori-ui/tokens is private and bundled into the dist so consumers only
-    // install one package. React / React DOM / React Native stay external as
-    // peer deps. NativeWind + react-native-css-interop are also external —
+    // React / React DOM / React Native stay external as peer deps. NativeWind + react-native-css-interop are also external —
     // they're peer deps that the consumer already has installed for their own
     // NativeWind setup.
     // `sonner` is a runtime dep but stays external so the consumer's
@@ -98,6 +101,11 @@ export default defineConfig({
         // Toast component. Optional peer; keep external so consumer's
         // Metro bundles whichever copy they have installed.
         'sonner-native',
+        // Optional peer used by FloatButton to read the device insets. It
+        // must stay external: an inlined copy would create its own
+        // `SafeAreaInsetsContext`, which the consumer's `<SafeAreaProvider>`
+        // never fills, so the insets would always read as zero.
+        'react-native-safe-area-context',
     ],
     // Route JSX through NativeWind's runtime so className on RN primitives
     // reaches react-native-css-interop → style instead of being swallowed by

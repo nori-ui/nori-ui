@@ -1,6 +1,6 @@
 ---
 title: Getting started
-description: Install and render your first component in under five minutes.
+description: Install @nori-ui/core, configure NativeWind and Tailwind, and render your first component in an Expo app or a Next.js app.
 since: 0.1.0
 tags: [install, setup]
 platform: both
@@ -8,52 +8,323 @@ platform: both
 
 import { Install } from '@/components/install';
 
-## Install
+`@nori-ui/core` is one package for both platforms. It is styled with [NativeWind v4](https://www.nativewind.dev) (Tailwind CSS 3.4) and animated with Reanimated 4, so both have to be configured in your app. This page has one complete walkthrough per target:
 
-<Install packages="@nori-ui/core" />
+- [Expo (iOS and Android)](#expo-ios-and-android)
+- [Next.js (web)](#nextjs-web)
 
-Optional — any icon library works; Lucide is recommended:
+Supported versions: Expo SDK 55, React Native 0.83, React 19, NativeWind 4.2 or newer, Tailwind CSS 3.4 (NativeWind v4 does not support Tailwind CSS 4).
 
-<Install packages={['lucide-react', 'lucide-react-native']} />
+## Peer dependencies
 
-## Tailwind preset
+`@nori-ui/core` does not bundle its styling and animation runtime. These are the peer dependencies declared in its `package.json`:
 
-Add the `@nori-ui/tokens` preset to your `tailwind.config.ts`. The example below targets a Next.js App Router project; adjust the `content` globs to match your file layout.
+| Package | Declared as | When you need it |
+|---|---|---|
+| `react` (`^19`) | required | Always. |
+| `nativewind` (`^4.2.0`) | required | Always. |
+| `react-native-css-interop` (`>=0.2.3`) | required | Always. |
+| `react-native-reanimated` (`>=4.3.0`) | required | Always. On Next.js it is installed but aliased to a small stub (see below). |
+| `react-native-worklets` (`>=0.8.0`) | required | Always. Reanimated 4 depends on it. |
+| `react-native` (`^0.83`) | optional | Native apps. |
+| `react-dom` (`^19`) | optional | Web apps. |
+| `react-native-safe-area-context` (`>=4`) | optional | Install it on both platforms. `FloatButton` imports it statically, and `FloatButton` is reachable from the package entry, so bundlers resolve it even if you never render a `FloatButton`. |
+| `expo-blur` (`>=14`) | optional | Install it in every native app. The native `Dialog` blur backdrop imports it statically, and that file is reachable from the package entry. |
+| `sonner-native` (`>=0.20`) | optional | Install it in every native app. The native `Toast` bridge imports it statically, and that file is reachable from the package entry. `sonner-native` has its own peers: `react-native-gesture-handler`, `react-native-screens`, `react-native-svg`. |
+| `@marceloterreiro/flash-calendar` (`^1`) | optional | Only when you render `<Calendar behavior="scroll">` on native. It is loaded lazily. |
 
-```ts
-import type { Config } from 'tailwindcss';
-import noriPreset from '@nori-ui/tokens/tailwind-preset';
+"Optional" describes how the package manager treats a missing package. It does not mean the app builds without it: on native, Metro fails with an unresolved-module error if `expo-blur` or `sonner-native` is missing.
 
-export default {
-    presets: [noriPreset],
-    content: ['./app/**/*.{ts,tsx,mdx}', './components/**/*.{ts,tsx}'],
-} satisfies Config;
+## Expo (iOS and Android)
+
+### 1. Install
+
+The library and its JavaScript dependencies:
+
+<Install packages={['@nori-ui/core', 'nativewind', 'react-native-css-interop', 'sonner-native', 'react-native-reanimated@~4.3.0', 'react-native-worklets@^0.8.1']} />
+
+The native modules, installed through Expo so the versions match your SDK:
+
+```bash
+npx expo install expo-blur react-native-safe-area-context react-native-gesture-handler react-native-screens react-native-svg
 ```
 
-## Provider
+Tailwind CSS 3.4 as a dev dependency:
 
-The library renders with sensible defaults out of the box, so the provider is optional. Wrap your app once if you want to customize theme, i18n, or semantic icons.
+<Install packages="tailwindcss@^3.4" dev />
+
+Expo SDK 55 pins `react-native-reanimated` to 4.2 and `react-native-worklets` to 0.7. `@nori-ui/core` requires Reanimated 4.3 and Worklets 0.8 or newer, which is why the first command installs them with an explicit version instead of through `npx expo install`. `npx expo install --check` and `npx expo-doctor` report these two packages as mismatched; that report is expected.
+
+These packages contain native code. After installing them, rebuild your development build (`npx expo run:ios` or `npx expo run:android`).
+
+### 2. Tailwind config
+
+Create `tailwind.config.js` in the project root. `content` must include the library, so that Tailwind generates the classes the components use. Metro loads `@nori-ui/core` from its `src` folder; the `dist` glob covers the entry points that resolve to the compiled build.
+
+```js
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+    presets: [require('@nori-ui/core/tailwind-preset'), require('nativewind/preset')],
+    content: [
+        './App.{ts,tsx}',
+        './app/**/*.{ts,tsx}',
+        './components/**/*.{ts,tsx}',
+        './node_modules/@nori-ui/core/src/**/*.{ts,tsx}',
+        './node_modules/@nori-ui/core/dist/**/*.{js,cjs}',
+    ],
+};
+```
+
+Adjust the first three globs to your own file layout. In a monorepo where dependencies are hoisted, point the two `node_modules` globs at the hoisted location (for example `../../node_modules/@nori-ui/core/...`).
+
+### 3. Global CSS
+
+Create `global.css` in the project root:
+
+```css
+/* global.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### 4. Babel config
+
+Create `babel.config.js` in the project root:
+
+```js
+// babel.config.js
+module.exports = (api) => {
+    api.cache(true);
+    return {
+        presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
+    };
+};
+```
+
+You do not need to add `react-native-worklets/plugin` yourself, and you do not need a Babel `overrides` block for `node_modules/@nori-ui/core`. `babel-preset-expo` adds the Worklets plugin when `react-native-worklets` is installed, `nativewind/babel` includes it as well, and Metro applies your project Babel config to every file it bundles, including the library source.
+
+### 5. Metro config
+
+Create `metro.config.js` in the project root:
+
+```js
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
+
+const config = getDefaultConfig(__dirname);
+
+module.exports = withNativeWind(config, { input: './global.css' });
+```
+
+Metro must honor `package.json` `exports` to find the library entry points. This is the default (`resolver.unstable_enablePackageExports: true`); do not turn it off.
+
+### 6. TypeScript
+
+Create `nativewind-env.d.ts` in the project root so `className` is typed on React Native components:
+
+```ts
+// nativewind-env.d.ts
+/// <reference types="nativewind/types" />
+```
+
+### 7. Render a component
+
+Import `global.css` once, in your root component:
 
 ```tsx
-'use client';
-import { Button } from '@nori-ui/core';
+// App.tsx
+import './global.css';
+
+import { Button, VStack } from '@nori-ui/core';
 import { NoriProvider } from '@nori-ui/core/client';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 export default function App() {
     return (
-        <NoriProvider>
-            <Button>Hello from nori-ui</Button>
-        </NoriProvider>
+        <SafeAreaProvider>
+            <NoriProvider>
+                <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
+                    <VStack gap={3}>
+                        <Button>Primary</Button>
+                        <Button variant="secondary">Secondary</Button>
+                    </VStack>
+                </SafeAreaView>
+            </NoriProvider>
+        </SafeAreaProvider>
     );
 }
 ```
 
-## First component
+With Expo Router, put the `import './global.css';` line and the providers in `app/_layout.tsx` instead.
+
+Start the bundler with a clean cache after changing Babel, Metro, or Tailwind config:
+
+```bash
+npx expo start --clear
+```
+
+## Next.js (web)
+
+This setup is the one the nori-ui documentation site runs on: Next.js 15 App Router with webpack. It has not been verified with Turbopack.
+
+### 1. Install
+
+<Install packages={['@nori-ui/core', 'nativewind', 'react-native-css-interop', 'react-native-reanimated', 'react-native-worklets', 'react-native-web', 'react-native-safe-area-context']} />
+
+<Install packages={['tailwindcss@^3.4', 'postcss', 'autoprefixer']} dev />
+
+### 2. Tailwind and PostCSS config
+
+```js
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+    presets: [require('@nori-ui/core/tailwind-preset'), require('nativewind/preset')],
+    content: [
+        './app/**/*.{ts,tsx,mdx}',
+        './components/**/*.{ts,tsx}',
+        './node_modules/@nori-ui/core/dist/**/*.{js,cjs}',
+        './node_modules/@nori-ui/core/src/**/*.{ts,tsx}',
+    ],
+};
+```
+
+The preset is a CommonJS module. In a TypeScript or ESM Tailwind config, `import noriPreset from '@nori-ui/core/tailwind-preset';` works too.
+
+```js
+// postcss.config.cjs
+module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
+```
+
+### 3. Global CSS
+
+```css
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+The design tokens are also available as CSS custom properties (for example `--color-primary-600`) in `@nori-ui/core/theme.css`. The components do not need that file; import it only if you want to use the variables in your own CSS.
+
+### 4. Next.js config
+
+React Native packages have to be transpiled by Next.js, `react-native` has to resolve to `react-native-web`, and two native-only modules have to be replaced with stubs.
+
+```js
+// next.config.mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    transpilePackages: ['@nori-ui/core', 'nativewind', 'react-native-css-interop', 'react-native-web'],
+    webpack: (config) => {
+        config.resolve.alias = {
+            ...(config.resolve.alias ?? {}),
+            'react-native$': 'react-native-web',
+            'react-native/Libraries/Utilities/codegenNativeComponent$': new URL(
+                './lib/codegen-noop.js',
+                import.meta.url
+            ).pathname,
+            'react-native-reanimated$': new URL('./lib/reanimated-noop.js', import.meta.url).pathname,
+        };
+        return config;
+    },
+};
+
+export default nextConfig;
+```
+
+Create the two stub files the config points at.
+
+`react-native-reanimated` imports React Native internals that webpack cannot resolve. On web the library animates with CSS transitions and never calls a Reanimated API, so a stub is enough:
+
+```js
+// lib/reanimated-noop.js
+import { View } from 'react-native';
+
+const noopHook = (initial) => ({ value: initial });
+const noopFactory = (factory) => (typeof factory === 'function' ? factory() : factory);
+const passthrough = (target) => target;
+
+export const useSharedValue = noopHook;
+export const useAnimatedStyle = noopFactory;
+export const withTiming = passthrough;
+export const withSpring = passthrough;
+export const Easing = {
+    bezier: () => (t) => t,
+    in: (fn) => fn,
+    out: (fn) => fn,
+    inOut: (fn) => fn,
+    ease: (t) => t,
+    linear: (t) => t,
+};
+
+const Animated = {
+    View,
+    Text: View,
+    ScrollView: View,
+    createAnimatedComponent: (component) => component,
+};
+
+export default Animated;
+```
+
+`codegenNativeComponent` only exists on native:
+
+```js
+// lib/codegen-noop.js
+import { forwardRef } from 'react';
+
+const Noop = forwardRef(function Noop() {
+    return null;
+});
+Noop.displayName = 'NativeComponentNoop';
+
+export default function codegenNativeComponent() {
+    return Noop;
+}
+```
+
+### 5. TypeScript
+
+Set the JSX import source in `tsconfig.json` so `className` on React Native components goes through NativeWind:
+
+```json
+{
+    "compilerOptions": {
+        "jsxImportSource": "nativewind"
+    }
+}
+```
+
+Merge this into the `compilerOptions` that `create-next-app` generated; keep the other options.
+
+### 6. Render a component
+
+Components imported from `@nori-ui/core` are safe to render in Server Components. Import the global CSS in the root layout:
 
 ```tsx
+// app/layout.tsx
+import './globals.css';
+
+import type { ReactNode } from 'react';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+    return (
+        <html lang="en">
+            <body>{children}</body>
+        </html>
+    );
+}
+```
+
+```tsx
+// app/page.tsx
 import { Button, VStack } from '@nori-ui/core';
 
-export default function Demo() {
+export default function Page() {
     return (
         <VStack gap={3}>
             <Button>Primary</Button>
@@ -63,4 +334,79 @@ export default function Demo() {
 }
 ```
 
-To browse all components interactively — live controls, variant switcher, a11y panel — open [Storybook](/storybook).
+Dark mode on web follows the root element: the components render their dark palette when `<html>` has `class="dark"` or `data-theme="dark"`.
+
+## Two entry points
+
+| Import from | Contains | `'use client'` needed in your file |
+|---|---|---|
+| `@nori-ui/core` | Components, `Icon`, `cn`, `Slot`, `composeRefs`, the `theme` / `themeDark` token objects, i18n types and `resolveI18n`. | No. |
+| `@nori-ui/core/client` | Everything above, plus `NoriProvider`, `ThemeProvider`, `I18nProvider`, `LocaleProvider`, `SemanticIconsProvider`, the preset themes, and the hooks `useTheme`, `useThemeColors`, `useColorScheme`, `useTranslation`, `useLocale`, `useSemanticIcon`. | Yes, in Next.js, in any file that calls a hook or renders a provider. |
+
+In an Expo app there are no Server Components, so `'use client'` is not needed anywhere.
+
+## Provider
+
+The provider is optional. Every context has a default value, so components and hooks work without it: default (teal) theme, built-in English strings, the runtime locale, and the default icons. Add `<NoriProvider>` once near the root when you want to change the theme, the translations, the locale, the semantic icons, or to force a color scheme.
+
+In Next.js, put it in a client component:
+
+```tsx
+// app/providers.tsx
+'use client';
+
+import { blueTheme, NoriProvider } from '@nori-ui/core/client';
+import type { ReactNode } from 'react';
+
+export function Providers({ children }: { children: ReactNode }) {
+    return (
+        <NoriProvider theme={blueTheme} locale="en-US">
+            {children}
+        </NoriProvider>
+    );
+}
+```
+
+```tsx
+// app/layout.tsx
+import './globals.css';
+
+import type { ReactNode } from 'react';
+import { Providers } from './providers';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+    return (
+        <html lang="en">
+            <body>
+                <Providers>{children}</Providers>
+            </body>
+        </html>
+    );
+}
+```
+
+`NoriProvider` props, all optional:
+
+| Prop | Type | Effect |
+|---|---|---|
+| `theme` | `NoriTheme \| Theme` | Theme for descendants. See [Theming](/docs/theming). |
+| `colorScheme` | `'light' \| 'dark'` | Forces a color scheme. Omit it to follow the OS (native) or the `<html>` `dark` class (web). |
+| `i18n` | `Dictionary \| TranslateFn` | Overrides for the built-in strings. See [`useTranslation`](/docs/hooks/use-translation). |
+| `locale` | `string \| Intl.Locale` | BCP 47 locale for locale-aware components. Defaults to the runtime locale. |
+| `icons` | `Partial<SemanticIcons>` | Replaces individual built-in icons. |
+
+Providers can be nested. A nested `<NoriProvider>` inherits `theme`, `i18n`, `locale`, and `icons` from its parent for every prop it does not set.
+
+## Icons
+
+Any icon library works. Lucide is the one the documentation uses:
+
+<Install packages={['lucide-react', 'lucide-react-native']} />
+
+Install `lucide-react` for web and `lucide-react-native` for native.
+
+## Next steps
+
+- [Theming](/docs/theming): presets and custom themes.
+- [Hooks](/docs/hooks): `useTranslation`, `useThemeColors`, `usePagination`.
+- [Storybook](/storybook): every component with live controls.

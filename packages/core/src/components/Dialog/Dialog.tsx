@@ -14,12 +14,23 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Modal, Platform, Pressable, Text as RNText, StyleSheet, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { defaultSemanticIcons } from '../../icons/default-semantic-icons';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useColorScheme } from '../../theme/use-color-scheme';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { useEscapeLayer } from '../../utils/overlay-layer-stack';
+import {
+    hasTextContent,
+    slotPressProps,
+    slotTestIdProps,
+    useOverlayLabels,
+    useOverlayOpenState,
+    useRegisterOverlayLabel,
+} from '../../utils/overlay-utils';
+import { ButtonGroupContext } from '../ButtonGroup/button-group-context';
 import { BlurBackdrop } from './blur-backdrop';
 
 type DialogContextValue = {
@@ -27,6 +38,10 @@ type DialogContextValue = {
     setOpen: (next: boolean) => void;
     titleId: string;
     descriptionId: string;
+    hasTitle: boolean;
+    hasDescription: boolean;
+    registerTitle: () => () => void;
+    registerDescription: () => () => void;
     triggerRef: { current: HTMLElement | null };
 };
 
@@ -66,19 +81,8 @@ export type DialogProps = {
  * top via the platform check inside `DialogContent`.
  */
 const DialogRoot = ({ open, defaultOpen = false, onOpenChange, children }: DialogProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
+    const labels = useOverlayLabels();
 
     const baseId = useId();
     const triggerRef = useRef<HTMLElement | null>(null);
@@ -88,6 +92,7 @@ const DialogRoot = ({ open, defaultOpen = false, onOpenChange, children }: Dialo
         setOpen,
         titleId: `${baseId}-title`,
         descriptionId: `${baseId}-description`,
+        ...labels,
         triggerRef,
     };
 
@@ -112,22 +117,15 @@ export const DialogTrigger = ({ asChild = true, children, className, testID }: D
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        // Pass both onClick (web HTML buttons) AND onPress (RN Pressable /
-        // our own Button) so the trigger fires regardless of which event
-        // model the wrapped child speaks. The child's existing handler
-        // runs first, then we open.
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            ctx.setOpen(true);
-        };
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     ctx.triggerRef.current = node;
                 }}
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, onPress)}
+                aria-haspopup="dialog"
+                aria-expanded={ctx.open}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -141,6 +139,10 @@ export const DialogTrigger = ({ asChild = true, children, className, testID }: D
                 ctx.triggerRef.current = node as unknown as HTMLElement | null;
             }}
             onPress={onPress}
+            role="button"
+            accessibilityRole="button"
+            {...({ 'aria-haspopup': 'dialog' } as Record<string, unknown>)}
+            aria-expanded={ctx.open}
             {...(testID !== undefined ? { testID } : {})}
             {...(className !== undefined ? { className } : {})}
         >
@@ -220,14 +222,21 @@ export type DialogContentProps = {
     children?: ReactNode;
     className?: string;
     testID?: string;
+    /** Accessible name when the dialog has no `Dialog.Title`. */
+    'aria-label'?: string;
 };
+
+// Fills the overlay container behind the dialog surface. A sibling of the
+// surface (not its parent) so hiding it from assistive tech does not hide
+// the dialog itself.
+const SCRIM_FILL: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
 
 /**
  * The visible dialog surface — overlay + centered card. Renders only when
  * the parent `Dialog` is open. On web: traps focus inside, locks body
  * scroll, and dismisses on Escape or overlay click.
  */
-export const DialogContent = ({ children, className, testID }: DialogContentProps) => {
+export const DialogContent = ({ children, className, testID, 'aria-label': ariaLabel }: DialogContentProps) => {
     const ctx = useDialogContext('DialogContent');
     const colors = useThemeColors();
     const scheme = useColorScheme();
@@ -310,7 +319,18 @@ export const DialogContent = ({ children, className, testID }: DialogContentProp
         }
     }, [entered]);
 
-    // Web-only side effects: focus trap, scroll lock, Escape close,
+    useEscapeLayer(ctx.open, () => ctx.setOpen(false));
+
+    // Modal's close request is the Android hardware back button. On web,
+    // react-native-web's Modal also raises it on Escape keyup, which would
+    // close this layer even when an overlay above it just handled the key.
+    const requestClose = useCallback(() => {
+        if (Platform.OS !== 'web') {
+            ctx.setOpen(false);
+        }
+    }, [ctx]);
+
+    // Web-only side effects: focus trap, scroll lock,
     // initial focus on the first focusable inside the dialog. RN Modal
     // handles its own focus model on native, so the platform check keeps
     // these out of the native render path.
@@ -352,11 +372,6 @@ export const DialogContent = ({ children, className, testID }: DialogContentProp
         focusFirst();
 
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                ctx.setOpen(false);
-                return;
-            }
             if (event.key !== 'Tab') {
                 return;
             }
@@ -397,59 +412,75 @@ export const DialogContent = ({ children, className, testID }: DialogContentProp
             const restoreTo = ctx.triggerRef.current ?? previouslyFocused;
             restoreTo?.focus?.();
         };
-    }, [ctx.open, ctx.setOpen, ctx.triggerRef]);
+    }, [ctx.open, ctx.triggerRef]);
 
     const onOverlayPress = useCallback(() => ctx.setOpen(false), [ctx]);
 
     return (
-        <Modal
-            visible={ctx.open}
-            transparent
-            // Web: 'none' so RN's built-in fade doesn't fight our own
-            // overlay/content transitions (its layer-level fade caused
-            // backdrop-filter to "snap in" at the end). Native: 'fade'
-            // is what users expect on iOS/Android and we don't have a
-            // CSS transition path there anyway.
-            animationType={Platform.OS === 'web' ? 'none' : 'fade'}
-            onRequestClose={() => ctx.setOpen(false)}
-        >
-            {/* Native blur layer. Renders nothing on web (the overlay's
-                CSS backdrop-filter handles it) and renders nothing if
-                expo-blur isn't installed (graceful degrade — the scrim
-                Pressable below still dims the background). */}
-            <BlurBackdrop intensity={60} tint={scheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-            <Pressable
-                accessibilityRole="none"
-                aria-hidden={true}
-                ref={(node) => {
-                    overlayDomRef.current = node as unknown as HTMLElement | null;
-                }}
-                style={overlayStyle}
-                onPress={onOverlayPress}
+        // A surface is its own visual context: buttons inside it must not pick
+        // up the size and joined corners of a ButtonGroup that happens to
+        // contain the trigger.
+        <ButtonGroupContext.Provider value={null}>
+            <Modal
+                visible={ctx.open}
+                transparent
+                // Web: 'none' so RN's built-in fade doesn't fight our own
+                // overlay/content transitions (its layer-level fade caused
+                // backdrop-filter to "snap in" at the end). Native: 'fade'
+                // is what users expect on iOS/Android and we don't have a
+                // CSS transition path there anyway.
+                animationType={Platform.OS === 'web' ? 'none' : 'fade'}
+                onRequestClose={requestClose}
             >
-                <Pressable
-                    onPress={(event) => event.stopPropagation?.()}
-                    ref={(node) => {
-                        contentRef.current = node as unknown as HTMLDivElement | null;
-                    }}
-                    role="dialog"
-                    accessibilityRole="none"
-                    aria-modal={true}
-                    aria-labelledby={ctx.titleId}
-                    aria-describedby={ctx.descriptionId}
-                    {...(testID !== undefined ? { testID } : {})}
-                    className={cn('w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3', className)}
-                    style={[contentStyle, { backgroundColor: colors.semantic.background.elevated }, enterStyle]}
-                >
+                {/* Native blur layer. Renders nothing on web (the overlay's
+                CSS backdrop-filter handles it) and renders nothing if
+                expo-blur isn't installed (graceful degrade). */}
+                <BlurBackdrop
+                    intensity={60}
+                    tint={scheme === 'dark' ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                />
+                <View style={overlayStyle}>
+                    <Pressable
+                        accessibilityRole="none"
+                        aria-hidden={true}
+                        tabIndex={-1}
+                        ref={(node) => {
+                            overlayDomRef.current = node as unknown as HTMLElement | null;
+                        }}
+                        style={SCRIM_FILL}
+                        onPress={onOverlayPress}
+                    />
+                    {/* A View, not a Pressable: a Pressable is one accessibility
+                    element on iOS, which would collapse the title, text and
+                    buttons inside into a single unreadable node. */}
                     <View
-                        className="flex-col gap-1.5"
-                        style={{ flexDirection: 'column', gap: px(colors.spacing['2']) - 2 }}
+                        ref={(node) => {
+                            contentRef.current = node as unknown as HTMLDivElement | null;
+                        }}
+                        role="dialog"
+                        accessibilityRole="none"
+                        aria-modal={true}
+                        {...(ariaLabel !== undefined ? { 'aria-label': ariaLabel } : {})}
+                        {...(ctx.hasTitle && ariaLabel === undefined ? { 'aria-labelledby': ctx.titleId } : {})}
+                        {...(ctx.hasDescription ? { 'aria-describedby': ctx.descriptionId } : {})}
+                        {...(testID !== undefined ? { testID } : {})}
+                        className={cn(
+                            'w-full max-w-md rounded-xl bg-semantic-background-elevated p-6 gap-3',
+                            className
+                        )}
+                        style={[contentStyle, { backgroundColor: colors.semantic.background.elevated }, enterStyle]}
                     >
-                        {children}
+                        <View
+                            className="flex-col gap-1.5"
+                            style={{ flexDirection: 'column', gap: px(colors.spacing['2']) - 2 }}
+                        >
+                            {children}
+                        </View>
                     </View>
-                </Pressable>
-            </Pressable>
-        </Modal>
+                </View>
+            </Modal>
+        </ButtonGroupContext.Provider>
     );
 };
 
@@ -462,6 +493,7 @@ export type DialogTextProps = {
 export const DialogTitle = ({ children, className }: DialogTextProps) => {
     const ctx = useDialogContext('DialogTitle');
     const colors = useThemeColors();
+    useRegisterOverlayLabel(ctx.registerTitle);
     return (
         <RNText
             nativeID={ctx.titleId}
@@ -485,6 +517,7 @@ export const DialogTitle = ({ children, className }: DialogTextProps) => {
 export const DialogDescription = ({ children, className }: DialogTextProps) => {
     const ctx = useDialogContext('DialogDescription');
     const colors = useThemeColors();
+    useRegisterOverlayLabel(ctx.registerDescription);
     return (
         <RNText
             nativeID={ctx.descriptionId}
@@ -508,6 +541,10 @@ export type DialogCloseProps = {
     children?: ReactNode;
     className?: string;
     testID?: string;
+    /**
+     * Accessible name. Defaults to the translated "Close" when the button has
+     * no text of its own (icon-only); visible text is used as the name otherwise.
+     */
     accessibilityLabel?: string;
 };
 
@@ -516,31 +553,19 @@ export type DialogCloseProps = {
  * wraps the child. Without `asChild`, renders a default ✕ button — useful
  * for the canonical top-right corner close.
  */
-export const DialogClose = ({
-    asChild = true,
-    children,
-    className,
-    testID,
-    accessibilityLabel = 'Close',
-}: DialogCloseProps) => {
+export const DialogClose = ({ asChild = true, children, className, testID, accessibilityLabel }: DialogCloseProps) => {
     const ctx = useDialogContext('DialogClose');
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const label = accessibilityLabel ?? t('common.close');
     const onPress = useCallback(() => ctx.setOpen(false), [ctx]);
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        // Same dual-event story as DialogTrigger: pass both onClick (web
-        // button) and onPress (RN Pressable / our own Button) so the
-        // wrapped element fires regardless of its event model.
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            ctx.setOpen(false);
-        };
         return (
             <Slot
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotPressProps(child, onPress)}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -549,13 +574,15 @@ export const DialogClose = ({
     }
 
     if (children !== undefined) {
+        // Visible text is the accessible name; the fallback label would
+        // announce "Close" for a button that reads "Cancel".
+        const needsLabel = accessibilityLabel !== undefined || !hasTextContent(children);
         return (
             <Pressable
                 onPress={onPress}
                 role="button"
                 accessibilityRole="button"
-                accessibilityLabel={accessibilityLabel}
-                aria-label={accessibilityLabel}
+                {...(needsLabel ? { accessibilityLabel: label, 'aria-label': label } : {})}
                 {...(testID !== undefined ? { testID } : {})}
                 {...(className !== undefined ? { className } : {})}
             >
@@ -569,8 +596,8 @@ export const DialogClose = ({
             onPress={onPress}
             role="button"
             accessibilityRole="button"
-            accessibilityLabel={accessibilityLabel}
-            aria-label={accessibilityLabel}
+            accessibilityLabel={label}
+            aria-label={label}
             {...(testID !== undefined ? { testID } : {})}
             className={cn('absolute right-3 top-3 w-8 h-8 items-center justify-center rounded-md', className)}
             style={{

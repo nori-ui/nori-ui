@@ -15,9 +15,16 @@ function formatThemeTypes({ dictionary, options }) {
     const header = `// Generated for ${options.mode} mode.\n// Do not edit — run \`yarn build:tokens\`.\n`;
 
     if (isLight) {
-        return [header, `export const theme = ${themeLiteral} as const;\n`, `export type Theme = typeof theme;\n`].join(
-            '\n'
-        );
+        // `Theme` keeps every token path as a literal key (for autocomplete) but
+        // widens the values, so a custom theme can change `radius.md` from '6px'
+        // to '14px' without a cast. `typeof theme` alone would pin each value to
+        // the literal it had at build time.
+        return [
+            header,
+            `export const theme = ${themeLiteral} as const;\n`,
+            'type Widen<T> = T extends string ? string : T extends number ? number : { readonly [K in keyof T]: Widen<T[K]> };\n',
+            'export type Theme = Widen<typeof theme>;\n',
+        ].join('\n');
     }
     // Dark: emit values only; types come from Theme.
     return [header, `export const themeDark = ${themeLiteral} as const;\n`].join('\n');

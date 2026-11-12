@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { NoriProvider } from '../../../provider';
+import { InputGroup } from '../../InputGroup';
+import { SegmentedControl } from '../../SegmentedControl';
+import { Slider } from '../../Slider';
 import { TextInput } from '../../TextInput';
+import { Toggle } from '../../Toggle';
 import { Field } from '../Field';
 
 const wrap = (ui: React.ReactElement) => render(<NoriProvider>{ui}</NoriProvider>);
@@ -314,5 +318,73 @@ describe('Field.Group (shorthand mode)', () => {
         expect(labelId).toBeTruthy();
         expect(group.getAttribute('aria-labelledby')).toBe(labelId);
         expect(screen.getByLabelText('required')).toBeInTheDocument();
+    });
+});
+
+describe('Field with composite controls', () => {
+    it('names a Slider thumb and links its error', () => {
+        wrap(
+            <Field label="Volume" error="Too loud">
+                <Slider defaultValue={[40]} />
+            </Field>
+        );
+        const thumb = screen.getByRole('slider');
+        expect(thumb.getAttribute('aria-labelledby')).toBe(screen.getByText('Volume').id);
+        expect(thumb.getAttribute('aria-describedby')).toBe(screen.getByText('Too loud').id);
+        expect(thumb.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('names a SegmentedControl and a Toggle.Group', () => {
+        wrap(
+            <>
+                <Field label="View">
+                    <SegmentedControl defaultValue="day" options={[{ value: 'day', label: 'Day' }]} testID="seg" />
+                </Field>
+                <Field label="Format">
+                    <Toggle.Group type="multiple" testID="tg">
+                        <Toggle.Item value="b">B</Toggle.Item>
+                    </Toggle.Group>
+                </Field>
+            </>
+        );
+        expect(screen.getByTestId('seg').getAttribute('aria-labelledby')).toBe(screen.getByText('View').id);
+        expect(screen.getByTestId('tg').getAttribute('aria-labelledby')).toBe(screen.getByText('Format').id);
+    });
+
+    it('wires an InputGroup input to the label, name and error', () => {
+        wrap(
+            <Field id="site" name="site" label="Website" error="Invalid URL" required>
+                <InputGroup>
+                    <InputGroup.Addon>https://</InputGroup.Addon>
+                    <InputGroup.Input testID="in" />
+                </InputGroup>
+            </Field>
+        );
+        const input = screen.getByTestId('in');
+        expect(input.id).toBe('site');
+        expect(input.getAttribute('name')).toBe('site');
+        expect(input.getAttribute('aria-labelledby')).toBe(screen.getByText('Website').id);
+        expect(input.getAttribute('aria-describedby')).toBe(screen.getByText('Invalid URL').id);
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+        expect(input.getAttribute('aria-required')).toBe('true');
+    });
+});
+
+describe('Field compound mode detection', () => {
+    it('recognizes compound parts inside a wrapper element', () => {
+        wrap(
+            <Field>
+                <div>
+                    <Field.Label>Email</Field.Label>
+                    <Field.Description>We never share it.</Field.Description>
+                </div>
+                <Field.Control>
+                    <TextInput testID="email-input" />
+                </Field.Control>
+            </Field>
+        );
+        const input = screen.getByTestId('email-input');
+        expect(input.getAttribute('aria-labelledby')).toBe(screen.getByText('Email').id);
+        expect(input.getAttribute('aria-describedby')).toBe(screen.getByText('We never share it.').id);
     });
 });

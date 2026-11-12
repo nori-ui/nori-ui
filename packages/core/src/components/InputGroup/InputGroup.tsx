@@ -33,6 +33,18 @@ type InputGroupContextValue = {
     disabled: boolean;
     inputRef: React.MutableRefObject<RNTextInputType | null>;
     focusInput: () => void;
+    /** Naming / description props received from `Field.Control`, applied to the input. */
+    fieldProps: InputGroupFieldProps;
+};
+
+type InputGroupFieldProps = {
+    name?: string;
+    accessibilityLabel?: string;
+    'aria-labelledby'?: string;
+    accessibilityLabelledBy?: string;
+    'aria-describedby'?: string;
+    accessibilityDescribedBy?: string;
+    'aria-required'?: boolean;
 };
 
 const InputGroupContext = createContext<InputGroupContextValue | null>(null);
@@ -79,6 +91,27 @@ export type InputGroupProps = {
     className?: string;
     containerClassName?: string;
     testID?: string;
+    /** DOM id / nativeID of the input. Injected by `Field.Control`. */
+    id?: string;
+    /** Form field name for the input (web only). Injected by `Field.Control`. */
+    name?: string;
+    /**
+     * Accessible name for the input. `Field.Control` sets this on iOS, where
+     * `aria-labelledby` has no effect.
+     */
+    accessibilityLabel?: string;
+    /** Id of the element that labels the input. Injected by `Field.Control`. */
+    'aria-labelledby'?: string;
+    /** React Native equivalent of `aria-labelledby`. Injected by `Field.Control`. */
+    accessibilityLabelledBy?: string;
+    /** Ids of the description / error elements. Injected by `Field.Control`. */
+    'aria-describedby'?: string;
+    /** React Native equivalent of `aria-describedby`. Injected by `Field.Control`. */
+    accessibilityDescribedBy?: string;
+    /** Marks the input as invalid. Injected by `Field.Control` when the Field has an error. */
+    'aria-invalid'?: boolean;
+    /** Marks the input as required. Injected by `Field.Control` when the Field is required. */
+    'aria-required'?: boolean;
 };
 
 /**
@@ -107,10 +140,19 @@ const InputGroupRoot = ({
     className,
     containerClassName,
     testID,
+    id,
+    name,
+    accessibilityLabel,
+    'aria-labelledby': ariaLabelledBy,
+    accessibilityLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    accessibilityDescribedBy,
+    'aria-invalid': ariaInvalid,
+    'aria-required': ariaRequired,
 }: InputGroupProps) => {
     const colors = useThemeColors();
     const reactId = useId();
-    const inputId = `nori-ui-input-${reactId}`;
+    const inputId = id ?? `nori-ui-input-${reactId}`;
     const describeId = `${inputId}-describe`;
     const [focused, setFocused] = useState(false);
     const inputRef = useRef<RNTextInputType | null>(null);
@@ -138,7 +180,28 @@ const InputGroupRoot = ({
     const helperText = inputProps.helperText;
     const inputError = inputProps.error;
 
-    const hasError = Boolean(groupErrorProp) || Boolean(inputError);
+    const hasError = Boolean(groupErrorProp) || Boolean(inputError) || Boolean(ariaInvalid);
+
+    const fieldProps = useMemo<InputGroupFieldProps>(
+        () => ({
+            ...(name !== undefined ? { name } : {}),
+            ...(accessibilityLabel !== undefined ? { accessibilityLabel } : {}),
+            ...(ariaLabelledBy !== undefined ? { 'aria-labelledby': ariaLabelledBy } : {}),
+            ...(accessibilityLabelledBy !== undefined ? { accessibilityLabelledBy } : {}),
+            ...(ariaDescribedBy !== undefined ? { 'aria-describedby': ariaDescribedBy } : {}),
+            ...(accessibilityDescribedBy !== undefined ? { accessibilityDescribedBy } : {}),
+            ...(ariaRequired ? { 'aria-required': true } : {}),
+        }),
+        [
+            name,
+            accessibilityLabel,
+            ariaLabelledBy,
+            accessibilityLabelledBy,
+            ariaDescribedBy,
+            accessibilityDescribedBy,
+            ariaRequired,
+        ]
+    );
 
     const ctx = useMemo<InputGroupContextValue>(
         () => ({
@@ -149,8 +212,9 @@ const InputGroupRoot = ({
             disabled,
             inputRef,
             focusInput,
+            fieldProps,
         }),
-        [inputId, describeId, hasError, disabled, focusInput]
+        [inputId, describeId, hasError, disabled, focusInput, fieldProps]
     );
 
     const borderColor = hasError
@@ -411,6 +475,8 @@ export const InputGroupInput = ({
     containerClassName: _containerClassName,
     className,
     testID,
+    name: nameProp,
+    ref,
     ...rest
 }: InputGroupInputProps) => {
     const colors = useThemeColors();
@@ -419,8 +485,12 @@ export const InputGroupInput = ({
     const describeId = ctx.describeId;
     const isDisabled = disabled || ctx.disabled;
     const hasError = Boolean(error) || ctx.hasError;
+    const { name: fieldName, ...fieldA11yProps } = ctx.fieldProps;
+    const name = nameProp ?? fieldName;
 
-    const inputExtras: Record<string, unknown> = {};
+    // Field-provided naming goes first so the input's own label / describedby
+    // below, and anything passed directly on the input, take precedence.
+    const inputExtras: Record<string, unknown> = { ...fieldA11yProps };
     if (testID !== undefined) {
         inputExtras.testID = testID;
     }
@@ -431,7 +501,17 @@ export const InputGroupInput = ({
         inputExtras['aria-invalid'] = true;
     }
     if (error || _helperText) {
-        inputExtras['aria-describedby'] = describeId;
+        const fieldDescribedBy = ctx.fieldProps['aria-describedby'];
+        inputExtras['aria-describedby'] =
+            fieldDescribedBy !== undefined ? `${fieldDescribedBy} ${describeId}` : describeId;
+    }
+    if (isDisabled) {
+        // `editable={false}` alone renders a focusable `readonly` input on
+        // web that is not announced as disabled.
+        inputExtras['aria-disabled'] = true;
+        if (Platform.OS === 'web') {
+            inputExtras.disabled = true;
+        }
     }
     if (multiline !== undefined) {
         inputExtras.multiline = multiline;
@@ -456,6 +536,16 @@ export const InputGroupInput = ({
         <RNTextInput
             ref={(node) => {
                 ctx.inputRef.current = node;
+                // react-native-web's TextInput does not forward `name`, so
+                // on web it is written onto the DOM node for HTML forms.
+                if (Platform.OS === 'web' && node !== null && name !== undefined) {
+                    (node as unknown as Partial<Pick<HTMLElement, 'setAttribute'>>).setAttribute?.('name', name);
+                }
+                if (typeof ref === 'function') {
+                    ref(node);
+                } else if (ref) {
+                    ref.current = node;
+                }
             }}
             nativeID={inputId}
             editable={!isDisabled}

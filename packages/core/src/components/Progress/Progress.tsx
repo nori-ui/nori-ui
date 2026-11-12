@@ -90,8 +90,10 @@ export const Progress = ({
     const ariaLabel = rest['aria-label'];
     const ariaLabelledBy = rest['aria-labelledby'];
 
-    const isIndeterminate = value === undefined;
-    const safeMax = max <= 0 ? 100 : max;
+    // A non-finite value (typically 0 / 0 before a total is known) is unknown
+    // progress, and would otherwise reach the fill width and `aria-valuenow` as NaN.
+    const isIndeterminate = value === undefined || Number.isNaN(value);
+    const safeMax = Number.isFinite(max) && max > 0 ? max : 100;
     const clamped = isIndeterminate ? 0 : Math.min(safeMax, Math.max(0, value));
     const pct = isIndeterminate ? 0 : (clamped / safeMax) * 100;
 

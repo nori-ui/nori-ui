@@ -1,14 +1,8 @@
 'use client';
 
-import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
-import {
-    type NativeSyntheticEvent,
-    Platform,
-    TextInput as RNTextInput,
-    StyleSheet,
-    type TextInputKeyPressEventData,
-    View,
-} from 'react-native';
+import { type ClipboardEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { Platform, TextInput as RNTextInput, StyleSheet, View } from 'react-native';
+import { useTranslation } from '../../i18n/use-translation';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
@@ -38,9 +32,9 @@ export type InputOTPProps = {
     autoFocus?: boolean;
     /** a11y / form id forwarded to the first cell. */
     id?: string;
-    /** Form field name forwarded to hidden input (web). */
+    /** Form field name — rendered as a hidden input carrying the full code (web). */
     name?: string;
-    /** aria-label override. @defaultValue 'One-time code' */
+    /** aria-label override. @defaultValue the `inputOtp.label` translation ('One-time code') */
     'aria-label'?: string;
     /** aria-labelledby for Field.Control wiring. */
     'aria-labelledby'?: string;
@@ -71,6 +65,16 @@ function filterValue(value: string, pattern: InputOTPPattern, length: number): s
         .join('');
 }
 
+/**
+ * The subset of a key event both platforms deliver: react-native-web passes
+ * the DOM keyboard event (modifiers included), native only `nativeEvent.key`.
+ */
+type CellKeyEvent = {
+    type?: string;
+    nativeEvent: { key: string; metaKey?: boolean; ctrlKey?: boolean; altKey?: boolean };
+    preventDefault?: () => void;
+};
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -97,7 +101,7 @@ export const InputOTP = ({
     autoFocus = false,
     id,
     name,
-    'aria-label': ariaLabel = 'One-time code',
+    'aria-label': ariaLabelProp,
     'aria-labelledby': ariaLabelledBy,
     'aria-describedby': ariaDescribedBy,
     'aria-invalid': ariaInvalid,
@@ -105,6 +109,9 @@ export const InputOTP = ({
     testID,
 }: InputOTPProps) => {
     const colors = useThemeColors();
+    const { t } = useTranslation();
+    const ariaLabel = ariaLabelProp ?? t('inputOtp.label');
+    const isWeb = Platform.OS === 'web';
 
     // Internal representation as array of single chars
     const [cells, setCells] = useState<string[]>(() => {
@@ -145,100 +152,116 @@ export const InputOTP = ({
         [onChange, onComplete, length]
     );
 
-    // -------------------------------------------------------------------------
-    // Web: handle paste on the container div
-    // -------------------------------------------------------------------------
-    const onContainerPaste = useCallback(
-        (e: ClipboardEvent<HTMLDivElement>) => {
-            e.preventDefault();
-            const text = e.clipboardData.getData('text/plain') ?? '';
+    /** Replace the whole code with pasted / autofilled text, then focus the next empty cell. */
+    const fillFromText = useCallback(
+        (text: string) => {
             const filtered = filterValue(text, pattern, length);
             const next = Array.from({ length }, (_, i) => filtered[i] ?? '');
             updateCells(next);
-            // Focus the next empty cell or the last
             const nextEmpty = next.indexOf('');
             focusCell(nextEmpty === -1 ? length - 1 : nextEmpty);
         },
         [pattern, length, updateCells, focusCell]
     );
 
-    // -------------------------------------------------------------------------
-    // Native: detect paste by checking if onChangeText receives >1 char
-    // -------------------------------------------------------------------------
-    const handleChangeText = useCallback(
-        (text: string, idx: number) => {
-            // Native paste might deliver all chars at once
-            if (text.length > 1) {
-                const filtered = filterValue(text, pattern, length);
-                const next = Array.from({ length }, (_, i) => filtered[i] ?? '');
-                updateCells(next);
-                const nextEmpty = next.indexOf('');
-                focusCell(nextEmpty === -1 ? length - 1 : nextEmpty);
+    // react-native-web's View does not forward `onPaste`, so there a paste
+    // arrives through `onChangeText` as multi-character text instead. This
+    // handler covers hosts that do forward clipboard events.
+    const onContainerPaste = useCallback(
+        (e: ClipboardEvent<HTMLDivElement>) => {
+            e.preventDefault();
+            if (disabled) {
                 return;
             }
-            const char = text.slice(-1); // last char in case of replacement
-            if (char && !isAllowed(char, pattern)) {
+            fillFromText(e.clipboardData.getData('text/plain') ?? '');
+        },
+        [disabled, fillFromText]
+    );
+
+    const handleChangeText = useCallback(
+        (text: string, idx: number) => {
+            if (disabled) {
+                return;
+            }
+            const previous = cells[idx] ?? '';
+            if (text === previous) {
+                // Retyping the character a cell already holds still advances.
+                if (text !== '') {
+                    focusCell(idx + 1);
+                }
+                return;
+            }
+            let incoming = text;
+            // Typing into a filled cell whose text was not selected yields
+            // "old + new" (or "new + old"); keep only the new character.
+            if (previous !== '' && text.length === 2 && text.includes(previous)) {
+                incoming = text.replace(previous, '') || previous;
+            }
+            // A paste into a filled cell arrives as "old + pasted"; drop the
+            // old character so the pasted code is not shifted by one.
+            if (previous !== '' && incoming.length > 2 && incoming.startsWith(previous)) {
+                incoming = incoming.slice(previous.length);
+            }
+            if (incoming.length > 1) {
+                fillFromText(incoming);
+                return;
+            }
+            if (incoming && !isAllowed(incoming, pattern)) {
                 return;
             }
             const next = [...cells];
-            next[idx] = char;
+            next[idx] = incoming;
             updateCells(next);
-            if (char) {
+            if (incoming) {
                 focusCell(idx + 1);
             }
         },
-        [cells, pattern, length, updateCells, focusCell]
+        [cells, disabled, pattern, updateCells, focusCell, fillFromText]
     );
 
-    // -------------------------------------------------------------------------
-    // Web: onKeyDown per cell (for backspace + web-only arrow navigation)
-    // -------------------------------------------------------------------------
-    const handleWebKeyDown = useCallback(
-        (e: KeyboardEvent<HTMLInputElement>, idx: number) => {
-            if (e.key === 'Backspace') {
-                if (cells[idx] !== '') {
+    const handleKey = useCallback(
+        (e: CellKeyEvent, idx: number) => {
+            // A DOM `keypress` only repeats the `keydown` already handled.
+            if (disabled || e.type === 'keypress') {
+                return;
+            }
+            const { key, metaKey, ctrlKey, altKey } = e.nativeEvent;
+            if (key === 'Backspace') {
+                if (cells[idx] === '') {
+                    focusCell(idx - 1);
+                    e.preventDefault?.();
+                    return;
+                }
+                // Native reports the deletion through `onChangeText('')` as
+                // well; clearing here too would fire `onChange` twice.
+                if (isWeb) {
                     const next = [...cells];
                     next[idx] = '';
                     updateCells(next);
-                } else {
-                    focusCell(idx - 1);
+                    e.preventDefault?.();
                 }
-                e.preventDefault();
-            } else if (e.key === 'ArrowLeft') {
+                return;
+            }
+            if (!isWeb) {
+                return;
+            }
+            if (key === 'ArrowLeft') {
                 focusCell(idx - 1);
-                e.preventDefault();
-            } else if (e.key === 'ArrowRight') {
+                e.preventDefault?.();
+            } else if (key === 'ArrowRight') {
                 focusCell(idx + 1);
-                e.preventDefault();
-            } else if (e.key.length === 1 && isAllowed(e.key, pattern)) {
-                // Let onChangeText handle it, but clear the cell first so
-                // single-char inputs don't accumulate
+                e.preventDefault?.();
+            } else if (key.length === 1 && !metaKey && !ctrlKey && !altKey && isAllowed(key, pattern)) {
+                // Write the key directly so a filled cell is overtyped
+                // instead of accumulating a second character.
                 const next = [...cells];
-                next[idx] = e.key;
+                next[idx] = key;
                 updateCells(next);
                 focusCell(idx + 1);
-                e.preventDefault();
+                e.preventDefault?.();
             }
         },
-        [cells, pattern, focusCell, updateCells]
-    );
-
-    // -------------------------------------------------------------------------
-    // Native: onKeyPress for backspace
-    // -------------------------------------------------------------------------
-    const handleNativeKeyPress = useCallback(
-        (e: NativeSyntheticEvent<TextInputKeyPressEventData>, idx: number) => {
-            if (e.nativeEvent.key === 'Backspace') {
-                if (cells[idx] !== '') {
-                    const next = [...cells];
-                    next[idx] = '';
-                    updateCells(next);
-                } else {
-                    focusCell(idx - 1);
-                }
-            }
-        },
-        [cells, focusCell, updateCells]
+        [cells, disabled, isWeb, pattern, focusCell, updateCells]
     );
 
     // -------------------------------------------------------------------------
@@ -260,11 +283,12 @@ export const InputOTP = ({
         ariaInvalid === true || ariaInvalid === 'true' ? { borderColor: colors.color.danger } : null,
     ];
 
-    const isWeb = Platform.OS === 'web';
-
     // -------------------------------------------------------------------------
     // Render
     // -------------------------------------------------------------------------
+    // Native gets no container label: marking the container `accessible`
+    // would merge all cells into one screen-reader element, so each cell
+    // carries the group label itself.
     const containerProps = isWeb
         ? {
               onPaste: onContainerPaste,
@@ -278,26 +302,28 @@ export const InputOTP = ({
     return (
         <View
             testID={testID}
-            {...(isWeb ? {} : { accessible: true, accessibilityLabel: ariaLabel })}
             {...(containerProps as object)}
             className={cn('flex-row items-center gap-2', className)}
             style={styles.container}
         >
             {Array.from({ length }, (_, idx) => {
                 const cellValue = cells[idx] ?? '';
-                const isFocused = false; // managed by native focus system
+                const cellLabel = t('inputOtp.cellLabel', { index: idx + 1, total: length });
 
                 const cellRef = (el: RNTextInput | null) => {
                     inputRefs.current[idx] = el;
                 };
 
-                // Web cell uses a standard HTML input via RN TextInput
+                const onKey = (e: CellKeyEvent) => handleKey(e, idx);
+
                 const webProps = isWeb
                     ? {
-                          onKeyDown: (e: unknown) => handleWebKeyDown(e as KeyboardEvent<HTMLInputElement>, idx),
+                          // react-native-web's TextInput replaces `onKeyDown`
+                          // with its own handler that calls `onKeyPress`;
+                          // hosts that forward props verbatim use `onKeyDown`.
+                          onKeyDown: onKey,
                           // id only on the first cell
                           ...(idx === 0 && id ? { id, nativeID: id } : {}),
-                          ...(idx === 0 && name ? { name } : {}),
                           ...(idx === 0 && ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : {}),
                           ...(idx === 0 && ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {}),
                           ...(idx === 0 && ariaInvalid !== undefined ? { 'aria-invalid': ariaInvalid } : {}),
@@ -312,8 +338,7 @@ export const InputOTP = ({
                           keyboardType: pattern === 'numeric' ? ('number-pad' as const) : ('default' as const),
                           textAlign: 'center' as const,
                           selectTextOnFocus: true,
-                          onKeyPress: (e: NativeSyntheticEvent<TextInputKeyPressEventData>) =>
-                              handleNativeKeyPress(e, idx),
+                          textContentType: 'oneTimeCode' as const,
                       };
 
                 return (
@@ -322,13 +347,17 @@ export const InputOTP = ({
                         key={idx}
                         ref={cellRef}
                         value={cellValue}
-                        placeholder={isFocused ? '' : placeholder}
-                        maxLength={1}
+                        placeholder={placeholder}
+                        // Room for a whole pasted / autofilled code: a limit
+                        // of 1 truncates it before `onChangeText` sees it.
+                        maxLength={Math.max(length, 2)}
                         editable={!disabled}
                         autoFocus={autoFocus && idx === 0}
+                        autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
                         testID={testID ? `${testID}-cell-${idx}` : undefined}
                         onChangeText={(text) => handleChangeText(text, idx)}
-                        accessibilityLabel={`Digit ${idx + 1} of ${length}`}
+                        onKeyPress={onKey}
+                        accessibilityLabel={isWeb ? cellLabel : `${ariaLabel}, ${cellLabel}`}
                         {...nativeOnlyProps}
                         {...(webProps as object)}
                         style={cellStyle}
@@ -336,16 +365,8 @@ export const InputOTP = ({
                 );
             })}
 
-            {/* Hidden input for form submission on web */}
-            {isWeb && name ? (
-                <RNTextInput
-                    style={styles.hidden}
-                    value={cells.join('')}
-                    aria-hidden
-                    tabIndex={-1}
-                    {...({ name } as object)}
-                />
-            ) : null}
+            {/* react-native-web drops `name` from its primitives, so form submission needs a real input. */}
+            {isWeb && name ? <input type="hidden" name={name} value={cells.join('')} disabled={disabled} /> : null}
         </View>
     );
 };
@@ -366,11 +387,5 @@ const styles = StyleSheet.create({
     },
     disabled: {
         opacity: 0.6,
-    },
-    hidden: {
-        position: 'absolute',
-        width: 0,
-        height: 0,
-        opacity: 0,
     },
 });

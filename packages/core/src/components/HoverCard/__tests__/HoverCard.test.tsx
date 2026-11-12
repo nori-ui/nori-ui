@@ -75,6 +75,32 @@ describe('<HoverCard> web', () => {
         expect(screen.queryByTestId('content')).toBeNull();
     });
 
+    it('anchors the card to the trigger instead of leaving it off-screen', async () => {
+        render(<BasicHoverCard />);
+        fireEvent.mouseEnter(screen.getByTestId('trigger'));
+        await act(async () => {
+            jest.runAllTimers();
+        });
+        // Trigger rect stub: top 100, height 32; the card sits 4px below it.
+        expect(screen.getByTestId('content').style.top).toBe('136px');
+    });
+
+    it('keyboard focus opens the card and blur closes it', async () => {
+        render(<BasicHoverCard />);
+        const trigger = screen.getByTestId('trigger');
+        fireEvent.focus(trigger);
+        await act(async () => {
+            jest.runAllTimers();
+        });
+        expect(screen.getByTestId('content')).toBeInTheDocument();
+
+        fireEvent.blur(trigger);
+        await act(async () => {
+            jest.runAllTimers();
+        });
+        expect(screen.queryByTestId('content')).toBeNull();
+    });
+
     it('trigger has aria-haspopup="dialog"', () => {
         render(<BasicHoverCard />);
         const trigger = screen.getByTestId('trigger');

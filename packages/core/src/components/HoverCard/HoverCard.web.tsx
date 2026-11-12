@@ -10,11 +10,11 @@ import {
     useEffect,
     useId,
     useRef,
-    useState,
 } from 'react';
 import { Slot } from '../../slot';
+import { slotTestIdProps, useOverlayOpenState } from '../../utils/overlay-utils';
 import type { PopoverAlign, PopoverSide } from '../Popover/Popover';
-import { Popover } from '../Popover/Popover';
+import { Popover, usePopoverContext } from '../Popover/Popover';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -73,20 +73,8 @@ const HoverCardRoot = ({
     closeDelay = DEFAULT_CLOSE_DELAY,
     children,
 }: HoverCardProps) => {
-    const [inner, setInner] = useState(defaultOpen);
-    const isControlled = controlledOpen !== undefined;
-    const open = isControlled ? (controlledOpen as boolean) : inner;
+    const [open, setOpen] = useOverlayOpenState({ open: controlledOpen, defaultOpen, onOpenChange });
     const id = useId();
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
 
     const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -165,38 +153,46 @@ export type HoverCardTriggerProps = {
 
 const HoverCardTrigger = ({ asChild = true, children, className, testID }: HoverCardTriggerProps) => {
     const ctx = useHoverCardContext('HoverCard.Trigger');
+    const popover = usePopoverContext('HoverCard.Trigger');
 
-    const handleMouseEnter = useCallback(() => {
+    const handleOpen = useCallback(() => {
         ctx.cancelTimers();
         ctx.requestOpen();
     }, [ctx]);
 
-    const handleMouseLeave = useCallback(() => {
+    const handleClose = useCallback(() => {
         ctx.requestClose();
     }, [ctx]);
 
-    const handlers = {
-        onMouseEnter: handleMouseEnter,
-        onMouseLeave: handleMouseLeave,
+    // The underlying Popover anchors its content to this node; without the
+    // ref it has nothing to measure and the card never leaves its off-screen
+    // start position.
+    const setTriggerNode = useCallback(
+        (node: HTMLElement | null) => {
+            popover.triggerRef.current = node;
+        },
+        [popover.triggerRef]
+    );
+
+    // Focus / blur mirror hover so keyboard users can reach the card. Slot
+    // chains the child's own handlers of the same name.
+    const triggerProps = {
+        onMouseEnter: handleOpen,
+        onMouseLeave: handleClose,
+        onFocus: handleOpen,
+        onBlur: handleClose,
         'aria-haspopup': 'dialog' as const,
         'aria-expanded': ctx.open,
     };
 
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const compose =
-            <T,>(existing: ((e: T) => void) | undefined, next: (e: T) => void) =>
-            (event: T) => {
-                existing?.(event);
-                next(event);
-            };
         return (
             <Slot
-                {...handlers}
-                onMouseEnter={compose(child.props.onMouseEnter as ((e: unknown) => void) | undefined, handleMouseEnter)}
-                onMouseLeave={compose(child.props.onMouseLeave as ((e: unknown) => void) | undefined, handleMouseLeave)}
+                ref={setTriggerNode}
+                {...triggerProps}
                 {...(className !== undefined ? { className } : {})}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotTestIdProps(child, testID)}
             >
                 {child}
             </Slot>
@@ -204,7 +200,12 @@ const HoverCardTrigger = ({ asChild = true, children, className, testID }: Hover
     }
 
     return (
-        <span {...handlers} className={className} {...(testID !== undefined ? { 'data-testid': testID } : {})}>
+        <span
+            ref={setTriggerNode}
+            {...triggerProps}
+            className={className}
+            {...(testID !== undefined ? { 'data-testid': testID } : {})}
+        >
             {children}
         </span>
     );
@@ -243,15 +244,11 @@ const HoverCardContent = ({ side = 'bottom', align = 'start', children, classNam
             {...(className !== undefined ? { className } : {})}
             {...(testID !== undefined ? { testID } : {})}
         >
-            {/* Intercept mouse events on the content surface so hovering
-                over it cancels the close timer. */}
-            <div
-                id={ctx.contentId}
-                role="dialog"
-                aria-label="Hover card"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
+            {/* Hovering the card itself cancels the close timer. The wrapper
+                carries no role: the surrounding Popover.Content already is
+                the dialog. */}
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: hover tracking only, nothing to activate */}
+            <div id={ctx.contentId} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                 {children}
             </div>
         </Popover.Content>

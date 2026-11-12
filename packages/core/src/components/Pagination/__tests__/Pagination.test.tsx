@@ -11,7 +11,7 @@ describe('<Pagination> — shorthand', () => {
 
     it('marks the current page with aria-current="page"', () => {
         render(<Pagination pageCount={5} defaultPage={3} />);
-        const current = screen.getByLabelText('Current page');
+        const current = screen.getByLabelText('Page 3, current page');
         expect(current.getAttribute('aria-current')).toBe('page');
     });
 
@@ -48,7 +48,7 @@ describe('<Pagination> — shorthand', () => {
         }
         render(<Controlled />);
         fireEvent.click(screen.getByLabelText('Go to page 4'));
-        expect(screen.getByLabelText('Current page').textContent).toBe('2');
+        expect(screen.getByLabelText('Page 2, current page').textContent).toBe('2');
     });
 
     it('hides itself when pageCount <= 1 by default', () => {
@@ -71,6 +71,32 @@ describe('<Pagination> — shorthand', () => {
     it('renders the Range display when showRange + itemCount + pageSize are set', () => {
         render(<Pagination pageCount={11} defaultPage={2} showRange itemCount={103} pageSize={10} />);
         expect(screen.getByText('Showing 11–20 of 103')).toBeInTheDocument();
+    });
+
+    it('renders an empty range as 0–0 instead of 1–0', () => {
+        render(<Pagination pageCount={1} hideOnSinglePage={false} showRange itemCount={0} pageSize={10} />);
+        expect(screen.getByText('Showing 0–0 of 0')).toBeInTheDocument();
+    });
+
+    it('renders a single page instead of throwing when pageCount is NaN', () => {
+        render(<Pagination pageCount={Number.NaN} hideOnSinglePage={false} />);
+        expect(screen.getByLabelText('Page 1, current page')).toBeInTheDocument();
+    });
+
+    it('returns to page 1 when the page size changes (uncontrolled)', () => {
+        const onPageChange = jest.fn();
+        render(
+            <Pagination pageCount={10} defaultPage={4} itemCount={100} pageSize={10} onPageChange={onPageChange}>
+                <Pagination.Items />
+                <Pagination.PageSize options={[10, 25]} />
+            </Pagination>
+        );
+        expect(screen.getByLabelText('Page 4, current page')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('combobox'));
+        fireEvent.click(screen.getByText('25'));
+        expect(onPageChange).toHaveBeenCalledTimes(1);
+        expect(onPageChange).toHaveBeenCalledWith(1, { pageSize: 25 });
+        expect(screen.getByLabelText('Page 1, current page')).toBeInTheDocument();
     });
 
     it('uses renderItem for each non-ellipsis item', () => {
@@ -104,7 +130,7 @@ describe('<Pagination> compound mode', () => {
 
     it('marks the current Pagination.Item with aria-current', () => {
         render(<CompoundDemo />);
-        const current = screen.getByLabelText('Current page');
+        const current = screen.getByLabelText('Page 3, current page');
         expect(current.getAttribute('aria-current')).toBe('page');
         expect(current.textContent).toBe('3');
     });
@@ -112,7 +138,7 @@ describe('<Pagination> compound mode', () => {
     it('clicking a compound Item updates the current page in controlled state', () => {
         render(<CompoundDemo />);
         fireEvent.click(screen.getByLabelText('Go to page 10'));
-        expect(screen.getByLabelText('Current page').textContent).toBe('10');
+        expect(screen.getByLabelText('Page 10, current page').textContent).toBe('10');
     });
 
     it('throws a clear error when a compound part is rendered outside Pagination', () => {
@@ -141,7 +167,7 @@ describe('<Pagination> compound mode', () => {
         fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
         // RN-Web doesn't fire onSubmitEditing on key events in jsdom; fall back to onBlur
         fireEvent.blur(input);
-        expect(screen.getByLabelText('Current page').textContent).toBe('12');
+        expect(screen.getByLabelText('Page 12, current page').textContent).toBe('12');
         // input clears after a successful jump
         expect(input.value).toBe('');
     });
@@ -160,7 +186,7 @@ describe('<Pagination> compound mode', () => {
         const input = screen.getByTestId('jumper') as HTMLInputElement;
         fireEvent.change(input, { target: { value: '999' } });
         fireEvent.blur(input);
-        expect(screen.getByLabelText('Current page').textContent).toBe('20');
+        expect(screen.getByLabelText('Page 20, current page').textContent).toBe('20');
     });
 
     it('Pagination.Jumper ignores non-numeric input silently', () => {
@@ -178,7 +204,7 @@ describe('<Pagination> compound mode', () => {
         fireEvent.change(input, { target: { value: 'abc' } });
         fireEvent.blur(input);
         // page unchanged
-        expect(screen.getByLabelText('Current page').textContent).toBe('3');
+        expect(screen.getByLabelText('Page 3, current page').textContent).toBe('3');
     });
 
     it('Pagination.Items renders the auto-computed page list', () => {
@@ -193,7 +219,7 @@ describe('<Pagination> compound mode', () => {
         render(<AutoItems />);
         // Sibling=1, boundary=1 around page 5 of 10 → 1 … 4 [5] 6 … 10
         expect(screen.getByLabelText('Go to page 4')).toBeInTheDocument();
-        expect(screen.getByLabelText('Current page').textContent).toBe('5');
+        expect(screen.getByLabelText('Page 5, current page').textContent).toBe('5');
         expect(screen.getByLabelText('Go to page 6')).toBeInTheDocument();
     });
 });

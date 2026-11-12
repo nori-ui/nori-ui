@@ -1,0 +1,190 @@
+---
+title: Rating
+description: Star rating, as an input or as a read-only display.
+since: 1.12.0
+tags: [input, form, display]
+platform: both
+category: inputs
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="Rating" />
+
+## At a glance
+
+- Interactive by default: a `role="radiogroup"` with one `role="radio"` per selectable value.
+- `readOnly` switches to display mode: one `role="img"` element named "4 out of 5 stars".
+- The value is a number from `0` (no rating) to `max`. Controlled with `value` and `onChange`, or uncontrolled with `defaultValue`.
+- Stars are drawn by the library (inline SVG on web, text glyphs on native). No icon package is required.
+
+## Preview
+
+<Preview name="rating-basic" />
+
+## Usage
+
+### `value`, `defaultValue`, `onChange`
+
+Controlled: pass `value` and update it in `onChange`. Uncontrolled: pass `defaultValue` (default `0`) and read changes from `onChange`. `onChange` receives the new rating as a number.
+
+```tsx
+import { Rating, VStack } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function RatingInputs() {
+    const [value, setValue] = useState(3);
+    return (
+        <VStack gap={3}>
+            <Rating value={value} onChange={setValue} aria-label="Rate this product" />
+            <Rating defaultValue={4} onChange={(next) => console.log(next)} aria-label="Rate the delivery" />
+        </VStack>
+    );
+}
+```
+
+### `max`
+
+Number of stars. Defaults to `5`.
+
+### `allowHalf`
+
+`allowHalf` adds half steps: 0.5, 1, 1.5, and so on. Each star then holds two press targets, one for the half and one for the full star. The stars are spaced further apart in this mode so that each half target is still 24px wide.
+
+### `allowClear`
+
+With `allowClear`, pressing the currently selected rating again resets the value to `0`, and `onChange` fires with `0`. Without it, a rating can be changed but not removed.
+
+```tsx
+import { Rating } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function HalfStarRating() {
+    const [value, setValue] = useState(2.5);
+    return <Rating value={value} onChange={setValue} max={5} allowHalf allowClear aria-label="Rate this recipe" />;
+}
+```
+
+### `readOnly`
+
+Display mode for showing an existing rating, such as an average. It renders one non-interactive element with `role="img"`. Its accessible name is the translated `rating.valueLabel` string (default: `{{value}} out of {{max}} stars`), unless you pass `aria-label`. Fractional values are drawn precisely: `4.3` fills 30% of the fifth star.
+
+```tsx
+import { HStack, Rating, Text } from '@nori-ui/core';
+
+export function AverageRating() {
+    return (
+        <HStack gap={2} align="center">
+            <Rating readOnly value={4.3} size="sm" />
+            <Text variant="body-sm">4.3 (128 reviews)</Text>
+        </HStack>
+    );
+}
+```
+
+### `size`
+
+| Value          | Star size | Press target |
+|----------------|-----------|--------------|
+| `sm`           | 20px      | 24px         |
+| `md` (default) | 24px      | 32px         |
+| `lg`           | 32px      | 40px         |
+
+### `disabled`
+
+`disabled` dims the stars, sets `aria-disabled`, removes the control from the tab order, and blocks every change.
+
+### `icon`, `emptyIcon`, `color`
+
+Replace the star shape with your own icon components. Each receives `size` and `color`.
+
+- `icon` draws the filled part of the scale.
+- `emptyIcon` draws the empty part. When only `icon` is set, the same icon is used in a muted color.
+- `color` sets the color of the filled icons. It defaults to the theme's `semantic.interactive.primary`, which meets the 3:1 contrast minimum for graphics in the built-in themes. If you pass your own color, check that it does too.
+
+```tsx
+import { Rating } from '@nori-ui/core';
+import { Heart, HeartOff } from 'lucide-react-native';
+
+export function HeartRating() {
+    return <Rating defaultValue={3} icon={Heart} emptyIcon={HeartOff} color="#be123c" aria-label="How much do you like it?" />;
+}
+```
+
+### `name`
+
+Form field name. On web, a hidden input with this `name` carries the current value into an enclosing HTML form. Nothing is submitted while the rating is disabled. On native, `name` has no effect.
+
+### `dir`
+
+Reading direction, `ltr` (default) or `rtl`. `rtl` mirrors the stars so the scale starts on the right, and swaps the `ArrowLeft` and `ArrowRight` keys.
+
+```tsx
+import { Rating } from '@nori-ui/core';
+
+export function RtlRating() {
+    return <Rating dir="rtl" defaultValue={2} name="score" aria-label="التقييم" />;
+}
+```
+
+### `style`, `className`, `testID`, `ref`
+
+`style` and `className` apply to the root element and are merged after the built-in styles. `ref` points to the root element. In interactive mode each option gets the test id `${testID}-option-${value}`, for example `rating-option-3`.
+
+## With Field
+
+Inside a [Field](/docs/components/field), the rating takes its label, description, and error state from the field. `Field` injects `id`, `aria-labelledby`, `aria-describedby`, `aria-invalid`, and `aria-required` on web, and `accessibilityLabelledBy` and `accessibilityDescribedBy` on native. On iOS, where `aria-labelledby` has no effect, it passes the label text as `accessibilityLabel`. You can also pass these props, or `nativeID`, yourself when you build your own label wiring.
+
+```tsx
+import { Field, Rating } from '@nori-ui/core';
+import { useState } from 'react';
+
+export function ReviewForm() {
+    const [rating, setRating] = useState(0);
+    return (
+        <Field
+            label="Overall rating"
+            description="Select 1 to 5 stars."
+            error={rating === 0 ? 'Please select a rating.' : null}
+            required
+        >
+            <Rating value={rating} onChange={setRating} name="rating" />
+        </Field>
+    );
+}
+```
+
+## Naming the control
+
+Give every interactive rating a name: wrap it in a `Field`, pass `aria-labelledby` with the id of a visible label, or pass `aria-label`. If none is given, the name falls back to the translated `rating.ariaLabel` string ("Rating").
+
+## Accessibility
+
+Interactive mode uses the radio group pattern instead of a slider. Every value is its own named control ("3 stars"), which screen reader users on touch devices can activate directly; custom sliders are not reliably adjustable with VoiceOver or TalkBack in mobile browsers.
+
+- Root: `role="radiogroup"`. Options: `role="radio"` with `aria-checked`, named "1 star", "2 stars", and so on.
+- Roving tabindex: Tab lands on the selected option, or on the first option when nothing is selected.
+- Every press target is at least 24 by 24px.
+- Filled and empty stars differ in shape (filled versus outlined), not only in color.
+
+| Key                        | Action                                                             |
+|----------------------------|--------------------------------------------------------------------|
+| `ArrowRight` / `ArrowDown` | Select the next value. Wraps from the last to the first.           |
+| `ArrowLeft` / `ArrowUp`    | Select the previous value. Wraps from the first to the last.       |
+| `Home` / `End`             | Select the first / last value.                                     |
+| `Space`                    | Select the focused value, or clear it when `allowClear` is set and it is already selected. |
+
+### Translations
+
+| Key                      | Default                          | Used for                          |
+|--------------------------|----------------------------------|-----------------------------------|
+| `rating.ariaLabel`       | `Rating`                         | Fallback name of the radio group  |
+| `rating.valueLabel`      | `{{value}} out of {{max}} stars` | Name of the `readOnly` element    |
+| `rating.starLabel_one`   | `{{count}} star`                 | Option name when the value is 1   |
+| `rating.starLabel_other` | `{{count}} stars`                | Option name for every other value |
+
+## Props
+
+<PropsTable component="Rating" />

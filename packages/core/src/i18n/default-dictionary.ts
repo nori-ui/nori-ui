@@ -33,7 +33,7 @@ export const defaultDictionary: Dictionary = {
     'pagination.first': 'First page',
     'pagination.last': 'Last page',
     'pagination.ellipsis': 'More pages',
-    'pagination.currentPage': 'Current page',
+    'pagination.currentPage': 'Page {{page}}, current page',
     'pagination.gotoPage': 'Go to page {{page}}',
     'pagination.range': 'Showing {{from}}–{{to}} of {{total}}',
     'pagination.pageOf': 'Page {{page}} of {{total}}',
@@ -43,6 +43,9 @@ export const defaultDictionary: Dictionary = {
 
     // floatButton
     'floatButton.backToTop': 'Back to top',
+
+    // sidebar
+    'sidebar.ariaLabel': 'Sidebar',
 
     // calendar
     'calendar.header.previous': 'Previous month',
@@ -61,6 +64,31 @@ export const defaultDictionary: Dictionary = {
     'input.passwordShow': 'Show password',
     'input.passwordHide': 'Hide password',
 
+    // link
+    'link.opensInNewTab': 'opens in a new tab',
+
+    // numberInput
+    'numberInput.increment': 'Increase value',
+    'numberInput.decrement': 'Decrease value',
+
+    // select / combobox
+    'select.placeholder': 'Select…',
+    'select.searchPlaceholder': 'Search…',
+    'select.searchLabel': 'Search options',
+    'select.noOptions': 'No options',
+    'select.loading': 'Loading…',
+    'select.selectedCount_one': '{{count}} selected',
+    'select.selectedCount_other': '{{count}} selected',
+    'select.clearAll': 'Clear all',
+
+    // inputOtp
+    'inputOtp.label': 'One-time code',
+    'inputOtp.cellLabel': 'Digit {{index}} of {{total}}',
+
+    // command
+    'command.placeholder': 'Type a command or search…',
+    'command.empty': 'No results found.',
+
     // checkbox / switch
     'checkbox.checked': 'Checked',
     'checkbox.unchecked': 'Unchecked',
@@ -71,6 +99,39 @@ export const defaultDictionary: Dictionary = {
     'field.requiredIndicator': '*',
     'field.requiredLabel': 'required',
 
+    // chip
+    'chip.remove': 'Remove {{label}}',
+
+    // stepper
+    'stepper.ariaLabel': 'Progress',
+    'stepper.stepLabel': 'Step {{step}} of {{total}}: {{title}}, {{status}}',
+    'stepper.status.complete': 'completed',
+    'stepper.status.current': 'current',
+    'stepper.status.upcoming': 'upcoming',
+    'stepper.status.error': 'error',
+
+    // rating
+    'rating.ariaLabel': 'Rating',
+    'rating.valueLabel': '{{value}} out of {{max}} stars',
+    'rating.starLabel_one': '{{count}} star',
+    'rating.starLabel_other': '{{count}} stars',
+
     // table / dataTable
     'table.empty': 'No data',
+    'dataTable.sortBy': 'Sort by {{column}}',
+    'dataTable.previousShort': 'Prev',
+    'dataTable.nextShort': 'Next',
+
+    // carousel
+    'carousel.label': 'Carousel',
+    'carousel.previous': 'Previous slide',
+    'carousel.next': 'Next slide',
+    'carousel.dotsLabel': 'Slide navigation',
+    'carousel.goToSlide': 'Go to slide {{index}}',
+
+    // avatar
+    'avatar.label': 'Avatar',
+
+    // alert
+    'alert.dismiss': 'Dismiss',
 };

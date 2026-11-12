@@ -28,12 +28,15 @@ export type Dictionary = Readonly<Record<string, string>>;
  * Keys shipped by the library — augmentable by consumers via module augmentation:
  *
  * ```ts
- * declare module 'nori-ui' {
+ * declare module '@nori-ui/core' {
  *     interface I18nKeys {
  *         'myApp.customLabel': string;
  *     }
  * }
  * ```
+ *
+ * The interface is a registry only: `TranslateFn` accepts any `string` key,
+ * so augmenting it does not narrow or widen what `t()` takes.
  *
  * Plan 05 extends this interface as each component registers its keys.
  */

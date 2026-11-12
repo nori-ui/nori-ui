@@ -129,6 +129,18 @@ The `side` prop controls which edge the sidebar attaches to. Defaults to `'left'
 </Sidebar>
 ```
 
+## Accessible name
+
+The sidebar is a navigation landmark. Its default name is the translated
+string "Sidebar" (`sidebar.ariaLabel`). Pass `ariaLabel` to rename it, for
+example when a page has more than one sidebar:
+
+```tsx
+<Sidebar ariaLabel="Project navigation">
+  {/* ... */}
+</Sidebar>
+```
+
 ## Props
 
 ### Sidebar

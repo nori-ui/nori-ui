@@ -11,6 +11,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { NoriProvider } from '../../../../provider';
+import { Button } from '../../../Button';
 import { Command } from '../../Command';
 
 const wrap = (ui: ReactNode) => <NoriProvider locale="en-US">{ui}</NoriProvider>;
@@ -91,5 +92,24 @@ describe('<Command> native', () => {
 
         expect(getByTestId('item-calculator', H)).toBeTruthy();
         expect(queryByTestId('item-calendar')).toBeNull();
+    });
+
+    it('a <Button> child of Trigger opens the palette', () => {
+        const { getByText, getByTestId } = render(
+            wrap(
+                <Command>
+                    <Command.Trigger>
+                        <Button>Open palette</Button>
+                    </Command.Trigger>
+                    <Command.Dialog>
+                        <Command.Item onSelect={() => {}} testID="item-calendar">
+                            Calendar
+                        </Command.Item>
+                    </Command.Dialog>
+                </Command>
+            )
+        );
+        fireEvent.press(getByText('Open palette'));
+        expect(getByTestId('item-calendar', H)).toBeTruthy();
     });
 });

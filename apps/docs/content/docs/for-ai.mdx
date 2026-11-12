@@ -49,10 +49,14 @@ The CLI speaks the standard MCP stdio transport. Point your client at `npx @nori
 
 ### Tools exposed
 
-- `search_components(query)` — fuzzy search by name, description, or tag.
-- `get_component_docs(name)` — full docs body for one component.
-- `get_component_props(name)` — typed prop list with descriptions and defaults.
-- `list_examples(name)` — runnable code snippets keyed by component.
+All four tools return their result as a JSON string. Names are matched against the page title, case-insensitively.
+
+| Tool | Input | Returns |
+|---|---|---|
+| `search_components` | `{ query: string }` | An array of page summaries (`name`, `description`, `tags`, `since`, `platform`, `url`) for every docs page whose title, description, or tags contain `query`. The match is a case-insensitive substring match. |
+| `get_component_docs` | `{ name: string }` | The page summary plus `body`, the full docs text of that page. `null` if no page has that title. |
+| `get_component_props` | `{ name: string }` | `{ note, url }`. Structured prop extraction is not implemented yet: the tool returns a note saying so and the URL of the docs page. Read the props from the `body` returned by `get_component_docs`. `null` if no page has that title. |
+| `list_examples` | `{ component?: string }` | An array of `{ component, body }`, where `body` is the full docs text of the page (the code examples are part of it). With `component`, only the page with that title; without it, every page. |
 
 <Callout type="info">
 The data corpus is baked into the published `@nori-ui/mcp` package, so the version your agent installs matches the library version it queries — no silent drift between docs and answers.

@@ -47,9 +47,9 @@ jobs:
 
       - name: Verify tokens/build is up to date
         run: |
-          if [[ -n "$(git status --porcelain packages/tokens/build/)" ]]; then
+          if [[ -n "$(git status --porcelain packages/tokens/build/ packages/core/src/theme/generated-tokens.ts)" ]]; then
               echo "::error::tokens/build is stale — commit regenerated outputs."
-              git --no-pager diff packages/tokens/build/
+              git --no-pager diff packages/tokens/build/ packages/core/src/theme/generated-tokens.ts
               exit 1
           fi
 
@@ -78,7 +78,10 @@ jobs:
 
   e2e-web:
     name: playwright (chromium)
-    runs-on: ubuntu-latest
+    # Pinned: `ubuntu-latest` moved to 26.04, which Playwright 1.59 cannot
+    # install Chromium's system dependencies on. Unpin once Playwright is
+    # upgraded to a release that supports it.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     needs: quality
     # playground-web is in a known-broken state during the shadcn-parity push;

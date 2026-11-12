@@ -1,8 +1,8 @@
 'use client';
 
-import type { Theme } from '@nori-ui/tokens';
 import { useContext } from 'react';
 import { ThemeContext } from './context';
+import type { Theme } from './generated-tokens';
 import { useColorScheme } from './use-color-scheme';
 
 /**

@@ -30,7 +30,10 @@ export type LocaleProviderProps = {
 };
 
 export const LocaleProvider = ({ locale, children }: LocaleProviderProps) => {
-    const value = useMemo(() => toTag(locale), [locale]);
+    // Without a `locale` prop a nested provider inherits the surrounding
+    // locale; only the outermost one falls back to runtime detection.
+    const parent = useContext(LocaleContext);
+    const value = useMemo(() => (locale === undefined && parent !== null ? parent : toTag(locale)), [locale, parent]);
     return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 };
 

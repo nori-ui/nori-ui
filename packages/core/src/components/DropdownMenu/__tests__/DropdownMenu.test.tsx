@@ -89,6 +89,17 @@ describe('<DropdownMenu>', () => {
         expect(screen.getByRole('menu')).toBeInTheDocument();
     });
 
+    it('moves focus to the first item on open and back to the trigger on close', () => {
+        render(<BasicMenu />);
+        const trigger = screen.getByRole('button', { name: 'Open Menu' });
+        trigger.focus();
+        fireEvent.click(trigger);
+        expect(document.activeElement).toBe(screen.getByTestId('item-edit'));
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(document.activeElement).toBe(trigger);
+    });
+
     it('Escape closes the menu', () => {
         render(<BasicMenu />);
         fireEvent.click(screen.getByRole('button', { name: 'Open Menu' }));

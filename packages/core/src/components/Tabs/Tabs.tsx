@@ -28,7 +28,13 @@ type TabsContextValue = {
     baseId: string;
     orientation: TabsOrientation;
     activation: TabsActivation;
-    register: (value: string, ref: RefObject<HTMLElement | null>) => void;
+    /**
+     * The tab that takes `tabIndex=0` when the selected tab cannot (nothing
+     * selected yet, or the selection is disabled). `undefined` means the
+     * selected tab is the tab stop.
+     */
+    fallbackTabStop: string | undefined;
+    register: (value: string, ref: RefObject<HTMLElement | null>, disabled: boolean) => void;
     unregister: (value: string) => void;
     moveFocus: (offset: 1 | -1, fromValue: string) => void;
     focusEdge: (edge: 'first' | 'last') => void;
@@ -103,6 +109,27 @@ const TabsRoot = ({
 
     const refs = useRef<Map<string, RefObject<HTMLElement | null>>>(new Map());
     const orderRef = useRef<string[]>([]);
+    const disabledRef = useRef<Set<string>>(new Set());
+    const currentRef = useRef(current);
+    currentRef.current = current;
+    const [fallbackTabStop, setFallbackTabStop] = useState<string | undefined>(undefined);
+
+    // Without a selected, enabled tab every trigger would carry
+    // `tabIndex=-1` and the tablist could not be reached with Tab at all.
+    const syncFallbackTabStop = useCallback(() => {
+        const selected = currentRef.current;
+        const selectedIsTabStop =
+            selected !== undefined && orderRef.current.includes(selected) && !disabledRef.current.has(selected);
+        setFallbackTabStop(selectedIsTabStop ? undefined : orderRef.current.find((v) => !disabledRef.current.has(v)));
+    }, []);
+
+    // Runs after the triggers' own registration effects, so `orderRef` is
+    // already populated on mount. `current` is a dependency because a new
+    // selection changes which trigger is the tab stop.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `current` is read through `currentRef` inside the sync
+    useEffect(() => {
+        syncFallbackTabStop();
+    }, [current, syncFallbackTabStop]);
 
     const setValue = useCallback(
         (next: string) => {
@@ -114,17 +141,31 @@ const TabsRoot = ({
         [isControlled, onChange]
     );
 
-    const register = useCallback((v: string, ref: RefObject<HTMLElement | null>) => {
-        refs.current.set(v, ref);
-        if (!orderRef.current.includes(v)) {
-            orderRef.current.push(v);
-        }
-    }, []);
+    const register = useCallback(
+        (v: string, ref: RefObject<HTMLElement | null>, disabled: boolean) => {
+            refs.current.set(v, ref);
+            if (!orderRef.current.includes(v)) {
+                orderRef.current.push(v);
+            }
+            if (disabled) {
+                disabledRef.current.add(v);
+            } else {
+                disabledRef.current.delete(v);
+            }
+            syncFallbackTabStop();
+        },
+        [syncFallbackTabStop]
+    );
 
-    const unregister = useCallback((v: string) => {
-        refs.current.delete(v);
-        orderRef.current = orderRef.current.filter((x) => x !== v);
-    }, []);
+    const unregister = useCallback(
+        (v: string) => {
+            refs.current.delete(v);
+            disabledRef.current.delete(v);
+            orderRef.current = orderRef.current.filter((x) => x !== v);
+            syncFallbackTabStop();
+        },
+        [syncFallbackTabStop]
+    );
 
     const focusValue = useCallback(
         (next: string) => {
@@ -146,9 +187,13 @@ const TabsRoot = ({
             const idx = order.indexOf(fromValue);
             const start = idx === -1 ? 0 : idx;
             const len = order.length;
-            const next = order[(start + offset + len) % len];
-            if (next) {
-                focusValue(next);
+            // Disabled tabs are skipped, wrapping at the ends.
+            for (let step = 1; step < len; step += 1) {
+                const next = order[(start + offset * step + len * step) % len];
+                if (next !== undefined && !disabledRef.current.has(next)) {
+                    focusValue(next);
+                    return;
+                }
             }
         },
         [focusValue]
@@ -160,8 +205,9 @@ const TabsRoot = ({
             if (order.length === 0) {
                 return;
             }
-            const target = edge === 'first' ? order[0] : order[order.length - 1];
-            if (target) {
+            const enabled = order.filter((v) => !disabledRef.current.has(v));
+            const target = edge === 'first' ? enabled[0] : enabled[enabled.length - 1];
+            if (target !== undefined) {
                 focusValue(target);
             }
         },
@@ -175,12 +221,24 @@ const TabsRoot = ({
             baseId,
             orientation,
             activation,
+            fallbackTabStop,
             register,
             unregister,
             moveFocus,
             focusEdge,
         }),
-        [current, setValue, baseId, orientation, activation, register, unregister, moveFocus, focusEdge]
+        [
+            current,
+            setValue,
+            baseId,
+            orientation,
+            activation,
+            fallbackTabStop,
+            register,
+            unregister,
+            moveFocus,
+            focusEdge,
+        ]
     );
 
     return (
@@ -317,10 +375,16 @@ export const TabsTrigger = ({ value, disabled, children, className, testID }: Ta
     const selected = ctx.value === value;
     const isVertical = ctx.orientation === 'vertical';
 
+    // Registration is keyed on the stable callbacks, not on `ctx`, so a
+    // selection change does not unregister and re-append every trigger.
+    const { register, unregister } = ctx;
+    const isDisabled = disabled === true;
     useEffect(() => {
-        ctx.register(value, ownRef);
-        return () => ctx.unregister(value);
-    }, [ctx, value]);
+        register(value, ownRef, isDisabled);
+    }, [register, value, isDisabled]);
+    useEffect(() => () => unregister(value), [unregister, value]);
+
+    const isTabStop = ctx.fallbackTabStop === undefined ? selected : ctx.fallbackTabStop === value;
 
     const onPress = useCallback(() => {
         if (disabled) {
@@ -380,7 +444,7 @@ export const TabsTrigger = ({ value, disabled, children, className, testID }: Ta
         'aria-selected': selected,
         'aria-controls': `${ctx.baseId}-panel-${value}`,
         id: `${ctx.baseId}-tab-${value}`,
-        tabIndex: selected ? 0 : -1,
+        tabIndex: isTabStop ? 0 : -1,
         onPress,
         onKeyDown: handleKeyDown,
         ...(disabled ? { 'aria-disabled': true, disabled: true } : {}),

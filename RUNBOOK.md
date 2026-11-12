@@ -4,34 +4,45 @@ Operational doc for releasing `nori-ui`. Dual-audience: humans for context, LLMs
 
 ## Normal release (fully automated)
 
-Push any commit to `main` with a Conventional Commits token that implies a release:
+Push a commit to `main` with a Conventional Commits type that implies a release. The rules are in `.releaserc.json`:
 
-- `feat: …` → minor bump
-- `fix: …` → patch bump
-- `feat!: …` / `BREAKING CHANGE:` footer → major bump
+| Commit | Release |
+|---|---|
+| `feat: …` | minor bump |
+| `fix: …`, `perf: …`, `refactor: …` | patch bump |
+| `feat!: …`, any `!` type, or a `BREAKING CHANGE:` footer | **patch** bump (see below) |
+| `docs:`, `chore:`, `ci:`, `test:`, `style:` | no release |
 
-`.github/workflows/release.yml` runs:
+**Breaking changes do not produce a major bump.** `.releaserc.json` maps `{ "breaking": true }` to `patch` on purpose: the library is pre-public-launch and majors are cut by hand only. To release a major version, change that rule deliberately for the release in question.
 
-1. `yarn install --immutable`
-2. `yarn build:tokens && yarn build:ui`
-3. Verifies `packages/core/dist/{index.js,index.cjs,index.d.ts}` exist
-4. `yarn semantic-release` — computes next version, writes `CHANGELOG.md`, commits as `chore(release): x.y.z`, tags, publishes to npm via OIDC trusted publisher with `--provenance`, creates a GitHub Release.
+`.github/workflows/release.yml` runs on every push to `main` and `next`:
 
-**No `NPM_TOKEN` secret is stored** — authentication is via OIDC configured once on npmjs.com for the specific package.
+1. `yarn install --immutable` (Node 24, which ships an npm new enough for OIDC trusted publishing).
+2. Verifies the OIDC prerequisites: npm >= 11.5.1, the OIDC token request URL is present, no `_authToken` in any `.npmrc`.
+3. `yarn build:tokens`
+4. `yarn build:ui`, which runs `tsup`, then `tsc -p tsconfig.dts.json` for the declarations, then `scripts/finalize-dist.mjs`. The finalize script restores the `'use client'` directives that the bundler drops and copies the Tailwind preset and `theme.css` from `packages/tokens/build` into `packages/core/dist`.
+5. `node apps/docs/scripts/generate-mcp-data.mjs` snapshots the docs corpus, then `yarn workspace @nori-ui/mcp build` builds the MCP package with that corpus embedded.
+6. On the runner only (never committed): removes the root `workspaces` field and rewrites Yarn-only dependency protocols (`workspace:`, `patch:`, `portal:`, `link:`) in the `core` and `mcp` `package.json` files to `*`, so npm can parse them.
+7. Verifies `packages/core/dist/{index.js,index.cjs,index.d.ts}` and `packages/mcp/dist/{cli.js,index.js,index.d.ts}` exist.
+8. Detects whether the MCP inputs changed since the last tag (`packages/mcp`, `apps/docs/content/docs`, `apps/docs/scripts/generate-mcp-data.mjs`).
+9. `yarn semantic-release` computes the next version, writes `CHANGELOG.md`, bumps the version in both `packages/core/package.json` and `packages/mcp/package.json`, publishes `@nori-ui/core` to npm via OIDC trusted publishing, creates a GitHub Release, and commits `chore(release): x.y.z` with the tag.
+10. Publishes `@nori-ui/mcp` with `npm publish`, only if a release was cut in step 9 **and** step 8 found changed MCP inputs. `@nori-ui/mcp` always carries the same version number as `@nori-ui/core`, but a version is only published when its content changed, so some versions do not exist on npm for `@nori-ui/mcp`.
 
-## First-release checklist
+**No `NPM_TOKEN` secret is stored.** Authentication is via OIDC trusted publishing, configured on npmjs.com for each published package (`@nori-ui/core` and `@nori-ui/mcp`).
 
-Before the first real publish:
+**Provenance is off.** The workflow sets `NPM_CONFIG_PROVENANCE: "false"` for both publish steps, because npm rejects provenance attestations from a private source repository. Set it to `"true"` in `release.yml` once the repository is public.
 
-- [x] Name locked as `nori-ui`.
-- [x] Rename sweep complete.
-    ```bash
-    grep -r "nori-ui" --include='*.ts' --include='*.tsx' --include='*.json' --include='*.md' --include='*.yml' --include='*.yaml' --include='*.mdx' .
-    ```
-- [ ] Set `packages/core/package.json`'s `private` to `false` (still `true` as of this commit).
-- [ ] Register the real package name on npm with this repo's `release.yml` as a **trusted publisher**. Docs: <https://docs.npmjs.com/trusted-publishers>.
-- [ ] Run a dry-run preview locally: `GITHUB_TOKEN=fake-token npx semantic-release --dry-run --no-ci`. Expect: "computed version X.Y.Z" printed, no publish.
-- [ ] Push a commit to the `next` branch to cut a prerelease and verify the full pipeline end-to-end before GA. First real release on `next` is `@next` on npm: `npm install <name>@next`.
+`@nori-ui/plugin` and `@nori-ui/tailwindcss-stub` are not published by this workflow.
+
+## First-release checklist (historical)
+
+The first release is done; `@nori-ui/core` has been publishing from this workflow since. The checklist is kept as a reference for adding another published package:
+
+- The package's `package.json` must not have `"private": true`, and needs `publishConfig.access: "public"`.
+- Register the package on npmjs.com with this repo's `release.yml` as a **trusted publisher**. Docs: <https://docs.npmjs.com/trusted-publishers>.
+- Add the package to `.releaserc.json` (an `@semantic-release/npm` entry with its `pkgRoot`, and its `package.json` in the `@semantic-release/git` assets) and to the protocol-rewrite and artifact-verification steps in `release.yml`.
+- Run a local dry run first (see [Local dry run](#local-dry-run)).
+- Push to the `next` branch to cut a prerelease and verify the pipeline end to end.
 
 ## Prerelease channel
 
@@ -58,8 +69,8 @@ When SDK 57 ships, rotate: 55 becomes legacy, 56 maintained, 57 current. Drop 55
 When a new SDK makes the oldest supported one fall out of the 3-tier window:
 
 1. Remove the dropped tier's entry from `.github/workflows/ci.yml`'s `tier-matrix` strategy.
-2. Update `README.md`'s compatibility table.
-3. Add a `chore: drop support for Expo SDK NN` commit. This does NOT publish a new version by itself — the drop is announced in the next `feat:` / `fix:` release's `BREAKING CHANGE:` footer if it's actually breaking.
+2. Update the supported-versions statements: the "Quick reference" table and "Support window" section in `README.md`, and the supported versions line in `apps/docs/content/docs/getting-started.mdx`. (There is no separate compatibility table.)
+3. Add a `chore: drop support for Expo SDK NN` commit. This does NOT publish a new version by itself — the drop is announced in the next `feat:` / `fix:` release's `BREAKING CHANGE:` footer if it's actually breaking. Note that the footer alone yields a patch bump (see the release rules above).
 
 ## Fixing a broken release
 
@@ -96,6 +107,7 @@ Before pushing anything that might trigger a release:
 ```bash
 yarn build:tokens
 yarn build:ui
+yarn workspace @nori-ui/mcp build
 GITHUB_TOKEN=fake-token npx semantic-release --dry-run --no-ci
 ```
 

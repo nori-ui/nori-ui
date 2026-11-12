@@ -10,7 +10,7 @@ version: 0.0.1
 
 1. **Bundled preset** — swap one of six brand-color presets via `<NoriProvider theme={...}>`. One line of code, no token plumbing.
 2. **Custom `NoriTheme`** — build a `{ light, dark }` pair by spreading `defaultTheme` and overriding individual color paths.
-3. **Custom token build** — fork the Figma → Style Dictionary pipeline that generates `@nori-ui/tokens` and emit a different ramp set entirely. Out of scope for most apps.
+3. **Custom token build** — fork the Figma → Style Dictionary pipeline that generates the library's tokens and emit a different ramp set entirely. Out of scope for most apps.
 
 Most projects only need layer 1. Reach for layer 2 only when a brand color isn't covered by the presets or the design system needs a non-primary axis (warning, success, destructive) re-skinned.
 
@@ -29,7 +29,7 @@ type NoriTheme = {
 
 The active half is selected automatically by `useColorScheme()` based on the OS Appearance signal (native) or the `<html>.dark` class (web). Components do not call `useColorScheme` directly — they call `useThemeColors()` (aliased as `useTheme()`) which returns the resolved active half. Application code can call either.
 
-`Theme` itself is a deeply-typed object with token paths like `color.primary['500']`, `color.interactive.primary`, `color.background.surface`, etc. The full type is generated from Figma tokens and exported from `@nori-ui/tokens`. Tab-complete it in the IDE rather than memorizing paths.
+`Theme` itself is a deeply-typed object with token paths like `color.primary['500']`, `semantic.interactive.primary`, `semantic.background.elevated`, etc. The full type is generated from Figma tokens and exported as `Theme` from `@nori-ui/core`. Tab-complete it in the IDE rather than memorizing paths.
 
 ## Layer 1 — Bundled presets
 
@@ -42,7 +42,7 @@ Six presets ship from `@nori-ui/core` (and `@nori-ui/core/client`):
 - `orangeTheme`
 - `slateTheme`
 
-Each preset overrides the **primary** color ramp and the derived `interactive.primary` / `primaryHover` / `primaryPressed` semantic tones. Backgrounds, borders, neutrals, and the destructive/warning/success scales stay identical to the default — presets are about brand identity, not full re-skins.
+Each preset overrides the **primary** color ramp and the derived `semantic.interactive.primary` / `primaryHover` / `primaryPressed` tones. Backgrounds, borders, neutrals, and the destructive/warning/success scales stay identical to the default — presets are about brand identity, not full re-skins.
 
 ```tsx
 'use client';
@@ -90,8 +90,11 @@ const myTheme: NoriTheme = {
                 '800': '#86198f',
                 '900': '#701a75',
             },
+        },
+        semantic: {
+            ...defaultTheme.light.semantic,
             interactive: {
-                ...defaultTheme.light.color.interactive,
+                ...defaultTheme.light.semantic.interactive,
                 primary: '#c026d3', // matches primary.600
                 primaryHover: '#a21caf', // matches primary.700
                 primaryPressed: '#86198f', // matches primary.800
@@ -105,8 +108,11 @@ const myTheme: NoriTheme = {
             primary: {
                 /* same shape, dark-mode-friendly values */
             },
+        },
+        semantic: {
+            ...defaultTheme.dark.semantic,
             interactive: {
-                ...defaultTheme.dark.color.interactive,
+                ...defaultTheme.dark.semantic.interactive,
                 primary: '#e879f9', // primary.400 reads better against dark surfaces
                 primaryHover: '#d946ef',
                 primaryPressed: '#c026d3',
@@ -157,13 +163,14 @@ For utility classes to match the token values (so `bg-primary-600` actually equa
 ```ts
 // tailwind.config.ts
 import type { Config } from 'tailwindcss';
-import noriPreset from '@nori-ui/tokens/tailwind-preset';
+import noriPreset from '@nori-ui/core/tailwind-preset';
 
 export default {
     presets: [noriPreset],
     content: [
         './app/**/*.{ts,tsx,mdx}',
-        './node_modules/@nori-ui/core/dist/**/*.{js,mjs,cjs}',
+        './node_modules/@nori-ui/core/dist/**/*.{js,cjs}',
+        './node_modules/@nori-ui/core/src/**/*.{ts,tsx}',
     ],
 } satisfies Config;
 ```
@@ -187,9 +194,9 @@ export function HeroCard() {
     return (
         <div
             style={{
-                background: theme.color.background.surface,
-                color: theme.color.text.default,
-                border: `1px solid ${theme.color.border.subtle}`,
+                background: theme.semantic.background.elevated,
+                color: theme.semantic.text.default,
+                border: `1px solid ${theme.semantic.border.default}`,
             }}
         >
             Currently in {scheme} mode.

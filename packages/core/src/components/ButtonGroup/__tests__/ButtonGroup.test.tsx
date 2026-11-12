@@ -46,3 +46,37 @@ describe('<ButtonGroup>', () => {
         expect(screen.getByTestId('group').className).toContain('my-group');
     });
 });
+
+describe('<ButtonGroup> joined layout', () => {
+    it('applies the group size to every button', () => {
+        render(
+            <ButtonGroup size="sm">
+                <Button testID="a">A</Button>
+                <Button testID="b" size="lg">
+                    B
+                </Button>
+            </ButtonGroup>
+        );
+        expect(screen.getByTestId('a').style.height).toBe('32px');
+        expect(screen.getByTestId('b').style.height).toBe('32px');
+    });
+
+    it('squares the joined corners and keeps the outer ones rounded', () => {
+        render(
+            <ButtonGroup>
+                <Button testID="first">A</Button>
+                <Button testID="middle">B</Button>
+                <Button testID="last">C</Button>
+            </ButtonGroup>
+        );
+        const first = screen.getByTestId('first').style;
+        const middle = screen.getByTestId('middle').style;
+        const last = screen.getByTestId('last').style;
+        expect(first.borderTopRightRadius).toBe('0');
+        expect(first.borderTopLeftRadius).not.toBe('0');
+        expect(middle.borderTopLeftRadius).toBe('0');
+        expect(middle.borderBottomRightRadius).toBe('0');
+        expect(last.borderBottomLeftRadius).toBe('0');
+        expect(last.borderBottomRightRadius).not.toBe('0');
+    });
+});

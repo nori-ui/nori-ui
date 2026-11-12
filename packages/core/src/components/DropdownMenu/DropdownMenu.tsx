@@ -9,13 +9,13 @@ import {
     useContext,
     useEffect,
     useRef,
-    useState,
 } from 'react';
 import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { Slot } from '../../slot';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+import { slotPressProps, slotTestIdProps, useOverlayOpenState } from '../../utils/overlay-utils';
 import { Popover, usePopoverContext } from '../Popover/Popover';
 
 // ---------------------------------------------------------------------------
@@ -78,6 +78,9 @@ export type MenuContentProps = {
  *  - Home / End — jump to first / last enabled item.
  *  - Escape — closes the menu (handled by Popover.Content already).
  *  - Enter / Space — activates the focused item.
+ *
+ * Focus moves to the first enabled item when the menu opens (the arrow keys
+ * act on the focused item) and returns to the trigger when it closes.
  */
 export const MenuContent = ({
     children,
@@ -88,7 +91,40 @@ export const MenuContent = ({
     'aria-label': ariaLabel,
 }: MenuContentProps) => {
     const colors = useThemeColors();
+    const popover = usePopoverContext('MenuContent');
     const containerRef = useRef<View | null>(null);
+
+    const { open, triggerRef } = popover;
+    useEffect(() => {
+        if (!open || Platform.OS !== 'web' || typeof document === 'undefined') {
+            return;
+        }
+        const container = containerRef.current as unknown as HTMLElement | null;
+        const previouslyFocused = document.activeElement as HTMLElement | null;
+        // The surface starts off-screen until the trigger is measured;
+        // `preventScroll` keeps the page from jumping toward it.
+        container
+            ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
+            ?.focus({ preventScroll: true });
+
+        return () => {
+            // Hand focus back only when it would otherwise be lost with the
+            // menu. If the user already moved on (clicked another control),
+            // leave it there.
+            const active = document.activeElement;
+            const focusWasInMenu = active === null || active === document.body || container?.contains(active) === true;
+            if (!focusWasInMenu) {
+                return;
+            }
+            const trigger = triggerRef.current;
+            trigger?.focus?.({ preventScroll: true });
+            if (trigger && document.activeElement === trigger) {
+                return;
+            }
+            // A non-focusable trigger (e.g. a ContextMenu area).
+            previouslyFocused?.focus?.({ preventScroll: true });
+        };
+    }, [open, triggerRef]);
 
     useEffect(() => {
         if (Platform.OS !== 'web') {
@@ -365,19 +401,7 @@ export type DropdownMenuProps = {
  * ```
  */
 const DropdownMenuRoot = ({ open, defaultOpen = false, onOpenChange, children }: DropdownMenuProps) => {
-    const [inner, setInner] = useState<boolean>(defaultOpen);
-    const isControlled = open !== undefined;
-    const current = isControlled ? open : inner;
-
-    const setOpen = useCallback(
-        (next: boolean) => {
-            if (!isControlled) {
-                setInner(next);
-            }
-            onOpenChange?.(next);
-        },
-        [isControlled, onOpenChange]
-    );
+    const [current, setOpen] = useOverlayOpenState({ open, defaultOpen, onOpenChange });
 
     const toggle = useCallback(() => setOpen(!current), [setOpen, current]);
     const close = useCallback(() => setOpen(false), [setOpen]);
@@ -396,6 +420,12 @@ const DropdownMenuRoot = ({ open, defaultOpen = false, onOpenChange, children }:
 // ---------------------------------------------------------------------------
 
 export type DropdownMenuTriggerProps = {
+    /**
+     * Render the child as the trigger (Slot pattern). Pass `false` to wrap
+     * the children in the library's own pressable instead.
+     * @defaultValue true
+     */
+    asChild?: boolean;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -410,7 +440,7 @@ export type DropdownMenuTriggerProps = {
  * positioning) and set the triggerRef — same as PopoverTrigger, but with
  * `aria-haspopup="menu"` instead of `"dialog"`.
  */
-const DropdownMenuTrigger = ({ children, className, testID }: DropdownMenuTriggerProps) => {
+const DropdownMenuTrigger = ({ asChild = true, children, className, testID }: DropdownMenuTriggerProps) => {
     const menu = useMenuContext('DropdownMenu.Trigger');
     const popover = usePopoverContext('DropdownMenu.Trigger');
 
@@ -419,27 +449,20 @@ const DropdownMenuTrigger = ({ children, className, testID }: DropdownMenuTrigge
         popover.setOpen(!popover.open);
     }, [popover]);
 
-    if (isValidElement(children)) {
+    if (asChild && isValidElement(children)) {
         const child = children as ReactElement<Record<string, unknown>>;
-        const fire = (existing: ((e: unknown) => void) | undefined) => (event: unknown) => {
-            existing?.(event);
-            popover.measureTrigger();
-            popover.setOpen(!popover.open);
-        };
-
         return (
             <Slot
                 ref={(node: HTMLElement | null) => {
                     popover.triggerRef.current = node;
                 }}
-                onClick={fire(child.props.onClick as ((e: unknown) => void) | undefined)}
-                onPress={fire(child.props.onPress as ((e: unknown) => void) | undefined)}
+                {...slotPressProps(child, onPress)}
                 {...({
                     'aria-haspopup': 'menu',
                     'aria-expanded': menu.open,
                     'aria-controls': popover.contentId,
                 } as Record<string, unknown>)}
-                {...(testID !== undefined ? { 'data-testid': testID } : {})}
+                {...slotTestIdProps(child, testID)}
                 {...(className !== undefined ? { className } : {})}
             >
                 {child}
@@ -453,6 +476,8 @@ const DropdownMenuTrigger = ({ children, className, testID }: DropdownMenuTrigge
                 popover.triggerRef.current = node as unknown as HTMLElement | null;
             }}
             onPress={onPress}
+            role="button"
+            accessibilityRole="button"
             {...({
                 'aria-haspopup': 'menu',
                 'aria-expanded': menu.open,

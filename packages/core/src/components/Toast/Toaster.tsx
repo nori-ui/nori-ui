@@ -2,6 +2,7 @@
 
 import { createElement } from 'react';
 import { Platform } from 'react-native';
+import { useColorScheme } from '../../theme/use-color-scheme';
 import { getSonner } from './sonner-bridge';
 import { getSonnerNative } from './sonner-native-bridge';
 import type { ToasterPosition, ToasterProps } from './types';
@@ -36,7 +37,13 @@ export const Toaster = (props: ToasterProps): ReturnType<typeof createElement> |
         expand = false,
         offset = 24,
         gap = 14,
+        theme,
     } = props;
+    // Follow the library's scheme (NoriProvider / the `dark` class on
+    // <html>) rather than sonner's own light default, so toasts match the
+    // rest of the UI in dark mode.
+    const scheme = useColorScheme();
+    const resolvedTheme = theme ?? scheme;
 
     if (Platform.OS === 'web') {
         const sonner = getSonner();
@@ -54,6 +61,7 @@ export const Toaster = (props: ToasterProps): ReturnType<typeof createElement> |
             expand,
             offset,
             gap,
+            theme: resolvedTheme,
         });
     }
 
@@ -75,6 +83,7 @@ export const Toaster = (props: ToasterProps): ReturnType<typeof createElement> |
         expand,
         offset,
         gap,
+        theme: resolvedTheme,
     });
 };
 

@@ -166,6 +166,44 @@ describe('<Tabs>', () => {
         expect(screen.queryByText('B content')).toBeNull();
     });
 
+    it('arrow keys skip disabled tabs instead of activating them', () => {
+        render(
+            <Tabs defaultValue="a">
+                <Tabs.List>
+                    <Tabs.Trigger value="a" testID="tab-a">
+                        A
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="b" disabled>
+                        B
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="c">C</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="a">A content</Tabs.Content>
+                <Tabs.Content value="b">B content</Tabs.Content>
+                <Tabs.Content value="c">C content</Tabs.Content>
+            </Tabs>
+        );
+        fireEvent.keyDown(screen.getByTestId('tab-a'), { key: 'ArrowRight' });
+        expect(screen.queryByText('B content')).toBeNull();
+        expect(screen.getByText('C content')).toBeInTheDocument();
+    });
+
+    it('keeps the tablist reachable by keyboard when no tab is selected', () => {
+        render(
+            <Tabs>
+                <Tabs.List>
+                    <Tabs.Trigger value="a" disabled>
+                        A
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="b">B</Tabs.Trigger>
+                    <Tabs.Trigger value="c">C</Tabs.Trigger>
+                </Tabs.List>
+            </Tabs>
+        );
+        const tabStops = screen.getAllByRole('tab').map((tab) => tab.getAttribute('tabindex'));
+        expect(tabStops).toEqual(['-1', '0', '-1']);
+    });
+
     it('throws a clear error when TabsTrigger is rendered outside Tabs', () => {
         const original = console.error;
         console.error = () => {};

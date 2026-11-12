@@ -3,10 +3,11 @@
 import {
     createContext,
     type ReactNode,
+    type RefObject,
     useCallback,
     useContext,
-    useEffect,
     useId,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -153,6 +154,86 @@ const CollapsibleTrigger = ({ children, className, testID }: CollapsibleTriggerP
 // Content
 // ---------------------------------------------------------------------------
 
+const COLLAPSIBLE_ANIM_DURATION_MS = 200;
+
+/**
+ * Web-only open/close transition for a disclosure body that stays mounted.
+ * Shared with `Accordion.Content`; not part of the public API.
+ *
+ * The styles are written to the DOM node directly because react-native-web's
+ * style filter drops `transition*` keys. Three things matter beyond the
+ * slide itself:
+ *
+ *  - A closed body is `inert` and `visibility: hidden`, so Tab never lands
+ *    on controls nobody can see. `visibility` is part of the transition, so
+ *    it only flips to `hidden` once the slide has finished.
+ *  - The initial state is applied before the first paint and before the
+ *    transition is installed, so a closed body never paints open and then
+ *    animates shut.
+ *  - Once open, `max-height` is released to `none` so content that grows
+ *    later is not clipped at the height measured when it opened.
+ */
+export function useWebDisclosureTransition(
+    open: boolean,
+    wrapperRef: RefObject<HTMLElement | null>,
+    durationMs: number
+): void {
+    useLayoutEffect(() => {
+        if (Platform.OS !== 'web') {
+            return undefined;
+        }
+        const wrapper = wrapperRef.current;
+        if (!wrapper) {
+            return undefined;
+        }
+
+        const applyClosed = () => {
+            wrapper.style.maxHeight = '0px';
+            wrapper.style.opacity = '0';
+            wrapper.style.visibility = 'hidden';
+            wrapper.setAttribute('inert', '');
+        };
+
+        const isFirstPaint = wrapper.dataset.noriPainted !== '1';
+        wrapper.dataset.noriPainted = '1';
+        wrapper.style.overflow = 'hidden';
+
+        if (isFirstPaint) {
+            if (open) {
+                wrapper.style.maxHeight = 'none';
+                wrapper.style.opacity = '1';
+                wrapper.style.visibility = 'visible';
+            } else {
+                applyClosed();
+            }
+            // Commit the initial state before the transition exists, so
+            // server-rendered markup does not animate into it on hydration.
+            void wrapper.offsetHeight;
+            wrapper.style.transitionProperty = 'max-height, opacity, visibility';
+            wrapper.style.transitionDuration = `${durationMs}ms`;
+            wrapper.style.transitionTimingFunction = 'cubic-bezier(0.16, 1, 0.3, 1)';
+            return undefined;
+        }
+
+        if (open) {
+            wrapper.removeAttribute('inert');
+            wrapper.style.visibility = 'visible';
+            wrapper.style.maxHeight = `${wrapper.scrollHeight}px`;
+            wrapper.style.opacity = '1';
+            const release = setTimeout(() => {
+                wrapper.style.maxHeight = 'none';
+            }, durationMs);
+            return () => clearTimeout(release);
+        }
+
+        // `none` does not transition, so pin the current pixel height first.
+        wrapper.style.maxHeight = `${wrapper.offsetHeight}px`;
+        void wrapper.offsetHeight;
+        applyClosed();
+        return undefined;
+    }, [open, wrapperRef, durationMs]);
+}
+
 export type CollapsibleContentProps = {
     children?: ReactNode;
     className?: string;
@@ -162,57 +243,7 @@ export type CollapsibleContentProps = {
 const CollapsibleContent = ({ children, className, testID }: CollapsibleContentProps) => {
     const { open, contentId, triggerId } = useCollapsibleContext('Collapsible.Content');
     const wrapperRef = useRef<HTMLElement | null>(null);
-    const innerRef = useRef<HTMLElement | null>(null);
-
-    // Web: animate max-height via CSS transition for smooth open/close.
-    useEffect(() => {
-        if (Platform.OS !== 'web') {
-            return;
-        }
-        const wrapper = wrapperRef.current;
-        const inner = innerRef.current;
-        if (!wrapper || !inner) {
-            return;
-        }
-
-        const isFirstPaint = wrapper.dataset.noriPainted !== '1';
-        wrapper.dataset.noriPainted = '1';
-
-        wrapper.style.overflow = 'hidden';
-        wrapper.style.transitionProperty = 'max-height, opacity';
-        wrapper.style.transitionDuration = '200ms';
-        wrapper.style.transitionTimingFunction = 'cubic-bezier(0.16, 1, 0.3, 1)';
-
-        if (open) {
-            const target = inner.scrollHeight;
-            if (isFirstPaint) {
-                wrapper.style.maxHeight = `${target}px`;
-                wrapper.style.opacity = '1';
-                return;
-            }
-            wrapper.style.maxHeight = '0px';
-            wrapper.style.opacity = '0';
-            void wrapper.offsetHeight;
-            requestAnimationFrame(() => {
-                wrapper.style.maxHeight = `${target}px`;
-                wrapper.style.opacity = '1';
-            });
-        } else {
-            if (isFirstPaint) {
-                wrapper.style.maxHeight = '0px';
-                wrapper.style.opacity = '0';
-                return;
-            }
-            const current = inner.scrollHeight;
-            wrapper.style.maxHeight = `${current}px`;
-            wrapper.style.opacity = '1';
-            void wrapper.offsetHeight;
-            requestAnimationFrame(() => {
-                wrapper.style.maxHeight = '0px';
-                wrapper.style.opacity = '0';
-            });
-        }
-    }, [open]);
+    useWebDisclosureTransition(open, wrapperRef, COLLAPSIBLE_ANIM_DURATION_MS);
 
     // Native: just toggle visibility. Animation deferred to v2.
     if (Platform.OS !== 'web') {
@@ -243,13 +274,7 @@ const CollapsibleContent = ({ children, className, testID }: CollapsibleContentP
             aria-hidden={!open}
             className={cn('overflow-hidden', className)}
         >
-            <View
-                ref={(node: unknown) => {
-                    innerRef.current = node as HTMLElement | null;
-                }}
-                className="flex-col"
-                style={{ flexDirection: 'column' }}
-            >
+            <View className="flex-col" style={{ flexDirection: 'column' }}>
                 {children}
             </View>
         </View>

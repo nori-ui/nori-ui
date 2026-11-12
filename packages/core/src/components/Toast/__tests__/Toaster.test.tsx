@@ -46,6 +46,20 @@ describe('<Toaster /> + toast()', () => {
         expect(await screen.findByText('FYI')).toBeInTheDocument();
     });
 
+    it('follows the dark color scheme of the app', async () => {
+        document.documentElement.classList.add('dark');
+        try {
+            render(<Toaster />);
+            act(() => {
+                toast('Saved');
+            });
+            const message = await screen.findByText('Saved');
+            expect(message.closest('[data-sonner-toaster]')).toHaveAttribute('data-sonner-theme', 'dark');
+        } finally {
+            document.documentElement.classList.remove('dark');
+        }
+    });
+
     it('toast.dismiss(id) removes a specific toast', async () => {
         render(<Toaster />);
         let id: string | number | undefined;

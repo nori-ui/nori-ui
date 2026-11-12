@@ -32,8 +32,16 @@ describe('<DataTable> native', () => {
         const { getByText, getByLabelText } = render(wrap(<DataTable data={data} columns={columns} />));
         expect(getByText('ID')).toBeTruthy();
         // Sortable header wraps in a Pressable — query by accessibilityLabel
-        expect(getByLabelText('Sort by name')).toBeTruthy();
+        expect(getByLabelText('Sort by Name')).toBeTruthy();
         expect(getByText('Score')).toBeTruthy();
+    });
+
+    it('renders the sort indicator of a sortable column as native text', () => {
+        const { getByText, getByLabelText } = render(wrap(<DataTable data={data} columns={columns} />));
+        // getByText only matches <Text> hosts, so a DOM element here would not be found.
+        expect(getByText('⇅', { includeHiddenElements: true })).toBeTruthy();
+        fireEvent.press(getByLabelText('Sort by Name'));
+        expect(getByText('↑', { includeHiddenElements: true })).toBeTruthy();
     });
 
     it('shows empty state when data is empty', () => {

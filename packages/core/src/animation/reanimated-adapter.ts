@@ -13,15 +13,26 @@
  * "Cannot add new property '_tracking'" or "set the key 'current' …
  * immutable and has been frozen".
  *
- * Consumers MUST:
- *   1. install `react-native-reanimated` (>= 4.3) + `react-native-worklets`
- *   2. add `'react-native-worklets/plugin'` to `babel.config.js`
- *   3. add a babel `overrides` block that applies the same plugin to
- *      `node_modules/@nori-ui/core/dist/**`, so the marker attaches to
- *      our pre-bundled `useAnimatedStyle` callbacks too
+ * Consumers MUST, on native:
+ *   1. install `react-native-reanimated` (>= 4.3) and
+ *      `react-native-worklets` (>= 0.8)
+ *   2. have `react-native-worklets/plugin` in the Babel config Metro uses.
+ *      In an Expo app this needs no manual step: `babel-preset-expo` adds
+ *      the plugin when `react-native-worklets` is installed, and
+ *      `nativewind/babel` includes it too. A bare React Native app adds
+ *      the plugin to `babel.config.js` itself.
  *
- * See `getting-started` docs for the exact snippet. Without these, the
- * lib's animated primitives crash on first render.
+ * No Babel `overrides` block for `node_modules/@nori-ui/core` is needed.
+ * Metro resolves this package through the `react-native` export condition
+ * to `src/`, and it applies the project Babel config to every file it
+ * bundles, `node_modules` included, so the worklet transform reaches the
+ * `useAnimatedStyle` callbacks here.
+ *
+ * On web (Next.js + webpack) the consumer aliases `react-native-reanimated`
+ * to a stub; the library never calls a reanimated API there.
+ *
+ * See the `getting-started` docs for the full setup. Without the plugin,
+ * the lib's animated primitives crash on first render.
  */
 import * as Reanimated from 'react-native-reanimated';
 

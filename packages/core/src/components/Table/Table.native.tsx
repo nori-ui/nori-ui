@@ -9,12 +9,13 @@
  * improvement. Header/Body/Footer/Caption are structural wrappers only.
  */
 
-import { useCallback, useState } from 'react';
+import { Children, type ReactNode } from 'react';
 import { Pressable, Text as RNText, ScrollView, View } from 'react-native';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import {
     buildTableCompound,
+    IndexedRows,
     type TableCaptionProps,
     type TableCellProps,
     TableContext,
@@ -26,17 +27,21 @@ import {
     useTableContext,
 } from './Table.shared';
 
+// Raw strings and numbers must sit inside a <Text> on native; anything else
+// (a Pressable, an icon, a consumer's own Text) is laid out as a view.
+const hasRawText = (children: ReactNode): boolean =>
+    Children.toArray(children).some((child) => typeof child === 'string' || typeof child === 'number');
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 const TableRoot = ({ striped = false, compact = false, bordered = false, children, testID }: TableProps) => {
     const colors = useThemeColors();
-    const [rowIndex, setRowIndex] = useState(0);
     const ctxValue: TableContextValue = {
         striped,
         compact,
         bordered,
-        rowIndex,
-        setRowIndex,
+        rowIndex: 0,
+        setRowIndex: () => {},
     };
     return (
         <TableContext.Provider value={ctxValue}>
@@ -74,7 +79,11 @@ const TableHeader = ({ children, testID }: TableSectionProps) => {
 
 // ─── Body ─────────────────────────────────────────────────────────────────────
 
-const TableBody = ({ children, testID }: TableSectionProps) => <View testID={testID}>{children}</View>;
+const TableBody = ({ children, testID }: TableSectionProps) => (
+    <View testID={testID}>
+        <IndexedRows>{children}</IndexedRows>
+    </View>
+);
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
@@ -97,17 +106,14 @@ const TableFooter = ({ children, testID }: TableSectionProps) => {
 
 const TableRow = ({ selected = false, onPress, children, testID }: TableRowProps) => {
     const colors = useThemeColors();
-    const { compact } = useTableContext();
-
-    const handlePress = useCallback(() => {
-        onPress?.();
-    }, [onPress]);
+    const { compact, striped, rowIndex } = useTableContext();
+    const tinted = selected || (striped && rowIndex % 2 === 1);
 
     const rowContent = (
         <View
             style={{
                 flexDirection: 'row',
-                backgroundColor: selected ? colors.semantic.background.subtle : undefined,
+                backgroundColor: tinted ? colors.semantic.background.subtle : undefined,
                 paddingVertical: compact ? px(colors.spacing['1']) : px(colors.spacing['3']),
                 borderBottomWidth: 1,
                 borderBottomColor: colors.semantic.border.default,
@@ -121,7 +127,8 @@ const TableRow = ({ selected = false, onPress, children, testID }: TableRowProps
     if (onPress) {
         return (
             <Pressable
-                onPress={handlePress}
+                onPress={() => onPress()}
+                accessibilityRole="button"
                 style={({ pressed }) => ({
                     opacity: pressed ? 0.7 : 1,
                 })}
@@ -149,15 +156,19 @@ const TableHeaderCell = ({ align = 'left', children, testID }: TableHeaderCellPr
                 alignItems: align === 'right' ? 'flex-end' : align === 'center' ? 'center' : 'flex-start',
             }}
         >
-            <RNText
-                style={{
-                    fontSize: 12,
-                    fontWeight: '600',
-                    color: colors.semantic.text.muted,
-                }}
-            >
-                {children}
-            </RNText>
+            {hasRawText(children) ? (
+                <RNText
+                    style={{
+                        fontSize: 12,
+                        fontWeight: '600',
+                        color: colors.semantic.text.muted,
+                    }}
+                >
+                    {children}
+                </RNText>
+            ) : (
+                children
+            )}
         </View>
     );
 };
@@ -177,7 +188,7 @@ const TableCell = ({ align = 'left', children, testID }: TableCellProps) => {
                 alignItems: align === 'right' ? 'flex-end' : align === 'center' ? 'center' : 'flex-start',
             }}
         >
-            {typeof children === 'string' || typeof children === 'number' ? (
+            {hasRawText(children) ? (
                 <RNText style={{ fontSize: 14, color: colors.semantic.text.default }}>{children}</RNText>
             ) : (
                 children

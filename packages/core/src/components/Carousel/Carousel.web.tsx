@@ -11,7 +11,12 @@ import {
     useRef,
     useState,
 } from 'react';
+import { useTranslation } from '../../i18n/use-translation';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';
+
+// A programmatic scroll counts as finished once no scroll event has arrived for this long.
+const SCROLL_SETTLE_MS = 150;
 
 // ---------------------------------------------------------------------------
 // Context
@@ -55,6 +60,8 @@ export type CarouselProps = {
     loop?: boolean;
     /** Scroll axis. @defaultValue 'horizontal' */
     orientation?: 'horizontal' | 'vertical';
+    /** Accessible name of the carousel region. Defaults to the i18n `carousel.label` string. */
+    'aria-label'?: string;
     children?: ReactNode;
     className?: string;
     testID?: string;
@@ -66,10 +73,12 @@ const CarouselRoot = ({
     onIndexChange,
     loop = false,
     orientation = 'horizontal',
+    'aria-label': ariaLabel,
     children,
     className,
     testID,
 }: CarouselProps) => {
+    const { t } = useTranslation();
     const [inner, setInner] = useState(defaultIndex);
     const isControlled = controlledIndex !== undefined;
     const index = isControlled ? (controlledIndex as number) : inner;
@@ -87,21 +96,9 @@ const CarouselRoot = ({
         [isControlled, onIndexChange]
     );
 
-    const scrollTo = useCallback(
-        (idx: number) => {
-            const list = listRef.current;
-            if (!list) {
-                return;
-            }
-            const item = list.children[idx] as HTMLElement | undefined;
-            if (!item) {
-                return;
-            }
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-            setIndex(idx);
-        },
-        [setIndex]
-    );
+    // The scroll itself happens in the effect below, so that every index change
+    // (button, dot, `defaultIndex`, a parent-driven `index`) moves the list the same way.
+    const scrollTo = setIndex;
 
     const next = useCallback(() => {
         if (count === 0) {
@@ -125,34 +122,114 @@ const CarouselRoot = ({
         }
     }, [index, count, loop, scrollTo]);
 
-    // Keep index in sync if external scroll happens
+    const indexRef = useRef(index);
+    indexRef.current = index;
+    const setIndexRef = useRef(setIndex);
+    setIndexRef.current = setIndex;
+    // Index a programmatic scroll is heading for, or null when the list is at rest or the user is scrolling it.
+    const programmaticTargetRef = useRef<number | null>(null);
+    const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const hasPositionedRef = useRef(false);
+
+    const readScrollIndex = useCallback((): number | null => {
+        const list = listRef.current;
+        if (!list) {
+            return null;
+        }
+        const pos = orientation === 'horizontal' ? list.scrollLeft : list.scrollTop;
+        const size = orientation === 'horizontal' ? list.offsetWidth : list.offsetHeight;
+        if (size === 0) {
+            return null;
+        }
+        return Math.round(pos / size);
+    }, [orientation]);
+
+    const armSettleTimer = useCallback(() => {
+        if (settleTimerRef.current !== null) {
+            clearTimeout(settleTimerRef.current);
+        }
+        settleTimerRef.current = setTimeout(() => {
+            settleTimerRef.current = null;
+            programmaticTargetRef.current = null;
+            // The user may have grabbed the list mid-animation; adopt wherever it came to rest.
+            const settled = readScrollIndex();
+            if (settled !== null && settled !== indexRef.current) {
+                setIndexRef.current(settled);
+            }
+        }, SCROLL_SETTLE_MS);
+    }, [readScrollIndex]);
+
+    // Move the list to the current index. `count` is a dependency because the
+    // slides may mount after the first index is known.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: count re-runs the effect once slides exist
+    useEffect(() => {
+        const list = listRef.current;
+        if (!list || index < 0 || index >= list.children.length) {
+            return;
+        }
+        const current = readScrollIndex();
+        // A list without a size (hidden, not laid out yet) cannot be positioned.
+        if (current === null) {
+            return;
+        }
+        if (current === index) {
+            hasPositionedRef.current = true;
+            return;
+        }
+        const horizontal = orientation === 'horizontal';
+        const offset = index * (horizontal ? list.offsetWidth : list.offsetHeight);
+        // The first positioning (`defaultIndex`) must not animate from slide 0.
+        const behavior: ScrollBehavior = hasPositionedRef.current ? 'smooth' : 'instant';
+        hasPositionedRef.current = true;
+        programmaticTargetRef.current = index;
+        // Scrolls the list itself; `scrollIntoView` would also scroll the page to the carousel.
+        if (typeof list.scrollTo === 'function') {
+            list.scrollTo(horizontal ? { left: offset, behavior } : { top: offset, behavior });
+        } else if (horizontal) {
+            list.scrollLeft = offset;
+        } else {
+            list.scrollTop = offset;
+        }
+        armSettleTimer();
+    }, [index, count, orientation, readScrollIndex, armSettleTimer]);
+
+    // Follow the user's own scrolling (swipe, trackpad, keyboard).
     useEffect(() => {
         const list = listRef.current;
         if (!list) {
             return;
         }
         const handleScroll = () => {
-            const { scrollLeft, scrollTop, offsetWidth, offsetHeight } = list;
-            const pos = orientation === 'horizontal' ? scrollLeft : scrollTop;
-            const size = orientation === 'horizontal' ? offsetWidth : offsetHeight;
-            if (size === 0) {
+            // A smooth programmatic scroll passes every slide on the way; reporting
+            // those would fire `onIndexChange` with stale indexes and pull the index back.
+            if (programmaticTargetRef.current !== null) {
+                armSettleTimer();
                 return;
             }
-            const newIdx = Math.round(pos / size);
-            if (newIdx !== index) {
-                setIndex(newIdx);
+            const scrolled = readScrollIndex();
+            if (scrolled !== null && scrolled !== indexRef.current) {
+                setIndexRef.current(scrolled);
             }
         };
         list.addEventListener('scroll', handleScroll, { passive: true });
         return () => list.removeEventListener('scroll', handleScroll);
-    }, [orientation, index, setIndex]);
+    }, [readScrollIndex, armSettleTimer]);
+
+    useEffect(
+        () => () => {
+            if (settleTimerRef.current !== null) {
+                clearTimeout(settleTimerRef.current);
+            }
+        },
+        []
+    );
 
     return (
         <CarouselContext.Provider
             value={{ index, count, loop, orientation, scrollTo, next, prev, listRef, setCount, id }}
         >
             <section
-                aria-label={testID ?? 'Carousel'}
+                aria-label={ariaLabel ?? t('carousel.label')}
                 className={cn('relative overflow-hidden', className)}
                 data-testid={testID}
             >
@@ -248,18 +325,21 @@ export type CarouselButtonProps = {
 
 const CarouselPrevious = ({ className, testID, children }: CarouselButtonProps) => {
     const ctx = useCarouselContext('Carousel.Previous');
+    const colors = useThemeColors();
+    const { t } = useTranslation();
     const disabled = !ctx.loop && ctx.index === 0;
     return (
         <button
             type="button"
-            aria-label="Previous slide"
+            aria-label={t('carousel.previous')}
             disabled={disabled}
             data-testid={testID}
             onClick={ctx.prev}
             className={cn(
-                'absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 shadow hover:bg-white disabled:opacity-40',
+                'absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full shadow disabled:opacity-40',
                 className
             )}
+            style={{ backgroundColor: colors.semantic.background.elevated, color: colors.semantic.text.default }}
         >
             {children ?? (
                 <svg
@@ -279,18 +359,21 @@ const CarouselPrevious = ({ className, testID, children }: CarouselButtonProps) 
 
 const CarouselNext = ({ className, testID, children }: CarouselButtonProps) => {
     const ctx = useCarouselContext('Carousel.Next');
+    const colors = useThemeColors();
+    const { t } = useTranslation();
     const disabled = !ctx.loop && ctx.index >= ctx.count - 1;
     return (
         <button
             type="button"
-            aria-label="Next slide"
+            aria-label={t('carousel.next')}
             disabled={disabled}
             data-testid={testID}
             onClick={ctx.next}
             className={cn(
-                'absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 shadow hover:bg-white disabled:opacity-40',
+                'absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full shadow disabled:opacity-40',
                 className
             )}
+            style={{ backgroundColor: colors.semantic.background.elevated, color: colors.semantic.text.default }}
         >
             {children ?? (
                 <svg
@@ -319,15 +402,17 @@ export type CarouselDotsProps = {
 
 const CarouselDots = ({ className, testID }: CarouselDotsProps) => {
     const ctx = useCarouselContext('Carousel.Dots');
+    const colors = useThemeColors();
+    const { t } = useTranslation();
     if (ctx.count === 0) {
         return null;
     }
     return (
         <div
             role="tablist"
-            aria-label="Slide navigation"
+            aria-label={t('carousel.dotsLabel')}
             data-testid={testID}
-            className={cn('absolute bottom-3 left-0 right-0 flex items-center justify-center gap-1.5', className)}
+            className={cn('absolute bottom-1 left-0 right-0 flex items-center justify-center', className)}
         >
             {Array.from({ length: ctx.count }, (_, i) => (
                 <button
@@ -336,13 +421,20 @@ const CarouselDots = ({ className, testID }: CarouselDotsProps) => {
                     type="button"
                     role="tab"
                     aria-selected={i === ctx.index}
-                    aria-label={`Go to slide ${i + 1}`}
+                    aria-label={t('carousel.goToSlide', { index: i + 1 })}
                     onClick={() => ctx.scrollTo(i)}
-                    className={cn(
-                        'h-1.5 w-1.5 rounded-full transition-all',
-                        i === ctx.index ? 'w-3 bg-white' : 'bg-white/50 hover:bg-white/75'
-                    )}
-                />
+                    // The dot stays small; the button around it is the 24px target WCAG 2.2 asks for.
+                    className="group flex h-6 min-w-6 items-center justify-center px-1.5"
+                >
+                    <span
+                        aria-hidden="true"
+                        className={cn(
+                            'h-1.5 rounded-full transition-all',
+                            i === ctx.index ? 'w-3' : 'w-1.5 opacity-50 group-hover:opacity-75'
+                        )}
+                        style={{ backgroundColor: colors.semantic.text.default }}
+                    />
+                </button>
             ))}
         </div>
     );

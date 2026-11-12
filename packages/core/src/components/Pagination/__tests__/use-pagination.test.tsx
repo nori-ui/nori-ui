@@ -67,6 +67,15 @@ describe('usePagination — page generation', () => {
         expect(result.current.canNext).toBe(false);
     });
 
+    it.each([
+        Number.NaN,
+        Number.POSITIVE_INFINITY,
+    ])('treats a non-finite pageCount (%s) as a single page', (pageCount) => {
+        const { result } = renderHook(() => usePagination({ pageCount }));
+        expect(result.current.page).toBe(1);
+        expect(summarize(result.current.pages)).toBe('P [1] N');
+    });
+
     it('emits first/last items when showFirstLast is true', () => {
         const { result } = renderHook(() => usePagination({ pageCount: 5, page: 3, showFirstLast: true }));
         expect(summarize(result.current.pages)).toBe('F P 1 2 [3] 4 5 N L');

@@ -1,9 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useCallback, useState } from 'react';
+import { isValidElement, useCallback, useState } from 'react';
 import type { ViewStyle } from 'react-native';
-import { Pressable, Text as RNText, View } from 'react-native';
+import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { AnimatedView } from '../../animation/animated-view';
 import { useAnimatedNumber } from '../../animation/use-animated-number';
 import { Slot } from '../../slot';
@@ -23,8 +23,17 @@ export type SwitchProps = {
     children?: ReactNode;
     /** DOM id / nativeID forwarded to the Pressable — used by Field.Control */
     id?: string;
-    /** HTML name attribute (web only) */
+    /**
+     * Form field name (web only). While checked and enabled, the control
+     * submits `name=on` with an enclosing HTML `<form>`, like a native
+     * checkbox.
+     */
     name?: string;
+    /**
+     * Accessible name for screen readers when there is no visible `label`.
+     * `Field.Control` sets this on iOS, where `aria-labelledby` has no effect.
+     */
+    accessibilityLabel?: string;
     /** aria-labelledby forwarded to the Pressable */
     'aria-labelledby'?: string;
     /** React Native accessibilityLabelledBy forwarded to the Pressable */
@@ -80,6 +89,7 @@ export const Switch = ({
     children,
     id,
     name,
+    accessibilityLabel,
     'aria-labelledby': ariaLabelledBy,
     accessibilityLabelledBy,
     'aria-describedby': ariaDescribedBy,
@@ -120,15 +130,15 @@ export const Switch = ({
         commonProps.id = id;
         commonProps.nativeID = id;
     }
-    if (name !== undefined) {
-        commonProps.name = name;
-    }
     if (disabled) {
         commonProps['aria-disabled'] = true;
     }
     if (label !== undefined) {
         commonProps['aria-label'] = label;
         commonProps.accessibilityLabel = label;
+    }
+    if (accessibilityLabel !== undefined) {
+        commonProps.accessibilityLabel = accessibilityLabel;
     }
     if (ariaLabelledBy !== undefined) {
         commonProps['aria-labelledby'] = ariaLabelledBy;
@@ -151,25 +161,53 @@ export const Switch = ({
         commonProps['aria-required'] = true;
     }
 
+    // react-native-web drops `name`, so on web a hidden input carries the
+    // value into an enclosing HTML form. Like a native checkbox, nothing is
+    // submitted while unchecked or disabled.
+    const formInput =
+        Platform.OS === 'web' && name !== undefined && value && !disabled ? (
+            <input type="hidden" name={name} value="on" />
+        ) : null;
+
     if (asChild) {
-        const slotProps: Record<string, unknown> = {
-            role: 'switch',
-            'aria-checked': ariaChecked,
-            onClick: toggle,
-        };
-        if (disabled) {
-            slotProps['aria-disabled'] = true;
-        }
-        if (label !== undefined) {
-            slotProps['aria-label'] = label;
-        }
-        if (testID !== undefined) {
-            slotProps['data-testid'] = testID;
+        // A DOM child only understands `onClick` and DOM attributes. Any
+        // other child is built on RN's press system, which needs `onPress`
+        // and the RN accessibility props.
+        const isDomChild = isValidElement(children) && typeof children.type === 'string';
+        const slotProps: Record<string, unknown> = {};
+        if (isDomChild) {
+            for (const [key, propValue] of Object.entries(commonProps)) {
+                if (key === 'role' || key === 'id' || key.startsWith('aria-')) {
+                    slotProps[key] = propValue;
+                }
+            }
+            if (accessibilityLabel !== undefined && label === undefined) {
+                slotProps['aria-label'] = accessibilityLabel;
+            }
+            if (testID !== undefined) {
+                slotProps['data-testid'] = testID;
+            }
+            slotProps.onClick = toggle;
+        } else {
+            Object.assign(slotProps, commonProps);
+            // Both handlers: RN's press system uses `onPress` and replaces a
+            // passed `onClick` with its own; a plain View on web only reacts
+            // to `onClick`. Exactly one of them fires.
+            slotProps.onPress = toggle;
+            slotProps.onClick = toggle;
+            if (disabled) {
+                slotProps.disabled = true;
+            }
         }
         if (className !== undefined) {
             slotProps.className = className;
         }
-        return <Slot {...slotProps}>{children}</Slot>;
+        return (
+            <>
+                <Slot {...slotProps}>{children}</Slot>
+                {formInput}
+            </>
+        );
     }
 
     const trackClasses = cn(
@@ -246,6 +284,7 @@ export const Switch = ({
                 </RNText>
             ) : null}
             {children}
+            {formInput}
         </Pressable>
     );
 };

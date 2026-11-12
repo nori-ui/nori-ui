@@ -4683,6 +4683,7 @@ __metadata:
     react-dom: "npm:^19"
     react-native-css-interop: "npm:^0.2.3"
     react-native-reanimated: "npm:~4.3.0"
+    react-native-safe-area-context: "npm:~5.6.0"
     react-native-web: "npm:^0.21"
     react-native-worklets: "npm:^0.8.1"
     size-limit: "npm:^12.1.0"
@@ -4699,6 +4700,7 @@ __metadata:
     react-native: ^0.83
     react-native-css-interop: ">=0.2.3"
     react-native-reanimated: ">=4.3.0"
+    react-native-safe-area-context: ">=4"
     react-native-worklets: ">=0.8.0"
     sonner-native: ">=0.20"
   peerDependenciesMeta:
@@ -4716,6 +4718,8 @@ __metadata:
       optional: false
     react-native-reanimated:
       optional: false
+    react-native-safe-area-context:
+      optional: true
     react-native-worklets:
       optional: false
     sonner-native:
@@ -19252,7 +19256,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-safe-area-context@npm:~5.6.2":
+"react-native-safe-area-context@npm:~5.6.0, react-native-safe-area-context@npm:~5.6.2":
   version: 5.6.2
   resolution: "react-native-safe-area-context@npm:5.6.2"
   peerDependencies:

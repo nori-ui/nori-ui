@@ -1,0 +1,316 @@
+---
+title: NumberInput
+description: Numeric field with decrement and increment buttons, bounds, step, and precision.
+since: 1.12.0
+tags: [input, form, number]
+platform: both
+category: inputs
+---
+
+import { BundleSize } from '@/components/bundle-size';
+import { Preview } from '@/components/preview';
+import { PropsTable } from '@/components/props-table';
+
+<BundleSize component="NumberInput" />
+
+## At a glance
+
+- A text field for numbers with a decrement button and an increment button.
+- The value is a `number`, or `null` when the field is empty. It is never a string.
+- Typing is free-form. The typed text is committed on blur and on Enter: parsed, clamped to `min` / `max`, and rounded to `precision`.
+- `onChange` fires once per committed change. It does not fire on every keystroke.
+- Stepping uses decimal-safe arithmetic: `0.1` plus a `step` of `0.1`, twice, is `0.3`, not `0.30000000000000004`.
+- On web the input has `role="spinbutton"`, and ArrowUp / ArrowDown step the value.
+- Works inside [`Field`](/docs/components/field) for label, description, error, and accessibility wiring.
+
+## Preview
+
+<Preview name="number-input-basic" />
+
+## Usage
+
+### Controlled: `value` and `onChange`
+
+`value` is the current number, or `null` for an empty field. `onChange` receives the committed value.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+import { useState } from 'react';
+
+export const Example = () => {
+    const [guests, setGuests] = useState<number | null>(2);
+
+    return (
+        <Field label="Guests">
+            <NumberInput value={guests} onChange={setGuests} min={1} max={8} />
+        </Field>
+    );
+};
+```
+
+If the handler does not update `value`, the field shows the old `value` again after the commit.
+
+### Uncontrolled: `defaultValue`
+
+`defaultValue` sets the initial value. The component keeps the state itself. Default: `null` (empty). `onChange` is still called.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field label="Quantity">
+        <NumberInput defaultValue={1} min={1} onChange={(quantity) => console.log(quantity)} />
+    </Field>
+);
+```
+
+## When the value is committed
+
+| User action | Result |
+| --- | --- |
+| Types text | Nothing is committed. The text stays as typed, including incomplete input such as `-` or `1.`. |
+| Leaves the field (blur) or presses Enter | The text is parsed, clamped, and rounded. `onChange` is called if the result differs from the current value. Enter keeps focus in the field. |
+| Clears the field, then blurs or presses Enter | `onChange(null)` is called. |
+| Types text that is not a number (`abc`), then blurs or presses Enter | The text is discarded. The previous value is shown again. `onChange` is not called. |
+| Presses a stepper button, ArrowUp, or ArrowDown | Pending text is used as the starting point if it is a number. The value changes by `step`, is clamped and rounded, and `onChange` is called. |
+
+Stepping an empty field starts from `0`. With `min={5}`, the first increment therefore gives `5`.
+
+## `min` and `max`
+
+Committed values are clamped into the range. Either bound can be omitted. The decrement button is disabled when the value is at or below `min`. The increment button is disabled when the value is at or above `max`.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field label="Rating" description="From 0 to 5.">
+        <NumberInput defaultValue={3} min={0} max={5} />
+    </Field>
+);
+```
+
+## `step` and `precision`
+
+`step` is the amount the stepper buttons and the arrow keys add or subtract. It must be greater than `0`. Default: `1`.
+
+`precision` is the number of decimal places. Committed values are rounded to it. By default it is derived from `step`:
+
+| `step` | Derived `precision` | Typed `1.26` commits as |
+| --- | --- | --- |
+| `1` (default) | `0` | `1` |
+| `0.5` | `1` | `1.3` |
+| `0.25` | `2` | `1.26` |
+
+`step` does not snap typed values to multiples of the step. With `step={0.5}`, a typed `1.3` stays `1.3`.
+
+Set `precision` explicitly to allow more or fewer decimal places than `step` has. An explicit `precision` also pads the displayed value with zeros: `1.5` is shown as `1.50` with `precision={2}`. A derived precision does not pad.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field label="Price" description="In euros.">
+        <NumberInput defaultValue={9.5} min={0} step={0.5} precision={2} />
+    </Field>
+);
+```
+
+## Decimal separator
+
+A dot is always accepted as the decimal separator. The library locale (the `locale` prop of `NoriProvider`, or the runtime locale) adds one rule: in a locale that writes decimals with a comma, such as `de-DE`, a comma is accepted and displayed as the decimal separator, and a dot next to a comma is read as a grouping mark.
+
+| Locale | Typed | Committed value | Displayed |
+| --- | --- | --- | --- |
+| `en-US` | `1.5` | `1.5` | `1.5` |
+| `en-US` | `1,5` | Not a number. Discarded. | Previous value |
+| `de-DE` | `1,5` | `1.5` | `1,5` |
+| `de-DE` | `1.5` | `1.5` | `1,5` |
+| `de-DE` | `1.234,5` | `1234.5` | `1234,5` |
+
+The value passed to `onChange` is always a plain JavaScript number.
+
+```tsx
+import { Field, NoriProvider, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <NoriProvider locale="de-DE">
+        <Field label="Gewicht (kg)">
+            <NumberInput defaultValue={72.5} step={0.1} min={0} />
+        </Field>
+    </NoriProvider>
+);
+```
+
+## `size`
+
+`size` sets the font size, the vertical padding, and the size of the stepper buttons. Default: `md`.
+
+| Value | Font size token | Stepper button |
+| --- | --- | --- |
+| `sm` | `sm` | 24px |
+| `md` (default) | `md` | 28px |
+| `lg` | `lg` | 32px |
+
+```tsx
+import { NumberInput, VStack } from '@nori-ui/core';
+
+export const Example = () => (
+    <VStack gap={3}>
+        <NumberInput aria-label="Small quantity" size="sm" defaultValue={1} />
+        <NumberInput aria-label="Medium quantity" size="md" defaultValue={1} />
+        <NumberInput aria-label="Large quantity" size="lg" defaultValue={1} />
+    </VStack>
+);
+```
+
+## `placeholder`
+
+`placeholder` is the text shown while the field is empty.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field label="Age">
+        <NumberInput placeholder="0" min={0} max={120} />
+    </Field>
+);
+```
+
+## `disabled`
+
+`disabled` blocks typing, the arrow keys, and both stepper buttons. A disabled `Field` has the same effect. Default: `false`.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field label="Seats" disabled>
+        <NumberInput defaultValue={4} />
+    </Field>
+);
+```
+
+## Field wiring: `id`, `name`, and `aria-*`
+
+Inside `Field`, the input receives `id`, `name`, `aria-labelledby`, `aria-describedby`, `aria-invalid`, and `aria-required` automatically. `aria-invalid` also switches the border to the danger color.
+
+```tsx
+import { Field, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <Field label="Guests" name="guests" error="Enter the number of guests." required>
+        <NumberInput min={1} max={8} />
+    </Field>
+);
+```
+
+Without a `Field`, set these props yourself. An input without a visible label needs `aria-label`.
+
+```tsx
+import { NumberInput } from '@nori-ui/core';
+
+export const Example = () => <NumberInput id="quantity" name="quantity" aria-label="Quantity" defaultValue={1} min={1} />;
+```
+
+`name` makes the value part of an enclosing HTML form on web: a hidden input submits the committed number, always with `.` as the decimal separator and empty when there is no value. The visible field is not the form control, because it holds locale-formatted and possibly unfinished text. A disabled `NumberInput` submits nothing. On native there are no HTML forms; read the value from `onChange`.
+
+## `onFocus`, `onBlur`, and `ref`
+
+- `onFocus` is called when the input receives focus.
+- `onBlur` is called when the input loses focus, after the typed text was committed.
+- `ref` points to the underlying text input. Use it to call `focus()` or `blur()`.
+
+```tsx
+import { Button, NumberInput, VStack } from '@nori-ui/core';
+import { useRef } from 'react';
+import type { TextInput } from 'react-native';
+
+export const Example = () => {
+    const inputRef = useRef<TextInput>(null);
+
+    return (
+        <VStack gap={2}>
+            <NumberInput
+                ref={inputRef}
+                aria-label="Quantity"
+                defaultValue={1}
+                onFocus={() => console.log('focused')}
+                onBlur={() => console.log('blurred')}
+            />
+            <Button onPress={() => inputRef.current?.focus()}>Focus the quantity field</Button>
+        </VStack>
+    );
+};
+```
+
+## `className`, `containerClassName`, `style`, and `testID`
+
+- `className` adds Tailwind / NativeWind classes to the input element.
+- `containerClassName` adds classes to the outer wrapper around the bordered field. Use it for width.
+- `style` overrides the input text style. It is merged after the themed style.
+- `testID` identifies the input in tests. Find the stepper buttons by their accessible names, "Decrease value" and "Increase value".
+
+```tsx
+import { NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <NumberInput
+        aria-label="Quantity"
+        defaultValue={1}
+        containerClassName="w-32"
+        className="text-right"
+        style={{ textAlign: 'right' }}
+        testID="quantity-input"
+    />
+);
+```
+
+## Keyboard
+
+Web:
+
+| Key | Action |
+| --- | --- |
+| ArrowUp | Adds `step`. |
+| ArrowDown | Subtracts `step`. |
+| Enter | Commits the typed text. Focus stays in the field. |
+| Tab | Commits the typed text and moves focus to the next control. The stepper buttons are not tab stops. |
+
+Native: the on-screen keyboard is chosen from the props.
+
+| Condition | `keyboardType` |
+| --- | --- |
+| `min` is `0` or greater, and `precision` is `0` | `number-pad` |
+| `min` is `0` or greater, and `precision` is greater than `0` | `decimal-pad` |
+| Negative values are possible (`min` is omitted or below `0`) | `numbers-and-punctuation` on iOS, `numeric` on Android |
+
+The iOS number pad and decimal pad have no minus key. Set `min={0}` (or higher) when negative values make no sense, to get the compact keypad.
+
+## Accessibility
+
+- Web: the input has `role="spinbutton"` with `aria-valuenow` (omitted while the field is empty), `aria-valuemin` (when `min` is set), and `aria-valuemax` (when `max` is set).
+- Native: the input keeps the platform text-field role, so VoiceOver and TalkBack offer text editing. The stepper buttons are separate accessible buttons.
+- The stepper buttons are real buttons with translated accessible names: the `numberInput.decrement` ("Decrease value") and `numberInput.increment` ("Increase value") dictionary keys. A button at its bound is disabled.
+- Web: the stepper buttons are not in the tab order, following the WAI-ARIA spinbutton pattern. Keyboard users step with the arrow keys. Clicking a stepper button does not take focus out of the input.
+- The stepper buttons are at least 24px square (WCAG 2.5.8). On native the touch target is extended by 6px on every side.
+- Digits use tabular figures, so the value does not shift horizontally while stepping.
+
+Translate the button labels through the provider:
+
+```tsx
+import { Field, NoriProvider, NumberInput } from '@nori-ui/core';
+
+export const Example = () => (
+    <NoriProvider i18n={{ 'numberInput.increment': 'Wert erhöhen', 'numberInput.decrement': 'Wert verringern' }}>
+        <Field label="Anzahl">
+            <NumberInput defaultValue={1} min={1} />
+        </Field>
+    </NoriProvider>
+);
+```
+
+## Props
+
+<PropsTable component="NumberInput" />

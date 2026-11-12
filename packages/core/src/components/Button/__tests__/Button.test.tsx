@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { defaultTheme, type NoriTheme, type Theme, ThemeProvider } from '../../../theme';
+import type { ReactNode } from 'react';
+import { Pressable } from 'react-native';
+import { defaultTheme, type NoriTheme, ThemeProvider } from '../../../theme';
 import { Button } from '../Button';
 
 describe('<Button>', () => {
@@ -111,7 +113,7 @@ describe('<Button>', () => {
             light: {
                 ...defaultTheme.light,
                 radius: { ...defaultTheme.light.radius, md: '14px' },
-            } as unknown as Theme,
+            },
             dark: defaultTheme.dark,
         };
         render(
@@ -134,7 +136,7 @@ describe('<Button>', () => {
                     ...defaultTheme.light.fontFamily,
                     body: 'Georgia, serif',
                 },
-            } as unknown as Theme,
+            },
             dark: defaultTheme.dark,
         };
         render(
@@ -164,5 +166,65 @@ describe('<Button>', () => {
         // Button styling is now inline-only (so theme overrides win), so
         // we just verify the click handler reached through.
         expect(link.onclick).toBeDefined();
+    });
+});
+
+describe('<Button asChild>', () => {
+    it('does not navigate or fire onPress when disabled', () => {
+        const onPress = jest.fn();
+        render(
+            <Button asChild disabled onPress={onPress}>
+                <a href="/x" data-testid="link">
+                    Go
+                </a>
+            </Button>
+        );
+        const link = screen.getByTestId('link');
+        // fireEvent returns false when the handler called preventDefault().
+        expect(fireEvent.click(link)).toBe(false);
+        expect(onPress).not.toHaveBeenCalled();
+        expect(link.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('fires onPress exactly once through a Pressable child', () => {
+        const onPress = jest.fn();
+        const childPress = jest.fn();
+        render(
+            <Button asChild onPress={onPress}>
+                <Pressable testID="child" onPress={childPress} />
+            </Button>
+        );
+        fireEvent.click(screen.getByTestId('child'));
+        expect(onPress).toHaveBeenCalledTimes(1);
+        expect(childPress).toHaveBeenCalledTimes(1);
+    });
+
+    it('fires onPress through a component child that renders a DOM link', () => {
+        // Router links (e.g. Next.js) forward `onClick` to their anchor and
+        // know nothing about `onPress`.
+        const RouterLink = ({ onClick, children }: { onClick?: () => void; children?: ReactNode }) => (
+            <a href="/billing" data-testid="link" onClick={onClick}>
+                {children}
+            </a>
+        );
+        const onPress = jest.fn();
+        render(
+            <Button asChild onPress={onPress}>
+                <RouterLink>Billing</RouterLink>
+            </Button>
+        );
+        fireEvent.click(screen.getByTestId('link'));
+        expect(onPress).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('<Button> consumer props', () => {
+    it('keeps the disabled state when the consumer passes accessibilityState', () => {
+        render(
+            <Button disabled accessibilityState={{ selected: true }}>
+                Save
+            </Button>
+        );
+        expect(screen.getByRole('button').getAttribute('aria-disabled')).toBe('true');
     });
 });

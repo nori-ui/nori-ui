@@ -84,6 +84,27 @@ describe('<AlertDialog>', () => {
         expect(screen.queryByTestId('dialog')).toBeNull();
     });
 
+    it('AlertDialogAction calls the wrapped child handler exactly once', () => {
+        const deleteProject = jest.fn();
+        render(
+            <AlertDialog defaultOpen>
+                <AlertDialog.Content testID="dialog">
+                    <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+                    <AlertDialog.Footer>
+                        <AlertDialog.Action>
+                            <Button testID="action" variant="destructive" onPress={deleteProject}>
+                                Delete
+                            </Button>
+                        </AlertDialog.Action>
+                    </AlertDialog.Footer>
+                </AlertDialog.Content>
+            </AlertDialog>
+        );
+        fireEvent.click(screen.getByTestId('action'));
+        expect(deleteProject).toHaveBeenCalledTimes(1);
+        expect(screen.queryByTestId('dialog')).toBeNull();
+    });
+
     it('does NOT close when Escape is pressed (alert dialog contract)', () => {
         const onOpenChange = jest.fn();
         render(

@@ -59,3 +59,14 @@ describe('Field (native)', () => {
         expect(ctrl.props.accessibilityLabelledBy).toBe(label.props.nativeID);
     });
 });
+
+describe('Field label on iOS', () => {
+    it('passes a string label to the control as accessibilityLabel', () => {
+        const { getByTestId } = wrap(
+            <Field label="Email">
+                <Text testID="ctrl" />
+            </Field>
+        );
+        expect(getByTestId('ctrl').props.accessibilityLabel).toBe('Email');
+    });
+});

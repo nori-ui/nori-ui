@@ -96,6 +96,40 @@ describe('<Sidebar> web', () => {
         expect(screen.queryByText('Home')).toBeNull();
     });
 
+    it('collapsed MenuItem keeps its label as the accessible name', () => {
+        render(
+            <Sidebar defaultCollapsed>
+                <Sidebar.Menu>
+                    <Sidebar.MenuItem icon={<HomeIcon />} onPress={() => {}}>
+                        Home
+                    </Sidebar.MenuItem>
+                </Sidebar.Menu>
+            </Sidebar>
+        );
+        expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument();
+    });
+
+    it('MenuItem and Menu apply their spacing tokens as valid CSS padding', () => {
+        render(
+            <Sidebar>
+                <Sidebar.Menu testID="menu">
+                    <Sidebar.MenuItem testID="item" onPress={() => {}}>
+                        Home
+                    </Sidebar.MenuItem>
+                </Sidebar.Menu>
+            </Sidebar>
+        );
+        expect(screen.getByTestId('item').style.padding).toBe('8px 12px');
+        expect(screen.getByTestId('menu').style.padding).toBe('0px 8px');
+    });
+
+    it('draws the divider on the inner edge for side="right"', () => {
+        render(<Sidebar side="right" testID="sidebar" />);
+        const nav = screen.getByTestId('sidebar');
+        expect(nav.style.borderLeftWidth).toBe('1px');
+        expect(nav.style.borderRightWidth).toBe('');
+    });
+
     it('active MenuItem has aria-current="page"', () => {
         render(
             <Sidebar>

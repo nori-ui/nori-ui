@@ -26,15 +26,22 @@ npx @nori-ui/plugin --list                      # list skills + agents
 npx @nori-ui/plugin --help
 ```
 
-### Claude Code (native plugin install)
+### Claude Code
 
-Claude Code can install this directly as a plugin — no `npx` needed:
+Install for Claude Code only:
 
-```text
-/plugin install nori-ui/nori-ui
+```bash
+npx @nori-ui/plugin --targets claude-code
 ```
 
-This wires the MCP server and registers the skills via Claude Code's plugin system. Equivalent to `npx @nori-ui/plugin --targets claude-code` but gets you Claude Code's native plugin lifecycle (auto-updates, marketplace UI).
+This writes the skills to `.claude/skills/<name>/SKILL.md` and registers the `@nori-ui/mcp` server in `.mcp.json` in your project.
+
+This package also contains a Claude Code plugin manifest (`.claude-plugin/plugin.json`). The repository does not publish a plugin marketplace (there is no `.claude-plugin/marketplace.json`), so `/plugin install` cannot fetch it from GitHub. To load it as a native plugin, clone the repository and point Claude Code at the package directory:
+
+```bash
+git clone https://github.com/nori-ui/nori-ui.git
+claude --plugin-dir ./nori-ui/packages/plugin
+```
 
 ## Supported agents
 
