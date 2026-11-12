@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nori-ui/nori-ui.git"
+    "url": "git+https://github.com/nori-ui/nori-ui.git",
+    "directory": "packages/core"
   },
   "engines": {
     "node": ">=20"
@@ -17,6 +18,9 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
+    "src",
+    "!src/**/__tests__",
+    "!src/**/*.stories.tsx",
     "README.md",
     "LICENSE"
   ],
@@ -70,14 +74,19 @@
       "react-native": "./src/stories/index.ts",
       "import": "./dist/stories/index.js",
       "require": "./dist/stories/index.cjs"
-    }
+    },
+    "./tailwind-preset": {
+      "types": "./dist/tailwind-preset.d.cts",
+      "default": "./dist/tailwind-preset.cjs"
+    },
+    "./theme.css": "./dist/theme.css"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "tsup && tsc -p tsconfig.dts.json",
+    "build": "tsup && tsc -p tsconfig.dts.json && node scripts/finalize-dist.mjs",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
   },
@@ -101,8 +110,11 @@
     "jest-environment-jsdom": "^29",
     "jest-expo": "^55.0.17",
     "nativewind": "^4",
+    "react": "^19",
+    "react-dom": "^19",
     "react-native-css-interop": "^0.2.3",
     "react-native-reanimated": "~4.3.0",
+    "react-native-safe-area-context": "~5.6.0",
     "react-native-web": "^0.21",
     "react-native-worklets": "^0.8.1",
     "size-limit": "^12.1.0",
@@ -112,8 +124,6 @@
   },
   "dependencies": {
     "@internationalized/date": "^3.5.6",
-    "react": "^19",
-    "react-dom": "^19",
     "sonner": "^2.0.7"
   },
   "peerDependencies": {
@@ -125,6 +135,7 @@
     "react-native": "^0.83",
     "react-native-css-interop": ">=0.2.3",
     "react-native-reanimated": ">=4.3.0",
+    "react-native-safe-area-context": ">=4",
     "react-native-worklets": ">=0.8.0",
     "sonner-native": ">=0.20"
   },
@@ -149,6 +160,9 @@
     },
     "react-native-reanimated": {
       "optional": false
+    },
+    "react-native-safe-area-context": {
+      "optional": true
     },
     "react-native-worklets": {
       "optional": false

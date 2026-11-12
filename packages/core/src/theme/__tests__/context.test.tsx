@@ -1,6 +1,6 @@
-import { theme as defaultTheme, type Theme } from '@nori-ui/tokens';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '../context';
+import { theme as defaultTheme, type Theme } from '../generated-tokens';
 import { useTheme } from '../use-theme';
 
 function PrimaryColorDisplay() {

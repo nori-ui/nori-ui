@@ -2,10 +2,10 @@
 // Re-exports the generated theme types + constants from @nori-ui/tokens under
 // the library's own public namespace.
 //
-// Consumers should import `Theme` from '@nori-ui/core', not from '@nori-ui/tokens'.
+// Consumers should import `Theme` from '@nori-ui/core', not from './generated-tokens'.
 
-export { type Theme, theme, themeDark } from '@nori-ui/tokens';
 export { defaultTheme, type NoriTheme, ThemeProvider, type ThemeProviderProps } from './context';
+export { type Theme, theme, themeDark } from './generated-tokens';
 export { px } from './px';
 export {
     blueTheme,

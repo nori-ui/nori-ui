@@ -47,9 +47,9 @@ jobs:
 
       - name: Verify tokens/build is up to date
         run: |
-          if [[ -n "$(git status --porcelain packages/tokens/build/)" ]]; then
+          if [[ -n "$(git status --porcelain packages/tokens/build/ packages/core/src/theme/generated-tokens.ts)" ]]; then
               echo "::error::tokens/build is stale — commit regenerated outputs."
-              git --no-pager diff packages/tokens/build/
+              git --no-pager diff packages/tokens/build/ packages/core/src/theme/generated-tokens.ts
               exit 1
           fi
 

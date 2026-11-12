@@ -1,6 +1,5 @@
 'use client';
 
-import type { Theme } from '@nori-ui/tokens';
 import {
     createContext,
     type KeyboardEvent,
@@ -15,6 +14,7 @@ import {
 } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
+import type { Theme } from '../../theme/generated-tokens';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';

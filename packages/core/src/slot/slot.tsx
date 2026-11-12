@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement, Ref } from 'react';
+import type { ReactElement, Ref } from 'react';
 import { Children, cloneElement, forwardRef, isValidElement } from 'react';
 import { composeRefs } from './compose-refs';
 
@@ -16,11 +16,13 @@ export const Slot = forwardRef<unknown, SlotProps>(function Slot(props, forwarde
     }
 
     // Assert that children is a single React element with props — we've narrowed above.
-    const child = Children.only(children) as ReactElement<AnyProps> & { ref?: Ref<unknown> };
+    const child = Children.only(children) as ReactElement<AnyProps>;
     const merged = mergeProps(slotProps, child.props);
 
-    // Merge refs: Slot's forwarded ref + the child's own ref (if any).
-    const childRef = (child as unknown as { ref?: Ref<unknown> }).ref;
+    // Merge refs: Slot's forwarded ref + the child's own ref (if any). React 19
+    // exposes the ref as a regular prop; reading `element.ref` logs a
+    // deprecation warning.
+    const childRef = child.props.ref as Ref<unknown> | undefined;
     if (forwardedRef || childRef) {
         (merged as AnyProps).ref = composeRefs(forwardedRef, childRef);
     }
@@ -44,10 +46,7 @@ function mergeProps(outer: AnyProps, inner: AnyProps): AnyProps {
         }
 
         if (key === 'style') {
-            merged[key] = {
-                ...(outerValue as CSSProperties | undefined),
-                ...(innerValue as CSSProperties | undefined),
-            };
+            merged[key] = mergeStyle(outerValue, innerValue);
             continue;
         }
 
@@ -60,6 +59,36 @@ function mergeProps(outer: AnyProps, inner: AnyProps): AnyProps {
     }
 
     return merged;
+}
+
+type PressableState = Record<string, unknown>;
+
+/**
+ * Child style wins over Slot style. Plain objects are spread into one object
+ * (DOM elements only accept an object); arrays, registered style ids, and
+ * Pressable's `style={(state) => …}` functions are preserved by composing
+ * them into a style array instead of being spread into a broken object.
+ */
+function mergeStyle(outer: unknown, inner: unknown): unknown {
+    if (outer === undefined || outer === null) {
+        return inner;
+    }
+    if (inner === undefined || inner === null) {
+        return outer;
+    }
+    if (typeof outer === 'function' || typeof inner === 'function') {
+        const resolve = (value: unknown, state: PressableState) =>
+            typeof value === 'function' ? (value as (state: PressableState) => unknown)(state) : value;
+        return (state: PressableState) => [resolve(outer, state), resolve(inner, state)];
+    }
+    if (isPlainObject(outer) && isPlainObject(inner)) {
+        return { ...outer, ...inner };
+    }
+    return [outer, inner];
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function joinClass(outer: unknown, inner: unknown): string | undefined {

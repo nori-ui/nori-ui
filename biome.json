@@ -16,7 +16,8 @@
       "!**/coverage",
       "!**/.yarn",
       "!**/.expo",
-      "!**/yarn.lock"
+      "!**/yarn.lock",
+      "!packages/core/src/theme/generated-tokens.ts"
     ]
   },
   "formatter": {
@@ -91,7 +92,12 @@
       }
     },
     {
-      "includes": ["packages/tokens/src/config.mjs", "packages/tokens/src/formats/**", "apps/docs/scripts/**"],
+      "includes": [
+        "packages/tokens/src/config.mjs",
+        "packages/tokens/src/formats/**",
+        "packages/core/scripts/**",
+        "apps/docs/scripts/**"
+      ],
       "linter": {
         "rules": {
           "suspicious": { "noConsole": "off" }

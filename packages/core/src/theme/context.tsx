@@ -1,8 +1,8 @@
 'use client';
 
-import { themeDark as defaultDark, theme as defaultLight, type Theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
+import { themeDark as defaultDark, theme as defaultLight, type Theme } from './generated-tokens';
 
 /**
  * A `NoriTheme` is a paired light/dark palette. The active half is picked
@@ -24,7 +24,7 @@ export type NoriTheme = {
  */
 export const defaultTheme: NoriTheme = {
     light: defaultLight,
-    dark: defaultDark as unknown as Theme,
+    dark: defaultDark,
 };
 
 // Context value is the FULL pair, not the active half. `useThemeColors`
@@ -49,7 +49,9 @@ export type ThemeProviderProps = {
 const isFullTheme = (t: NoriTheme | Theme): t is NoriTheme => 'light' in t && 'dark' in t;
 
 export function ThemeProvider({ theme, children }: ThemeProviderProps) {
-    const value: NoriTheme =
-        theme === undefined ? defaultTheme : isFullTheme(theme) ? theme : { light: theme, dark: theme };
+    // Without a `theme` prop a nested provider inherits the surrounding theme
+    // instead of resetting the subtree to the library default.
+    const parent = useContext(ThemeContext);
+    const value: NoriTheme = theme === undefined ? parent : isFullTheme(theme) ? theme : { light: theme, dark: theme };
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

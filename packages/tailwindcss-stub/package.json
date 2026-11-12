@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nori-ui/nori-ui.git",
+    "url": "git+https://github.com/nori-ui/nori-ui.git",
     "directory": "packages/tailwindcss-stub"
   },
   "publishConfig": {

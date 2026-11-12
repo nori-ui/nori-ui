@@ -1,11 +1,11 @@
 'use client';
 
-import type { Theme } from '@nori-ui/tokens';
 import type { ComponentType, ReactNode, Ref } from 'react';
 import { useCallback, useState } from 'react';
 import type { PressableProps, StyleProp, View, ViewStyle } from 'react-native';
 import { Pressable, Text as RNText } from 'react-native';
 import { Slot } from '../../slot';
+import type { Theme } from '../../theme/generated-tokens';
 import { px } from '../../theme/px';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { cn } from '../../utils/cn';

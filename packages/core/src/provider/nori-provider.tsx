@@ -1,6 +1,5 @@
 'use client';
 
-import type { Theme } from '@nori-ui/tokens';
 import type { ReactNode } from 'react';
 import { I18nProvider } from '../i18n/context';
 import { type LocaleInput, LocaleProvider } from '../i18n/locale';
@@ -8,6 +7,7 @@ import type { I18nInput } from '../i18n/types';
 import type { SemanticIcons } from '../icons/default-semantic-icons';
 import { SemanticIconsProvider } from '../icons/semantic-context';
 import { type NoriTheme, ThemeProvider } from '../theme/context';
+import type { Theme } from '../theme/generated-tokens';
 import { type ColorScheme, ColorSchemeProvider } from '../theme/use-color-scheme';
 
 export type NoriProviderProps = {

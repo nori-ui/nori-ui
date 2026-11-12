@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { defaultTheme, type NoriTheme, type Theme, ThemeProvider } from '../../../theme';
+import { defaultTheme, type NoriTheme, ThemeProvider } from '../../../theme';
 import { Button } from '../Button';
 
 describe('<Button>', () => {
@@ -111,7 +111,7 @@ describe('<Button>', () => {
             light: {
                 ...defaultTheme.light,
                 radius: { ...defaultTheme.light.radius, md: '14px' },
-            } as unknown as Theme,
+            },
             dark: defaultTheme.dark,
         };
         render(
@@ -134,7 +134,7 @@ describe('<Button>', () => {
                     ...defaultTheme.light.fontFamily,
                     body: 'Georgia, serif',
                 },
-            } as unknown as Theme,
+            },
             dark: defaultTheme.dark,
         };
         render(

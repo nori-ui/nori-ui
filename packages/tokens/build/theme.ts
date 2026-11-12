@@ -115,7 +115,9 @@ export const theme = {
     },
 } as const;
 
-export type Theme = typeof theme;
+type Widen<T> = T extends string ? string : T extends number ? number : { readonly [K in keyof T]: Widen<T[K]> };
+
+export type Theme = Widen<typeof theme>;
 
 
 // Dark mode overrides
